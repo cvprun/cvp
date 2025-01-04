@@ -332,10 +332,7 @@ class CanvasGraph(CanvasController):
 
     def update_nodes_state(self) -> None:
         self.graph.clear_state()
-        self.graph.update_hovering_state(
-            self.mouse_to_canvas_coords(),
-            self.config.arcs.hovering_tolerance,
-        )
+        self.graph.update_hovering_state(self.mouse_to_canvas_coords())
 
         if imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DELETE)):
             self.graph.remove_selected_items()

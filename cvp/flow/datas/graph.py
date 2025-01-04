@@ -122,15 +122,11 @@ class Graph:
 
         return NodePin(node, pin)
 
-    def find_hovering_arc_with_mouse(
-        self,
-        mouse: Point,
-        distance_tolerance: float,
-    ) -> Optional[Arc]:
+    def find_hovering_arc_with_mouse(self, mouse: Point) -> Optional[Arc]:
         mp = shapely.Point(mouse)
         for arc in self.arcs:
             distance = shapely.LineString(arc.polyline).distance(mp)
-            if distance <= distance_tolerance:
+            if distance <= self.control.arc_hovering_tolerance:
                 return arc
         return None
 
@@ -390,7 +386,7 @@ class Graph:
 
         assert arc.output is not None
         assert arc.input is not None
-        arc.update_polyline(self.style.bezier_curve_tess_tol)
+        arc.update_polyline(self.control.bezier_curve_tessellation_tolerance)
 
     def connect_pins(
         self,
@@ -402,25 +398,25 @@ class Graph:
         if not no_reorder:
             out_conn, in_conn = self.reorder_connectable_pins(out_conn, in_conn)
 
-        arc = Arc.from_connect_pair(out_conn, in_conn, self.style.bezier_curve_tess_tol)
+        arc = Arc.from_connect_pair(
+            out_conn,
+            in_conn,
+            self.control.bezier_curve_tessellation_tolerance,
+        )
         self.arcs.append(arc)
         out_conn.pin.arcs.append(arc.uuid)
         in_conn.pin.arcs.append(arc.uuid)
 
         return arc
 
-    def update_hovering_state(
-        self,
-        mouse: Point,
-        arc_hovering_tolerance: float,
-    ) -> None:
+    def update_hovering_state(self, mouse: Point) -> None:
         if hovering_node := self.find_hovering_node_with_mouse(mouse):
             hovering_node.hovering = True
             if hovering_pin := hovering_node.find_hovering_pin_with_mouse(mouse):
                 hovering_pin.hovering = True
             return
 
-        hovering_arc = self.find_hovering_arc_with_mouse(mouse, arc_hovering_tolerance)
+        hovering_arc = self.find_hovering_arc_with_mouse(mouse)
         if hovering_arc is not None:
             hovering_arc.hovering = True
 

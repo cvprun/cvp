@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
-from cvp.config.sections.flow.arcs import Arcs
 from cvp.config.sections.flow.axis import Axis
 from cvp.config.sections.flow.grid import Grid
 from cvp.config.sections.flow.logs import Logs
@@ -26,5 +25,4 @@ class FlowAuiConfig(AuiWindowConfig):
     axis_y: Axis = field(default_factory=Axis)
 
     nodes: Nodes = field(default_factory=Nodes)
-    arcs: Arcs = field(default_factory=Arcs)
     pins: Pins = field(default_factory=Pins)

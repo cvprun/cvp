@@ -9,7 +9,6 @@ from cvp.flow.datas.line_type import LineType
 from cvp.flow.datas.node_pin import NodePin
 from cvp.maths.bezier.casteljau.cubic import bezier_cubic_casteljau_points
 from cvp.types.shapes import Point, Rect
-from cvp.variables import BEZIER_CURVE_TESSELLATION_TOL
 
 
 @dataclass
@@ -35,7 +34,7 @@ class Arc:
         cls,
         output_np: NodePin,
         input_np: NodePin,
-        tess_tol=BEZIER_CURVE_TESSELLATION_TOL,
+        tess_tol: float,
     ):
         result = cls()
         result.output = output_np
@@ -122,12 +121,12 @@ class Arc:
 
         return p1, p2
 
-    def update_polyline(self, tess_tol=BEZIER_CURVE_TESSELLATION_TOL) -> None:
+    def update_polyline(self, tess_tol: float) -> None:
         points = self.calc_polyline(tess_tol)
         self._polyline.clear()
         self._polyline.extend(points)
 
-    def calc_polyline(self, tess_tol=BEZIER_CURVE_TESSELLATION_TOL) -> List[Point]:
+    def calc_polyline(self, tess_tol: float) -> List[Point]:
         match self.line_type:
             case LineType.linear:
                 return self.calc_linear_polyline()
@@ -158,10 +157,7 @@ class Arc:
 
         return [sp, ep]
 
-    def calc_bezier_cubic_polyline(
-        self,
-        tess_tol=BEZIER_CURVE_TESSELLATION_TOL,
-    ) -> List[Point]:
+    def calc_bezier_cubic_polyline(self, tess_tol: float) -> List[Point]:
         points = self.calc_linear_polyline()
         assert 2 == len(points)
         sx, sy = sp = points[0]

@@ -2,7 +2,6 @@
 
 import imgui
 
-from cvp.config.sections.flow.arcs import Arcs
 from cvp.config.sections.flow.axis import Axis
 from cvp.config.sections.flow.grid import Grid
 from cvp.config.sections.flow.logs import Logs
@@ -116,19 +115,6 @@ class FlowPreference(PreferenceWidget):
                 imgui.tree_pop()
 
     @staticmethod
-    def tree_arcs(label: str, arcs: Arcs) -> None:
-        if imgui.tree_node(label):
-            try:
-                if hovering_tolerance := input_float(
-                    "Hovering tolerance",
-                    arcs.hovering_tolerance,
-                    step=1.0,
-                ):
-                    arcs.hovering_tolerance = hovering_tolerance.value
-            finally:
-                imgui.tree_pop()
-
-    @staticmethod
     def tree_pins(label: str, pins: Pins) -> None:
         if imgui.tree_node(label):
             try:
@@ -147,5 +133,4 @@ class FlowPreference(PreferenceWidget):
         self.tree_axis("Axis X", self._config.axis_x)
         self.tree_axis("Axis Y", self._config.axis_y)
         self.tree_nodes("Nodes", self._config.nodes)
-        self.tree_arcs("Arcs", self._config.arcs)
         self.tree_pins("Pins", self._config.pins)

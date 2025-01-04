@@ -7,7 +7,6 @@ from cvp.fonts.size import FontSize
 from cvp.palette.basic import BLACK, BLUE, RED, SILVER, WHITE
 from cvp.palette.tableau import ORANGE
 from cvp.types.colors import RGBA
-from cvp.variables import BEZIER_CURVE_TESSELLATION_TOL
 
 
 @dataclass
@@ -34,8 +33,6 @@ class Style:
 
     anchor_color: RGBA = field(default_factory=lambda: (*BLUE, 0.8))
     anchor_radius: float = 3.0
-
-    bezier_curve_tess_tol: float = BEZIER_CURVE_TESSELLATION_TOL
 
     icon_scale: FontSize = FontSize.large
     title_scale: FontSize = FontSize.medium

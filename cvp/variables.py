@@ -77,7 +77,7 @@ WSD_NAME_DEFAULT: Final[str] = "New Device"
 
 ZEEP_ELEMENT_SEPARATOR: Final[str] = "."
 
-BEZIER_CURVE_TESSELLATION_TOL: Final[float] = 1.25
+BEZIER_CURVE_TESSELLATION_TOLERANCE: Final[float] = 1.25
 """
 Tessellation tolerance when using BezierCurve without a specific number of segments.
 Decrease for highly tessellated curves (higher quality, more polygons),
@@ -96,4 +96,4 @@ FLOW_GRID_STEP: Final[float] = 50.0
 FLOW_GRID_THICKNESS: Final[float] = 1.0
 FLOW_GRID_COLOR: Final[RGBA] = 0.8, 0.8, 0.8, 0.2
 
-FLOW_ARCS_HOVERING_TOLERANCE: Final[float] = 0.4
+FLOW_ARCS_HOVERING_TOLERANCE: Final[float] = 6.0
