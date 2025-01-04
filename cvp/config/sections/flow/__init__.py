@@ -11,13 +11,16 @@ from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
 from cvp.config.sections.flow.roi import Roi
-from cvp.variables import MIN_SIDEBAR_HEIGHT
+from cvp.types.colors import RGBA
+from cvp.variables import FLOW_BACKGROUND_COLOR, MIN_SIDEBAR_HEIGHT
 
 
 @dataclass
 class FlowAuiConfig(AuiWindowConfig):
     split_tree: float = MIN_SIDEBAR_HEIGHT
     min_split_tree: float = MIN_SIDEBAR_HEIGHT
+
+    background_color: RGBA = FLOW_BACKGROUND_COLOR
 
     logs: Logs = field(default_factory=Logs)
 

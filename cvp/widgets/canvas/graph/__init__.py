@@ -13,8 +13,6 @@ from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectedItems
-from cvp.flow.datas.stroke import Stroke
-from cvp.flow.datas.style import Style
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
@@ -184,38 +182,6 @@ class CanvasGraph(CanvasController):
         self.close()
 
     # ==================================================================================
-    # Properties
-    # ==================================================================================
-
-    @property
-    def node_show_layout(self):
-        return self.config.nodes.show_layout
-
-    @property
-    def node_item_spacing(self):
-        return self.config.nodes.item_spacing
-
-    @property
-    def anchor_radius(self):
-        return self.config.anchors.radius
-
-    @property
-    def title_font(self):
-        return self.fonts.get_scaled_text(self.config.nodes.title_size)
-
-    @property
-    def text_font(self):
-        return self.fonts.get_scaled_text(self.config.nodes.text_size)
-
-    @property
-    def icon_font(self):
-        return self.fonts.get_scaled_icon(self.config.nodes.icon_size)
-
-    @property
-    def pin_font(self):
-        return self.fonts.get_scaled_icon(self.config.pins.icon_size)
-
-    # ==================================================================================
     # Public Operations
     # ==================================================================================
 
@@ -275,7 +241,7 @@ class CanvasGraph(CanvasController):
             self.draw_roi_box()
 
     def fill(self) -> None:
-        color = imgui.get_color_u32_rgba(*self.graph.color)
+        color = imgui.get_color_u32_rgba(*self.config.background_color)
         self._draw_list.add_rect_filled(*self.canvas_roi, color)
 
     def draw_grid_x(self) -> None:
@@ -476,8 +442,75 @@ class CanvasGraph(CanvasController):
                 self.graph.update_selected_item(node)
 
     # ==================================================================================
-    # Color Picker
+    # Style properties
     # ==================================================================================
+
+    @property
+    def node_show_layout(self):
+        return self.config.nodes.show_layout
+
+    @property
+    def node_item_spacing(self):
+        return self.config.nodes.item_spacing
+
+    @staticmethod
+    def get_node_color_u32(node: Node) -> int:
+        return imgui.get_color_u32_rgba(*node.color)
+
+    def get_node_line_color(self, node: Node) -> RGBA:
+        if node.selected:
+            return self.config.nodes.selected_color
+        elif node.hovering:
+            return self.config.nodes.hovering_color
+        else:
+            return self.config.nodes.normal_color
+
+    def get_node_line_color_u32(self, node: Node) -> int:
+        return imgui.get_color_u32_rgba(*self.get_node_line_color(node))
+
+    @property
+    def node_label_color_u32(self) -> int:
+        return imgui.get_color_u32_rgba(*self.config.nodes.label_color)
+
+    @property
+    def node_layout_color_u32(self) -> int:
+        return imgui.get_color_u32_rgba(*self.config.nodes.layout_color)
+
+    @property
+    def node_background_color_u32(self) -> int:
+        return imgui.get_color_u32_rgba(*self.config.nodes.background_color)
+
+    def get_node_line_thickness(self, node: Node) -> float:
+        if node.selected:
+            return self.config.nodes.selected_thickness
+        elif node.hovering:
+            return self.config.nodes.hovering_thickness
+        else:
+            return self.config.nodes.normal_thickness
+
+    @property
+    def node_rounding(self) -> float:
+        return self.config.nodes.rounding
+
+    @property
+    def anchor_radius(self):
+        return self.config.anchors.radius
+
+    @property
+    def title_font(self):
+        return self.fonts.get_scaled_text(self.config.nodes.title_size)
+
+    @property
+    def text_font(self):
+        return self.fonts.get_scaled_text(self.config.nodes.text_size)
+
+    @property
+    def icon_font(self):
+        return self.fonts.get_scaled_icon(self.config.nodes.icon_size)
+
+    @property
+    def pin_font(self):
+        return self.fonts.get_scaled_icon(self.config.pins.icon_size)
 
     def get_pin_color(self, pin: Pin) -> RGBA:
         if self.is_pin_connecting_mode:
@@ -522,15 +555,6 @@ class CanvasGraph(CanvasController):
 
     def get_anchor_color_u32(self, anchor: Anchor) -> int:
         return imgui.get_color_u32_rgba(*self.get_anchor_color(anchor))
-
-    @staticmethod
-    def get_node_stroke(node: Node, style: Style) -> Stroke:
-        if node.selected:
-            return style.selected_node
-        elif node.hovering:
-            return style.hovering_node
-        else:
-            return style.normal_node
 
     # ==================================================================================
     # Node Operations
@@ -649,26 +673,21 @@ class CanvasGraph(CanvasController):
 
     def draw_node(self, node: Node) -> None:
         node_roi = self.canvas_to_screen_roi(node.node_roi)
-        style = self.graph.style
-        stroke = self.get_node_stroke(node, style)
-
-        node_color = imgui.get_color_u32_rgba(*node.color)
-        stroke_color = imgui.get_color_u32_rgba(*stroke.color)
-        label_color = imgui.get_color_u32_rgba(*self.config.nodes.label_color)
-        layout_color = imgui.get_color_u32_rgba(*self.config.nodes.layout_color)
-        background_color = imgui.get_color_u32_rgba(*self.config.nodes.background_color)
-
-        thickness = stroke.thickness
-        rounding = stroke.rounding
-        flags = stroke.flags
+        thickness = self.get_node_line_thickness(node)
+        rounding = self.node_rounding
+        node_color = self.get_node_color_u32(node)
+        line_color = self.get_node_line_color_u32(node)
+        label_color = self.node_label_color_u32
+        layout_color = self.node_layout_color_u32
+        background_color = self.node_background_color_u32
 
         nx1, ny1, nx2, ny2 = node_roi
         zoom = self.zoom
         header_roi = nx1, ny1, nx2, ny1 + node.head_height * zoom
 
-        self._draw_list.add_rect_filled(*node_roi, background_color, rounding, flags)
-        self._draw_list.add_rect_filled(*header_roi, node_color, rounding, flags)
-        self._draw_list.add_rect(*node_roi, stroke_color, rounding, flags, thickness)
+        self._draw_list.add_rect_filled(*node_roi, background_color, rounding)
+        self._draw_list.add_rect_filled(*header_roi, node_color, rounding)
+        self._draw_list.add_rect(*node_roi, line_color, rounding, 0, thickness)
 
         with self.icon_font:
             x1 = nx1 + node.emblem_pos[0] * zoom

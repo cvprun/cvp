@@ -12,13 +12,11 @@ from cvp.flow.datas.anchor import Anchor
 from cvp.flow.datas.arc import Arc
 from cvp.flow.datas.connect_pair import ConnectPair
 from cvp.flow.datas.control import Control
-from cvp.flow.datas.dtype import DataType
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectableAny, SelectedItems
 from cvp.flow.datas.stream import Stream
-from cvp.flow.datas.style import Style
 from cvp.types.colors import RGBA
 from cvp.types.shapes import Point, Size
 
@@ -33,9 +31,7 @@ class Graph:
     color: RGBA = DEFAULT_GRAPH_COLOR
     nodes: List[Node] = field(default_factory=list)
     arcs: List[Arc] = field(default_factory=list)
-    dtypes: List[DataType] = field(default_factory=list)
     control: Control = field(default_factory=Control)
-    style: Style = field(default_factory=Style)
 
     _selected_items: SelectedItems = field(default_factory=SelectedItems)
 

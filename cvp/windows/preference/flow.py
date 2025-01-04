@@ -8,7 +8,6 @@ from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
 from cvp.context.context import Context
-from cvp.flow.datas.stroke import Stroke
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -56,19 +55,6 @@ class FlowPreference(PreferenceWidget):
                     axis.thickness = thickness.value
                 if color := color_edit4("Color", *axis.color):
                     axis.color = color.color
-            finally:
-                imgui.tree_pop()
-
-    @staticmethod
-    def tree_stroke(label: str, stroke: Stroke) -> None:
-        if imgui.tree_node(label):
-            try:
-                if color := color_edit4("Color", *stroke.color):
-                    stroke.color = color.color
-                if thickness := input_float("Thickness", stroke.thickness, step=1.0):
-                    stroke.thickness = thickness.value
-                if rounding := input_float("Rounding", stroke.rounding, step=1.0):
-                    stroke.rounding = rounding.value
             finally:
                 imgui.tree_pop()
 

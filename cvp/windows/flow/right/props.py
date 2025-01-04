@@ -17,7 +17,6 @@ from cvp.flow.datas.line_type import (
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectedItems
-from cvp.flow.datas.stroke import Stroke
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -86,31 +85,12 @@ class PropsTab(TabItem[Graph]):
                 imgui.tree_pop()
 
     @staticmethod
-    def tree_stroke(label: str, stroke: Stroke) -> None:
-        if imgui.tree_node(label):
-            try:
-                if color := color_edit4("Color", *stroke.color):
-                    stroke.color = color.color
-                if thickness := input_float("Thickness", stroke.thickness):
-                    stroke.thickness = thickness.value
-                if rounding := input_float("Rounding", stroke.rounding):
-                    stroke.rounding = rounding.value
-            finally:
-                imgui.tree_pop()
-
-    def on_graph_cursor(self, graph: Graph) -> None:
+    def on_graph_cursor(graph: Graph) -> None:
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.uuid)
 
         graph.name = input_text_value("Name", graph.name)
         graph.docs = input_text_value("Docs", graph.docs)
-
-        if color_result := color_edit4("Color", *graph.color):
-            graph.color = color_result.color
-
-        self.tree_stroke("Selected node", graph.style.selected_node)
-        self.tree_stroke("Hovering node", graph.style.hovering_node)
-        self.tree_stroke("Normal node", graph.style.normal_node)
 
     @staticmethod
     def tree_node_debugging(label: str, node: Node) -> None:
