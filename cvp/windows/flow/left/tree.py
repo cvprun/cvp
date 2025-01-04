@@ -22,22 +22,30 @@ PIN_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 ARC_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
-class TreeTab(TabItem[Graph]):
-    def __init__(self, context: Context, fonts: FontMapper, cursor: FlowCursor):
+class TreeTab(TabItem[FlowCursor]):
+    def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(context, "Tree")
         self._fonts = fonts
-        self._cursor = cursor
+
+    @property
+    def normal_icon(self):
+        return self._fonts.normal_icon
 
     @override
     def on_none(self) -> None:
         text_centered("Please select a graph")
 
     @override
-    def on_item(self, item: Graph) -> None:
-        if imgui.tree_node(item.name, imgui.TREE_NODE_DEFAULT_OPEN):
+    def on_item(self, item: FlowCursor) -> None:
+        graph = item.graph
+        if graph is None:
+            self.on_none()
+            return
+
+        if imgui.tree_node(graph.name, imgui.TREE_NODE_DEFAULT_OPEN):
             try:
-                for node in item.nodes:
-                    self.on_node(item, node)
+                for node in graph.nodes:
+                    self.on_node(graph, node)
             finally:
                 imgui.tree_pop()
 
@@ -82,7 +90,7 @@ class TreeTab(TabItem[Graph]):
 
                 imgui.same_line(imgui.get_cursor_pos_x())
 
-                with self._fonts.normal_icon:
+                with self.normal_icon:
                     imgui.text(pin_icon)
         finally:
             imgui.tree_pop()

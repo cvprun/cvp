@@ -50,9 +50,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self._fonts = fonts
         self._cursor = FlowCursor(fonts, context.config.flow_aui)
         self._catalogs = Catalogs(context)
-        self._left_tabs = FlowLeftTabs(context, fonts, self._cursor)
-        self._right_tabs = FlowRightTabs(context, fonts, self._cursor)
-        self._bottom_tabs = FlowBottomTabs(context, fonts, self._cursor)
+        self._left_tabs = FlowLeftTabs(context, fonts)
+        self._right_tabs = FlowRightTabs(context, fonts)
+        self._bottom_tabs = FlowBottomTabs(context, fonts)
 
         self._split_tree = SplitTreeProxy(context.config.flow_aui)
         self._tree_splitter = Splitter.from_horizontal(
@@ -198,7 +198,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @override
     def on_process_sidebar_left(self):
         with begin_child("## ChildLeftTop", 0, -self.split_tree):
-            self._left_tabs.do_process(self._cursor.graph)
+            self._left_tabs.do_process(self._cursor)
 
         with style_item_spacing(0, -1):
             self._tree_splitter.do_process()
@@ -215,11 +215,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             with canvas:
                 canvas.do_process_controllers(debugging=self.context.debug)
         imgui.spacing()
-        self._right_tabs.do_process(self._cursor.graph)
+        self._right_tabs.do_process(self._cursor)
 
     @override
     def on_process_bottom(self):
-        self._bottom_tabs.do_process(self._cursor.graph)
+        self._bottom_tabs.do_process(self._cursor)
 
     @override
     def on_process_main(self) -> None:
@@ -253,7 +253,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             if target.hovered:
                 if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE_TYPE):
                     node_path = str(payload, encoding="utf-8")
-                    canvas.save_history(f"Add node: {node_path}")
+                    # canvas.save_history(f"Add node: {node_path}")
                     node = self.context.fm.add_node(canvas.graph, node_path)
                     canvas.update_node_roi(node)
 

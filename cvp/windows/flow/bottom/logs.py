@@ -8,7 +8,6 @@ from weakref import finalize
 import imgui
 
 from cvp.context.context import Context
-from cvp.flow.datas.graph import Graph
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
@@ -60,13 +59,12 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
     logger.removeHandler(handler)
 
 
-class LogsTab(TabItem[Graph]):
+class LogsTab(TabItem[FlowCursor]):
     _records: Deque[_LineRecord]
 
-    def __init__(self, context: Context, fonts: FontMapper, cursor: FlowCursor):
+    def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(context, "Logs")
         self._fonts = fonts
-        self._cursor = cursor
 
         assert 1 <= self.context.config.flow_aui.logs.lines
         self._records = deque(maxlen=self.context.config.flow_aui.logs.lines)

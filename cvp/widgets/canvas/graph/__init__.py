@@ -197,6 +197,7 @@ class CanvasGraph(CanvasController):
 
     def clear_history(self) -> None:
         self._histories.clear()
+        self._latest = 0
 
     def save_history(self, comment: Optional[str] = None) -> None:
         logger.info(f"Save history: {comment}")
