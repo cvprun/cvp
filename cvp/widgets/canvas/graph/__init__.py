@@ -479,19 +479,19 @@ class CanvasGraph(CanvasController):
     # Color Picker
     # ==================================================================================
 
-    def get_pin_color(self, pin: Pin, style: Style) -> RGBA:
+    def get_pin_color(self, pin: Pin) -> RGBA:
         if self.is_pin_connecting_mode:
             if pin.hovering and pin.connectable:
-                return style.select_color
+                return self.config.pins.selected_color
             else:
-                return style.normal_color
+                return self.config.pins.normal_color
         else:
             if pin.selected:
-                return style.select_color
+                return self.config.pins.selected_color
             elif pin.hovering:
-                return style.hovering_color
+                return self.config.pins.hovering_color
             else:
-                return style.normal_color
+                return self.config.pins.normal_color
 
     def get_arc_color(self, arc: Arc) -> RGBA:
         if arc.selected:
@@ -656,7 +656,7 @@ class CanvasGraph(CanvasController):
         stroke_color = imgui.get_color_u32_rgba(*stroke.color)
         label_color = imgui.get_color_u32_rgba(*style.normal_color)
         layout_color = imgui.get_color_u32_rgba(*style.layout_color)
-        node_bg_color = imgui.get_color_u32_rgba(*self.config.nodes.background_color)
+        background_color = imgui.get_color_u32_rgba(*self.config.nodes.background_color)
 
         thickness = stroke.thickness
         rounding = stroke.rounding
@@ -666,7 +666,7 @@ class CanvasGraph(CanvasController):
         zoom = self.zoom
         header_roi = nx1, ny1, nx2, ny1 + node.head_height * zoom
 
-        self._draw_list.add_rect_filled(*node_roi, node_bg_color, rounding, flags)
+        self._draw_list.add_rect_filled(*node_roi, background_color, rounding, flags)
         self._draw_list.add_rect_filled(*header_roi, node_color, rounding, flags)
         self._draw_list.add_rect(*node_roi, stroke_color, rounding, flags, thickness)
 
@@ -696,7 +696,7 @@ class CanvasGraph(CanvasController):
                 x1 = nx1 + pin.icon_pos[0] * zoom
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = flow_pin_y_icon if pin.connected else flow_pin_n_icon
-                pin_rgba = self.get_pin_color(pin, self.graph.style)
+                pin_rgba = self.get_pin_color(pin)
                 pin_color = imgui.get_color_u32_rgba(*pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
                 if self.node_show_layout:
@@ -711,7 +711,7 @@ class CanvasGraph(CanvasController):
                 x1 = nx1 + pin.icon_pos[0] * zoom
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = data_pin_y_icon if pin.connected else data_pin_n_icon
-                pin_rgba = self.get_pin_color(pin, self.graph.style)
+                pin_rgba = self.get_pin_color(pin)
                 pin_color = imgui.get_color_u32_rgba(*pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
                 if self.node_show_layout:
@@ -786,8 +786,8 @@ class CanvasGraph(CanvasController):
         y1 = ny + pin.icon_pos[1] * zoom + pin.icon_size[1] * zoom / 2.0
         mx, my = self._mouse_pos
 
-        color = imgui.get_color_u32_rgba(*self.graph.style.pin_connection_color)
-        thickness = self.graph.style.pin_connection_thickness
+        color = imgui.get_color_u32_rgba(*self.config.pins.connection_color)
+        thickness = self.config.pins.connection_thickness
         self._draw_list.add_line(x1, y1, mx, my, color, thickness)
 
     def draw_pin_connects(self) -> None:

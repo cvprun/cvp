@@ -107,8 +107,6 @@ class PropsTab(TabItem[Graph]):
                     style.normal_color = color.color
                 if color := color_edit4("Hovering", *style.hovering_color):
                     style.hovering_color = color.color
-                if color := color_edit4("Layout", *style.layout_color):
-                    style.layout_color = color.color
             finally:
                 imgui.tree_pop()
 

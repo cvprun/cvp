@@ -18,6 +18,3 @@ class Style:
     hovering_color: RGBA = field(default_factory=lambda: (*ORANGE, 0.9))
     select_color: RGBA = field(default_factory=lambda: (*RED, 0.9))
     layout_color: RGBA = field(default_factory=lambda: (*RED, 0.8))
-
-    pin_connection_color: RGBA = field(default_factory=lambda: (*RED, 0.8))
-    pin_connection_thickness: float = 2.0

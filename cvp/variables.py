@@ -84,9 +84,15 @@ Decrease for highly tessellated curves (higher quality, more polygons),
 Increase to reduce quality.
 """
 
-FLOW_NODES_SHOW_LAYOUT: Final[bool] = False
-FLOW_NODES_ITEM_SPACING: Final[Size] = 2.0, 2.0
-FLOW_NODES_BACKGROUND_COLOR: Final[RGBA] = 1.0, 1.0, 1.0, 0.6
+FLOW_NODE_SHOW_LAYOUT: Final[bool] = False
+FLOW_NODE_ITEM_SPACING: Final[Size] = 2.0, 2.0
+FLOW_NODE_BACKGROUND_COLOR: Final[RGBA] = 1.0, 1.0, 1.0, 0.6
+
+FLOW_PIN_SELECTED_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.9
+FLOW_PIN_HOVERING_COLOR: Final[RGBA] = 1.0, 0.49, 0.05, 0.9
+FLOW_PIN_NORMAL_COLOR: Final[RGBA] = 0.0, 0.0, 0.0, 0.8
+FLOW_PIN_CONNECTION_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.8
+FLOW_PIN_CONNECTION_THICKNESS: Final[float] = 2.0
 
 FLOW_AXIS_VISIBLE: Final[bool] = True
 FLOW_AXIS_THICKNESS: Final[float] = 1.0
