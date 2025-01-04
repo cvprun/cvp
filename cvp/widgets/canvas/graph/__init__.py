@@ -654,8 +654,8 @@ class CanvasGraph(CanvasController):
 
         node_color = imgui.get_color_u32_rgba(*node.color)
         stroke_color = imgui.get_color_u32_rgba(*stroke.color)
-        label_color = imgui.get_color_u32_rgba(*style.normal_color)
-        layout_color = imgui.get_color_u32_rgba(*style.layout_color)
+        label_color = imgui.get_color_u32_rgba(*self.config.nodes.label_color)
+        layout_color = imgui.get_color_u32_rgba(*self.config.nodes.layout_color)
         background_color = imgui.get_color_u32_rgba(*self.config.nodes.background_color)
 
         thickness = stroke.thickness

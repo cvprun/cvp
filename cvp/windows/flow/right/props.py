@@ -18,7 +18,6 @@ from cvp.flow.datas.node import Node
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectedItems
 from cvp.flow.datas.stroke import Stroke
-from cvp.flow.datas.style import Style
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -99,17 +98,6 @@ class PropsTab(TabItem[Graph]):
             finally:
                 imgui.tree_pop()
 
-    @staticmethod
-    def tree_style_colors(label: str, style: Style) -> None:
-        if imgui.tree_node(label):
-            try:
-                if color := color_edit4("Normal", *style.normal_color):
-                    style.normal_color = color.color
-                if color := color_edit4("Hovering", *style.hovering_color):
-                    style.hovering_color = color.color
-            finally:
-                imgui.tree_pop()
-
     def on_graph_cursor(self, graph: Graph) -> None:
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.uuid)
@@ -123,7 +111,6 @@ class PropsTab(TabItem[Graph]):
         self.tree_stroke("Selected node", graph.style.selected_node)
         self.tree_stroke("Hovering node", graph.style.hovering_node)
         self.tree_stroke("Normal node", graph.style.normal_node)
-        self.tree_style_colors("Colors", graph.style)
 
     @staticmethod
     def tree_node_debugging(label: str, node: Node) -> None:

@@ -8,6 +8,8 @@ from cvp.types.shapes import Size
 from cvp.variables import (
     FLOW_NODE_BACKGROUND_COLOR,
     FLOW_NODE_ITEM_SPACING,
+    FLOW_NODE_LABEL_COLOR,
+    FLOW_NODE_LAYOUT_COLOR,
     FLOW_NODE_SHOW_LAYOUT,
 )
 
@@ -22,3 +24,5 @@ class Nodes:
     icon_size: FontSize = FontSize.large
 
     background_color: RGBA = FLOW_NODE_BACKGROUND_COLOR
+    layout_color: RGBA = FLOW_NODE_LAYOUT_COLOR
+    label_color: RGBA = FLOW_NODE_LABEL_COLOR
