@@ -807,7 +807,8 @@ class CanvasGraph(CanvasController):
 
         assert self._roi is not None
         x1, y1, x2, y2 = self._roi
-        color = imgui.get_color_u32_rgba(*self.graph.style.selection_box_color)
-        thickness = self.graph.style.selection_box_thickness
+        color = imgui.get_color_u32_rgba(*self.config.roi.color)
+        rounding = self.config.roi.rounding
+        thickness = self.config.roi.thickness
         self._draw_list.add_rect_filled(x1, y1, x2, y2, color)
-        self._draw_list.add_rect(x1, y1, x2, y2, color, 0.0, 0, thickness)
+        self._draw_list.add_rect(x1, y1, x2, y2, color, rounding, 0, thickness)
