@@ -71,6 +71,12 @@ class PropsTab(TabItem[Graph]):
             assert 2 <= len(selected_items)
             self.on_multiple_items(item, selected_items)
 
+    def input_icon(self, label: str, icon: str) -> None:
+        with self._fonts.normal_icon:
+            input_text_disabled(f"##{label}", icon)
+        imgui.same_line(0.0, imgui.get_style().item_inner_spacing[0])
+        imgui.text(label)
+
     @staticmethod
     def tree_axis(label: str, axis: Axis) -> None:
         if imgui.tree_node(label):
@@ -84,13 +90,14 @@ class PropsTab(TabItem[Graph]):
             finally:
                 imgui.tree_pop()
 
-    @staticmethod
-    def on_graph_cursor(graph: Graph) -> None:
+    def on_graph_cursor(self, graph: Graph) -> None:
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.uuid)
 
         graph.name = input_text_value("Name", graph.name)
         graph.docs = input_text_value("Docs", graph.docs)
+
+        self.input_icon("Icon", graph.icon)
 
     @staticmethod
     def tree_node_debugging(label: str, node: Node) -> None:
@@ -108,8 +115,7 @@ class PropsTab(TabItem[Graph]):
         node.name = input_text_value("Name", node.name)
         node.docs = input_text_value("Docs", node.docs)
 
-        with self._fonts.normal_icon:
-            input_text_disabled("Emblem", node.emblem)
+        self.input_icon("Icon", node.icon)
 
         if color_result := color_edit4("Color", *node.color):
             node.color = color_result.color

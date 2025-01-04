@@ -566,13 +566,13 @@ class CanvasGraph(CanvasController):
 
     def update_node_roi(self, node: Node) -> None:
         with self.icon_font:
-            node_emblem_w, node_emblem_h = imgui.calc_text_size(node.emblem)
+            node_icon_w, node_icon_h = imgui.calc_text_size(node.icon)
 
         with self.title_font:
             node_name_w, node_name_h = imgui.calc_text_size(node.name)
 
-        title_h = max(node_emblem_h, node_name_h)
-        emblem_y_diff = title_h / 2 - node_emblem_h / 2
+        title_h = max(node_icon_h, node_name_h)
+        icon_y_diff = title_h / 2 - node_icon_h / 2
         title_y_diff = title_h / 2 - node_name_h / 2
 
         with self.pin_font:
@@ -604,7 +604,7 @@ class CanvasGraph(CanvasController):
         isw, ish = self.node_item_spacing
         center_padding = isw * 4
 
-        wt = isw + node_emblem_w + isw + node_name_w + isw
+        wt = isw + node_icon_w + isw + node_name_w + isw
         wf = isw + iw + isw + inw + center_padding + onw + isw + iw + isw
         wd = isw + iw + isw + inw + center_padding + onw + isw + iw + isw
         node_w = max((wt, wf, wd))
@@ -618,12 +618,12 @@ class CanvasGraph(CanvasController):
         node.flow_height = flow_h
         node.data_height = data_h
 
-        node_emblem_x = isw
-        node_emblem_y = ish + emblem_y_diff
-        node.emblem_pos = node_emblem_x, node_emblem_y
-        node.emblem_size = node_emblem_w, node_emblem_h
+        node_icon_x = isw
+        node_icon_y = ish + icon_y_diff
+        node.icon_pos = node_icon_x, node_icon_y
+        node.icon_size = node_icon_w, node_icon_h
 
-        node_name_x = node.emblem_pos[0] + node.emblem_size[0] + isw
+        node_name_x = node.icon_pos[0] + node.icon_size[0] + isw
         node_name_y = ish + title_y_diff
         node.name_pos = node_name_x, node_name_y
         node.name_size = node_name_w, node_name_h
@@ -690,12 +690,12 @@ class CanvasGraph(CanvasController):
         self._draw_list.add_rect(*node_roi, line_color, rounding, 0, thickness)
 
         with self.icon_font:
-            x1 = nx1 + node.emblem_pos[0] * zoom
-            y1 = ny1 + node.emblem_pos[1] * zoom
-            self._draw_list.add_text(x1, y1, label_color, node.emblem)
+            x1 = nx1 + node.icon_pos[0] * zoom
+            y1 = ny1 + node.icon_pos[1] * zoom
+            self._draw_list.add_text(x1, y1, label_color, node.icon)
             if self.node_show_layout:
-                x2 = x1 + node.emblem_size[0] * zoom
-                y2 = y1 + node.emblem_size[1] * zoom
+                x2 = x1 + node.icon_size[0] * zoom
+                y2 = y1 + node.icon_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
         with self.title_font:

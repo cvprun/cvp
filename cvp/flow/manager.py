@@ -129,7 +129,7 @@ class FlowManager(OrderedDict[str, Graph]):
         node = Node(
             name=node_name,
             docs=node_docs,
-            emblem=node_emblem,
+            icon=node_emblem,
             color=node_color,
             flow_inputs=flow_inputs,
             flow_outputs=flow_outputs,

@@ -14,15 +14,15 @@ class Node:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = str()
     docs: str = str()
-    emblem: str = str()
+    icon: str = str()
     color: RGBA = WHITE_RGBA
 
     head_height: float = 0.0
     flow_height: float = 0.0
     data_height: float = 0.0
 
-    emblem_pos: Point = EMPTY_POINT
-    emblem_size: Size = EMPTY_SIZE
+    icon_pos: Point = EMPTY_POINT
+    icon_size: Size = EMPTY_SIZE
 
     name_pos: Point = EMPTY_POINT
     name_size: Size = EMPTY_SIZE
@@ -41,8 +41,8 @@ class Node:
 
     def as_unformatted_text(self) -> str:
         return (
-            f"Emblem pos: {self.emblem_pos[0]:.02f}, {self.emblem_pos[1]:.02f}\n"
-            f"Emblem size: {self.emblem_size[0]:.02f}, {self.emblem_size[1]:.02f}\n"
+            f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
+            f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
             f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
             f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
             f"Node pos: {self.node_pos[0]:.02f}, {self.node_pos[1]:.02f}\n"

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field, fields
 from math import sqrt
-from typing import Final, List, Optional, Sequence, Set, Union
+from typing import List, Optional, Sequence, Set, Union
 from uuid import uuid4
 
 import shapely
@@ -17,10 +17,7 @@ from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectableAny, SelectedItems
 from cvp.flow.datas.stream import Stream
-from cvp.types.colors import RGBA
 from cvp.types.shapes import Point, Size
-
-DEFAULT_GRAPH_COLOR: Final[RGBA] = 0.5, 0.5, 0.5, 1.0
 
 
 @dataclass
@@ -28,7 +25,7 @@ class Graph:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = str()
     docs: str = str()
-    color: RGBA = DEFAULT_GRAPH_COLOR
+    icon: str = str()
     nodes: List[Node] = field(default_factory=list)
     arcs: List[Arc] = field(default_factory=list)
     control: Control = field(default_factory=Control)
