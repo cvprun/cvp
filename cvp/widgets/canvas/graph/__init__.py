@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional
+from collections import deque
+from dataclasses import fields, is_dataclass
+from pickle import dumps, loads
+from typing import Deque, List, Optional, Tuple
 from weakref import ReferenceType, ref
 
 import imgui
@@ -16,6 +19,7 @@ from cvp.flow.datas.selected_items import SelectedItems
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
+from cvp.logging.logging import flow_logger as logger
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
@@ -37,6 +41,9 @@ class CanvasGraph(CanvasController):
     _roi: Optional[Rect]
     _selected_stash: Optional[SelectedItems]
 
+    _histories: Deque[Tuple[bytes, str]]
+    _latest: int
+
     def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()
 
@@ -56,6 +63,9 @@ class CanvasGraph(CanvasController):
         self._connects = list()
         self._roi = None
         self._selected_stash = None
+
+        self._histories = deque(maxlen=config.max_history)
+        self._latest = 0
 
     @property
     def is_multi_select_mode(self) -> bool:
@@ -182,6 +192,56 @@ class CanvasGraph(CanvasController):
         self.close()
 
     # ==================================================================================
+    # History Operations
+    # ==================================================================================
+
+    def clear_history(self) -> None:
+        self._histories.clear()
+
+    def save_history(self, comment: Optional[str] = None) -> None:
+        logger.info(f"Save history: {comment}")
+
+        max_history = self.config.max_history
+        if self._histories.maxlen != max_history:
+            histories_type = type(self._histories)
+            self._histories = histories_type(self._histories, maxlen=max_history)
+
+        assert 0 <= self._latest
+        while self._latest < len(self._histories):
+            self._histories.pop()
+
+        if comment is None:
+            comment = str()
+
+        assert isinstance(comment, str)
+        data = dumps(self.graph)
+        history_item = data, comment
+        self._histories.append(history_item)
+        self._latest = len(self._histories)
+
+    def load_history(self, index: int) -> None:
+        logger.info(f"Load history: {index}")
+
+        if index < 0:
+            index += len(self._histories)
+
+        assert 0 <= index < len(self._histories)
+        data, comment = self._histories[index]
+        graph = loads(data)
+        assert isinstance(graph, Graph)
+        assert isinstance(comment, str)
+        assert self.graph.uuid == graph.uuid
+        assert is_dataclass(self.graph)
+        assert is_dataclass(graph)
+
+        for f in fields(self.graph):
+            if f.name.startswith("_"):
+                continue
+            setattr(self.graph, f.name, getattr(graph, f.name))
+
+        self._latest = index + 1
+
+    # ==================================================================================
     # Public Operations
     # ==================================================================================
 
@@ -189,6 +249,8 @@ class CanvasGraph(CanvasController):
         assert self._graph is not None
         assert self._fonts is not None
         assert self._config is not None
+
+        logger.info("Reset controllers")
 
         self.pan_x = 0.0
         self.pan_y = 0.0
@@ -628,7 +690,7 @@ class CanvasGraph(CanvasController):
         node.name_pos = node_name_x, node_name_y
         node.name_size = node_name_w, node_name_h
 
-        node.node_pos = 0.0, 0.0
+        node.node_pos = self.mouse_to_canvas_coords()
         node.node_size = node_w, node_h
 
         for i, pin in enumerate(node.flow_inputs):
