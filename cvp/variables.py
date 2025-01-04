@@ -86,6 +86,7 @@ Increase to reduce quality.
 
 FLOW_NODES_SHOW_LAYOUT: Final[bool] = False
 FLOW_NODES_ITEM_SPACING: Final[Size] = 2.0, 2.0
+FLOW_NODES_BACKGROUND_COLOR: Final[RGBA] = 1.0, 1.0, 1.0, 0.6
 
 FLOW_AXIS_VISIBLE: Final[bool] = True
 FLOW_AXIS_THICKNESS: Final[float] = 1.0

@@ -196,26 +196,26 @@ class CanvasGraph(CanvasController):
         return self.config.nodes.item_spacing
 
     @property
-    def icon_font(self):
-        return self.fonts.get_scaled_icon(self.graph.style.icon_scale)
-
-    @property
-    def pin_font(self):
-        assert self._graph is not None
-        assert self._fonts is not None
-        return self.fonts.get_scaled_icon(self.graph.style.pin_scale)
-
-    @property
     def title_font(self):
         assert self._graph is not None
         assert self._fonts is not None
-        return self.fonts.get_scaled_text(self.graph.style.title_scale)
+        return self.fonts.get_scaled_text(self.config.nodes.title_size)
 
     @property
     def text_font(self):
         assert self._graph is not None
         assert self._fonts is not None
-        return self.fonts.get_scaled_text(self.graph.style.text_scale)
+        return self.fonts.get_scaled_text(self.config.nodes.text_size)
+
+    @property
+    def icon_font(self):
+        return self.fonts.get_scaled_icon(self.config.nodes.icon_size)
+
+    @property
+    def pin_font(self):
+        assert self._graph is not None
+        assert self._fonts is not None
+        return self.fonts.get_scaled_icon(self.config.pins.icon_size)
 
     # ==================================================================================
     # Public Operations
@@ -646,7 +646,7 @@ class CanvasGraph(CanvasController):
         stroke_color = imgui.get_color_u32_rgba(*stroke.color)
         label_color = imgui.get_color_u32_rgba(*style.normal_color)
         layout_color = imgui.get_color_u32_rgba(*style.layout_color)
-        node_bg_color = imgui.get_color_u32_rgba(*style.node_bg_color)
+        node_bg_color = imgui.get_color_u32_rgba(*self.config.nodes.background_color)
 
         thickness = stroke.thickness
         rounding = stroke.rounding

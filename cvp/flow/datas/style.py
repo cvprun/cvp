@@ -3,8 +3,7 @@
 from dataclasses import dataclass, field
 
 from cvp.flow.datas.stroke import Stroke
-from cvp.fonts.size import FontSize
-from cvp.palette.basic import BLACK, BLUE, RED, SILVER, WHITE
+from cvp.palette.basic import BLACK, BLUE, RED, SILVER
 from cvp.palette.tableau import ORANGE
 from cvp.types.colors import RGBA
 
@@ -20,8 +19,6 @@ class Style:
     select_color: RGBA = field(default_factory=lambda: (*RED, 0.9))
     layout_color: RGBA = field(default_factory=lambda: (*RED, 0.8))
 
-    node_bg_color: RGBA = field(default_factory=lambda: (*WHITE, 0.6))
-
     pin_connection_color: RGBA = field(default_factory=lambda: (*RED, 0.8))
     pin_connection_thickness: float = 2.0
 
@@ -33,8 +30,3 @@ class Style:
 
     anchor_color: RGBA = field(default_factory=lambda: (*BLUE, 0.8))
     anchor_radius: float = 3.0
-
-    icon_scale: FontSize = FontSize.large
-    title_scale: FontSize = FontSize.medium
-    text_scale: FontSize = FontSize.normal
-    pin_scale: FontSize = FontSize.normal

@@ -9,6 +9,7 @@ from cvp.fonts.glyphs.mdi import (
     MDI_CIRCLE,
     MDI_CIRCLE_OUTLINE,
 )
+from cvp.fonts.size import FontSize
 
 FLOW_PIN_UNCONNECTED_ICON: Final[str] = MDI_ARROW_RIGHT_BOLD_OUTLINE
 FLOW_PIN_CONNECTED_ICON: Final[str] = MDI_ARROW_RIGHT_BOLD
@@ -24,3 +25,5 @@ class Pins:
 
     data_n_icon: str = DATA_PIN_UNCONNECTED_ICON
     data_y_icon: str = DATA_PIN_CONNECTED_ICON
+
+    icon_size: FontSize = FontSize.normal
