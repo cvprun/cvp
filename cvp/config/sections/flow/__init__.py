@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
 from cvp.config.sections.flow.anchors import Anchors
+from cvp.config.sections.flow.arcs import Arcs
 from cvp.config.sections.flow.axis import Axis
 from cvp.config.sections.flow.grid import Grid
 from cvp.config.sections.flow.logs import Logs
@@ -27,4 +28,5 @@ class FlowAuiConfig(AuiWindowConfig):
 
     nodes: Nodes = field(default_factory=Nodes)
     pins: Pins = field(default_factory=Pins)
+    arcs: Arcs = field(default_factory=Arcs)
     anchors: Anchors = field(default_factory=Anchors)

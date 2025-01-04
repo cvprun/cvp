@@ -493,22 +493,35 @@ class CanvasGraph(CanvasController):
             else:
                 return style.normal_color
 
-    @staticmethod
-    def get_arc_color(arc: Arc, style: Style) -> RGBA:
+    def get_arc_color(self, arc: Arc) -> RGBA:
         if arc.selected:
-            return style.select_color
+            return self.config.arcs.selected_color
         elif arc.hovering:
-            return style.hovering_color
+            return self.config.arcs.hovering_color
         else:
-            return style.arc_color
+            return self.config.arcs.normal_color
 
-    def get_anchor_color(self, arc: Anchor) -> RGBA:
+    def get_arc_color_u32(self, arc: Arc) -> int:
+        return imgui.get_color_u32_rgba(*self.get_arc_color(arc))
+
+    def get_arc_thickness(self, arc: Arc) -> float:
         if arc.selected:
-            return self.config.anchors.selected_color
+            return self.config.arcs.selected_thickness
         elif arc.hovering:
+            return self.config.arcs.hovering_thickness
+        else:
+            return self.config.arcs.normal_thickness
+
+    def get_anchor_color(self, anchor: Anchor) -> RGBA:
+        if anchor.selected:
+            return self.config.anchors.selected_color
+        elif anchor.hovering:
             return self.config.anchors.hovering_color
         else:
             return self.config.anchors.normal_color
+
+    def get_anchor_color_u32(self, anchor: Anchor) -> int:
+        return imgui.get_color_u32_rgba(*self.get_anchor_color(anchor))
 
     @staticmethod
     def get_node_stroke(node: Node, style: Style) -> Stroke:
@@ -731,8 +744,8 @@ class CanvasGraph(CanvasController):
                 self.draw_bezier_cubic_anchors(selected_arc)
 
     def draw_arc(self, arc: Arc) -> None:
-        color = imgui.get_color_u32_rgba(*self.get_arc_color(arc, self.graph.style))
-        thickness = self.graph.style.arc_thickness
+        color = self.get_arc_color_u32(arc)
+        thickness = self.get_arc_thickness(arc)
         polyline = [self.canvas_to_screen_coords(p) for p in arc.polyline]
         self._draw_list.add_polyline(polyline, color, 0, thickness)
 
@@ -747,14 +760,12 @@ class CanvasGraph(CanvasController):
         radius = self.anchor_radius
         start, end = arc.get_bezier_cubic_anchors()
 
-        start_rgba = self.get_anchor_color(arc.start_anchor)
-        start_color = imgui.get_color_u32_rgba(*start_rgba)
+        start_color = self.get_anchor_color_u32(arc.start_anchor)
         sax, say = self.canvas_to_screen_coords(start)
         draw_dotted_line(self._draw_list, sx, sy, sax, say, start_color)
         self._draw_list.add_circle_filled(sax, say, radius, start_color)
 
-        end_rgba = self.get_anchor_color(arc.end_anchor)
-        end_color = imgui.get_color_u32_rgba(*end_rgba)
+        end_color = self.get_anchor_color_u32(arc.end_anchor)
         eax, eay = self.canvas_to_screen_coords(end)
         draw_dotted_line(self._draw_list, ex, ey, eax, eay, end_color)
         self._draw_list.add_circle_filled(eax, eay, radius, end_color)

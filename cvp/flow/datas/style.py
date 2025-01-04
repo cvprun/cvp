@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 
 from cvp.flow.datas.stroke import Stroke
-from cvp.palette.basic import BLACK, BLUE, RED, SILVER
+from cvp.palette.basic import BLACK, BLUE, RED
 from cvp.palette.tableau import ORANGE
 from cvp.types.colors import RGBA
 
@@ -24,6 +24,3 @@ class Style:
 
     selection_box_color: RGBA = field(default_factory=lambda: (*BLUE, 0.3))
     selection_box_thickness: float = 1.0
-
-    arc_color: RGBA = field(default_factory=lambda: (*SILVER, 0.8))
-    arc_thickness: float = 2.0
