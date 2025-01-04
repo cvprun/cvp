@@ -188,23 +188,23 @@ class CanvasGraph(CanvasController):
     # ==================================================================================
 
     @property
-    def show_node_layout(self):
+    def node_show_layout(self):
         return self.config.nodes.show_layout
 
     @property
-    def item_spacing(self):
+    def node_item_spacing(self):
         return self.config.nodes.item_spacing
 
     @property
+    def anchor_radius(self):
+        return self.config.anchors.radius
+
+    @property
     def title_font(self):
-        assert self._graph is not None
-        assert self._fonts is not None
         return self.fonts.get_scaled_text(self.config.nodes.title_size)
 
     @property
     def text_font(self):
-        assert self._graph is not None
-        assert self._fonts is not None
         return self.fonts.get_scaled_text(self.config.nodes.text_size)
 
     @property
@@ -213,8 +213,6 @@ class CanvasGraph(CanvasController):
 
     @property
     def pin_font(self):
-        assert self._graph is not None
-        assert self._fonts is not None
         return self.fonts.get_scaled_icon(self.config.pins.icon_size)
 
     # ==================================================================================
@@ -504,14 +502,13 @@ class CanvasGraph(CanvasController):
         else:
             return style.arc_color
 
-    @staticmethod
-    def get_anchor_color(arc: Anchor, style: Style) -> RGBA:
+    def get_anchor_color(self, arc: Anchor) -> RGBA:
         if arc.selected:
-            return style.select_color
+            return self.config.anchors.selected_color
         elif arc.hovering:
-            return style.hovering_color
+            return self.config.anchors.hovering_color
         else:
-            return style.anchor_color
+            return self.config.anchors.normal_color
 
     @staticmethod
     def get_node_stroke(node: Node, style: Style) -> Stroke:
@@ -567,7 +564,7 @@ class CanvasGraph(CanvasController):
         pin_icon_y_diff = pin_h / 2 - ih / 2
         pin_name_y_diff = pin_h / 2 - pin_name_h / 2
 
-        isw, ish = self.item_spacing
+        isw, ish = self.node_item_spacing
         center_padding = isw * 4
 
         wt = isw + node_emblem_w + isw + node_name_w + isw
@@ -664,7 +661,7 @@ class CanvasGraph(CanvasController):
             x1 = nx1 + node.emblem_pos[0] * zoom
             y1 = ny1 + node.emblem_pos[1] * zoom
             self._draw_list.add_text(x1, y1, label_color, node.emblem)
-            if self.show_node_layout:
+            if self.node_show_layout:
                 x2 = x1 + node.emblem_size[0] * zoom
                 y2 = y1 + node.emblem_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
@@ -673,7 +670,7 @@ class CanvasGraph(CanvasController):
             x1 = nx1 + node.name_pos[0] * zoom
             y1 = ny1 + node.name_pos[1] * zoom
             self._draw_list.add_text(x1, y1, label_color, node.name)
-            if self.show_node_layout:
+            if self.node_show_layout:
                 x2 = x1 + node.name_size[0] * zoom
                 y2 = y1 + node.name_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
@@ -689,7 +686,7 @@ class CanvasGraph(CanvasController):
                 pin_rgba = self.get_pin_color(pin, self.graph.style)
                 pin_color = imgui.get_color_u32_rgba(*pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
-                if self.show_node_layout:
+                if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
                     y2 = y1 + pin.icon_size[1] * zoom
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
@@ -704,7 +701,7 @@ class CanvasGraph(CanvasController):
                 pin_rgba = self.get_pin_color(pin, self.graph.style)
                 pin_color = imgui.get_color_u32_rgba(*pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
-                if self.show_node_layout:
+                if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
                     y2 = y1 + pin.icon_size[1] * zoom
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
@@ -714,7 +711,7 @@ class CanvasGraph(CanvasController):
                 x1 = nx1 + pin.name_pos[0] * zoom
                 y1 = ny1 + pin.name_pos[1] * zoom
                 self._draw_list.add_text(x1, y1, label_color, pin.name)
-                if self.show_node_layout:
+                if self.node_show_layout:
                     x2 = x1 + pin.name_size[0] * zoom
                     y2 = y1 + pin.name_size[1] * zoom
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
@@ -747,16 +744,16 @@ class CanvasGraph(CanvasController):
         sx, sy = self.canvas_to_screen_coords(arc.polyline[0])
         ex, ey = self.canvas_to_screen_coords(arc.polyline[-1])
 
-        radius = self.graph.style.anchor_radius
+        radius = self.anchor_radius
         start, end = arc.get_bezier_cubic_anchors()
 
-        start_rgba = self.get_anchor_color(arc.start_anchor, self.graph.style)
+        start_rgba = self.get_anchor_color(arc.start_anchor)
         start_color = imgui.get_color_u32_rgba(*start_rgba)
         sax, say = self.canvas_to_screen_coords(start)
         draw_dotted_line(self._draw_list, sx, sy, sax, say, start_color)
         self._draw_list.add_circle_filled(sax, say, radius, start_color)
 
-        end_rgba = self.get_anchor_color(arc.end_anchor, self.graph.style)
+        end_rgba = self.get_anchor_color(arc.end_anchor)
         end_color = imgui.get_color_u32_rgba(*end_rgba)
         eax, eay = self.canvas_to_screen_coords(end)
         draw_dotted_line(self._draw_list, ex, ey, eax, eay, end_color)

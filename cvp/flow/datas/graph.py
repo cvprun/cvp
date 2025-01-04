@@ -142,21 +142,20 @@ class Graph:
         mouse: Point,
     ) -> Optional[Anchor]:
         mx, my = mouse
-        radius = self.style.anchor_radius
 
         start, end = arc.get_bezier_cubic_anchors()
         sx, sy = start
         sdx = mx - sx
         sdy = my - sy
         start_distance = sqrt(sdx**2 + sdy**2)
-        if start_distance <= radius:
+        if start_distance <= self.control.anchor_hovering_tolerance:
             return arc.start_anchor
 
         ex, ey = end
         edx = mx - ex
         edy = my - ey
         end_distance = sqrt(edx**2 + edy**2)
-        if end_distance <= radius:
+        if end_distance <= self.control.anchor_hovering_tolerance:
             return arc.end_anchor
         return None
 
