@@ -42,9 +42,9 @@ class CanvasGraph(CanvasController):
     def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()
 
-        self._pan_x.update(graph.view.pan_x, no_emit=True)
-        self._pan_y.update(graph.view.pan_y, no_emit=True)
-        self._zoom.update(graph.view.zoom, no_emit=True)
+        self._pan_x.update(graph.control.pan_x, no_emit=True)
+        self._pan_y.update(graph.control.pan_y, no_emit=True)
+        self._zoom.update(graph.control.zoom, no_emit=True)
 
         self._graph_ref = ref(graph)
         self._fonts_ref = ref(fonts)
@@ -230,10 +230,9 @@ class CanvasGraph(CanvasController):
         self.pan_y = 0.0
         self.zoom = 1.0
 
-        canvas = self.graph.view
-        canvas.pan_x = 0.0
-        canvas.pan_y = 0.0
-        canvas.zoom = 1.0
+        self.graph.control.pan_x = 0.0
+        self.graph.control.pan_y = 0.0
+        self.graph.control.zoom = 1.0
 
     def do_process_controllers(self, debugging=False) -> None:
         assert self._graph is not None
@@ -241,10 +240,9 @@ class CanvasGraph(CanvasController):
         assert self._config is not None
 
         if result := self.render_controllers(debugging=debugging):
-            canvas = self.graph.view
-            canvas.pan_x = result.pan_x
-            canvas.pan_y = result.pan_y
-            canvas.zoom = result.zoom
+            self.graph.control.pan_x = result.pan_x
+            self.graph.control.pan_y = result.pan_y
+            self.graph.control.zoom = result.zoom
 
     def do_process_canvas(self) -> None:
         assert self._graph is not None
@@ -252,10 +250,9 @@ class CanvasGraph(CanvasController):
         assert self._config is not None
 
         if result := self.update_state():
-            canvas = self.graph.view
-            canvas.pan_x = result.pan_x
-            canvas.pan_y = result.pan_y
-            canvas.zoom = result.zoom
+            self.graph.control.pan_x = result.pan_x
+            self.graph.control.pan_y = result.pan_y
+            self.graph.control.zoom = result.zoom
 
         self.update_nodes_state()
         self.graph.update_arcs_io()
