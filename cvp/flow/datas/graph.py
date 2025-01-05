@@ -66,6 +66,23 @@ class Graph:
         else:
             self._selected_items.remove(item)
 
+    def select_all_nodes(self) -> None:
+        for node in self.nodes:
+            self.select_item(node)
+
+    def select_all_arcs(self) -> None:
+        for arc in self.arcs:
+            self.select_item(arc)
+
+    def select_all_pins(self) -> None:
+        for node in self.nodes:
+            for pin in node.pins:
+                self.select_item(pin)
+
+    def select_all_items(self) -> None:
+        self.select_all_nodes()
+        self.select_all_arcs()
+
     def unselect_item(self, item: SelectableAny) -> None:
         self.select_item(item, selected=False)
 

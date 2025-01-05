@@ -22,9 +22,9 @@ class HistoryTab(TabItem[FlowCursor]):
             return
 
         flags = imgui.SELECTABLE_ALLOW_DOUBLE_CLICK
-        latest_index = canvas.history.latest - 1
+        cursor_index = canvas.history.cursor_index
         for i, record in enumerate(canvas.history):
-            if imgui.selectable(f"[{i}] {record.title}", i == latest_index, flags)[0]:
+            if imgui.selectable(f"[{i}] {record.title}", i == cursor_index, flags)[0]:
                 if imgui.is_mouse_double_clicked(0):
                     with canvas:
                         canvas.load_history(i)

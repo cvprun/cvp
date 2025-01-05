@@ -28,6 +28,9 @@ class SelectedItems:
         assert isinstance(item, SelectableKey)
         return self._items.__contains__(item)
 
+    def __bool__(self):
+        return bool(self._items)
+
     def keys(self):
         return self._items.keys()
 

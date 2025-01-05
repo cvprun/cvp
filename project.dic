@@ -170,6 +170,7 @@ rawvideo
 rawvideo
 rbutton
 rctrl
+redoable
 remapper
 requestable
 returncode
@@ -207,6 +208,7 @@ toupe
 tptz
 ttfs
 tvstd
+undoable
 unhovered
 unhovering
 unicast

@@ -54,6 +54,10 @@ class CanvasGraph(CanvasController):
         self._fonts = None
         self._config = None
 
+        graph.clear_state()
+        graph.update_arcs_io()
+        graph.update_arcs_polyline()
+
         self._history = History(max_history=config.max_history)
         self._history.save_history("Initialize graph", graph)
 
@@ -99,7 +103,7 @@ class CanvasGraph(CanvasController):
             f"Connects: {self._connects}\n"
             f"ROI: {self._roi}\n"
             f"History: {len(self._history)}\n"
-            f"Latest: {self._history.latest}\n"
+            f"Cursor: {self._history.cursor_index}\n"
         )
 
     # ==================================================================================
@@ -223,6 +227,20 @@ class CanvasGraph(CanvasController):
         if not no_logging:
             logger.info(f"Load history: {index}")
         self.graph.restore(self._history.load_history(index))
+
+    def undo_history(self, *, no_logging=False) -> None:
+        if not self._history.undoable:
+            raise ValueError("History is not undoable")
+        if not no_logging:
+            logger.info("Undo history")
+        self.load_history(self._history.cursor_index - 1, no_logging=True)
+
+    def redo_history(self, *, no_logging=False) -> None:
+        if not self._history.redoable:
+            raise ValueError("History is not redoable")
+        if not no_logging:
+            logger.info("Redo history")
+        self.load_history(self._history.cursor_index + 1, no_logging=True)
 
     # ==================================================================================
     # Public Operations

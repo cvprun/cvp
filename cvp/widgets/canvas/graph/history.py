@@ -14,46 +14,69 @@ class RecordItem(NamedTuple):
 
 
 class History:
-    _items: Deque[RecordItem]
-    _latest: int
+    _records: Deque[RecordItem]
+    _eof: int
 
     def __init__(self, max_history: Optional[int] = None):
-        self._items = deque(maxlen=max_history)
-        self._latest = 0
+        self._records = deque(maxlen=max_history)
+        self._eof = 0
 
     @property
-    def items(self):
-        return self._items
+    def records(self):
+        return self._records
 
     @property
-    def latest(self):
-        return self._latest
+    def cursor_index(self):
+        return self._eof - 1
 
     def __len__(self):
-        return self._items.__len__()
+        return self._records.__len__()
 
     def __iter__(self):
-        return self._items.__iter__()
+        return self._records.__iter__()
 
     def __getitem__(self, index: int):
-        return self._items.__getitem__(index)
+        return self._records.__getitem__(index)
 
     def __setitem__(self, index: int, value: RecordItem) -> None:
-        self._items.__setitem__(index, value)
+        self._records.__setitem__(index, value)
+
+    def __bool__(self):
+        return bool(self._records)
+
+    @property
+    def undoable(self) -> bool:
+        if len(self._records) < 2:
+            return False
+        next_index = self.cursor_index - 1
+        return 0 <= next_index < len(self._records)
+
+    @property
+    def redoable(self):
+        if len(self._records) < 2:
+            return False
+        next_index = self.cursor_index + 1
+        return 0 <= next_index < len(self._records)
 
     @property
     def max_history(self):
-        return self._items.maxlen
+        return self._records.maxlen
+
+    def normalize_index(self, index: int) -> int:
+        if index < 0:
+            index += len(self._records)
+        assert 0 <= index < len(self._records)
+        return index
 
     def update_max_history(self, value: Optional[int] = None) -> None:
-        if self._items.maxlen == value:
+        if self._records.maxlen == value:
             return
-        cls = self._items.__class__
-        self._items = cls(self._items, maxlen=value)
+        cls = self._records.__class__
+        self._records = cls(self._records, maxlen=value)
 
     def clear_history(self) -> None:
-        self._items.clear()
-        self._latest = 0
+        self._records.clear()
+        self._eof = 0
 
     def save_history(
         self,
@@ -67,25 +90,21 @@ class History:
         if max_history is not None:
             self.update_max_history(max_history)
 
-        assert 0 <= self._latest
-        while self._latest < len(self._items):
-            self._items.pop()
+        while self._eof < len(self._records):
+            self._records.pop()
 
         if details is None:
             details = str()
 
         item = RecordItem(title, deepcopy(graph), details)
-        self._items.append(item)
+        self._records.append(item)
         if not freeze_latest:
-            self._latest = len(self._items)
+            self._eof = len(self._records)
         return item
 
     def load_history(self, index: int, *, freeze_latest=False) -> Graph:
-        if index < 0:
-            index += len(self._items)
-
-        assert 0 <= index < len(self._items)
-        item = self._items[index]
+        index = self.normalize_index(index)
+        item = self._records[index]
         if not freeze_latest:
-            self._latest = index + 1
+            self._eof = index + 1
         return deepcopy(item.graph)

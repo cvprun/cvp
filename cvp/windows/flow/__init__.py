@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
+from typing import Final, Optional
 
 import imgui
 
@@ -112,6 +112,42 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.on_menu()
         super().on_process()
 
+    @staticmethod
+    def _process_edit_menu(canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            undoable = canvas.history.undoable
+            redoable = canvas.history.redoable
+            selectable = True
+        else:
+            undoable = False
+            redoable = False
+            selectable = False
+
+        if menu_item("Undo", enabled=undoable):
+            assert canvas is not None
+            canvas.undo_history()
+        if menu_item("Redo", enabled=redoable):
+            assert canvas is not None
+            canvas.redo_history()
+
+        imgui.separator()
+        if menu_item("Select all", enabled=selectable):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_items()
+        if menu_item("Select nodes", enabled=selectable):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_nodes()
+        if menu_item("Select arcs", enabled=selectable):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_arcs()
+        if menu_item("Select pins", enabled=selectable):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_pins()
+
     def on_menu(self) -> None:
         with imgui.begin_menu_bar() as menu_bar:
             if not menu_bar.opened:
@@ -119,6 +155,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
             menus = (
                 ("File", self.on_file_menu),
+                ("Edit", self.on_edit_menu),
                 ("Graph", self.on_graph_menu),
             )
 
@@ -148,8 +185,15 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             self.close_current_graph()
 
         imgui.separator()
-        if menu_item("Exit flow window"):
+        if menu_item("Close flow window"):
             self.close()
+
+    def on_edit_menu(self) -> None:
+        if canvas := self._cursor.canvas:
+            with canvas:
+                self._process_edit_menu(canvas)
+        else:
+            self._process_edit_menu(None)
 
     def on_graph_menu(self) -> None:
         if menu_item("Refresh graphs"):
@@ -261,6 +305,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             try:
                 if menu_item("Reset"):
                     canvas.reset_controllers()
+
+                imgui.separator()
+                self._process_edit_menu(canvas)
             finally:
                 imgui.end_popup()
 
