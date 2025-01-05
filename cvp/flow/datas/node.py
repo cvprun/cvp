@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Optional
 from uuid import uuid4
 
 from cvp.flow.datas.pin import Pin
+from cvp.flow.datas.templates.node import NodeTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
@@ -16,6 +18,14 @@ class Node:
     docs: str = str()
     icon: str = str()
     color: RGBA = WHITE_RGBA
+
+    flow_inputs: List[Pin] = field(default_factory=list)
+    flow_outputs: List[Pin] = field(default_factory=list)
+
+    data_inputs: List[Pin] = field(default_factory=list)
+    data_outputs: List[Pin] = field(default_factory=list)
+
+    tags: List[str] = field(default_factory=list)
 
     head_height: float = 0.0
     flow_height: float = 0.0
@@ -30,14 +40,32 @@ class Node:
     node_pos: Point = EMPTY_POINT
     node_size: Size = EMPTY_SIZE
 
-    flow_inputs: List[Pin] = field(default_factory=list)
-    flow_outputs: List[Pin] = field(default_factory=list)
-
-    data_inputs: List[Pin] = field(default_factory=list)
-    data_outputs: List[Pin] = field(default_factory=list)
-
     _selected: bool = False
     _hovering: bool = False
+
+    @classmethod
+    def from_template(cls, template: NodeTemplate):
+        return cls(
+            name=template.name,
+            docs=template.docs,
+            icon=template.icon,
+            color=template.color,
+            flow_inputs=list(Pin.from_template(p) for p in template.flow_inputs),
+            flow_outputs=list(Pin.from_template(p) for p in template.flow_outputs),
+            data_inputs=list(Pin.from_template(p) for p in template.data_inputs),
+            data_outputs=list(Pin.from_template(p) for p in template.data_outputs),
+            tags=deepcopy(template.tags),
+        )
+
+    def as_template(self):
+        return NodeTemplate(
+            name=self.name,
+            docs=self.docs,
+            icon=self.icon,
+            color=self.color,
+            pins=list(p.as_template() for p in self.pins),
+            tags=deepcopy(self.tags),
+        )
 
     def as_unformatted_text(self) -> str:
         return (

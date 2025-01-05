@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
+from cvp.flow.datas.templates.pin import PinTemplate
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
@@ -16,6 +18,7 @@ class Pin:
     action: Action = Action.data
     stream: Stream = Stream.input
     required: bool = False
+    arcs: List[str] = field(default_factory=list)
 
     icon_pos: Point = EMPTY_POINT
     icon_size: Size = EMPTY_SIZE
@@ -23,11 +26,32 @@ class Pin:
     name_pos: Point = EMPTY_POINT
     name_size: Size = EMPTY_SIZE
 
-    arcs: List[str] = field(default_factory=list)
-
     _selected: bool = False
     _hovering: bool = False
     _connectable: bool = False
+
+    @classmethod
+    def from_template(cls, template: PinTemplate):
+        return cls(
+            name=template.name,
+            docs=template.docs,
+            dtype=template.dtype,
+            action=template.action,
+            stream=template.stream,
+            required=template.required,
+            arcs=deepcopy(template.arcs),
+        )
+
+    def as_template(self):
+        return PinTemplate(
+            name=self.name,
+            docs=self.docs,
+            dtype=self.dtype,
+            action=self.action,
+            stream=self.stream,
+            required=self.required,
+            arcs=deepcopy(self.arcs),
+        )
 
     def as_unformatted_text(self) -> str:
         return (
@@ -62,6 +86,22 @@ class Pin:
     @property
     def is_output_stream(self):
         return self.stream == Stream.output
+
+    @property
+    def is_flow_inputs(self) -> bool:
+        return self.is_flow_action and self.is_input_stream
+
+    @property
+    def is_flow_outputs(self) -> bool:
+        return self.is_flow_action and self.is_output_stream
+
+    @property
+    def is_data_inputs(self) -> bool:
+        return self.is_data_action and self.is_input_stream
+
+    @property
+    def is_data_outputs(self) -> bool:
+        return self.is_data_action and self.is_output_stream
 
     @property
     def connected(self) -> bool:

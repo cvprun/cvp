@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import reduce
 from math import sqrt
@@ -18,6 +19,8 @@ from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selected_items import SelectableAny, SelectedItems
 from cvp.flow.datas.stream import Stream
+from cvp.flow.datas.templates.graph import GraphTemplate
+from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
 
@@ -27,11 +30,34 @@ class Graph:
     name: str = str()
     docs: str = str()
     icon: str = str()
+    color: RGBA = WHITE_RGBA
     nodes: List[Node] = field(default_factory=list)
+    tags: List[str] = field(default_factory=list)
     arcs: List[Arc] = field(default_factory=list)
     control: Control = field(default_factory=Control)
 
     _selected_items: SelectedItems = field(default_factory=SelectedItems)
+
+    @classmethod
+    def from_template(cls, template: GraphTemplate):
+        return cls(
+            name=template.name,
+            docs=template.docs,
+            icon=template.icon,
+            color=template.color,
+            nodes=list(Node.from_template(n) for n in template.nodes),
+            tags=deepcopy(template.tags),
+        )
+
+    def as_template(self):
+        return GraphTemplate(
+            name=self.name,
+            docs=self.docs,
+            icon=self.icon,
+            color=self.color,
+            nodes=list(n.as_template() for n in self.nodes),
+            tags=deepcopy(self.tags),
+        )
 
     def restore(self, other: "Graph") -> None:
         if self.uuid != other.uuid:
