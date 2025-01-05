@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Optional
+from typing import Callable, Final, Optional, Sequence, Tuple
 
 import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
 from cvp.context.context import Context
+from cvp.flow.datas.selected_items import SelectedItems
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE
 from cvp.imgui.fonts.mapper import FontMapper
@@ -35,6 +36,8 @@ _CANVAS_FLAGS: Final[int] = _WINDOW_NO_MOVE | _WINDOW_NO_SCROLLBAR | _WINDOW_NO_
 
 
 class FlowWindow(AuiWindow[FlowAuiConfig]):
+    _menus: Sequence[Tuple[str, Callable[[], None]]]
+
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(
             context=context,
@@ -60,6 +63,14 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             value_proxy=self._split_tree,
             min_value=context.config.flow_aui.min_split_tree,
             negative_delta=True,
+        )
+
+        self._menus = (
+            ("File", self.on_file_menu),
+            ("Edit", self.on_edit_menu),
+            ("Layout", self.on_layout_menu),
+            ("Graph", self.on_graph_menu),
+            ("View", self.on_view_menu),
         )
 
         self._new_graph_popup = InputTextPopup(
@@ -93,6 +104,22 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def split_tree(self, value: float) -> None:
         self.window_config.split_tree = value
 
+    @property
+    def show_layout(self) -> bool:
+        return self.window_config.nodes.show_layout
+
+    @show_layout.setter
+    def show_layout(self, value: bool) -> None:
+        self.window_config.nodes.show_layout = value
+
+    @property
+    def autoscroll(self) -> bool:
+        return self.window_config.logs.autoscroll
+
+    @autoscroll.setter
+    def autoscroll(self, value: bool) -> None:
+        self.window_config.logs.autoscroll = value
+
     def on_new_graph_popup(self, name: str) -> None:
         graph = self.context.fm.create_graph(name, append=True)
         filepath = self.context.home.flows.graph_filepath(graph.uuid)
@@ -113,12 +140,49 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         super().on_process()
 
     @staticmethod
+    def _process_layout_menu(canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            selected_items = canvas.graph.selected_items
+            selected_any = bool(selected_items)
+            single_item = 1 == len(selected_items)
+        else:
+            selected_items = SelectedItems()
+            selected_any = False
+            single_item = False
+
+        if menu_item("To Front", enabled=selected_any):
+            assert canvas is not None
+            canvas.graph.items_to_front(list(selected_items.values()))
+            canvas.save_history("To front items")
+        if menu_item("To Back", enabled=selected_any):
+            assert canvas is not None
+            canvas.graph.items_to_back(list(selected_items.values()))
+            canvas.save_history("To back items")
+
+        if menu_item("Bring Forward", enabled=single_item):
+            assert canvas is not None
+            assert 1 == len(selected_items)
+            first = selected_items.first
+            assert first is not None
+            canvas.graph.item_bring_forward(first)
+            canvas.save_history("Bring forward items")
+        if menu_item("Send Backward", enabled=single_item):
+            assert canvas is not None
+            assert 1 == len(selected_items)
+            first = selected_items.first
+            assert first is not None
+            canvas.graph.item_send_backward(first)
+            canvas.save_history("Send backward items")
+
+    @staticmethod
     def _process_edit_menu(canvas: Optional[CanvasGraph] = None) -> None:
         if canvas is not None and canvas.opened:
+            opened = True
             undoable = canvas.history.undoable
             redoable = canvas.history.redoable
             selectable = True
         else:
+            opened = False
             undoable = False
             redoable = False
             selectable = False
@@ -129,6 +193,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Redo", enabled=redoable):
             assert canvas is not None
             canvas.redo_history()
+
+        imgui.separator()
+        if menu_item("Reset control", enabled=opened):
+            assert canvas is not None
+            canvas.reset_controllers()
 
         imgui.separator()
         if menu_item("Select all", enabled=selectable):
@@ -153,13 +222,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             if not menu_bar.opened:
                 return
 
-            menus = (
-                ("File", self.on_file_menu),
-                ("Edit", self.on_edit_menu),
-                ("Graph", self.on_graph_menu),
-            )
-
-            for name, func in menus:
+            for name, func in self._menus:
                 with imgui.begin_menu(name) as menu:
                     if menu.opened:
                         func()
@@ -167,12 +230,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_file_menu(self) -> None:
         if menu_item("New graph"):
             self.show_new_graph_popup()
-
-        # imgui.separator()
-        # if menu_item("Import graph"):
-        #     self._open_graph_popup.show()
-        # if menu_item("Export graph"):
-        #     self._open_graph_popup.show()
 
         imgui.separator()
         has_opened_graph = self._cursor.opened
@@ -183,6 +240,12 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             self.close_current_graph()
         if menu_item("Force close graph", enabled=has_opened_graph):
             self.close_current_graph()
+
+        # imgui.separator()
+        # if menu_item("Import graph"):
+        #     self._open_graph_popup.show()
+        # if menu_item("Export graph"):
+        #     self._open_graph_popup.show()
 
         imgui.separator()
         if menu_item("Close flow window"):
@@ -195,9 +258,24 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         else:
             self._process_edit_menu(None)
 
+    def on_layout_menu(self) -> None:
+        if canvas := self._cursor.canvas:
+            with canvas:
+                self._process_layout_menu(canvas)
+        else:
+            self._process_layout_menu(None)
+
     def on_graph_menu(self) -> None:
         if menu_item("Refresh graphs"):
             self.refresh_graphs()
+
+    def on_view_menu(self) -> None:
+        if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
+            self.autoscroll = autoscroll.state
+
+        imgui.separator()
+        if show_layout := menu_item("Show Layout", selected=self.show_layout):
+            self.show_layout = show_layout.state
 
     def show_new_graph_popup(self) -> None:
         self._new_graph_popup.show()
@@ -303,9 +381,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if imgui.begin_popup_context_window().opened:
             try:
-                if menu_item("Reset"):
-                    canvas.reset_controllers()
-
+                self._process_layout_menu(canvas)
                 imgui.separator()
                 self._process_edit_menu(canvas)
             finally:

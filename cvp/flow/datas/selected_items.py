@@ -68,10 +68,14 @@ class SelectedItems:
         return list(filter(self._is_arc, self._items.values()))
 
     @property
+    def first(self) -> Optional[SelectableAny]:
+        return next(iter(self._items.values()))
+
+    @property
     def selected_node_only(self) -> Optional[Node]:
         if 1 != len(self._items):
             return None
-        first_item = next(iter(self._items.values()))
+        first_item = self.first
         if isinstance(first_item, Node):
             return first_item
         else:
@@ -109,6 +113,12 @@ class SelectedItems:
             raise ValueError("Item must be selected")
 
         self._items[id(item)] = item
+
+    def remove_noraise(self, item: SelectableAny) -> None:
+        try:
+            self._items.pop(id(item))
+        except KeyError:
+            pass
 
     def remove(self, item: SelectableAny) -> None:
         if item.selected:

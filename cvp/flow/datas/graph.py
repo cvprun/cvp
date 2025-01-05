@@ -441,6 +441,7 @@ class Graph:
         if arc.output:
             arc.output.pin.arcs.remove(arc.uuid)
         self.arcs.remove(arc)
+        self._selected_items.remove_noraise(arc)
 
     def remove_selected_arcs(self) -> None:
         for arc in self.find_selected_arcs():
@@ -451,7 +452,10 @@ class Graph:
             for arc_uuid in pin.arcs:
                 if arc := self.find_arc(arc_uuid):
                     self.remove_arc(arc)
+
+            self._selected_items.remove_noraise(pin)
         self.nodes.remove(node)
+        self._selected_items.remove_noraise(node)
 
     def remove_selected_nodes(self) -> None:
         for node in self.find_selected_nodes():
@@ -460,4 +464,91 @@ class Graph:
     def remove_selected_items(self) -> None:
         self.remove_selected_arcs()
         self.remove_selected_nodes()
-        self._selected_items.clear()
+
+    def items_to_front(self, items: Sequence[SelectableAny]) -> None:
+        for item in items:
+            self.item_to_front(item)
+
+    def item_to_front(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_to_front(item)
+        elif isinstance(item, Arc):
+            self.arc_to_front(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_to_front(self, node: Node) -> None:
+        index = self.nodes.index(node)
+        if 0 <= index - 1:
+            assert node == self.nodes.pop(index)
+            self.nodes.insert(index - 1, node)
+
+    def arc_to_front(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if 0 <= index - 1:
+            assert arc == self.arcs.pop(index)
+            self.arcs.insert(index - 1, arc)
+
+    def items_to_back(self, items: Sequence[SelectableAny]) -> None:
+        for item in items:
+            self.item_to_back(item)
+
+    def item_to_back(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_to_back(item)
+        elif isinstance(item, Arc):
+            self.arc_to_back(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_to_back(self, node: Node) -> None:
+        index = self.nodes.index(node)
+        if index + 1 < len(self.nodes):
+            assert node == self.nodes.pop(index)
+            self.nodes.insert(index + 1, node)
+
+    def arc_to_back(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if index + 1 < len(self.arcs):
+            assert arc == self.arcs.pop(index)
+            self.arcs.insert(index + 1, arc)
+
+    def item_bring_forward(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_bring_forward(item)
+        elif isinstance(item, Arc):
+            self.arc_bring_forward(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_bring_forward(self, node: Node) -> None:
+        index = self.nodes.index(node)
+        if 0 != index:
+            assert node == self.nodes.pop(index)
+            self.nodes.insert(0, node)
+
+    def arc_bring_forward(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if 0 != index:
+            assert arc == self.arcs.pop(index)
+            self.arcs.insert(0, arc)
+
+    def item_send_backward(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_send_backward(item)
+        elif isinstance(item, Arc):
+            self.arc_send_backward(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_send_backward(self, node: Node) -> None:
+        index = self.nodes.index(node)
+        if index < len(self.arcs) - 1:
+            assert node == self.nodes.pop(index)
+            self.nodes.append(node)
+
+    def arc_send_backward(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if index < len(self.arcs) - 1:
+            assert arc == self.arcs.pop(index)
+            self.arcs.append(arc)
