@@ -70,6 +70,54 @@ class CanvasController(ControllerProps):
     def item_inner_spacing(self) -> Tuple[int, int]:
         return imgui.get_style().item_inner_spacing
 
+    @property
+    def pressed_delete(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DELETE))
+
+    @property
+    def pressed_escape(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_ESCAPE))
+
+    @property
+    def pressed_up_arrow(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_UP_ARROW))
+
+    @property
+    def pressed_down_arrow(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DOWN_ARROW))
+
+    @property
+    def pressed_left_arrow(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_LEFT_ARROW))
+
+    @property
+    def pressed_right_arrow(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_RIGHT_ARROW))
+
+    @property
+    def pressed_a(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_A))
+
+    @property
+    def pressed_z(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_Z))
+
+    @property
+    def pressed_y(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_Y))
+
+    @property
+    def pressed_x(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_X))
+
+    @property
+    def pressed_c(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_C))
+
+    @property
+    def pressed_v(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_V))
+
     def drag_pan(self, dryrun=False):
         retval = drag_float2(
             self._pan_label,
