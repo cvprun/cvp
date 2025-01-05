@@ -16,11 +16,19 @@ class HistoryTab(TabItem[FlowCursor]):
 
     @override
     def on_item(self, item: FlowCursor) -> None:
-        graph = item.graph
-        if graph is None:
+        canvas = item.canvas
+        if canvas is None:
             self.on_none()
             return
 
-        imgui.bullet_text("History 1")
-        imgui.bullet_text("History 2")
-        imgui.bullet_text("History 3")
+        flags = imgui.SELECTABLE_ALLOW_DOUBLE_CLICK
+        latest_index = canvas.history.latest - 1
+        for i, record in enumerate(canvas.history):
+            if imgui.selectable(f"[{i}] {record.title}", i == latest_index, flags)[0]:
+                if imgui.is_mouse_double_clicked(0):
+                    with canvas:
+                        canvas.load_history(i)
+
+            if record.details and imgui.is_item_hovered():
+                with imgui.begin_tooltip():
+                    imgui.text_unformatted(record.details)

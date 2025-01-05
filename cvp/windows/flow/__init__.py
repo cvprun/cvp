@@ -253,9 +253,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             if target.hovered:
                 if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE_TYPE):
                     node_path = str(payload, encoding="utf-8")
-                    # canvas.save_history(f"Add node: {node_path}")
                     node = self.context.fm.add_node(canvas.graph, node_path)
                     canvas.update_node_roi(node)
+                    canvas.save_history("Add a new node", node_path)
 
         if imgui.begin_popup_context_window().opened:
             try:

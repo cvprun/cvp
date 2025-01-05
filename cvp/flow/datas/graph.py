@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field
 from math import sqrt
 from typing import List, Optional, Sequence, Set, Union
 from uuid import uuid4
@@ -32,15 +32,17 @@ class Graph:
 
     _selected_items: SelectedItems = field(default_factory=SelectedItems)
 
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, Graph):
-            return False
-        for f in fields(self):
-            if f.name.startswith("_"):
-                continue
-            if getattr(self, f.name) != getattr(other, f.name):
-                return False
-        return True
+    def restore(self, other: "Graph") -> None:
+        if self.uuid != other.uuid:
+            raise ValueError("The uuid of the graph to be restored does not match")
+
+        self.name = other.name
+        self.docs = other.docs
+        self.icon = other.icon
+        self.nodes = other.nodes
+        self.arcs = other.arcs
+        self.control = other.control
+        self._selected_items = other._selected_items
 
     @property
     def selected_items(self):
@@ -441,3 +443,4 @@ class Graph:
     def remove_selected_items(self) -> None:
         self.remove_selected_arcs()
         self.remove_selected_nodes()
+        self._selected_items.clear()

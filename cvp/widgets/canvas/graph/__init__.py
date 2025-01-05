@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collections import deque
-from dataclasses import fields, is_dataclass
-from pickle import dumps, loads
-from typing import Deque, List, Optional, Tuple
+from typing import List, Optional
 from weakref import ReferenceType, ref
 
 import imgui
@@ -24,6 +21,7 @@ from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
 from cvp.widgets.canvas.controller import CanvasController
+from cvp.widgets.canvas.graph.history import History
 from cvp.widgets.canvas.graph.mode import ControlMode
 
 
@@ -41,9 +39,6 @@ class CanvasGraph(CanvasController):
     _roi: Optional[Rect]
     _selected_stash: Optional[SelectedItems]
 
-    _histories: Deque[Tuple[bytes, str]]
-    _latest: int
-
     def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()
 
@@ -59,13 +54,13 @@ class CanvasGraph(CanvasController):
         self._fonts = None
         self._config = None
 
+        self._history = History(max_history=config.max_history)
+        self._history.save_history("Initialize graph", graph)
+
         self._mode = ControlMode.normal
         self._connects = list()
         self._roi = None
         self._selected_stash = None
-
-        self._histories = deque(maxlen=config.max_history)
-        self._latest = 0
 
     @property
     def is_multi_select_mode(self) -> bool:
@@ -103,6 +98,8 @@ class CanvasGraph(CanvasController):
             f"Mode: {self._mode.name}\n"
             f"Connects: {self._connects}\n"
             f"ROI: {self._roi}\n"
+            f"History: {len(self._history)}\n"
+            f"Latest: {self._history.latest}\n"
         )
 
     # ==================================================================================
@@ -195,52 +192,37 @@ class CanvasGraph(CanvasController):
     # History Operations
     # ==================================================================================
 
+    @property
+    def history(self):
+        return self._history
+
     def clear_history(self) -> None:
-        self._histories.clear()
-        self._latest = 0
+        logger.info("Clear history")
+        self._history.clear_history()
 
-    def save_history(self, comment: Optional[str] = None) -> None:
-        logger.info(f"Save history: {comment}")
+    def save_history(
+        self,
+        title: str,
+        details: Optional[str] = None,
+        *,
+        no_logging=False,
+    ) -> None:
+        if not no_logging:
+            logger.info(title)
+            if details:
+                logger.debug(details)
 
-        max_history = self.config.max_history
-        if self._histories.maxlen != max_history:
-            histories_type = type(self._histories)
-            self._histories = histories_type(self._histories, maxlen=max_history)
+        self._history.save_history(
+            title=title,
+            graph=self.graph,
+            details=details,
+            max_history=self.config.max_history,
+        )
 
-        assert 0 <= self._latest
-        while self._latest < len(self._histories):
-            self._histories.pop()
-
-        if comment is None:
-            comment = str()
-
-        assert isinstance(comment, str)
-        data = dumps(self.graph)
-        history_item = data, comment
-        self._histories.append(history_item)
-        self._latest = len(self._histories)
-
-    def load_history(self, index: int) -> None:
-        logger.info(f"Load history: {index}")
-
-        if index < 0:
-            index += len(self._histories)
-
-        assert 0 <= index < len(self._histories)
-        data, comment = self._histories[index]
-        graph = loads(data)
-        assert isinstance(graph, Graph)
-        assert isinstance(comment, str)
-        assert self.graph.uuid == graph.uuid
-        assert is_dataclass(self.graph)
-        assert is_dataclass(graph)
-
-        for f in fields(self.graph):
-            if f.name.startswith("_"):
-                continue
-            setattr(self.graph, f.name, getattr(graph, f.name))
-
-        self._latest = index + 1
+    def load_history(self, index: int, *, no_logging=False) -> None:
+        if not no_logging:
+            logger.info(f"Load history: {index}")
+        self.graph.restore(self._history.load_history(index))
 
     # ==================================================================================
     # Public Operations
@@ -363,6 +345,7 @@ class CanvasGraph(CanvasController):
 
         if imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DELETE)):
             self.graph.remove_selected_items()
+            self.save_history("Remove selected items")
 
         if self.is_pan_mode:
             # Nodes cannot be selected or dragged during 'Canvas Pan Mode'.
@@ -429,6 +412,7 @@ class CanvasGraph(CanvasController):
 
         if self.changed_left_up:
             self._mode = ControlMode.normal
+            self.save_history("The nodes has been moved")
 
     def _update_nodes_state_for_pin_connecting(self) -> None:
         assert not self.is_pan_mode
@@ -453,6 +437,7 @@ class CanvasGraph(CanvasController):
             if connect_pairs:
                 for out_conn, in_conn in connect_pairs:
                     self.graph.connect_pins(out_conn, in_conn, no_reorder=True)
+                self.save_history("The pins has been connected")
 
     def _update_nodes_state_for_anchor_moving(self) -> None:
         assert not self.is_pan_mode
@@ -469,6 +454,7 @@ class CanvasGraph(CanvasController):
             assert selected_arc is not None
             selected_arc.start_anchor.selected = False
             selected_arc.end_anchor.selected = False
+            self.save_history("The anchor has been moved")
 
     def _update_nodes_state_for_selection_box(self) -> None:
         assert not self.is_pan_mode

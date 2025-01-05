@@ -6,6 +6,7 @@ from weakref import ReferenceType, ref
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.datas.graph import Graph
 from cvp.imgui.fonts.mapper import FontMapper
+from cvp.logging.logging import flow_logger as logger
 from cvp.widgets.canvas.graph import CanvasGraph
 
 
@@ -64,6 +65,7 @@ class FlowCursor:
         if graph.uuid in self._canvases:
             self._canvases.pop(graph.uuid)
         self._create_canvas(graph)
+        logger.info("The graph has been opened")
 
     def close(self) -> None:
         if self._ref is None:
@@ -73,3 +75,4 @@ class FlowCursor:
             if graph.uuid in self._canvases:
                 self._canvases.pop(graph.uuid)
         self._ref = None
+        logger.info("The graph has been closed")

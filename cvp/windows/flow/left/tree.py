@@ -42,7 +42,8 @@ class TreeTab(TabItem[FlowCursor]):
             self.on_none()
             return
 
-        if imgui.tree_node(graph.name, imgui.TREE_NODE_DEFAULT_OPEN):
+        graph_label = f"{graph.name}###{graph.uuid}"
+        if imgui.tree_node(graph_label, imgui.TREE_NODE_DEFAULT_OPEN):
             try:
                 for node in graph.nodes:
                     self.on_node(graph, node)
@@ -60,7 +61,7 @@ class TreeTab(TabItem[FlowCursor]):
         if node.selected:
             flags |= imgui.TREE_NODE_SELECTED
 
-        node_opened = imgui.tree_node(f"{node.name}##{node.uuid}", flags)
+        node_opened = imgui.tree_node(f"{node.name}###{node.uuid}", flags)
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
                 graph.unselect_all_items()
