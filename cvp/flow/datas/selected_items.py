@@ -68,18 +68,19 @@ class SelectedItems:
         return list(filter(self._is_arc, self._items.values()))
 
     @property
-    def first(self) -> Optional[SelectableAny]:
+    def first(self) -> SelectableAny:
         return next(iter(self._items.values()))
+
+    @property
+    def last(self) -> SelectableAny:
+        return next(reversed(self._items.values()))
 
     @property
     def selected_node_only(self) -> Optional[Node]:
         if 1 != len(self._items):
             return None
-        first_item = self.first
-        if isinstance(first_item, Node):
-            return first_item
-        else:
-            return None
+        first = self.first
+        return first if isinstance(first, Node) else None
 
     @property
     def selected_pin_only(self) -> Optional[Pin]:

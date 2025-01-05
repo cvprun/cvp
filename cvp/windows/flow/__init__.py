@@ -7,7 +7,6 @@ import imgui
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
 from cvp.context.context import Context
-from cvp.flow.datas.selected_items import SelectedItems
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE
 from cvp.imgui.fonts.mapper import FontMapper
@@ -146,7 +145,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             selected_any = bool(selected_items)
             single_item = 1 == len(selected_items)
         else:
-            selected_items = SelectedItems()
+            selected_items = list()
             selected_any = False
             single_item = False
 
@@ -162,17 +161,68 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Bring Forward", enabled=single_item):
             assert canvas is not None
             assert 1 == len(selected_items)
-            first = selected_items.first
-            assert first is not None
-            canvas.graph.item_bring_forward(first)
+            canvas.graph.item_bring_forward(selected_items.first)
             canvas.save_history("Bring forward items")
         if menu_item("Send Backward", enabled=single_item):
             assert canvas is not None
             assert 1 == len(selected_items)
-            first = selected_items.first
-            assert first is not None
-            canvas.graph.item_send_backward(first)
+            canvas.graph.item_send_backward(selected_items.first)
             canvas.save_history("Send backward items")
+
+    @staticmethod
+    def _process_align_menu(canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            nodes = canvas.graph.selected_items.nodes
+            multiple_item = 2 <= len(nodes)
+        else:
+            nodes = list()
+            multiple_item = False
+
+        if imgui.begin_menu("Align", enabled=multiple_item).opened:
+            assert canvas is not None
+            pivot = nodes[-1]
+            try:
+                if menu_item("Left"):
+                    canvas.graph.nodes_align_left(nodes, pivot)
+                    canvas.save_history("Align left nodes")
+                if menu_item("Center"):
+                    canvas.graph.nodes_align_center(nodes, pivot)
+                    canvas.save_history("Align center nodes")
+                if menu_item("Right"):
+                    canvas.graph.nodes_align_right(nodes, pivot)
+                    canvas.save_history("Align right nodes")
+
+                imgui.separator()
+                if menu_item("Top"):
+                    canvas.graph.nodes_align_top(nodes, pivot)
+                    canvas.save_history("Align top nodes")
+                if menu_item("Middle"):
+                    canvas.graph.nodes_align_middle(nodes, pivot)
+                    canvas.save_history("Align middle nodes")
+                if menu_item("Bottom"):
+                    canvas.graph.nodes_align_bottom(nodes, pivot)
+                    canvas.save_history("Align bottom nodes")
+            finally:
+                imgui.end_menu()
+
+    @staticmethod
+    def _process_distribute_menu(canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            nodes = canvas.graph.selected_items.nodes
+            multiple_item = 2 <= len(nodes)
+        else:
+            nodes = list()
+            multiple_item = False
+
+        if imgui.begin_menu("Distribute", enabled=multiple_item).opened:
+            assert canvas is not None
+            if menu_item("Horizontal"):
+                canvas.graph.nodes_distribute_horizontal(nodes)
+                canvas.save_history("Distribute horizontal nodes")
+            if menu_item("Vertical"):
+                canvas.graph.nodes_distribute_vertical(nodes)
+                canvas.save_history("Distribute vertical nodes")
+            imgui.end_menu()
 
     @staticmethod
     def _process_edit_menu(canvas: Optional[CanvasGraph] = None) -> None:
@@ -180,19 +230,29 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             opened = True
             undoable = canvas.history.undoable
             redoable = canvas.history.redoable
-            selectable = True
         else:
             opened = False
             undoable = False
             redoable = False
-            selectable = False
 
-        if menu_item("Undo", enabled=undoable):
+        if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
             assert canvas is not None
             canvas.undo_history()
-        if menu_item("Redo", enabled=redoable):
+        if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
             assert canvas is not None
             canvas.redo_history()
+
+        imgui.separator()
+        if menu_item("Cut", shortcut="Ctrl+X", enabled=False):
+            pass
+        if menu_item("Copy", shortcut="Ctrl+C", enabled=False):
+            pass
+        if menu_item("Paste", shortcut="Ctrl+V", enabled=False):
+            pass
+
+        imgui.separator()
+        if menu_item("Delete", shortcut="Del", enabled=False):
+            pass
 
         imgui.separator()
         if menu_item("Reset control", enabled=opened):
@@ -200,19 +260,19 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             canvas.reset_controllers()
 
         imgui.separator()
-        if menu_item("Select all", enabled=selectable):
+        if menu_item("Select all", enabled=opened):
             assert canvas is not None
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_items()
-        if menu_item("Select nodes", enabled=selectable):
+        if menu_item("Select nodes", enabled=opened):
             assert canvas is not None
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_nodes()
-        if menu_item("Select arcs", enabled=selectable):
+        if menu_item("Select arcs", enabled=opened):
             assert canvas is not None
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_arcs()
-        if menu_item("Select pins", enabled=selectable):
+        if menu_item("Select pins", enabled=opened):
             assert canvas is not None
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_pins()
@@ -262,8 +322,14 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if canvas := self._cursor.canvas:
             with canvas:
                 self._process_layout_menu(canvas)
+                imgui.separator()
+                self._process_align_menu(canvas)
+                self._process_distribute_menu(canvas)
         else:
             self._process_layout_menu(None)
+            imgui.separator()
+            self._process_align_menu(None)
+            self._process_distribute_menu(None)
 
     def on_graph_menu(self) -> None:
         if menu_item("Refresh graphs"):
@@ -381,9 +447,12 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if imgui.begin_popup_context_window().opened:
             try:
+                self._process_edit_menu(canvas)
+                imgui.separator()
                 self._process_layout_menu(canvas)
                 imgui.separator()
-                self._process_edit_menu(canvas)
+                self._process_align_menu(canvas)
+                self._process_distribute_menu(canvas)
             finally:
                 imgui.end_popup()
 

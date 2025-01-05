@@ -357,13 +357,32 @@ class CanvasGraph(CanvasController):
     # Update state
     # ==================================================================================
 
+    @property
+    def pressed_delete(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DELETE))
+
+    @property
+    def pressed_z(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_Z))
+
+    @property
+    def pressed_y(self) -> bool:
+        return imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_Y))
+
     def update_nodes_state(self) -> None:
         self.graph.clear_state()
         self.graph.update_hovering_state(self.mouse_to_canvas_coords())
 
-        if imgui.is_key_pressed(imgui.get_key_index(imgui.KEY_DELETE)):
+        if self.pressed_delete:
             self.graph.remove_selected_items()
             self.save_history("Remove selected items")
+
+        if self.ctrl_down:
+            if self.history.undoable and self.pressed_z:
+                self.undo_history()
+            if self.history.redoable:
+                if self.pressed_y or (self.shift_down and self.pressed_z):
+                    self.redo_history()
 
         if self.is_pan_mode:
             # Nodes cannot be selected or dragged during 'Canvas Pan Mode'.

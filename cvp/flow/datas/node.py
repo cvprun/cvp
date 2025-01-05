@@ -62,6 +62,30 @@ class Node:
         self.node_size = x2 - x1, y2 - y1
 
     @property
+    def x1(self) -> float:
+        return self.node_pos[0]
+
+    @property
+    def y1(self) -> float:
+        return self.node_pos[1]
+
+    @property
+    def width(self) -> float:
+        return self.node_size[0]
+
+    @property
+    def height(self) -> float:
+        return self.node_size[1]
+
+    @property
+    def x2(self) -> float:
+        return self.x1 + self.width
+
+    @property
+    def y2(self) -> float:
+        return self.y1 + self.height
+
+    @property
     def flow_pins(self) -> List[Pin]:
         return self.flow_inputs + self.flow_outputs
 

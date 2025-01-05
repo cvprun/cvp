@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from functools import reduce
 from math import sqrt
 from typing import List, Optional, Sequence, Set, Union
 from uuid import uuid4
@@ -271,6 +272,13 @@ class Graph:
 
         return None
 
+    def move_node(self, node: Node, pos: Point) -> None:
+        node.node_pos = pos
+        for pin in node.pins:
+            for arc_uuid in pin.arcs:
+                if arc := self.find_arc(arc_uuid):
+                    self.update_arc_polyline(arc, force=True)
+
     def move_on_selected_nodes(self, delta: Size) -> None:
         dx, dy = delta
         if dx == 0 and dy == 0:
@@ -281,12 +289,8 @@ class Graph:
                 continue
 
             x, y = node.node_pos
-            node.node_pos = x + dx, y + dy
-
-            for pin in node.pins:
-                for arc_uuid in pin.arcs:
-                    if arc := self.find_arc(arc_uuid):
-                        self.update_arc_polyline(arc, force=True)
+            next_pos = x + dx, y + dy
+            self.move_node(node, next_pos)
 
     def move_on_selected_anchor(self, delta: Size) -> None:
         dx, dy = delta
@@ -552,3 +556,87 @@ class Graph:
         if index < len(self.arcs) - 1:
             assert arc == self.arcs.pop(index)
             self.arcs.append(arc)
+
+    def nodes_align_left(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            px, py = pivot.node_pos
+            next_pox = px, ny
+            self.move_node(node, next_pox)
+
+    def nodes_align_center(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            nw, nh = node.node_size
+            px, py = pivot.node_pos
+            pw, ph = pivot.node_size
+            next_pos = px + (pw / 2) - (nw / 2), ny
+            self.move_node(node, next_pos)
+
+    def nodes_align_right(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            nw, nh = node.node_size
+            px, py = pivot.node_pos
+            pw, ph = pivot.node_size
+            next_pos = px + pw - nw, ny
+            self.move_node(node, next_pos)
+
+    def nodes_align_top(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            px, py = pivot.node_pos
+            next_pox = nx, py
+            self.move_node(node, next_pox)
+
+    def nodes_align_middle(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            nw, nh = node.node_size
+            px, py = pivot.node_pos
+            pw, ph = pivot.node_size
+            next_pos = nx, py + (ph / 2) - (nh / 2)
+            self.move_node(node, next_pos)
+
+    def nodes_align_bottom(self, nodes: Sequence[Node], pivot: Node) -> None:
+        for node in nodes:
+            nx, ny = node.node_pos
+            nw, nh = node.node_size
+            px, py = pivot.node_pos
+            pw, ph = pivot.node_size
+            next_pos = nx, py + ph - nh
+            self.move_node(node, next_pos)
+
+    def nodes_distribute_horizontal(self, nodes: Sequence[Node]) -> None:
+        nx1s = [n.x1 for n in nodes]
+        nx2s = [n.x2 for n in nodes]
+        nws = [n.width for n in nodes]
+        width = reduce(lambda w1, w2: w1 + w2, nws)
+        left = min(nx1s)
+        right = max(nx2s)
+        space = (right - left - width) / (len(nws) - 1)
+        nodes = sorted(nodes, key=lambda n: n.x1)
+        cursor = left
+
+        for node in nodes:
+            y1 = node.y1
+            next_pos = cursor, y1
+            self.move_node(node, next_pos)
+            cursor += node.width + space
+
+    def nodes_distribute_vertical(self, nodes: Sequence[Node]) -> None:
+        ny1s = [n.y1 for n in nodes]
+        ny2s = [n.y2 for n in nodes]
+        nhs = [n.height for n in nodes]
+        height = reduce(lambda h1, h2: h1 + h2, nhs)
+        top = min(ny1s)
+        bottom = max(ny2s)
+        space = (bottom - top - height) / (len(nhs) - 1)
+        nodes = sorted(nodes, key=lambda n: n.y1)
+        cursor = top
+
+        for node in nodes:
+            x1 = node.x1
+            next_pos = x1, cursor
+            self.move_node(node, next_pos)
+            cursor += node.height + space
