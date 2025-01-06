@@ -7,6 +7,7 @@ from pygame.event import Event
 
 from cvp.config.sections.bases.window import WindowConfig
 from cvp.context.context import Context
+from cvp.imgui.able.pressable import Pressable
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.logging.logging import logger
 from cvp.msgs.callbacks import MsgCallbacks
@@ -31,6 +32,7 @@ WindowConfigT = TypeVar("WindowConfigT", bound=WindowConfig)
 
 class WindowBase(
     Generic[WindowConfigT],
+    Pressable,
     WindowInterface,
     EventCallbacks,
     MsgCallbacks,
