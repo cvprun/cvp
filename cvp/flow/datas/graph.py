@@ -12,12 +12,12 @@ import shapely
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.anchor import Anchor
 from cvp.flow.datas.arc import Arc
-from cvp.flow.datas.chosen import SelectableAny, SelectedItems
 from cvp.flow.datas.connect_pair import ConnectPair
 from cvp.flow.datas.control import Control
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
+from cvp.flow.datas.selection import SelectableAny, Selection
 from cvp.flow.datas.stream import Stream
 from cvp.flow.datas.templates.graph import GraphTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -36,7 +36,7 @@ class Graph:
     arcs: List[Arc] = field(default_factory=list)
     control: Control = field(default_factory=Control)
 
-    _chosen: SelectedItems = field(default_factory=SelectedItems)
+    _chosen: Selection = field(default_factory=Selection)
 
     @classmethod
     def from_template(cls, template: GraphTemplate):
@@ -71,7 +71,7 @@ class Graph:
         self.control = other.control
         self._chosen = other._chosen
 
-    def add_items(self, point: Point, items: SelectedItems) -> None:
+    def add_items(self, point: Point, items: Selection) -> None:
         nodes, arcs = items.as_validated_items(point)
         self.nodes.extend(nodes)
         self.arcs.extend(arcs)

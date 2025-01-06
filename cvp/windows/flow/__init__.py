@@ -492,6 +492,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if only_ctrl and self.imgui_is_pressed_c():
             self.context.fm.set_clipboard(canvas.graph.selected_items.copy())
+            canvas.save_history("Copy selected items")
             return
 
         if only_ctrl and self.imgui_is_pressed_v():

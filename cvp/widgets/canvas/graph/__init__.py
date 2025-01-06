@@ -8,11 +8,11 @@ import imgui
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.datas.anchor import Anchor
 from cvp.flow.datas.arc import Arc
-from cvp.flow.datas.chosen import SelectedItems
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
+from cvp.flow.datas.selection import Selection
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
@@ -37,7 +37,7 @@ class CanvasGraph(CanvasController):
     _mode: ControlMode
     _connects: List[NodePin]
     _roi: Optional[Rect]
-    _selected_stash: Optional[SelectedItems]
+    _selected_stash: Optional[Selection]
 
     def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()

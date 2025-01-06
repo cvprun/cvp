@@ -16,7 +16,7 @@ SelectableAny = Union[Node, Pin, Arc]
 SelectableDict = OrderedDict[SelectableKey, SelectableAny]
 
 
-class SelectedItems:
+class Selection:
     _items: SelectableDict
 
     def __init__(self, items: Optional[SelectableDict] = None):

@@ -8,9 +8,9 @@ from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
 from cvp.flow.catalog import FlowCatalog
-from cvp.flow.datas.chosen import SelectedItems
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.node import Node
+from cvp.flow.datas.selection import Selection
 from cvp.flow.path import FlowPath
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
@@ -18,7 +18,7 @@ from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager(OrderedDict[str, Graph]):
-    _clipboard: Optional[SelectedItems]
+    _clipboard: Optional[Selection]
 
     def __init__(self, home: HomeDir, *, update=False):
         super().__init__()
@@ -36,7 +36,7 @@ class FlowManager(OrderedDict[str, Graph]):
     def clipboard(self):
         return self._clipboard
 
-    def set_clipboard(self, items: SelectedItems) -> None:
+    def set_clipboard(self, items: Selection) -> None:
         self._clipboard = items
 
     def clear_clipboard(self) -> None:

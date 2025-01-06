@@ -7,7 +7,6 @@ import imgui
 from cvp.config.sections.flow.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.datas.arc import Arc
-from cvp.flow.datas.chosen import SelectedItems
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.line_type import (
     LINE_TYPE_INDEX2NAME,
@@ -17,6 +16,7 @@ from cvp.flow.datas.line_type import (
 )
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.pin import Pin
+from cvp.flow.datas.selection import Selection
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -191,7 +191,7 @@ class PropsTab(TabItem[FlowCursor]):
                 finally:
                     imgui.tree_pop()
 
-    def on_multiple_items(self, graph: Graph, items: SelectedItems) -> None:
+    def on_multiple_items(self, graph: Graph, items: Selection) -> None:
         input_text_disabled("Type", "Multiple")
 
         for key, item in items.items():
