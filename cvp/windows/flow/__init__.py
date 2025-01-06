@@ -7,6 +7,7 @@ import imgui
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
 from cvp.context.context import Context
+from cvp.flow.manager import FlowManager
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE
 from cvp.imgui.fonts.mapper import FontMapper
@@ -68,7 +69,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             ("File", self.on_file_menu),
             ("Edit", self.on_edit_menu),
             ("Layout", self.on_layout_menu),
-            ("Graph", self.on_graph_menu),
+            ("Run", self.on_run_menu),
             ("View", self.on_view_menu),
         )
 
@@ -137,6 +138,75 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_process(self) -> None:
         self.on_menu()
         super().on_process()
+
+    @staticmethod
+    def _process_edit_menu(
+        fm: FlowManager,
+        canvas: Optional[CanvasGraph] = None,
+    ) -> None:
+        if canvas is not None and canvas.opened:
+            opened = True
+            undoable = canvas.history.undoable
+            redoable = canvas.history.redoable
+            selected_any = bool(canvas.graph.selected_items)
+            has_clipboard = fm.has_clipboard
+        else:
+            opened = False
+            undoable = False
+            redoable = False
+            selected_any = False
+            has_clipboard = False
+
+        if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
+            assert canvas is not None
+            canvas.undo_history()
+        if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
+            assert canvas is not None
+            canvas.redo_history()
+
+        imgui.separator()
+        if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
+            assert canvas is not None
+            fm.set_clipboard(canvas.graph.selected_items.copy())
+            canvas.graph.remove_selected_items()
+            canvas.save_history("Cut selected items")
+        if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
+            assert canvas is not None
+            fm.set_clipboard(canvas.graph.selected_items.copy())
+        if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
+            assert canvas is not None
+            mouse = canvas.mouse_to_canvas_coords()
+            canvas.graph.add_items(mouse, fm.clipboard)
+            canvas.save_history("Paste selected items")
+
+        imgui.separator()
+        if menu_item("Delete", shortcut="Del", enabled=selected_any):
+            assert canvas is not None
+            canvas.graph.remove_selected_items()
+            canvas.save_history("Remove selected items")
+
+        imgui.separator()
+        if menu_item("Reset control", enabled=opened):
+            assert canvas is not None
+            canvas.reset_controllers()
+
+        imgui.separator()
+        if menu_item("Select all", enabled=opened):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_items()
+        if menu_item("Select nodes", enabled=opened):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_nodes()
+        if menu_item("Select arcs", enabled=opened):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_arcs()
+        if menu_item("Select pins", enabled=opened):
+            assert canvas is not None
+            canvas.graph.unselect_all_items()
+            canvas.graph.select_all_pins()
 
     @staticmethod
     def _process_layout_menu(canvas: Optional[CanvasGraph] = None) -> None:
@@ -224,70 +294,19 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 canvas.save_history("Distribute vertical nodes")
             imgui.end_menu()
 
-    def _process_edit_menu(self, canvas: Optional[CanvasGraph] = None) -> None:
+    @staticmethod
+    def _process_run_menu(canvas: Optional[CanvasGraph] = None) -> None:
         if canvas is not None and canvas.opened:
             opened = True
-            undoable = canvas.history.undoable
-            redoable = canvas.history.redoable
-            selected_any = bool(canvas.graph.selected_items)
-            has_clipboard = self.context.fm.has_clipboard
         else:
             opened = False
-            undoable = False
-            redoable = False
-            selected_any = False
-            has_clipboard = False
 
-        if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
-            assert canvas is not None
-            canvas.undo_history()
-        if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
-            assert canvas is not None
-            canvas.redo_history()
-
-        imgui.separator()
-        if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
-            assert canvas is not None
-            self.context.fm.set_clipboard(canvas.graph.selected_items.copy())
-            canvas.graph.remove_selected_items()
-            canvas.save_history("Cut selected items")
-        if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
-            assert canvas is not None
-            self.context.fm.set_clipboard(canvas.graph.selected_items.copy())
-        if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
-            assert canvas is not None
-            mouse = canvas.mouse_to_canvas_coords()
-            canvas.graph.add_items(mouse, self.context.fm.clipboard)
-            canvas.save_history("Paste selected items")
-
-        imgui.separator()
-        if menu_item("Delete", shortcut="Del", enabled=selected_any):
-            assert canvas is not None
-            canvas.graph.remove_selected_items()
-            canvas.save_history("Remove selected items")
-
-        imgui.separator()
-        if menu_item("Reset control", enabled=opened):
-            assert canvas is not None
-            canvas.reset_controllers()
-
-        imgui.separator()
-        if menu_item("Select all", enabled=opened):
-            assert canvas is not None
-            canvas.graph.unselect_all_items()
-            canvas.graph.select_all_items()
-        if menu_item("Select nodes", enabled=opened):
-            assert canvas is not None
-            canvas.graph.unselect_all_items()
-            canvas.graph.select_all_nodes()
-        if menu_item("Select arcs", enabled=opened):
-            assert canvas is not None
-            canvas.graph.unselect_all_items()
-            canvas.graph.select_all_arcs()
-        if menu_item("Select pins", enabled=opened):
-            assert canvas is not None
-            canvas.graph.unselect_all_items()
-            canvas.graph.select_all_pins()
+        if menu_item("Run", enabled=opened):
+            pass
+        if menu_item("Debug", enabled=opened):
+            pass
+        if menu_item("Profile", enabled=opened):
+            pass
 
     def on_menu(self) -> None:
         with imgui.begin_menu_bar() as menu_bar:
@@ -320,15 +339,20 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         #     self._open_graph_popup.show()
 
         imgui.separator()
+        if menu_item("Refresh graphs"):
+            self.save_current_graph()
+            self.refresh_graphs()
+
+        imgui.separator()
         if menu_item("Close flow window"):
             self.close()
 
     def on_edit_menu(self) -> None:
         if canvas := self._cursor.canvas:
             with canvas:
-                self._process_edit_menu(canvas)
+                self._process_edit_menu(self.context.fm, canvas)
         else:
-            self._process_edit_menu(None)
+            self._process_edit_menu(self.context.fm)
 
     def on_layout_menu(self) -> None:
         if canvas := self._cursor.canvas:
@@ -338,14 +362,17 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 self._process_align_menu(canvas)
                 self._process_distribute_menu(canvas)
         else:
-            self._process_layout_menu(None)
+            self._process_layout_menu()
             imgui.separator()
-            self._process_align_menu(None)
-            self._process_distribute_menu(None)
+            self._process_align_menu()
+            self._process_distribute_menu()
 
-    def on_graph_menu(self) -> None:
-        if menu_item("Refresh graphs"):
-            self.refresh_graphs()
+    def on_run_menu(self) -> None:
+        if canvas := self._cursor.canvas:
+            with canvas:
+                self._process_run_menu(canvas)
+        else:
+            self._process_run_menu()
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
@@ -388,6 +415,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         try:
             self.context.fm.refresh_flow_graphs()
+            logger.info("Refresh flow graphs")
         except BaseException as e:
             logger.error(e)
 
@@ -515,7 +543,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if imgui.begin_popup_context_window().opened:
             try:
-                self._process_edit_menu(canvas)
+                self._process_edit_menu(self.context.fm, canvas)
                 imgui.separator()
                 self._process_layout_menu(canvas)
                 imgui.separator()
