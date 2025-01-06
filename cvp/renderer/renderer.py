@@ -52,6 +52,7 @@ class PygameRenderer(FixedPipelineRenderer):
         self._events[pygame.KEYDOWN] = self.on_key_down
         self._events[pygame.KEYUP] = self.on_key_up
         self._events[pygame.WINDOWRESIZED] = self.on_window_resized
+        self._clipboard_copy = False
 
     @property
     def running_seconds(self):
@@ -106,6 +107,15 @@ class PygameRenderer(FixedPipelineRenderer):
         if self.io.key_ctrl and pygame_keycode == pygame.K_v and state:
             imgui.set_clipboard_text(pygame.scrap.get_text())
 
+    @staticmethod
+    def is_copy_shortcut_pressed() -> bool:
+        keys = pygame.key.get_pressed()
+        any_ctrl = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
+        any_shift = keys[pygame.K_LSHIFT] or keys[pygame.K_RSHIFT]
+        any_alt = keys[pygame.K_LALT] or keys[pygame.K_RALT]
+        any_copy = keys[pygame.K_c] or keys[pygame.K_x]
+        return any_ctrl and not any_shift and not any_alt and any_copy
+
     def on_key_down(self, event: Event) -> bool:
         for char in event.unicode:
             code = ord(char)
@@ -113,6 +123,10 @@ class PygameRenderer(FixedPipelineRenderer):
                 self.io.add_input_character(code)
 
         self.update_key_state(event.key, True)
+
+        if self.is_copy_shortcut_pressed():
+            self._clipboard_copy = True
+
         return True
 
     def on_key_up(self, event: Event) -> bool:
@@ -125,18 +139,14 @@ class PygameRenderer(FixedPipelineRenderer):
         self.io.display_size = event.x, event.y
         return True
 
-    @staticmethod
-    def do_after() -> None:
-        keys = pygame.key.get_pressed()
-        any_ctrl = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
-        any_copy = keys[pygame.K_c] or keys[pygame.K_x]
-        if any_ctrl and any_copy:
-            clipboard_text = imgui.get_clipboard_text()
-            if clipboard_text:
-                logger.debug(f"Pygame scrap put text: {clipboard_text}")
-                pygame.scrap.put_text(clipboard_text)
-            else:
-                logger.debug("Empty clipboard text")
+    def do_after(self) -> None:
+        if not self._clipboard_copy:
+            return
+
+        self._clipboard_copy = False
+        clipboard_text = imgui.get_clipboard_text()
+        logger.debug(f"Pygame scrap put text: '{clipboard_text}'")
+        pygame.scrap.put_text(clipboard_text)
 
     def do_event(self, event: Event) -> bool:
         if event.type in self._events:

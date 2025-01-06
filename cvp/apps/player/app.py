@@ -196,10 +196,15 @@ class PlayerApplication:
                     buffer.write(f"message='{str(wm.message)}' ")
                     buffer.write(f"file={wm.filename}:{wm.lineno}>")
                 else:
-                    buffer.write(f"{str(wm.message)}")
+                    buffer.write(str(wm.message))
                 logger.warning(buffer.getvalue())
 
         imgui.create_context()
+
+        # When the clipboard is empty,
+        # calling get_clipboard_text can cause a 'Segmentation Fault'.
+        imgui.set_clipboard_text(str())
+
         io = imgui.get_io()
         io.display_size = size
         io.ini_file_name = None

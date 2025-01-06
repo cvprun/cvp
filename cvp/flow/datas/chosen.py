@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import Iterable, List, Optional, TypeAlias, TypeGuard, Union
+from copy import deepcopy
+from typing import Iterable, List, Optional, Tuple, TypeAlias, TypeGuard, Union
+from uuid import uuid4
 
 from cvp.flow.datas.arc import Arc
 from cvp.flow.datas.node import Node
+from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
+from cvp.types.shapes import Point
 
 SelectableKey: TypeAlias = int
 SelectableAny = Union[Node, Pin, Arc]
@@ -86,21 +90,15 @@ class SelectedItems:
     def selected_pin_only(self) -> Optional[Pin]:
         if 1 != len(self._items):
             return None
-        first_item = next(iter(self._items.values()))
-        if isinstance(first_item, Pin):
-            return first_item
-        else:
-            return None
+        first = self.first
+        return first if isinstance(first, Pin) else None
 
     @property
     def selected_arc_only(self) -> Optional[Arc]:
         if 1 != len(self._items):
             return None
-        first_item = next(iter(self._items.values()))
-        if isinstance(first_item, Arc):
-            return first_item
-        else:
-            return None
+        first = self.first
+        return first if isinstance(first, Arc) else None
 
     def clear(self) -> None:
         self._items.clear()
@@ -126,3 +124,56 @@ class SelectedItems:
             self.add(item)
         else:
             self.remove_noraise(item)
+
+    def as_validated_items(self, point: Point) -> Tuple[List[Node], List[Arc]]:
+        nodes = self.nodes
+        arcs = self.arcs
+        dx = min([node.x1 for node in nodes])
+        dy = min([node.y1 for node in nodes])
+        x, y = point
+
+        new_nodes = list()
+        new_arcs = list()
+        arc_uuid_mapping = dict()
+
+        for arc in arcs:
+            arc = deepcopy(arc)
+            new_arc_uuid = str(uuid4())
+            arc_uuid_mapping[arc.uuid] = new_arc_uuid
+            arc.uuid = new_arc_uuid
+            arc.output = None
+            arc.input = None
+            arc.polyline = list()
+            new_arcs.append(arc)
+
+        for node in nodes:
+            node = deepcopy(node)
+            node.uuid = str(uuid4())
+            nx, ny = node.node_pos
+            node.node_pos = x + nx - dx, y + ny - dy
+            new_nodes.append(node)
+
+            for pin in node.pins:
+                pin_arc_uuids = list()
+                for arc_uuid in pin.arcs:
+                    if arc_uuid in arc_uuid_mapping:
+                        pin_arc_uuids.append(arc_uuid_mapping[arc_uuid])
+                pin.arcs = pin_arc_uuids
+
+        for arc in new_arcs.copy():
+            for node in new_nodes:
+                if input_pin := node.find_input_pin(arc.uuid):
+                    arc.input = NodePin(node, input_pin)
+                if output_pin := node.find_output_pin(arc.uuid):
+                    arc.output = NodePin(node, output_pin)
+
+            if arc.input and arc.output:
+                new_arcs.remove(arc)
+                for node in new_nodes:
+                    for pin in node.pins:
+                        try:
+                            pin.arcs.remove(arc.uuid)
+                        except ValueError:
+                            pass
+
+        return new_nodes, new_arcs
