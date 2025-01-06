@@ -8,6 +8,7 @@ from imgui.integrations.opengl import FixedPipelineRenderer
 from pygame.event import Event
 from pygame.time import get_ticks
 
+from cvp.logging.logging import logger
 from cvp.renderer.remapper import KeycodeRemapper
 
 
@@ -130,7 +131,12 @@ class PygameRenderer(FixedPipelineRenderer):
         any_ctrl = keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]
         any_copy = keys[pygame.K_c] or keys[pygame.K_x]
         if any_ctrl and any_copy:
-            pygame.scrap.put_text(imgui.get_clipboard_text())
+            clipboard_text = imgui.get_clipboard_text()
+            if clipboard_text:
+                logger.debug(f"Pygame scrap put text: {clipboard_text}")
+                pygame.scrap.put_text(clipboard_text)
+            else:
+                logger.debug("Empty clipboard text")
 
     def do_event(self, event: Event) -> bool:
         if event.type in self._events:

@@ -71,6 +71,16 @@ class Graph:
         self.control = other.control
         self._chosen = other._chosen
 
+    def add_items(self, point: Point, items: SelectedItems):
+        # for node in items.nodes:
+        #     node = deepcopy(node)
+        #     node.uuid = uuid4()
+        #     nx, ny = node.node_pos
+        #     # TODO RE calc
+        #     # node.node_pos = nx + point[0], ny + point[1]
+        #     # self.nodes.append(node)
+        pass
+
     @property
     def selected_items(self):
         return self._chosen
