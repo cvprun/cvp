@@ -12,7 +12,7 @@ import shapely
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.anchor import Anchor
 from cvp.flow.datas.arc import Arc
-from cvp.flow.datas.connect_pair import ConnectPair
+from cvp.flow.datas.connection import Connection
 from cvp.flow.datas.control import Control
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
@@ -374,7 +374,7 @@ class Graph:
         raise IndexError("Could not find the input pin of the arc")
 
     @staticmethod
-    def reorder_connectable_pins(left: NodePin, right: NodePin) -> ConnectPair:
+    def reorder_connectable_pins(left: NodePin, right: NodePin) -> Connection:
         if left.node == right.node:
             raise ValueError("Identical nodes cannot be connected")
         if left.pin.stream == right.pin.stream:
@@ -406,7 +406,7 @@ class Graph:
         if action == Action.data and in_pin.arcs:
             raise ValueError("There cannot be multiple input data pins")
 
-        return ConnectPair(out_conn, in_conn)
+        return Connection(out_conn, in_conn)
 
     @staticmethod
     def is_connectable_pins(left: NodePin, right: NodePin) -> bool:

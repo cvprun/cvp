@@ -6,7 +6,7 @@ from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.prefix import Prefix
 
 
-class ConnectPair(NamedTuple):
+class Connection(NamedTuple):
     output: NodePin
     input: NodePin
 
