@@ -7,6 +7,7 @@ import imgui
 from cvp.config.sections.flow.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.datas.arc import Arc
+from cvp.flow.datas.chosen import SelectedItems
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.line_type import (
     LINE_TYPE_INDEX2NAME,
@@ -16,7 +17,6 @@ from cvp.flow.datas.line_type import (
 )
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.pin import Pin
-from cvp.flow.datas.selected_items import SelectedItems
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo

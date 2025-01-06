@@ -145,6 +145,22 @@ class ControllerProps:
         return self._alt_down.value
 
     @property
+    def only_shift_down(self):
+        return self.shift_down and not self.ctrl_down and not self.alt_down
+
+    @property
+    def only_ctrl_down(self):
+        return not self.shift_down and self.ctrl_down and not self.alt_down
+
+    @property
+    def only_alt_down(self):
+        return not self.shift_down and not self.ctrl_down and self.alt_down
+
+    @property
+    def not_any_modifier_down(self):
+        return not self.shift_down and not self.ctrl_down and not self.alt_down
+
+    @property
     def changed_left_down(self) -> bool:
         return self._left_button.changed_down
 

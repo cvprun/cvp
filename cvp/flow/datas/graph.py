@@ -12,12 +12,12 @@ import shapely
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.anchor import Anchor
 from cvp.flow.datas.arc import Arc
+from cvp.flow.datas.chosen import SelectableAny, SelectedItems
 from cvp.flow.datas.connect_pair import ConnectPair
 from cvp.flow.datas.control import Control
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
-from cvp.flow.datas.selected_items import SelectableAny, SelectedItems
 from cvp.flow.datas.stream import Stream
 from cvp.flow.datas.templates.graph import GraphTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -36,7 +36,7 @@ class Graph:
     arcs: List[Arc] = field(default_factory=list)
     control: Control = field(default_factory=Control)
 
-    _selected_items: SelectedItems = field(default_factory=SelectedItems)
+    _chosen: SelectedItems = field(default_factory=SelectedItems)
 
     @classmethod
     def from_template(cls, template: GraphTemplate):
@@ -69,29 +69,29 @@ class Graph:
         self.nodes = other.nodes
         self.arcs = other.arcs
         self.control = other.control
-        self._selected_items = other._selected_items
+        self._chosen = other._chosen
 
     @property
     def selected_items(self):
-        return self._selected_items
+        return self._chosen
 
     @property
     def selected_arc_only(self) -> Optional[Arc]:
-        return self._selected_items.selected_arc_only
+        return self._chosen.selected_arc_only
 
     def update_selected_item(self, item: SelectableAny) -> None:
-        self._selected_items.apply(item)
+        self._chosen.apply(item)
 
     def update_selected_nodes(self) -> None:
         for node in self.nodes:
-            self._selected_items.apply(node)
+            self._chosen.apply(node)
 
     def select_item(self, item: SelectableAny, *, selected=True) -> None:
         item.selected = selected
         if selected:
-            self._selected_items.add(item)
+            self._chosen.add(item)
         else:
-            self._selected_items.remove(item)
+            self._chosen.remove(item)
 
     def select_all_nodes(self) -> None:
         for node in self.nodes:
@@ -274,7 +274,7 @@ class Graph:
             arc.start_anchor.selected = False
             arc.end_anchor.selected = False
 
-        self._selected_items.clear()
+        self._chosen.clear()
 
     def flip_selected_on_hovering_item(self) -> Optional[Union[Node, Pin, Arc]]:
         if node := self.find_hovering_node():
@@ -283,17 +283,17 @@ class Graph:
             if pin := node.find_hovering_pin():
                 assert pin.hovering
                 pin.selected = not pin.selected
-                self._selected_items.apply(pin)
+                self._chosen.apply(pin)
                 return pin
             else:
                 node.selected = not node.selected
-                self._selected_items.apply(node)
+                self._chosen.apply(node)
                 return node
 
         if arc := self.find_hovering_arc():
             assert arc.hovering
             arc.selected = not arc.selected
-            self._selected_items.apply(arc)
+            self._chosen.apply(arc)
             return arc
 
         return None
@@ -471,7 +471,7 @@ class Graph:
         if arc.output:
             arc.output.pin.arcs.remove(arc.uuid)
         self.arcs.remove(arc)
-        self._selected_items.remove_noraise(arc)
+        self._chosen.remove_noraise(arc)
 
     def remove_selected_arcs(self) -> None:
         for arc in self.find_selected_arcs():
@@ -483,9 +483,9 @@ class Graph:
                 if arc := self.find_arc(arc_uuid):
                     self.remove_arc(arc)
 
-            self._selected_items.remove_noraise(pin)
+            self._chosen.remove_noraise(pin)
         self.nodes.remove(node)
-        self._selected_items.remove_noraise(node)
+        self._chosen.remove_noraise(node)
 
     def remove_selected_nodes(self) -> None:
         for node in self.find_selected_nodes():
