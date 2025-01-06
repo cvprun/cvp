@@ -314,6 +314,14 @@ class PlayerApplication:
     def on_event_fallback(self, event: Event) -> None:
         if event.type == pygame.QUIT:
             self._confirm_quit.show()
+        elif event.type == pygame.DROPBEGIN:
+            logger.debug("Drop BEGIN")
+        elif event.type == pygame.DROPCOMPLETE:
+            logger.debug("Drop COMPLETE")
+        elif event.type == pygame.DROPFILE:
+            logger.debug(f"Drop FILE: {event.file}")
+        elif event.type == pygame.DROPTEXT:
+            logger.debug(f"Drop TEXT: {event.text}")
         elif event.type == pygame.WINDOWRESIZED:
             self._world.on_window_resized(event.x, event.y)
 
