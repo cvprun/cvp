@@ -361,33 +361,6 @@ class CanvasGraph(CanvasController):
         self.graph.clear_state()
         self.graph.update_hovering_state(self.mouse_to_canvas_coords())
 
-        if self.pressed_delete:
-            self.graph.remove_selected_items()
-            self.save_history("Remove selected items")
-
-        if self.pressed_escape:
-            self.graph.unselect_all_items()
-
-        if self.ctrl_down:
-            if self.history.undoable and self.pressed_z:
-                self.undo_history()
-            elif self.history.redoable:
-                if self.pressed_y or (self.shift_down and self.pressed_z):
-                    self.redo_history()
-
-            if self.pressed_a:
-                if self.shift_down:
-                    self.graph.select_all_items()
-                else:
-                    self.graph.select_all_nodes()
-
-            if self.pressed_x:
-                pass
-            elif self.pressed_c:
-                pass
-            elif self.pressed_v:
-                pass
-
         if self.is_pan_mode:
             # Nodes cannot be selected or dragged during 'Canvas Pan Mode'.
             return

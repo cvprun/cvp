@@ -419,6 +419,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.begin_child_canvas()
         try:
             with canvas:
+                self.on_canvas_events(canvas)
                 self.on_canvas(canvas)
         finally:
             imgui.end_child()
@@ -432,6 +433,53 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         finally:
             imgui.pop_style_color()
             imgui.pop_style_var()
+
+    def on_canvas_events(self, canvas: CanvasGraph) -> None:
+        assert canvas.opened
+        ctrl_down = canvas.ctrl_down
+        shift_down = canvas.shift_down
+        alt_down = canvas.alt_down
+        only_ctrl = ctrl_down and not shift_down and not alt_down
+        ctrl_shift = ctrl_down and shift_down and not alt_down
+
+        if self.imgui_is_pressed_delete():
+            canvas.graph.remove_selected_items()
+            canvas.save_history("Remove selected items")
+            return
+
+        if self.imgui_is_pressed_escape():
+            canvas.graph.unselect_all_items()
+            return
+
+        if canvas.history.undoable:
+            if only_ctrl and self.imgui_is_pressed_z():
+                canvas.undo_history()
+                return
+
+        if canvas.history.redoable:
+            if only_ctrl and self.imgui_is_pressed_y():
+                canvas.redo_history()
+                return
+            elif ctrl_shift and self.imgui_is_pressed_z():
+                canvas.redo_history()
+                return
+
+        if only_ctrl and self.imgui_is_pressed_a():
+            canvas.graph.select_all_nodes()
+            return
+
+        if ctrl_shift and self.imgui_is_pressed_a():
+            canvas.graph.select_all_items()
+            return
+
+        if only_ctrl and self.imgui_is_pressed_x():
+            return
+
+        if only_ctrl and self.imgui_is_pressed_c():
+            return
+
+        if only_ctrl and self.imgui_is_pressed_y():
+            return
 
     def on_canvas(self, canvas: CanvasGraph) -> None:
         assert canvas.opened

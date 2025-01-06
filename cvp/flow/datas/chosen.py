@@ -110,23 +110,14 @@ class SelectedItems:
             self._items[id(item)] = item
 
     def add(self, item: SelectableAny) -> None:
-        if not item.selected:
-            raise ValueError("Item must be selected")
-
         self._items[id(item)] = item
+
+    def remove(self, item: SelectableAny) -> None:
+        self._items.pop(id(item))
 
     def remove_noraise(self, item: SelectableAny) -> None:
         try:
-            self._items.pop(id(item))
-        except KeyError:
-            pass
-
-    def remove(self, item: SelectableAny) -> None:
-        if item.selected:
-            raise ValueError("Items must be unselected")
-
-        try:
-            self._items.pop(id(item))
+            self.remove(item)
         except KeyError:
             pass
 
@@ -134,4 +125,4 @@ class SelectedItems:
         if item.selected:
             self.add(item)
         else:
-            self.remove(item)
+            self.remove_noraise(item)

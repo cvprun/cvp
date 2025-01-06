@@ -91,7 +91,7 @@ class Graph:
         if selected:
             self._chosen.add(item)
         else:
-            self._chosen.remove(item)
+            self._chosen.remove_noraise(item)
 
     def select_all_nodes(self) -> None:
         for node in self.nodes:
@@ -482,7 +482,6 @@ class Graph:
             for arc_uuid in pin.arcs:
                 if arc := self.find_arc(arc_uuid):
                     self.remove_arc(arc)
-
             self._chosen.remove_noraise(pin)
         self.nodes.remove(node)
         self._chosen.remove_noraise(node)
