@@ -30,6 +30,7 @@ from cvp.config.sections.overlay import OverlayWindowConfig
 from cvp.config.sections.preference import PreferenceManagerConfig as PrefManagerConfig
 from cvp.config.sections.process import ProcessManagerConfig
 from cvp.config.sections.stitching import StitchingAuiConfig
+from cvp.config.sections.terminal import TerminalWindowConfig
 from cvp.config.sections.text import TextWindowConfig
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
@@ -54,6 +55,7 @@ class Config:
     glyph_hack_window: GhWindowConfig = field(default_factory=GhWindowConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
     hex_window: HexWindowConfig = field(default_factory=HexWindowConfig)
+    image_window: ImageWindowConfig = field(default_factory=ImageWindowConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     labeling_aui: LabelingAuiConfig = field(default_factory=LabelingAuiConfig)
     layout_manager: LayoutManagerConfig = field(default_factory=LayoutManagerConfig)
@@ -66,8 +68,8 @@ class Config:
     overlay_window: OverlayWindowConfig = field(default_factory=OverlayWindowConfig)
     preference_manager: PrefManagerConfig = field(default_factory=PrefManagerConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
-    image_window: ImageWindowConfig = field(default_factory=ImageWindowConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
+    terminal_window: TerminalWindowConfig = field(default_factory=TerminalWindowConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)
     text_window: TextWindowConfig = field(default_factory=TextWindowConfig)
     toast_window: ToastWindowConfig = field(default_factory=ToastWindowConfig)

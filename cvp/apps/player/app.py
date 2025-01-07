@@ -43,6 +43,7 @@ from cvp.windows.overlay import OverlayWindow
 from cvp.windows.preference import PreferenceManager
 from cvp.windows.process import ProcessManager
 from cvp.windows.stitching import StitchingWindow
+from cvp.windows.terminal import TerminalWindow
 from cvp.windows.text import TextWindow
 from cvp.windows.toast import ToastWindow
 from cvp.windows.window import WindowManager
@@ -72,6 +73,7 @@ class PlayerApplication:
         self._pref_manager = PreferenceManager(self._context)
         self._process_manager = ProcessManager(self._context)
         self._stitching = StitchingWindow(self._context)
+        self._terminal = TerminalWindow(self._context)
         self._tetrix = TetrixWindow(self._context)
         self._text = TextWindow(self._context)
         self._toast = ToastWindow(self._context)
@@ -266,6 +268,7 @@ class PlayerApplication:
             self._pref_manager,
             self._process_manager,
             self._stitching,
+            self._terminal,
             self._tetrix,
             self._text,
             self._toast,
@@ -409,7 +412,6 @@ class PlayerApplication:
 
         imgui.separator()
         imgui.menu_item("Network Device", None, False, False)
-
         if imgui.menu_item("Media", None, self._media_manager.opened)[0]:
             self._media_manager.flip_opened()
         if imgui.menu_item("ONVIF", None, self._onvif_manager.opened)[0]:
@@ -419,19 +421,22 @@ class PlayerApplication:
 
         imgui.separator()
         imgui.menu_item("Information", None, False, False)
-
         if imgui.menu_item("Overlay", None, self._overlay.opened)[0]:
             self._overlay.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Management", None, False, False)
-
         if imgui.menu_item("Layout", None, self._layout_manager.opened)[0]:
             self._layout_manager.flip_opened()
         if imgui.menu_item("Process", None, self._process_manager.opened)[0]:
             self._process_manager.flip_opened()
         if imgui.menu_item("Window", None, self._window_manager.opened)[0]:
             self._window_manager.flip_opened()
+
+        imgui.separator()
+        imgui.menu_item("Development", None, False, False)
+        if imgui.menu_item("Terminal", None, self._terminal.opened)[0]:
+            self._terminal.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Game", None, False, False)
@@ -441,7 +446,6 @@ class PlayerApplication:
             self._glyph_hack.flip_opened()
 
         imgui.separator()
-
         if imgui.menu_item("Font", None, self._font_manager.opened)[0]:
             self._font_manager.flip_opened()
         if imgui.menu_item("Preference", "Ctrl+Alt+S", self._pref_manager.opened)[0]:
