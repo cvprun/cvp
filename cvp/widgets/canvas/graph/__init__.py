@@ -731,7 +731,7 @@ class CanvasGraph(CanvasController):
             pin.name_pos = name_x, name_y
 
     def draw_nodes(self) -> None:
-        for node in reversed(self.graph.nodes):
+        for node in self.graph.nodes:
             self.draw_node(node)
 
     def draw_node(self, node: Node) -> None:

@@ -110,5 +110,5 @@ class FlowManager(OrderedDict[str, Graph]):
     def add_node(self, graph: Graph, path: Union[str, FlowPath]) -> Node:
         node_template = self.get_node_template(path)
         node = Node.from_template(node_template)
-        graph.nodes.insert(0, node)
+        graph.nodes.append(node)
         return node

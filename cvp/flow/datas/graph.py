@@ -76,7 +76,7 @@ class Graph:
         items: Selection,
         point: Optional[Point] = None,
         *,
-        selected=False,
+        selected: Optional[bool] = None,
     ) -> None:
         if point is None:
             gx, gy = items.group_pos
@@ -86,18 +86,16 @@ class Graph:
         assert point is not None
         nodes, arcs = items.as_validated_items(point)
 
-        for node in nodes:
-            for pin in node.pins:
-                pin.selected = False
-            node.selected = selected
-        for arc in arcs:
-            arc.selected = selected
+        if selected is not None:
+            for node in nodes:
+                for pin in node.pins:
+                    pin.selected = False
+                node.selected = selected
+            for arc in arcs:
+                arc.selected = selected
 
-        for node in reversed(nodes):
-            self.nodes.insert(0, node)
-        for arc in reversed(arcs):
-            self.arcs.insert(0, arc)
-
+        self.nodes.extend(nodes)
+        self.arcs.extend(arcs)
         self.update_selected_items()
         self.update_arcs_polyline(force=True)
 
@@ -536,30 +534,6 @@ class Graph:
         self.remove_selected_nodes()
         self.remove_selected_arcs()
 
-    def items_to_front(self, items: Sequence[SelectableAny]) -> None:
-        for item in items:
-            self.item_to_front(item)
-
-    def item_to_front(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
-            self.node_to_front(item)
-        elif isinstance(item, Arc):
-            self.arc_to_front(item)
-        else:
-            raise TypeError(f"Unsupported item type: {type(item).__name__}")
-
-    def node_to_front(self, node: Node) -> None:
-        index = self.nodes.index(node)
-        if 0 <= index - 1:
-            assert node == self.nodes.pop(index)
-            self.nodes.insert(index - 1, node)
-
-    def arc_to_front(self, arc: Arc) -> None:
-        index = self.arcs.index(arc)
-        if 0 <= index - 1:
-            assert arc == self.arcs.pop(index)
-            self.arcs.insert(index - 1, arc)
-
     def items_to_back(self, items: Sequence[SelectableAny]) -> None:
         for item in items:
             self.item_to_back(item)
@@ -574,35 +548,39 @@ class Graph:
 
     def node_to_back(self, node: Node) -> None:
         index = self.nodes.index(node)
+        if 0 <= index - 1:
+            assert node == self.nodes.pop(index)
+            self.nodes.insert(index - 1, node)
+
+    def arc_to_back(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if 0 <= index - 1:
+            assert arc == self.arcs.pop(index)
+            self.arcs.insert(index - 1, arc)
+
+    def items_to_front(self, items: Sequence[SelectableAny]) -> None:
+        for item in items:
+            self.item_to_front(item)
+
+    def item_to_front(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_to_front(item)
+        elif isinstance(item, Arc):
+            self.arc_to_front(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_to_front(self, node: Node) -> None:
+        index = self.nodes.index(node)
         if index + 1 < len(self.nodes):
             assert node == self.nodes.pop(index)
             self.nodes.insert(index + 1, node)
 
-    def arc_to_back(self, arc: Arc) -> None:
+    def arc_to_front(self, arc: Arc) -> None:
         index = self.arcs.index(arc)
         if index + 1 < len(self.arcs):
             assert arc == self.arcs.pop(index)
             self.arcs.insert(index + 1, arc)
-
-    def item_bring_forward(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
-            self.node_bring_forward(item)
-        elif isinstance(item, Arc):
-            self.arc_bring_forward(item)
-        else:
-            raise TypeError(f"Unsupported item type: {type(item).__name__}")
-
-    def node_bring_forward(self, node: Node) -> None:
-        index = self.nodes.index(node)
-        if 0 != index:
-            assert node == self.nodes.pop(index)
-            self.nodes.insert(0, node)
-
-    def arc_bring_forward(self, arc: Arc) -> None:
-        index = self.arcs.index(arc)
-        if 0 != index:
-            assert arc == self.arcs.pop(index)
-            self.arcs.insert(0, arc)
 
     def item_send_backward(self, item: SelectableAny) -> None:
         if isinstance(item, Node):
@@ -614,11 +592,31 @@ class Graph:
 
     def node_send_backward(self, node: Node) -> None:
         index = self.nodes.index(node)
+        if 0 != index:
+            assert node == self.nodes.pop(index)
+            self.nodes.insert(0, node)
+
+    def arc_send_backward(self, arc: Arc) -> None:
+        index = self.arcs.index(arc)
+        if 0 != index:
+            assert arc == self.arcs.pop(index)
+            self.arcs.insert(0, arc)
+
+    def item_bring_forward(self, item: SelectableAny) -> None:
+        if isinstance(item, Node):
+            self.node_bring_forward(item)
+        elif isinstance(item, Arc):
+            self.arc_bring_forward(item)
+        else:
+            raise TypeError(f"Unsupported item type: {type(item).__name__}")
+
+    def node_bring_forward(self, node: Node) -> None:
+        index = self.nodes.index(node)
         if index < len(self.arcs) - 1:
             assert node == self.nodes.pop(index)
             self.nodes.append(node)
 
-    def arc_send_backward(self, arc: Arc) -> None:
+    def arc_bring_forward(self, arc: Arc) -> None:
         index = self.arcs.index(arc)
         if index < len(self.arcs) - 1:
             assert arc == self.arcs.pop(index)
