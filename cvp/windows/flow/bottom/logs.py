@@ -153,6 +153,13 @@ class LogsTab(TabItem[FlowCursor]):
 
         bottom_spacing = imgui.get_style().item_spacing.y
         with begin_child("##Logging", 0, -bottom_spacing, border=False):
+            if self.autoscroll:
+                if imgui.is_window_hovered(imgui.HOVERED_ROOT_AND_CHILD_WINDOWS):
+                    if imgui.is_mouse_down(imgui.MOUSE_BUTTON_LEFT):
+                        self.autoscroll = False
+                    elif imgui.get_io().mouse_wheel != 0:
+                        self.autoscroll = False
+
             filter_level = self.get_level_number()
 
             for line in self._records:
