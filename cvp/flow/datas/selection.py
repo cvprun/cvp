@@ -125,12 +125,18 @@ class Selection:
         else:
             self.remove_noraise(item)
 
+    @property
+    def group_pos(self) -> Point:
+        x = min([node.x1 for node in self.nodes])
+        y = min([node.y1 for node in self.nodes])
+        return x, y
+
     def as_validated_items(self, point: Point) -> Tuple[List[Node], List[Arc]]:
         nodes = self.nodes
         arcs = self.arcs
-        dx = min([node.x1 for node in nodes])
-        dy = min([node.y1 for node in nodes])
-        x, y = point
+        dx, dy = self.group_pos
+        x = point[0] - dx
+        y = point[1] - dy
 
         new_nodes = list()
         new_arcs = list()
@@ -150,7 +156,7 @@ class Selection:
             node = deepcopy(node)
             node.uuid = str(uuid4())
             nx, ny = node.node_pos
-            node.node_pos = x + nx - dx, y + ny - dy
+            node.node_pos = x + nx, y + ny
             new_nodes.append(node)
 
             for pin in node.pins:

@@ -86,6 +86,7 @@ Increase to reduce quality.
 
 FLOW_BACKGROUND_COLOR: Final[RGBA] = 0.5, 0.5, 0.5, 1.0
 FLOW_MAX_HISTORY: Final[int] = 20
+FLOW_PASTE_MARGIN: Final[float] = 20.0
 
 FLOW_NODE_SHOW_LAYOUT: Final[bool] = False
 FLOW_NODE_ITEM_SPACING: Final[Size] = 2.0, 2.0

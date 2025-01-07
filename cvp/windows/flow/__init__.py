@@ -19,6 +19,7 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
+from cvp.types.shapes import Point
 from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
 from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.graph import CanvasGraph
@@ -143,6 +144,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def _process_edit_menu(
         fm: FlowManager,
         canvas: Optional[CanvasGraph] = None,
+        paste_cursor: Optional[Point] = None,
     ) -> None:
         if canvas is not None and canvas.opened:
             opened = True
@@ -175,8 +177,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             fm.set_clipboard(canvas.graph.selected_items.copy())
         if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
             assert canvas is not None
-            mouse = canvas.mouse_to_canvas_coords()
-            canvas.graph.add_items(mouse, fm.clipboard)
+            canvas.graph.unselect_all_items()
+            canvas.graph.add_items(fm.clipboard, selected=True)
             canvas.save_history("Paste selected items")
 
         imgui.separator()
@@ -524,8 +526,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             return
 
         if only_ctrl and self.imgui_is_pressed_v():
-            mouse = canvas.mouse_to_canvas_coords()
-            canvas.graph.add_items(mouse, self.context.fm.clipboard)
+            canvas.graph.unselect_all_items()
+            canvas.graph.add_items(self.context.fm.clipboard, selected=True)
             canvas.save_history("Paste selected items")
             return
 

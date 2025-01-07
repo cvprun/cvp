@@ -71,10 +71,34 @@ class Graph:
         self.control = other.control
         self._chosen = other._chosen
 
-    def add_items(self, point: Point, items: Selection) -> None:
+    def add_items(
+        self,
+        items: Selection,
+        point: Optional[Point] = None,
+        *,
+        selected=False,
+    ) -> None:
+        if point is None:
+            gx, gy = items.group_pos
+            margin = self.control.paste_margin
+            point = gx + margin, gy + margin
+
+        assert point is not None
         nodes, arcs = items.as_validated_items(point)
-        self.nodes.extend(nodes)
-        self.arcs.extend(arcs)
+
+        for node in nodes:
+            for pin in node.pins:
+                pin.selected = False
+            node.selected = selected
+        for arc in arcs:
+            arc.selected = selected
+
+        for node in reversed(nodes):
+            self.nodes.insert(0, node)
+        for arc in reversed(arcs):
+            self.arcs.insert(0, arc)
+
+        self.update_selected_items()
         self.update_arcs_polyline(force=True)
 
     @property
@@ -88,9 +112,21 @@ class Graph:
     def update_selected_item(self, item: SelectableAny) -> None:
         self._chosen.apply(item)
 
+    def update_selected_items(self) -> None:
+        for node in self.nodes:
+            for pin in node.pins:
+                self._chosen.apply(pin)
+            self._chosen.apply(node)
+        for arc in self.arcs:
+            self._chosen.apply(arc)
+
     def update_selected_nodes(self) -> None:
         for node in self.nodes:
             self._chosen.apply(node)
+
+    def update_selected_arcs(self) -> None:
+        for arc in self.arcs:
+            self._chosen.apply(arc)
 
     def select_item(self, item: SelectableAny, *, selected=True) -> None:
         item.selected = selected
