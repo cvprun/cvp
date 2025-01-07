@@ -11,7 +11,7 @@ DEFAULT_CELL_PIXELS: Final[int] = 20
 
 
 @dataclass
-class GlyphWorldWindowConfig(WindowConfig):
+class GlyphHackWindowConfig(WindowConfig):
     board_rows: int = DEFAULT_BOARD_ROWS
     board_cols: int = DEFAULT_BOARD_COLS
     cell_pixels: int = DEFAULT_CELL_PIXELS

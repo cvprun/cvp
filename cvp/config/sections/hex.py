@@ -7,10 +7,10 @@ from cvp.config.sections.bases.window import WindowConfig
 
 
 @dataclass
-class TextWindowConfig(WindowConfig):
+class HexWindowConfig(WindowConfig):
     file: str = field(default_factory=str)
 
 
 @dataclass
-class TextManagerConfig(ManagerWindowConfig):
+class HexManagerConfig(ManagerWindowConfig):
     pass

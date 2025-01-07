@@ -31,7 +31,7 @@ from cvp.renderer.window.mapper import WindowMapper
 from cvp.renderer.world.world import World
 from cvp.windows.flow import FlowWindow
 from cvp.windows.font import FontManager
-from cvp.windows.games.glyph_world import GlyphWorldWindow
+from cvp.windows.games.glyph_hack import GlyphHackWindow
 from cvp.windows.games.tetrix import TetrixWindow
 from cvp.windows.labeling import LabelingWindow
 from cvp.windows.layout import LayoutManager
@@ -67,7 +67,7 @@ class PlayerApplication:
         self._process_manager = ProcessManager(self._context)
         self._stitching = StitchingWindow(self._context)
         self._tetrix = TetrixWindow(self._context)
-        self._glyph_world = GlyphWorldWindow(self._context)
+        self._glyph_world = GlyphHackWindow(self._context)
         self._toast = ToastWindow(self._context)
         self._window_manager = WindowManager(self._context, self._windows)
         self._wsd_manager = WsdManager(self._context)

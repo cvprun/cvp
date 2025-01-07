@@ -5,11 +5,11 @@ from typing import Tuple
 import imgui
 import numpy as np
 
-from cvp.config.sections.games.glyph_world import (
+from cvp.config.sections.games.glyph_hack import (
     DEFAULT_BOARD_COLS,
     DEFAULT_BOARD_ROWS,
     DEFAULT_CELL_PIXELS,
-    GlyphWorldWindowConfig,
+    GlyphHackWindowConfig,
 )
 from cvp.context.context import Context
 from cvp.imgui.button import button
@@ -18,18 +18,18 @@ from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
-class GlyphWorldWindow(WindowBase[GlyphWorldWindowConfig]):
+class GlyphHackWindow(WindowBase[GlyphHackWindowConfig]):
     def __init__(self, context: Context):
         super().__init__(
             context=context,
-            window_config=context.config.glyph_world_window,
-            title="Glyph World",
+            window_config=context.config.glyph_hack_window,
+            title="Glyph Hack",
             closable=True,
             flags=None,
             modifiable_title=False,
         )
 
-        config = context.config.glyph_world_window
+        config = context.config.glyph_hack_window
         assert DEFAULT_BOARD_ROWS <= config.board_rows
         assert DEFAULT_BOARD_COLS <= config.board_cols
         assert DEFAULT_CELL_PIXELS <= config.cell_pixels

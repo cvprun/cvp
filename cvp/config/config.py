@@ -15,9 +15,10 @@ from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.font import FontConfig, FontManagerConfig
-from cvp.config.sections.games.glyph_world import GlyphWorldWindowConfig
+from cvp.config.sections.games.glyph_hack import GlyphHackWindowConfig as GhWindowConfig
 from cvp.config.sections.games.tetrix import TetrixWindowConfig
 from cvp.config.sections.graphic import GraphicConfig
+from cvp.config.sections.hex import HexManagerConfig, HexWindowConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.labeling import LabelingAuiConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
@@ -28,6 +29,7 @@ from cvp.config.sections.overlay import OverlayWindowConfig
 from cvp.config.sections.preference import PreferenceManagerConfig as PrefManagerConfig
 from cvp.config.sections.process import ProcessManagerConfig
 from cvp.config.sections.stitching import StitchingAuiConfig
+from cvp.config.sections.text import TextManagerConfig, TextWindowConfig
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
 from cvp.config.sections.wsd import WsdConfig, WsdManagerConfig
@@ -48,10 +50,10 @@ class Config:
     flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
     font: FontConfig = field(default_factory=FontConfig)
     font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
-    glyph_world_window: GlyphWorldWindowConfig = field(
-        default_factory=GlyphWorldWindowConfig,
-    )
+    glyph_hack_window: GhWindowConfig = field(default_factory=GhWindowConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
+    hex_manager: HexManagerConfig = field(default_factory=HexManagerConfig)
+    hex_windows: List[HexWindowConfig] = field(default_factory=list)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     labeling_aui: LabelingAuiConfig = field(default_factory=LabelingAuiConfig)
     layout_manager: LayoutManagerConfig = field(default_factory=LayoutManagerConfig)
@@ -66,6 +68,8 @@ class Config:
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)
+    text_manager: TextManagerConfig = field(default_factory=TextManagerConfig)
+    text_windows: List[TextWindowConfig] = field(default_factory=list)
     toast_window: ToastWindowConfig = field(default_factory=ToastWindowConfig)
     window_manager: WindowManagerConfig = field(default_factory=WindowManagerConfig)
     wsd_manager: WsdManagerConfig = field(default_factory=WsdManagerConfig)
@@ -103,6 +107,18 @@ class Config:
         if index < 0:
             raise KeyError(f"Not found wsd: '{epr}'")
         return self.wsds.pop(index)
+
+    def remove_hex_window(self, uuid: str):
+        index = find_index(self.hex_windows, lambda hw: hw.uuid == uuid)
+        if index < 0:
+            raise KeyError(f"Not found hex window: '{uuid}'")
+        return self.hex_windows.pop(index)
+
+    def remove_text_window(self, uuid: str):
+        index = find_index(self.text_windows, lambda hw: hw.uuid == uuid)
+        if index < 0:
+            raise KeyError(f"Not found text window: '{uuid}'")
+        return self.text_windows.pop(index)
 
     def dumps_yaml(self, encoding="utf-8") -> bytes:
         return dump(serialize(self), Dumper=DefaultDumper).encode(encoding)
