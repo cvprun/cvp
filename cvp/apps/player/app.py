@@ -40,6 +40,7 @@ from cvp.windows.layout import LayoutManager
 from cvp.windows.media import MediaManager
 from cvp.windows.onvif import OnvifManager
 from cvp.windows.overlay import OverlayWindow
+from cvp.windows.plot import PlotWindow
 from cvp.windows.preference import PreferenceManager
 from cvp.windows.process import ProcessManager
 from cvp.windows.stitching import StitchingWindow
@@ -70,6 +71,7 @@ class PlayerApplication:
         self._media_manager = MediaManager(self._context, self._windows)
         self._onvif_manager = OnvifManager(self._context)
         self._overlay = OverlayWindow(self._context)
+        self._plot = PlotWindow(self._context)
         self._pref_manager = PreferenceManager(self._context)
         self._process_manager = ProcessManager(self._context)
         self._stitching = StitchingWindow(self._context)
@@ -254,6 +256,7 @@ class PlayerApplication:
         self._world.on_create()
         self._world.on_window_resized(size[0], size[1])
 
+        begin_order = self._context.config.window_manager.begin_order
         self._windows.add_windows(
             self._flow,
             self._font_manager,
@@ -265,6 +268,7 @@ class PlayerApplication:
             self._media_manager,
             self._onvif_manager,
             self._overlay,
+            self._plot,
             self._pref_manager,
             self._process_manager,
             self._stitching,
@@ -274,7 +278,7 @@ class PlayerApplication:
             self._toast,
             self._window_manager,
             self._wsd_manager,
-            begin_order=self._context.config.window_manager.begin_order,
+            begin_order=begin_order,
         )
 
     def on_exit(self) -> None:
@@ -409,6 +413,8 @@ class PlayerApplication:
             self._hex.flip_opened()
         if imgui.menu_item("Image", None, self._image.opened)[0]:
             self._image.flip_opened()
+        if imgui.menu_item("Plot", None, self._plot.opened)[0]:
+            self._plot.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Network Device", None, False, False)

@@ -27,6 +27,7 @@ from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
 from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
 from cvp.config.sections.overlay import OverlayWindowConfig
+from cvp.config.sections.plot import PlotWindowConfig
 from cvp.config.sections.preference import PreferenceManagerConfig as PrefManagerConfig
 from cvp.config.sections.process import ProcessManagerConfig
 from cvp.config.sections.stitching import StitchingAuiConfig
@@ -66,6 +67,7 @@ class Config:
     onvif_manager: OnvifManagerConfig = field(default_factory=OnvifManagerConfig)
     onvifs: List[OnvifConfig] = field(default_factory=list)
     overlay_window: OverlayWindowConfig = field(default_factory=OverlayWindowConfig)
+    plot_window: PlotWindowConfig = field(default_factory=PlotWindowConfig)
     preference_manager: PrefManagerConfig = field(default_factory=PrefManagerConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
