@@ -2,24 +2,24 @@
 
 import imgui
 
-from cvp.config.sections.text import TextWindowConfig
+from cvp.config.sections.hex import HexWindowConfig
 from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
-class TextWindow(WindowBase[TextWindowConfig]):
+class HexWindow(WindowBase[HexWindowConfig]):
     def __init__(self, context: Context):
         super().__init__(
             context=context,
-            window_config=context.config.text_window,
-            title="Text Editor",
+            window_config=context.config.hex_window,
+            title="Hex Editor",
             closable=True,
             flags=None,
             modifiable_title=True,
         )
-        self._label = "##TextEditor"
+        self._label = "##HexEditor"
         self._content = ""
         self._length = -1
         self._width = 0

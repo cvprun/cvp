@@ -7,6 +7,6 @@ from cvp.config.sections.bases.window import WindowConfig
 
 
 @dataclass
-class TextWindowConfig(WindowConfig):
+class ImageWindowConfig(WindowConfig):
     history: List[str] = field(default_factory=list)
     files: List[str] = field(default_factory=list)
