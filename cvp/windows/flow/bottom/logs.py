@@ -151,7 +151,8 @@ class LogsTab(TabItem[FlowCursor]):
 
         imgui.separator()
 
-        with begin_child("##Logging", border=False):
+        bottom_spacing = imgui.get_style().item_spacing.y
+        with begin_child("##Logging", 0, -bottom_spacing, border=False):
             filter_level = self.get_level_number()
 
             for line in self._records:
