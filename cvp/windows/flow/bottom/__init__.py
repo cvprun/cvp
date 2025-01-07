@@ -4,6 +4,7 @@ from cvp.context.context import Context
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.widgets.tab import TabBar
 from cvp.windows.flow.bottom.logs import LogsTab
+from cvp.windows.flow.bottom.run import RunTab
 from cvp.windows.flow.cursor import FlowCursor
 
 
@@ -15,3 +16,4 @@ class FlowBottomTabs(TabBar[FlowCursor]):
             flags=0,
         )
         self.register(LogsTab(context, fonts))
+        self.register(RunTab(context, fonts))

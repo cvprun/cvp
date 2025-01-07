@@ -8,6 +8,15 @@ from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
 from cvp.context.context import Context
 from cvp.flow.manager import FlowManager
+from cvp.fonts.glyphs.mdi import (
+    BUG,
+    DEBUG_STEP_INTO,
+    DEBUG_STEP_OUT,
+    DEBUG_STEP_OVER,
+    PAUSE,
+    PLAY,
+    STOP,
+)
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE
 from cvp.imgui.fonts.mapper import FontMapper
@@ -297,18 +306,30 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             imgui.end_menu()
 
     @staticmethod
-    def _process_run_menu(canvas: Optional[CanvasGraph] = None) -> None:
+    def _process_run_menu(
+        fonts: FontMapper,
+        canvas: Optional[CanvasGraph] = None,
+    ) -> None:
         if canvas is not None and canvas.opened:
             opened = True
         else:
             opened = False
 
-        if menu_item("Run", enabled=opened):
-            pass
-        if menu_item("Debug", enabled=opened):
-            pass
-        if menu_item("Profile", enabled=opened):
-            pass
+        if fonts.normal_icon:
+            if menu_item(f"{PLAY} Run", enabled=opened):
+                pass
+            if menu_item(f"{BUG} Debug", enabled=opened):
+                pass
+            if menu_item(f"{PAUSE} Pause", enabled=opened):
+                pass
+            if menu_item(f"{STOP} Stop", enabled=opened):
+                pass
+            if menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=opened):
+                pass
+            if menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=opened):
+                pass
+            if menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=opened):
+                pass
 
     def on_menu(self) -> None:
         with imgui.begin_menu_bar() as menu_bar:
@@ -372,9 +393,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_run_menu(self) -> None:
         if canvas := self._cursor.canvas:
             with canvas:
-                self._process_run_menu(canvas)
+                self._process_run_menu(self._fonts, canvas)
         else:
-            self._process_run_menu()
+            self._process_run_menu(self._fonts)
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):

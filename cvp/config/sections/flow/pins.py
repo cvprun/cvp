@@ -4,10 +4,10 @@ from dataclasses import dataclass
 from typing import Final
 
 from cvp.fonts.glyphs.mdi import (
-    MDI_ARROW_RIGHT_BOLD,
-    MDI_ARROW_RIGHT_BOLD_OUTLINE,
-    MDI_CIRCLE,
-    MDI_CIRCLE_OUTLINE,
+    ARROW_RIGHT_BOLD,
+    ARROW_RIGHT_BOLD_OUTLINE,
+    CIRCLE,
+    CIRCLE_OUTLINE,
 )
 from cvp.fonts.size import FontSize
 from cvp.types.colors import RGBA
@@ -19,10 +19,10 @@ from cvp.variables import (
     FLOW_PIN_SELECTED_COLOR,
 )
 
-FLOW_PIN_UNCONNECTED_ICON: Final[str] = MDI_ARROW_RIGHT_BOLD_OUTLINE
-FLOW_PIN_CONNECTED_ICON: Final[str] = MDI_ARROW_RIGHT_BOLD
-DATA_PIN_UNCONNECTED_ICON: Final[str] = MDI_CIRCLE_OUTLINE
-DATA_PIN_CONNECTED_ICON: Final[str] = MDI_CIRCLE
+FLOW_PIN_UNCONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD_OUTLINE
+FLOW_PIN_CONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD
+DATA_PIN_UNCONNECTED_ICON: Final[str] = CIRCLE_OUTLINE
+DATA_PIN_CONNECTED_ICON: Final[str] = CIRCLE
 
 
 @dataclass
