@@ -200,3 +200,10 @@ class Node:
             if arc_uuid in pin.arcs:
                 return pin
         return None
+
+    def remove_arc_from_pins(self, arc_uuid: str) -> None:
+        for pin in self.pins:
+            try:
+                pin.arcs.remove(arc_uuid)
+            except ValueError:
+                pass

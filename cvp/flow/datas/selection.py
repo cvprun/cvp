@@ -131,7 +131,7 @@ class Selection:
         y = min([node.y1 for node in self.nodes])
         return x, y
 
-    def as_validated_items(self, point: Point) -> Tuple[List[Node], List[Arc]]:
+    def copy_validated_items(self, point: Point) -> Tuple[List[Node], List[Arc]]:
         nodes = self.nodes
         arcs = self.arcs
         dx, dy = self.group_pos
@@ -139,18 +139,16 @@ class Selection:
         y = point[1] - dy
 
         new_nodes = list()
-        new_arcs = list()
-        arc_uuid_mapping = dict()
+        candidate_arcs = list()
+        arc_uuid_mapping = {arc.uuid: str(uuid4()) for arc in arcs}
 
         for arc in arcs:
             arc = deepcopy(arc)
-            new_arc_uuid = str(uuid4())
-            arc_uuid_mapping[arc.uuid] = new_arc_uuid
-            arc.uuid = new_arc_uuid
+            arc.uuid = arc_uuid_mapping[arc.uuid]
             arc.output = None
             arc.input = None
-            arc.polyline = list()
-            new_arcs.append(arc)
+            arc.polyline.clear()
+            candidate_arcs.append(arc)
 
         for node in nodes:
             node = deepcopy(node)
@@ -159,27 +157,29 @@ class Selection:
             node.node_pos = x + nx, y + ny
             new_nodes.append(node)
 
+            # Remap old_arc_uuid to new_arc_uuid
             for pin in node.pins:
-                pin_arc_uuids = list()
-                for arc_uuid in pin.arcs:
-                    if arc_uuid in arc_uuid_mapping:
-                        pin_arc_uuids.append(arc_uuid_mapping[arc_uuid])
-                pin.arcs = pin_arc_uuids
+                for i, old_arc_uuid in enumerate(pin.arcs):
+                    if old_arc_uuid in arc_uuid_mapping:
+                        pin.arcs[i] = arc_uuid_mapping[old_arc_uuid]
 
-        for arc in new_arcs.copy():
-            for node in new_nodes:
-                if input_pin := node.find_input_pin(arc.uuid):
-                    arc.input = NodePin(node, input_pin)
-                if output_pin := node.find_output_pin(arc.uuid):
-                    arc.output = NodePin(node, output_pin)
+        new_arcs = list()
 
-            if arc.input and arc.output:
-                new_arcs.remove(arc)
-                for node in new_nodes:
-                    for pin in node.pins:
-                        try:
-                            pin.arcs.remove(arc.uuid)
-                        except ValueError:
-                            pass
+        # Connect the arc to a pin on the local node.
+        for candidate_arc in candidate_arcs:
+            assert candidate_arc.input is None
+            assert candidate_arc.output is None
+
+            for new_node in new_nodes:
+                if candidate_arc.input is None:
+                    if input_pin := new_node.find_input_pin(candidate_arc.uuid):
+                        candidate_arc.input = NodePin(new_node, input_pin)
+
+                if candidate_arc.output is None:
+                    if output_pin := new_node.find_output_pin(candidate_arc.uuid):
+                        candidate_arc.output = NodePin(new_node, output_pin)
+
+            if candidate_arc.input and candidate_arc.output:
+                new_arcs.append(candidate_arc)
 
         return new_nodes, new_arcs

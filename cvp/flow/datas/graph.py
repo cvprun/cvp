@@ -84,7 +84,7 @@ class Graph:
             point = gx + margin, gy + margin
 
         assert point is not None
-        nodes, arcs = items.as_validated_items(point)
+        nodes, arcs = items.copy_validated_items(point)
 
         if selected is not None:
             for node in nodes:
@@ -96,6 +96,7 @@ class Graph:
 
         self.nodes.extend(nodes)
         self.arcs.extend(arcs)
+
         self.update_selected_items()
         self.update_arcs_polyline(force=True)
 
