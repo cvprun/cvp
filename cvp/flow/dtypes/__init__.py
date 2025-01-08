@@ -4,7 +4,7 @@ from typing import Dict, Union
 
 from cvp.flow.datas.templates.dtype import Dtype
 from cvp.flow.dtypes.builtin import builtin_dtypes
-from cvp.flow.dtypes.registry import global_registry
+from cvp.flow.dtypes.registry import global_dtype_registry
 from cvp.flow.path import FlowPath
 
 
@@ -16,7 +16,7 @@ class FlowDtypes:
         if not no_builtins:
             self._dtypes.update(builtin_dtypes())
         if not no_global_register:
-            self._dtypes.update(global_registry())
+            self._dtypes.update(global_dtype_registry())
 
     @staticmethod
     def normalize_path(path: Union[str, FlowPath]) -> FlowPath:

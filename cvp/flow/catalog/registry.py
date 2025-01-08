@@ -1,10 +1,36 @@
 # -*- coding: utf-8 -*-
 
+from functools import lru_cache
 from typing import Dict
 
 from cvp.flow.datas.templates.node import NodeTemplate
 from cvp.flow.path import FlowPath
+from cvp.patterns.singleton import singleton
 
 
-def global_registry() -> Dict[FlowPath, NodeTemplate]:
-    return dict()
+class FlowNodeRegistry(Dict[FlowPath, NodeTemplate]):
+    def register_node_template(self):
+        pass
+
+    def register_node(self):
+        pass
+
+    def register_callable(self):
+        pass
+
+    def register_function(self):
+        pass
+
+
+@singleton
+class GlobalFlowNodeRegistry(FlowNodeRegistry):
+    pass
+
+
+@lru_cache
+def global_node_registry() -> GlobalFlowNodeRegistry:
+    return GlobalFlowNodeRegistry()
+
+
+def register_node():
+    pass

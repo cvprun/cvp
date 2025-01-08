@@ -3,7 +3,7 @@
 from typing import Dict, TypeAlias, Union
 
 from cvp.flow.catalog.builtin import builtin_templates
-from cvp.flow.catalog.registry import global_registry
+from cvp.flow.catalog.registry import global_node_registry
 from cvp.flow.datas.templates.node import NodeTemplate
 from cvp.flow.path import FlowPath
 
@@ -20,7 +20,7 @@ class FlowCatalog:
         if not no_builtins:
             self._nodes.update(builtin_templates())
         if not no_global_register:
-            self._nodes.update(global_registry())
+            self._nodes.update(global_node_registry())
 
     @staticmethod
     def normalize_path(path: Union[str, FlowPath]) -> FlowPath:
