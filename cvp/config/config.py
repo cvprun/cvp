@@ -35,6 +35,7 @@ from cvp.config.sections.terminal import TerminalWindowConfig
 from cvp.config.sections.text import TextWindowConfig
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
+from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
 from cvp.config.sections.wsd import WsdConfig, WsdManagerConfig
 from cvp.config.sections.wsdl import WsdlConfig
 from cvp.inspect.member import get_public_instance_attributes
@@ -76,6 +77,8 @@ class Config:
     text_window: TextWindowConfig = field(default_factory=TextWindowConfig)
     toast_window: ToastWindowConfig = field(default_factory=ToastWindowConfig)
     window_manager: WindowManagerConfig = field(default_factory=WindowManagerConfig)
+    worker_manager: WorkerManagerConfig = field(default_factory=WorkerManagerConfig)
+    workers: List[WorkerConfig] = field(default_factory=list)
     wsd_manager: WsdManagerConfig = field(default_factory=WsdManagerConfig)
     wsdl: WsdlConfig = field(default_factory=WsdlConfig)
     wsds: List[WsdConfig] = field(default_factory=list)
@@ -105,6 +108,12 @@ class Config:
         if index < 0:
             raise KeyError(f"Not found onvif: '{uuid}'")
         return self.onvifs.pop(index)
+
+    def remove_worker(self, uuid: str):
+        index = find_index(self.workers, lambda worker: worker.uuid == uuid)
+        if index < 0:
+            raise KeyError(f"Not found worker: '{uuid}'")
+        return self.workers.pop(index)
 
     def remove_wsd(self, epr: str):
         index = find_index(self.wsds, lambda wsd: wsd.epr == epr)

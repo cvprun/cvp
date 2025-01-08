@@ -48,6 +48,7 @@ from cvp.windows.terminal import TerminalWindow
 from cvp.windows.text import TextWindow
 from cvp.windows.toast import ToastWindow
 from cvp.windows.window import WindowManager
+from cvp.windows.worker import WorkerManager
 from cvp.windows.wsd import WsdManager
 
 
@@ -80,6 +81,7 @@ class PlayerApplication:
         self._text = TextWindow(self._context)
         self._toast = ToastWindow(self._context)
         self._window_manager = WindowManager(self._context, self._windows)
+        self._worker_manager = WorkerManager(self._context)
         self._wsd_manager = WsdManager(self._context)
 
         self._confirm_quit = ConfirmPopup(
@@ -277,6 +279,7 @@ class PlayerApplication:
             self._text,
             self._toast,
             self._window_manager,
+            self._worker_manager,
             self._wsd_manager,
             begin_order=begin_order,
         )
@@ -438,6 +441,8 @@ class PlayerApplication:
             self._process_manager.flip_opened()
         if imgui.menu_item("Window", None, self._window_manager.opened)[0]:
             self._window_manager.flip_opened()
+        if imgui.menu_item("Worker", None, self._worker_manager.opened)[0]:
+            self._worker_manager.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Development", None, False, False)
