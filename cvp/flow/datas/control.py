@@ -6,7 +6,6 @@ from cvp.variables import (
     BEZIER_CURVE_TESSELLATION_TOLERANCE,
     FLOW_ANCHOR_HOVERING_TOLERANCE,
     FLOW_ARC_HOVERING_TOLERANCE,
-    FLOW_PASTE_MARGIN,
 )
 
 
@@ -19,4 +18,3 @@ class Control:
     bezier_curve_tessellation_tolerance: float = BEZIER_CURVE_TESSELLATION_TOLERANCE
     arc_hovering_tolerance: float = FLOW_ARC_HOVERING_TOLERANCE
     anchor_hovering_tolerance: float = FLOW_ANCHOR_HOVERING_TOLERANCE
-    paste_margin: float = FLOW_PASTE_MARGIN

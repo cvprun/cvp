@@ -14,11 +14,13 @@ from cvp.flow.datas.selection import Selection
 from cvp.flow.path import FlowPath
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
+from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager(OrderedDict[str, Graph]):
-    _clipboard: Optional[Selection]
+    _clipboard_items: Optional[Selection]
+    _clipboard_pivot: Optional[Point]
 
     def __init__(
         self,
@@ -34,23 +36,34 @@ class FlowManager(OrderedDict[str, Graph]):
             no_global_register=no_global_register,
         )
         self._home = home
-        self._clipboard = None
+        self._clipboard_items = None
+        self._clipboard_pivot = None
         if refresh_graphs:
             self.refresh_flow_graphs()
 
     @property
     def has_clipboard(self) -> bool:
-        return self._clipboard is not None
+        return self._clipboard_items is not None
 
     @property
-    def clipboard(self):
-        return self._clipboard
+    def clipboard_items(self):
+        return self._clipboard_items
 
-    def set_clipboard(self, items: Selection) -> None:
-        self._clipboard = items
+    @clipboard_items.setter
+    def clipboard_items(self, value: Selection) -> None:
+        self._clipboard_items = value
+
+    @property
+    def clipboard_pivot(self):
+        return self._clipboard_pivot
+
+    @clipboard_pivot.setter
+    def clipboard_pivot(self, value: Point) -> None:
+        self._clipboard_pivot = value
 
     def clear_clipboard(self) -> None:
-        self._clipboard = None
+        self._clipboard_items = None
+        self._clipboard_pivot = None
 
     def refresh_flow_graphs(self):
         for file in self._home.flows.find_graph_files():
@@ -120,5 +133,5 @@ class FlowManager(OrderedDict[str, Graph]):
     def add_node(self, graph: Graph, path: Union[str, FlowPath]) -> Node:
         node_template = self.get_node_template(path)
         node = Node.from_template(node_template, reissue=True)
-        graph.nodes.append(node)
+        graph.nodes.insert(0, node)
         return node

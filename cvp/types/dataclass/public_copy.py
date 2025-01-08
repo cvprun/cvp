@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from dataclasses import fields, is_dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 
 def public_copy(cls):
@@ -23,7 +23,9 @@ def public_copy(cls):
 def public_deepcopy(cls):
     assert is_dataclass(cls)
 
-    def __deepcopy__(instance, memo: Dict[int, Any]):
+    def __deepcopy__(instance, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
         result = cls.__new__(cls)
         for f in fields(instance):
             if f.name.startswith("_"):

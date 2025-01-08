@@ -3,6 +3,7 @@
 import imgui
 
 from cvp.context.context import Context
+from cvp.flow.path import FlowPath
 from cvp.imgui.drag_types import DRAG_FLOW_GRAPH_TYPE as DRAG_GRAPH
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE as DRAG_NODE
 from cvp.imgui.indent import indent
@@ -41,7 +42,6 @@ class Catalogs(WidgetInterface):
                                 imgui.text(graph.name)
 
         for module_path, nodes in self._context.fm.catalog.as_module2nodes().items():
-            # module_name = module_path.split(FLOW_PATH_SEPARATOR)[-1]
             imgui.push_id(module_path)
             try:
                 expanded, visible = imgui.collapsing_header(module_path)
@@ -58,7 +58,9 @@ class Catalogs(WidgetInterface):
                                 if drag_drop_src.dragging:
                                     node_name = node_template.name
                                     node_path = node_template.path
-                                    node_data = node_path.encode()
+
+                                    flow_path = FlowPath(node_path).join(node_name)
+                                    node_data = bytes(flow_path)
 
                                     imgui.set_drag_drop_payload(DRAG_NODE, node_data)
                                     imgui.text(node_name)

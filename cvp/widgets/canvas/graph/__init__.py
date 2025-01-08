@@ -413,7 +413,7 @@ class CanvasGraph(CanvasController):
                     if not self.is_multi_select_mode:
                         self.graph.unselect_all_items()
                     self._roi = self.mx, self.my, self.mx, self.my
-                    self._selected_stash = self.graph.selected_items.copy()
+                    self._selected_stash = self.graph.selection.copy()
 
     def _update_nodes_state_for_node_moving(self) -> None:
         assert not self.is_pan_mode
@@ -731,7 +731,7 @@ class CanvasGraph(CanvasController):
             pin.name_pos = name_x, name_y
 
     def draw_nodes(self) -> None:
-        for node in self.graph.nodes:
+        for node in reversed(self.graph.nodes):
             self.draw_node(node)
 
     def draw_node(self, node: Node) -> None:

@@ -7,7 +7,6 @@ import imgui
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
 from cvp.context.context import Context
-from cvp.flow.manager import FlowManager
 from cvp.fonts.glyphs.mdi import (
     BUG,
     DEBUG_STEP_INTO,
@@ -148,17 +147,16 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.on_menu()
         super().on_process()
 
-    @staticmethod
     def _process_edit_menu(
-        fm: FlowManager,
+        self,
         canvas: Optional[CanvasGraph] = None,
     ) -> None:
         if canvas is not None and canvas.opened:
             opened = True
             undoable = canvas.history.undoable
             redoable = canvas.history.redoable
-            selected_any = bool(canvas.graph.selected_items)
-            has_clipboard = fm.has_clipboard
+            selected_any = bool(canvas.graph.selection)
+            has_clipboard = self.context.fm.has_clipboard
         else:
             opened = False
             undoable = False
@@ -176,16 +174,29 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.separator()
         if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
             assert canvas is not None
-            fm.set_clipboard(canvas.graph.selected_items.copy())
+            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.fm.clipboard_pivot = canvas.graph.selection.group_pos
             canvas.graph.remove_selected_items()
             canvas.save_history("Cut selected items")
         if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
             assert canvas is not None
-            fm.set_clipboard(canvas.graph.selected_items.copy())
+            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            px, py = canvas.graph.selection.group_pos
+            px += self.window_config.paste_margin
+            py += self.window_config.paste_margin
+            self.context.fm.clipboard_pivot = px, py
         if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
             assert canvas is not None
             canvas.graph.unselect_all_items()
-            canvas.graph.add_items(fm.clipboard, selected=True)
+            canvas.graph.paste_selection(
+                self.context.fm.clipboard_items,
+                self.context.fm.clipboard_pivot,
+                selected=True,
+            )
+            px, py = self.context.fm.clipboard_pivot
+            px += self.window_config.paste_margin
+            py += self.window_config.paste_margin
+            self.context.fm.clipboard_pivot = px, py
             canvas.save_history("Paste selected items")
 
         imgui.separator()
@@ -220,7 +231,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @staticmethod
     def _process_layout_menu(canvas: Optional[CanvasGraph] = None) -> None:
         if canvas is not None and canvas.opened:
-            selected_items = canvas.graph.selected_items
+            selected_items = canvas.graph.selection
             selected_any = bool(selected_items)
             single_item = 1 == len(selected_items)
         else:
@@ -251,7 +262,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @staticmethod
     def _process_align_menu(canvas: Optional[CanvasGraph] = None) -> None:
         if canvas is not None and canvas.opened:
-            nodes = canvas.graph.selected_items.nodes
+            nodes = canvas.graph.selection.nodes
             multiple_item = 2 <= len(nodes)
         else:
             nodes = list()
@@ -287,7 +298,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @staticmethod
     def _process_distribute_menu(canvas: Optional[CanvasGraph] = None) -> None:
         if canvas is not None and canvas.opened:
-            nodes = canvas.graph.selected_items.nodes
+            nodes = canvas.graph.selection.nodes
             multiple_item = 2 <= len(nodes)
         else:
             nodes = list()
@@ -350,7 +361,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Save and close graph", enabled=has_opened_graph):
             self.save_current_graph()
             self.close_current_graph()
-        if menu_item("Force close graph", enabled=has_opened_graph):
+        if menu_item("Close graph", enabled=has_opened_graph):
             self.close_current_graph()
 
         # imgui.separator()
@@ -371,9 +382,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_edit_menu(self) -> None:
         if canvas := self._cursor.canvas:
             with canvas:
-                self._process_edit_menu(self.context.fm, canvas)
+                self._process_edit_menu(canvas)
         else:
-            self._process_edit_menu(self.context.fm)
+            self._process_edit_menu()
 
     def on_layout_menu(self) -> None:
         if canvas := self._cursor.canvas:
@@ -534,19 +545,32 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             return
 
         if only_ctrl and self.imgui_is_pressed_x():
-            self.context.fm.set_clipboard(canvas.graph.selected_items.copy())
+            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.fm.clipboard_pivot = canvas.graph.selection.group_pos
             canvas.graph.remove_selected_items()
             canvas.save_history("Cut selected items")
             return
 
         if only_ctrl and self.imgui_is_pressed_c():
-            self.context.fm.set_clipboard(canvas.graph.selected_items.copy())
+            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            px, py = canvas.graph.selection.group_pos
+            px += self.window_config.paste_margin
+            py += self.window_config.paste_margin
+            self.context.fm.clipboard_pivot = px, py
             canvas.save_history("Copy selected items")
             return
 
         if only_ctrl and self.imgui_is_pressed_v():
             canvas.graph.unselect_all_items()
-            canvas.graph.add_items(self.context.fm.clipboard, selected=True)
+            canvas.graph.paste_selection(
+                self.context.fm.clipboard_items,
+                self.context.fm.clipboard_pivot,
+                selected=True,
+            )
+            px, py = self.context.fm.clipboard_pivot
+            px += self.window_config.paste_margin
+            py += self.window_config.paste_margin
+            self.context.fm.clipboard_pivot = px, py
             canvas.save_history("Paste selected items")
             return
 
@@ -564,7 +588,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if imgui.begin_popup_context_window().opened:
             try:
-                self._process_edit_menu(self.context.fm, canvas)
+                self._process_edit_menu(canvas)
                 imgui.separator()
                 self._process_layout_menu(canvas)
                 imgui.separator()

@@ -46,7 +46,7 @@ class PropsTab(TabItem[FlowCursor]):
             self.on_none()
             return
 
-        selected_items = graph.selected_items
+        selected_items = graph.selection
         selected_nodes = selected_items.nodes
         selected_pins = selected_items.pins
         selected_arcs = selected_items.arcs

@@ -1,8 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from copy import deepcopy
-from typing import Iterable, List, Optional, Tuple, TypeAlias, TypeGuard, Union
+from copy import copy, deepcopy
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    TypeAlias,
+    TypeGuard,
+    Union,
+)
 from uuid import uuid4
 
 from cvp.flow.datas.arc import Arc
@@ -44,8 +54,26 @@ class Selection:
     def items(self):
         return self._items.items()
 
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result._items = copy(self._items)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result._items = deepcopy(self._items, memo)
+        memo[id(self)] = result
+        return result
+
     def copy(self):
-        return self.__class__(self._items.copy())
+        return self.__copy__()
+
+    def deepcopy(self):
+        return self.__deepcopy__()
 
     @staticmethod
     def _is_node(item: SelectableAny) -> TypeGuard[Node]:
