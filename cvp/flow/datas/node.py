@@ -20,25 +20,19 @@ class Node:
     func: str = str()
     lock: bool = False
     color: RGBA = WHITE_RGBA
-
     flow_inputs: List[Pin] = field(default_factory=list)
     flow_outputs: List[Pin] = field(default_factory=list)
-
     data_inputs: List[Pin] = field(default_factory=list)
     data_outputs: List[Pin] = field(default_factory=list)
-
     tags: List[str] = field(default_factory=list)
 
     head_height: float = 0.0
     flow_height: float = 0.0
     data_height: float = 0.0
-
     icon_pos: Point = EMPTY_POINT
     icon_size: Size = EMPTY_SIZE
-
     name_pos: Point = EMPTY_POINT
     name_size: Size = EMPTY_SIZE
-
     node_pos: Point = EMPTY_POINT
     node_size: Size = EMPTY_SIZE
 

@@ -30,13 +30,14 @@ class Graph:
     name: str = str()
     docs: str = str()
     icon: str = str()
+    lock: bool = False
     color: RGBA = WHITE_RGBA
     nodes: List[Node] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
     arcs: List[Arc] = field(default_factory=list)
     control: Control = field(default_factory=Control)
 
-    _chosen: Selection = field(default_factory=Selection)
+    _selection: Selection = field(default_factory=Selection)
 
     @classmethod
     def from_template(cls, template: GraphTemplate, *, reissue=False):
@@ -71,7 +72,7 @@ class Graph:
         self.nodes = other.nodes
         self.arcs = other.arcs
         self.control = other.control
-        self._chosen = other._chosen
+        self._selection = other._selection
 
     def add_items(
         self,
@@ -104,37 +105,37 @@ class Graph:
 
     @property
     def selected_items(self):
-        return self._chosen
+        return self._selection
 
     @property
     def selected_arc_only(self) -> Optional[Arc]:
-        return self._chosen.selected_arc_only
+        return self._selection.selected_arc_only
 
     def update_selected_item(self, item: SelectableAny) -> None:
-        self._chosen.apply(item)
+        self._selection.apply(item)
 
     def update_selected_items(self) -> None:
         for node in self.nodes:
             for pin in node.pins:
-                self._chosen.apply(pin)
-            self._chosen.apply(node)
+                self._selection.apply(pin)
+            self._selection.apply(node)
         for arc in self.arcs:
-            self._chosen.apply(arc)
+            self._selection.apply(arc)
 
     def update_selected_nodes(self) -> None:
         for node in self.nodes:
-            self._chosen.apply(node)
+            self._selection.apply(node)
 
     def update_selected_arcs(self) -> None:
         for arc in self.arcs:
-            self._chosen.apply(arc)
+            self._selection.apply(arc)
 
     def select_item(self, item: SelectableAny, *, selected=True) -> None:
         item.selected = selected
         if selected:
-            self._chosen.add(item)
+            self._selection.add(item)
         else:
-            self._chosen.remove_noraise(item)
+            self._selection.remove_noraise(item)
 
     def select_all_nodes(self) -> None:
         for node in self.nodes:
@@ -317,7 +318,7 @@ class Graph:
             arc.start_anchor.selected = False
             arc.end_anchor.selected = False
 
-        self._chosen.clear()
+        self._selection.clear()
 
     def flip_selected_on_hovering_item(self) -> Optional[Union[Node, Pin, Arc]]:
         if node := self.find_hovering_node():
@@ -326,17 +327,17 @@ class Graph:
             if pin := node.find_hovering_pin():
                 assert pin.hovering
                 pin.selected = not pin.selected
-                self._chosen.apply(pin)
+                self._selection.apply(pin)
                 return pin
             else:
                 node.selected = not node.selected
-                self._chosen.apply(node)
+                self._selection.apply(node)
                 return node
 
         if arc := self.find_hovering_arc():
             assert arc.hovering
             arc.selected = not arc.selected
-            self._chosen.apply(arc)
+            self._selection.apply(arc)
             return arc
 
         return None
@@ -514,7 +515,7 @@ class Graph:
         if arc.output:
             arc.output.pin.arcs.remove(arc.uuid)
         self.arcs.remove(arc)
-        self._chosen.remove_noraise(arc)
+        self._selection.remove_noraise(arc)
 
     def remove_selected_arcs(self) -> None:
         for arc in self.find_selected_arcs():
@@ -525,9 +526,9 @@ class Graph:
             for arc_uuid in pin.arcs:
                 if arc := self.find_arc(arc_uuid):
                     self.remove_arc(arc)
-            self._chosen.remove_noraise(pin)
+            self._selection.remove_noraise(pin)
         self.nodes.remove(node)
-        self._chosen.remove_noraise(node)
+        self._selection.remove_noraise(node)
 
     def remove_selected_nodes(self) -> None:
         for node in self.find_selected_nodes():
