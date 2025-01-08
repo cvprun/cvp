@@ -4,19 +4,18 @@ from functools import lru_cache
 from types import ModuleType
 from typing import Dict, List
 
-from cvp.flow.catalog.builtin import events
-from cvp.flow.datas.templates.node import NodeTemplate
+from cvp.flow.datas.templates.dtype import Dtype
 from cvp.flow.path import FlowPath
 from cvp.inspect.member import is_dunder, is_sunder
 
 
 @lru_cache
 def builtin_submodules() -> List[ModuleType]:
-    return [events]
+    return []
 
 
 @lru_cache
-def builtin_templates() -> Dict[FlowPath, NodeTemplate]:
+def builtin_dtypes() -> Dict[FlowPath, Dtype]:
     result = dict()
     for module in builtin_submodules():
         assert isinstance(module, ModuleType)
@@ -33,11 +32,11 @@ def builtin_templates() -> Dict[FlowPath, NodeTemplate]:
             # Typing filters
             if not isinstance(o, type):
                 continue
-            if not issubclass(o, NodeTemplate):
+            if not issubclass(o, Dtype):
                 continue
 
-            template = o()
-            path = FlowPath(template.path).join(template.name)
-            result[path] = template
+            dtype = o()
+            path = FlowPath(dtype.path).join(dtype.name)
+            result[path] = dtype
 
     return result

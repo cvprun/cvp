@@ -1,32 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Union
+from typing import Dict, TypeAlias, Union
 
 from cvp.flow.catalog.builtin import builtin_templates
 from cvp.flow.catalog.registry import global_registry
 from cvp.flow.datas.templates.node import NodeTemplate
 from cvp.flow.path import FlowPath
 
-ModulePath = str
-NodeName = str
-ModuleToNodes = Dict[ModulePath, Dict[NodeName, NodeTemplate]]
-
-
-def module2nodes(path2nodes: Dict[FlowPath, NodeTemplate]) -> ModuleToNodes:
-    result: ModuleToNodes = dict()
-    for path, node in path2nodes.items():
-        module_path, node_name = path.split()
-        assert isinstance(module_path, str)
-        assert isinstance(node_name, str)
-        if module_path not in result:
-            result[module_path] = dict()
-        nodes = result.get(module_path)
-        if nodes is None:
-            nodes = dict()
-            result[module_path] = nodes
-        assert isinstance(nodes, dict)
-        nodes[node_name] = node
-    return result
+ModulePath: TypeAlias = str
+NodeName: TypeAlias = str
+ModuleToNodes: TypeAlias = Dict[ModulePath, Dict[NodeName, NodeTemplate]]
 
 
 class FlowCatalog:
@@ -72,4 +55,17 @@ class FlowCatalog:
         return self._nodes.items()
 
     def as_module2nodes(self) -> ModuleToNodes:
-        return module2nodes(self._nodes)
+        result: ModuleToNodes = dict()
+        for path, node in self._nodes.items():
+            module_path, node_name = path.split()
+            assert isinstance(module_path, str)
+            assert isinstance(node_name, str)
+            if module_path not in result:
+                result[module_path] = dict()
+            nodes = result.get(module_path)
+            if nodes is None:
+                nodes = dict()
+                result[module_path] = nodes
+            assert isinstance(nodes, dict)
+            nodes[node_name] = node
+        return result
