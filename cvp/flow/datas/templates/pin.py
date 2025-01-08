@@ -9,9 +9,9 @@ from cvp.flow.datas.stream import Stream
 
 @dataclass
 class PinTemplate:
-    name: str = str()
-    docs: str = str()
-    dtype: str = str()
+    name: str = field(default_factory=str)
+    docs: str = field(default_factory=str)
+    dtype: str = field(default_factory=str)
     action: Action = Action.data
     stream: Stream = Stream.input
     required: bool = False

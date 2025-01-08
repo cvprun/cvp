@@ -14,6 +14,7 @@ class NodeTemplate:
     name: str = str()
     docs: str = str()
     icon: str = str()
+    func: str = str()
     color: RGBA = WHITE_RGBA
     pins: List[PinTemplate] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)

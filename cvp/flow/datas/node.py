@@ -17,6 +17,8 @@ class Node:
     name: str = str()
     docs: str = str()
     icon: str = str()
+    func: str = str()
+    lock: bool = False
     color: RGBA = WHITE_RGBA
 
     flow_inputs: List[Pin] = field(default_factory=list)
@@ -51,6 +53,7 @@ class Node:
             docs=template.docs,
             icon=template.icon,
             color=template.color,
+            func=template.func,
             flow_inputs=list(Pin.from_template(p) for p in template.flow_inputs),
             flow_outputs=list(Pin.from_template(p) for p in template.flow_outputs),
             data_inputs=list(Pin.from_template(p) for p in template.data_inputs),
@@ -65,18 +68,55 @@ class Node:
             docs=self.docs,
             icon=self.icon,
             color=self.color,
+            func=self.func,
             pins=list(p.as_template() for p in self.pins),
             tags=deepcopy(self.tags),
         )
 
+    @property
+    def as_flow_input_names(self):
+        return [pin.name for pin in self.flow_inputs]
+
+    @property
+    def as_flow_output_names(self):
+        return [pin.name for pin in self.flow_outputs]
+
+    @property
+    def as_data_input_names(self):
+        return [pin.name for pin in self.data_inputs]
+
+    @property
+    def as_data_output_names(self):
+        return [pin.name for pin in self.data_outputs]
+
     def as_unformatted_text(self) -> str:
         return (
+            f"Uuid: {self.uuid}\n"
+            f"Name: {self.name}\n"
+            f"Docs: {self.docs}\n"
+            f"Icon: {self.icon}\n"
+            f"Func: {self.func}\n"
+            f"Lock: {self.lock}\n"
+            f"Color: {self.color}\n"
+            f"Flow inputs ({len(self.flow_inputs)}): {self.as_flow_input_names}\n"
+            f"Flow outputs ({len(self.flow_outputs)}): {self.as_flow_output_names}\n"
+            f"Data inputs ({len(self.data_inputs)}): {self.as_data_input_names}\n"
+            f"Data outputs ({len(self.data_inputs)}): {self.as_data_output_names}\n"
+            f"Begin: {self.is_begin}\n"
+            f"Middle: {self.is_middle}\n"
+            f"End: {self.is_end}\n"
+            f"Tags: {self.tags}\n"
+            f"Head height: {self.head_height:.02f}\n"
+            f"Flow height: {self.flow_height:.02f}\n"
+            f"Data height: {self.data_height:.02f}\n"
             f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
             f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
             f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
             f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
             f"Node pos: {self.node_pos[0]:.02f}, {self.node_pos[1]:.02f}\n"
             f"Node size: {self.node_size[0]:.02f}, {self.node_size[1]:.02f}\n"
+            f"Selected: {self._selected}\n"
+            f"Hovering: {self._hovering}\n"
         )
 
     @property
@@ -142,6 +182,26 @@ class Node:
     @property
     def data_lines(self):
         return max(len(self.data_inputs), len(self.data_outputs))
+
+    @property
+    def has_flow_input(self) -> bool:
+        return bool(self.flow_inputs)
+
+    @property
+    def has_flow_output(self) -> bool:
+        return bool(self.flow_outputs)
+
+    @property
+    def is_begin(self) -> bool:
+        return not self.has_flow_input and self.has_flow_output
+
+    @property
+    def is_middle(self) -> bool:
+        return self.has_flow_input and self.has_flow_output
+
+    @property
+    def is_end(self) -> bool:
+        return self.has_flow_input and not self.has_flow_output
 
     @property
     def selected(self):
