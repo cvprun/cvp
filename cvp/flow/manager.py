@@ -20,12 +20,22 @@ from cvp.yaml.dumpers import IndentListDumper
 class FlowManager(OrderedDict[str, Graph]):
     _clipboard: Optional[Selection]
 
-    def __init__(self, home: HomeDir, *, update=False):
+    def __init__(
+        self,
+        home: HomeDir,
+        *,
+        refresh_graphs=False,
+        no_builtins=False,
+        no_global_register=False,
+    ):
         super().__init__()
-        self._catalog = FlowCatalog.from_builtins()
+        self._catalog = FlowCatalog(
+            no_builtins=no_builtins,
+            no_global_register=no_global_register,
+        )
         self._home = home
         self._clipboard = None
-        if update:
+        if refresh_graphs:
             self.refresh_flow_graphs()
 
     @property
@@ -105,7 +115,7 @@ class FlowManager(OrderedDict[str, Graph]):
         self[graph.uuid] = graph
 
     def get_node_template(self, path: Union[str, FlowPath]):
-        return self._catalog.get_node_template(path)
+        return self._catalog[path]
 
     def add_node(self, graph: Graph, path: Union[str, FlowPath]) -> Node:
         node_template = self.get_node_template(path)

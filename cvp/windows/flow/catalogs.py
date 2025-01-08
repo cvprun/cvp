@@ -3,7 +3,6 @@
 import imgui
 
 from cvp.context.context import Context
-from cvp.flow.path import PATH_SEPARATOR
 from cvp.imgui.drag_types import DRAG_FLOW_GRAPH_TYPE as DRAG_GRAPH
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE as DRAG_NODE
 from cvp.imgui.indent import indent
@@ -14,6 +13,7 @@ from cvp.types.override import override
 class Catalogs(WidgetInterface):
     def __init__(self, context: Context):
         self._context = context
+        self._catalog = self._context.fm.catalog
 
     @override
     def on_process(self) -> None:
@@ -40,11 +40,11 @@ class Catalogs(WidgetInterface):
                                 imgui.set_drag_drop_payload(DRAG_GRAPH, graph_uuid)
                                 imgui.text(graph.name)
 
-        for module_path, nodes in self._context.fm.catalog.items():
-            module_name = module_path.split(PATH_SEPARATOR)[-1]
+        for module_path, nodes in self._context.fm.catalog.as_module2nodes().items():
+            # module_name = module_path.split(FLOW_PATH_SEPARATOR)[-1]
             imgui.push_id(module_path)
             try:
-                expanded, visible = imgui.collapsing_header(module_name)
+                expanded, visible = imgui.collapsing_header(module_path)
                 if imgui.is_item_hovered():
                     with imgui.begin_tooltip():
                         imgui.text(module_path)
@@ -54,13 +54,10 @@ class Catalogs(WidgetInterface):
                         for node_name, node_template in nodes.items():
                             imgui.selectable(node_name)
 
-                            # if not self._context.fm.opened:
-                            #     continue
-
                             with imgui.begin_drag_drop_source() as drag_drop_src:
                                 if drag_drop_src.dragging:
                                     node_name = node_template.name
-                                    node_path = module_path + PATH_SEPARATOR + node_name
+                                    node_path = node_template.path
                                     node_data = node_path.encode()
 
                                     imgui.set_drag_drop_payload(DRAG_NODE, node_data)

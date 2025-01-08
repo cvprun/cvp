@@ -7,7 +7,7 @@ from cvp.flow.catalog import FlowCatalog
 
 class DefaultTestCase(TestCase):
     def test_default(self):
-        catalog = FlowCatalog.from_builtins()
+        catalog = FlowCatalog()
         self.assertTrue(bool(catalog))
 
 

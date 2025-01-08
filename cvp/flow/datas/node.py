@@ -14,10 +14,11 @@ from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 @dataclass
 class Node:
     uuid: str = field(default_factory=lambda: str(uuid4()))
-    name: str = str()
-    docs: str = str()
-    icon: str = str()
-    func: str = str()
+    name: str = field(default_factory=str)
+    path: str = field(default_factory=str)
+    docs: str = field(default_factory=str)
+    icon: str = field(default_factory=str)
+    func: str = field(default_factory=str)
     lock: bool = False
     color: RGBA = WHITE_RGBA
     flow_inputs: List[Pin] = field(default_factory=list)
@@ -44,6 +45,7 @@ class Node:
         return cls(
             uuid=str(uuid4()) if reissue else template.uuid,
             name=template.name,
+            path=template.path,
             docs=template.docs,
             icon=template.icon,
             color=template.color,
@@ -59,6 +61,7 @@ class Node:
         return NodeTemplate(
             uuid=str(uuid4()) if reissue else self.uuid,
             name=self.name,
+            path=self.path,
             docs=self.docs,
             icon=self.icon,
             color=self.color,

@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, NamedTuple, Optional, Union
+from typing import NamedTuple, Union
 
 from cvp.flow.datas.prefix import Prefix
-
-PATH_SEPARATOR: Final[str] = "."
-PATH_ENCODING: Final[str] = "utf-8"
+from cvp.variables import FLOW_PATH_ENCODING, FLOW_PATH_SEPARATOR
 
 
 def inference_prefix(path: str) -> Prefix:
@@ -21,13 +19,13 @@ class FlowPath:
         self,
         path: str,
         *,
-        separator: Optional[str] = None,
-        encoding: Optional[str] = None,
+        separator=FLOW_PATH_SEPARATOR,
+        encoding=FLOW_PATH_ENCODING,
     ):
         self._path = path
         self._prefix = inference_prefix(path)
-        self._separator = separator if separator else PATH_SEPARATOR
-        self._encoding = encoding if encoding else PATH_ENCODING
+        self._separator = separator
+        self._encoding = encoding
 
     def __repr__(self):
         return (
@@ -44,7 +42,7 @@ class FlowPath:
         return self._path
 
     def __bytes__(self):
-        return self._path.encode(PATH_ENCODING)
+        return self._path.encode(self._encoding)
 
     def __format__(self, format_spec):
         return self._path

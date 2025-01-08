@@ -99,7 +99,7 @@ class Context:
             update=True,
         )
 
-        self._flow_manager = FlowManager(self._home, update=True)
+        self._flow_manager = FlowManager(self._home, refresh_graphs=True)
         self._msg_queue = MsgQueue()
 
     @property

@@ -84,6 +84,9 @@ Decrease for highly tessellated curves (higher quality, more polygons),
 Increase to reduce quality.
 """
 
+FLOW_PATH_SEPARATOR: Final[str] = "."
+FLOW_PATH_ENCODING: Final[str] = "utf-8"
+
 FLOW_BACKGROUND_COLOR: Final[RGBA] = 0.5, 0.5, 0.5, 1.0
 FLOW_MAX_HISTORY: Final[int] = 20
 FLOW_PASTE_MARGIN: Final[float] = 20.0

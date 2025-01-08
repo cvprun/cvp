@@ -28,7 +28,6 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
-from cvp.types.shapes import Point
 from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
 from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.graph import CanvasGraph
@@ -153,7 +152,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def _process_edit_menu(
         fm: FlowManager,
         canvas: Optional[CanvasGraph] = None,
-        paste_cursor: Optional[Point] = None,
     ) -> None:
         if canvas is not None and canvas.opened:
             opened = True

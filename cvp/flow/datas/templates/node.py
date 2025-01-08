@@ -11,10 +11,11 @@ from cvp.types.colors import RGBA, WHITE_RGBA
 @dataclass
 class NodeTemplate:
     uuid: str = field(default_factory=lambda: str(uuid4()))
-    name: str = str()
-    docs: str = str()
-    icon: str = str()
-    func: str = str()
+    name: str = field(default_factory=str)
+    path: str = field(default_factory=str)
+    docs: str = field(default_factory=str)
+    icon: str = field(default_factory=str)
+    func: str = field(default_factory=str)
     color: RGBA = WHITE_RGBA
     pins: List[PinTemplate] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
