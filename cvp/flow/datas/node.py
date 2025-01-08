@@ -44,8 +44,9 @@ class Node:
     _hovering: bool = False
 
     @classmethod
-    def from_template(cls, template: NodeTemplate):
+    def from_template(cls, template: NodeTemplate, *, reissue=False):
         return cls(
+            uuid=str(uuid4()) if reissue else template.uuid,
             name=template.name,
             docs=template.docs,
             icon=template.icon,
@@ -57,8 +58,9 @@ class Node:
             tags=deepcopy(template.tags),
         )
 
-    def as_template(self):
+    def as_template(self, *, reissue=False):
         return NodeTemplate(
+            uuid=str(uuid4()) if reissue else self.uuid,
             name=self.name,
             docs=self.docs,
             icon=self.icon,
