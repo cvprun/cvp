@@ -20,8 +20,6 @@ from cvp.config.sections.font import FontConfig, FontManagerConfig
 from cvp.config.sections.games.glyph_hack import GlyphHackWindowConfig as GhWindowConfig
 from cvp.config.sections.games.tetrix import TetrixWindowConfig
 from cvp.config.sections.graphic import GraphicConfig
-from cvp.config.sections.hex import HexWindowConfig
-from cvp.config.sections.image import ImageWindowConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.labeling import LabelingAuiConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
@@ -60,8 +58,6 @@ class Config:
     font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
     glyph_hack_window: GhWindowConfig = field(default_factory=GhWindowConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
-    hex_window: HexWindowConfig = field(default_factory=HexWindowConfig)
-    image_window: ImageWindowConfig = field(default_factory=ImageWindowConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     labeling_aui: LabelingAuiConfig = field(default_factory=LabelingAuiConfig)
     layout_manager: LayoutManagerConfig = field(default_factory=LayoutManagerConfig)

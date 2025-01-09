@@ -35,8 +35,6 @@ from cvp.windows.flow import FlowWindow
 from cvp.windows.font import FontManager
 from cvp.windows.games.glyph_hack import GlyphHackWindow
 from cvp.windows.games.tetrix import TetrixWindow
-from cvp.windows.hex import HexWindow
-from cvp.windows.image import ImageWindow
 from cvp.windows.labeling import LabelingWindow
 from cvp.windows.layout import LayoutManager
 from cvp.windows.media import MediaManager
@@ -69,8 +67,6 @@ class PlayerApplication:
         self._flow = FlowWindow(self._context, self._fonts)
         self._font_manager = FontManager(self._context, self._fonts)
         self._glyph_hack = GlyphHackWindow(self._context)
-        self._hex = HexWindow(self._context)
-        self._image = ImageWindow(self._context)
         self._labeling_manager = LabelingWindow(self._context)
         self._layout_manager = LayoutManager(self._context, self._windows)
         self._media_manager = MediaManager(self._context, self._windows)
@@ -269,8 +265,6 @@ class PlayerApplication:
             self._flow,
             self._font_manager,
             self._glyph_hack,
-            self._hex,
-            self._image,
             self._labeling_manager,
             self._layout_manager,
             self._media_manager,
@@ -418,10 +412,6 @@ class PlayerApplication:
         imgui.menu_item("Editors", None, False, False)
         if imgui.menu_item("Text", None, self._text.opened)[0]:
             self._text.flip_opened()
-        if imgui.menu_item("Hex", None, self._hex.opened)[0]:
-            self._hex.flip_opened()
-        if imgui.menu_item("Image", None, self._image.opened)[0]:
-            self._image.flip_opened()
         if imgui.menu_item("Canvas", None, self._canvas.opened)[0]:
             self._canvas.flip_opened()
 
