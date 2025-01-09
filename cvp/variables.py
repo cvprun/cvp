@@ -7,6 +7,8 @@ from cvp.types.shapes import Size
 
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
 CVP_YML_FILENAME: Final[str] = "cvp.yml"
+CVP_EXTENSION: Final[str] = ".cvp"
+CVP_ROOT_INFO_FILENAME: Final[str] = "info.yml"
 GUI_INI_FILENAME: Final[str] = "gui.ini"
 LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
