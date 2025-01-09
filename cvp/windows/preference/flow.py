@@ -2,8 +2,8 @@
 
 import imgui
 
-from cvp.config.sections.flow.axis import Axis
-from cvp.config.sections.flow.grid import Grid
+from cvp.config.sections.canvas.axis import Axis
+from cvp.config.sections.canvas.grid import Grid
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins

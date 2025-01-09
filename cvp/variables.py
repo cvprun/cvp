@@ -42,10 +42,10 @@ LOGGING_STEP: Final[int] = 1000
 SLOW_CALLBACK_DURATION: Final[float] = 0.05
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0
-MAX_SIDEBAR_WIDTH: Final[float] = 260.0
+MAX_SIDEBAR_WIDTH: Final[float] = 480.0
 
 MIN_SIDEBAR_HEIGHT: Final[float] = 160.0
-MAX_SIDEBAR_HEIGHT: Final[float] = 260.0
+MAX_SIDEBAR_HEIGHT: Final[float] = 480.0
 
 MIN_WINDOW_WIDTH: Final[int] = 400
 MIN_WINDOW_HEIGHT: Final[int] = 300
@@ -86,6 +86,25 @@ Decrease for highly tessellated curves (higher quality, more polygons),
 Increase to reduce quality.
 """
 
+CANVAS_ANCHOR_SELECTED_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.9
+CANVAS_ANCHOR_HOVERING_COLOR: Final[RGBA] = 1.0, 0.49, 0.05, 0.9
+CANVAS_ANCHOR_NORMAL_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.8
+CANVAS_ANCHOR_DRAWING_RADIUS: Final[float] = 4.0
+CANVAS_ANCHOR_HOVERING_TOLERANCE: Final[float] = 6.0
+
+CANVAS_AXIS_VISIBLE: Final[bool] = True
+CANVAS_AXIS_THICKNESS: Final[float] = 1.0
+CANVAS_AXIS_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.6
+
+CANVAS_GRID_VISIBLE: Final[bool] = True
+CANVAS_GRID_STEP: Final[float] = 50.0
+CANVAS_GRID_THICKNESS: Final[float] = 1.0
+CANVAS_GRID_COLOR: Final[RGBA] = 0.8, 0.8, 0.8, 0.2
+
+CANVAS_ROI_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.3
+CANVAS_ROI_ROUNDING: Final[float] = 0.0
+CANVAS_ROI_THICKNESS: Final[float] = 2.0
+
 FLOW_PATH_SEPARATOR: Final[str] = "."
 FLOW_PATH_ENCODING: Final[str] = "utf-8"
 
@@ -113,15 +132,6 @@ FLOW_PIN_NORMAL_COLOR: Final[RGBA] = 0.0, 0.0, 0.0, 0.8
 FLOW_PIN_CONNECTION_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.8
 FLOW_PIN_CONNECTION_THICKNESS: Final[float] = 2.0
 
-FLOW_AXIS_VISIBLE: Final[bool] = True
-FLOW_AXIS_THICKNESS: Final[float] = 1.0
-FLOW_AXIS_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.6
-
-FLOW_GRID_VISIBLE: Final[bool] = True
-FLOW_GRID_STEP: Final[float] = 50.0
-FLOW_GRID_THICKNESS: Final[float] = 1.0
-FLOW_GRID_COLOR: Final[RGBA] = 0.8, 0.8, 0.8, 0.2
-
 FLOW_ARC_SELECTED_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.9
 FLOW_ARC_HOVERING_COLOR: Final[RGBA] = 1.0, 0.49, 0.05, 0.9
 FLOW_ARC_NORMAL_COLOR: Final[RGBA] = 0.75, 0.75, 0.75, 0.8
@@ -129,13 +139,3 @@ FLOW_ARC_SELECTED_THICKNESS: Final[float] = 2.0
 FLOW_ARC_HOVERING_THICKNESS: Final[float] = 2.0
 FLOW_ARC_NORMAL_THICKNESS: Final[float] = 2.0
 FLOW_ARC_HOVERING_TOLERANCE: Final[float] = 6.0
-
-FLOW_ANCHOR_SELECTED_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.9
-FLOW_ANCHOR_HOVERING_COLOR: Final[RGBA] = 1.0, 0.49, 0.05, 0.9
-FLOW_ANCHOR_NORMAL_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.8
-FLOW_ANCHOR_DRAWING_RADIUS: Final[float] = 4.0
-FLOW_ANCHOR_HOVERING_TOLERANCE: Final[float] = 6.0
-
-FLOW_ROI_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.3
-FLOW_ROI_ROUNDING: Final[float] = 0.0
-FLOW_ROI_THICKNESS: Final[float] = 2.0

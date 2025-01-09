@@ -3,14 +3,14 @@
 from dataclasses import dataclass, field
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
-from cvp.config.sections.flow.anchors import Anchors
+from cvp.config.sections.canvas.anchors import Anchors
+from cvp.config.sections.canvas.axis import Axis
+from cvp.config.sections.canvas.grid import Grid
+from cvp.config.sections.canvas.roi import Roi
 from cvp.config.sections.flow.arcs import Arcs
-from cvp.config.sections.flow.axis import Axis
-from cvp.config.sections.flow.grid import Grid
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
-from cvp.config.sections.flow.roi import Roi
 from cvp.types.colors import RGBA
 from cvp.variables import (
     FLOW_BACKGROUND_COLOR,

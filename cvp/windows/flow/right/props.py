@@ -4,7 +4,7 @@ from typing import Final
 
 import imgui
 
-from cvp.config.sections.flow.axis import Axis
+from cvp.config.sections.canvas.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.datas.arc import Arc
 from cvp.flow.datas.graph import Graph
