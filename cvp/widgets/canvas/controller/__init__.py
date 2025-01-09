@@ -53,6 +53,7 @@ class CanvasController(ControllerProps):
         self._control_identifier = type(self).__name__
         self._control_flags = int(ALL_BUTTON_FLAGS)
         self._mouse_dragging_threshold = -1.0
+        self._use_only_alt_and_left_dragging = False
 
     @property
     def frame_padding(self) -> Tuple[int, int]:
@@ -258,9 +259,10 @@ class CanvasController(ControllerProps):
                 if self.middle_dragging:
                     pan_x += io.mouse_delta.x / zoom
                     pan_y += io.mouse_delta.y / zoom
-                elif self.alt_down and self.left_dragging:
-                    pan_x += io.mouse_delta.x / zoom
-                    pan_y += io.mouse_delta.y / zoom
+                elif self._use_only_alt_and_left_dragging:
+                    if self.only_alt_down and self.left_dragging:
+                        pan_x += io.mouse_delta.x / zoom
+                        pan_y += io.mouse_delta.y / zoom
 
             if self.hovering and io.mouse_wheel != 0:
                 if io.mouse_wheel > 0:
