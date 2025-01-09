@@ -45,7 +45,7 @@ def _timed_rotating_file_handler_config(basename: str, backup_count=30):
         "level": "DEBUG",
         "formatter": "default",
         "filename": f"${{{CVP_HOME}}}/logs/{basename}",
-        "when": "D",
+        "when": "midnight",
         "interval": 1,
         "backupCount": backup_count,
         "encoding": "utf-8",
