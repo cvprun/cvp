@@ -30,6 +30,7 @@ from cvp.renderer.renderer import PygameRenderer
 from cvp.renderer.window.mapper import WindowMapper
 from cvp.renderer.world.world import World
 from cvp.windows.canvas import CanvasWindow
+from cvp.windows.files import FilesWindow
 from cvp.windows.flow import FlowWindow
 from cvp.windows.font import FontManager
 from cvp.windows.games.glyph_hack import GlyphHackWindow
@@ -64,6 +65,7 @@ class PlayerApplication:
         self._world = World(self._context)
 
         self._canvas = CanvasWindow(self._context, self._fonts)
+        self._files = FilesWindow(self._context, self._fonts)
         self._flow = FlowWindow(self._context, self._fonts)
         self._font_manager = FontManager(self._context, self._fonts)
         self._glyph_hack = GlyphHackWindow(self._context)
@@ -263,6 +265,7 @@ class PlayerApplication:
         begin_order = self._context.config.window_manager.begin_order
         self._windows.add_windows(
             self._canvas,
+            self._files,
             self._flow,
             self._font_manager,
             self._glyph_hack,
@@ -446,6 +449,8 @@ class PlayerApplication:
             self._window_manager.flip_opened()
         if imgui.menu_item("Worker", None, self._worker_manager.opened)[0]:
             self._worker_manager.flip_opened()
+        if imgui.menu_item("Files", None, self._files.opened)[0]:
+            self._files.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Development", None, False, False)

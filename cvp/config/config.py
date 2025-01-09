@@ -8,11 +8,13 @@ from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
 from cvp.config.sections.appearance import AppearanceConfig
+from cvp.config.sections.canvas import CanvasWindowConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
+from cvp.config.sections.files import FilesWindowConfig
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.font import FontConfig, FontManagerConfig
 from cvp.config.sections.games.glyph_hack import GlyphHackWindowConfig as GhWindowConfig
@@ -46,11 +48,13 @@ from cvp.yaml.dumpers import DefaultDumper
 @dataclass
 class Config:
     appearance: AppearanceConfig = field(default_factory=AppearanceConfig)
+    canvas_window: CanvasWindowConfig = field(default_factory=CanvasWindowConfig)
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
+    files_window: FilesWindowConfig = field(default_factory=FilesWindowConfig)
     flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
     font: FontConfig = field(default_factory=FontConfig)
     font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
