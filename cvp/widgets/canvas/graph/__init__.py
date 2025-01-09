@@ -17,6 +17,7 @@ from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.logging.logging import flow_logger as logger
+from cvp.maths.geometry.rectangle import is_rectangle_collision
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
@@ -37,7 +38,7 @@ class CanvasGraph(CanvasController):
     _mode: ControlMode
     _connects: List[NodePin]
     _roi: Optional[Rect]
-    _selected_stash: Optional[Selection]
+    _selection_stash: Optional[Selection]
 
     def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()
@@ -64,7 +65,7 @@ class CanvasGraph(CanvasController):
         self._mode = ControlMode.normal
         self._connects = list()
         self._roi = None
-        self._selected_stash = None
+        self._selection_stash = None
 
     @property
     def is_multi_select_mode(self) -> bool:
@@ -413,7 +414,7 @@ class CanvasGraph(CanvasController):
                     if not self.is_multi_select_mode:
                         self.graph.unselect_all_items()
                     self._roi = self.mx, self.my, self.mx, self.my
-                    self._selected_stash = self.graph.selection.copy()
+                    self._selection_stash = self.graph.selection.copy()
 
     def _update_nodes_state_for_node_moving(self) -> None:
         assert not self.is_pan_mode
@@ -474,33 +475,21 @@ class CanvasGraph(CanvasController):
         assert not self.is_pan_mode
         assert self.is_roi_box_mode
         assert self._roi is not None
-        assert self._selected_stash is not None
+        assert self._selection_stash is not None
 
-        x1 = self._roi[0]
-        y1 = self._roi[1]
-        x2 = self.mx
-        y2 = self.my
-        self._roi = x1, y1, x2, y2
-
-        x1, y1, x2, y2 = self.screen_to_canvas_roi(self._roi)
-        left = min(x1, x2)
-        right = max(x1, x2)
-        top = min(y1, y2)
-        bottom = max(y1, y2)
+        self._roi = self._roi[0], self._roi[1], self.mx, self.my
+        canvas_roi = self.screen_to_canvas_roi(self._roi)
 
         for node in self.graph.nodes:
-            nx1, ny1, nx2, ny2 = node.node_roi
-            x_in = left <= nx1 <= right or left <= nx2 <= right
-            y_in = top <= ny1 <= bottom or top <= ny2 <= bottom
-            if x_in and y_in:
-                node.selected = node not in self._selected_stash
+            if is_rectangle_collision(canvas_roi, node.node_roi):
+                node.selected = node not in self._selection_stash
             else:
-                node.selected = node in self._selected_stash
+                node.selected = node in self._selection_stash
 
         if self.changed_left_up:
             self._mode = ControlMode.normal
             self._roi = None
-            self._selected_stash = None
+            self._selection_stash = None
             for node in self.graph.nodes:
                 self.graph.update_selected_item(node)
 
