@@ -6,7 +6,7 @@ from typing import List, Optional
 from uuid import uuid4
 
 from cvp.flow.datas.pin import Pin
-from cvp.flow.datas.templates.node import NodeTemplate
+from cvp.flow.templates.node import NodeTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 

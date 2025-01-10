@@ -4,9 +4,9 @@ from typing import Final
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
-from cvp.flow.datas.templates.graph import GraphTemplate
-from cvp.flow.datas.templates.node import NodeTemplate
-from cvp.flow.datas.templates.pin import PinTemplate
+from cvp.flow.templates.graph import GraphTemplate
+from cvp.flow.templates.node import NodeTemplate
+from cvp.flow.templates.pin import PinTemplate
 from cvp.types.colors import BLUE_RGBA, GREEN_RGBA, RED_RGBA
 
 ARC_FLOW_UUID: Final[str] = "ARC_FLOW"
@@ -54,6 +54,7 @@ PIN_DATA_INPUT_TEMPLATE: Final[PinTemplate] = PinTemplate(
 
 NODE_OUTPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
     name="NODE1_NAME",
+    path="NODE1_PATH",
     docs="NODE1_DOCS",
     icon="NODE1_ICON",
     color=RED_RGBA,
@@ -63,6 +64,7 @@ NODE_OUTPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
 
 NODE_INPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
     name="NODE2_NAME",
+    path="NODE2_PATH",
     docs="NODE2_DOCS",
     icon="NODE2_ICON",
     color=GREEN_RGBA,

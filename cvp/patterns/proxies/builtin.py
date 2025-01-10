@@ -11,7 +11,7 @@ class LockerProtocol(Protocol):
     def __exit__(self, exc_type, exc_val, exc_tb): ...
 
 
-class PlainOldData(ValueProxy[ValueT]):
+class BuiltinTypeProxy(ValueProxy[ValueT]):
     def __init__(self, value: ValueT, *, locker: Optional[LockerProtocol] = None):
         self._locker = locker
         self.value = value
@@ -69,13 +69,17 @@ class PlainOldData(ValueProxy[ValueT]):
                 self.value = value
 
 
-class Boolean(PlainOldData[bool]):
+class Boolean(BuiltinTypeProxy[bool]):
     pass
 
 
-class Integer(PlainOldData[int]):
+class Integer(BuiltinTypeProxy[int]):
     pass
 
 
-class Floating(PlainOldData[float]):
+class Floating(BuiltinTypeProxy[float]):
+    pass
+
+
+class Complex(BuiltinTypeProxy[complex]):
     pass

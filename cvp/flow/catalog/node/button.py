@@ -2,8 +2,8 @@
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
-from cvp.flow.datas.templates.node import NodeTemplate
-from cvp.flow.datas.templates.pin import PinTemplate
+from cvp.flow.templates.node import NodeTemplate
+from cvp.flow.templates.pin import PinTemplate
 from cvp.fonts.glyphs.mdi import MOVIE_OPEN_PLAY
 from cvp.types.colors import WHITE_RGBA
 

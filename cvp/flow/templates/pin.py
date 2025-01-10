@@ -1,21 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
 
 
-@dataclass
 class PinTemplate:
-    name: str = field(default_factory=str)
-    docs: str = field(default_factory=str)
-    dtype: str = field(default_factory=str)
-    action: Action = Action.data
-    stream: Stream = Stream.input
-    required: bool = False
-    arcs: List[str] = field(default_factory=list)
+    def __init__(
+        self,
+        name: str,
+        dtype: Optional[str] = None,
+        docs: Optional[str] = None,
+        action: Optional[Action] = None,
+        stream: Optional[Stream] = None,
+        required: Optional[bool] = None,
+        arcs: Optional[List[str]] = None,
+    ):
+        self.name = name
+        self.docs = docs if docs else str()
+        self.dtype = dtype if dtype else str()
+        self.action = action if action is not None else Action.data
+        self.stream = stream if stream is not None else Stream.input
+        self.required = bool(required)
+        self.arcs = list(arcs if arcs else [])
 
     @property
     def is_data_action(self):

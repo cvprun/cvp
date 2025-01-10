@@ -3,8 +3,8 @@
 from functools import lru_cache
 from typing import Dict, Optional
 
-from cvp.flow.datas.templates.dtype import Dtype
-from cvp.flow.styles.icons import DTYPE_ICON_MAPPING
+from cvp.flow.styles.dtype import DTYPE_ICON_MAPPING
+from cvp.flow.templates.dtype import Dtype
 from cvp.patterns.singleton import singleton
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.variables import FLOW_PATH_SEPARATOR

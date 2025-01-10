@@ -19,7 +19,7 @@ from cvp.flow.datas.node_pin import NodePin
 from cvp.flow.datas.pin import Pin
 from cvp.flow.datas.selection import SelectableAny, Selection
 from cvp.flow.datas.stream import Stream
-from cvp.flow.datas.templates.graph import GraphTemplate
+from cvp.flow.templates.graph import GraphTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
@@ -40,9 +40,9 @@ class Graph:
     _selection: Selection = field(default_factory=Selection)
 
     @classmethod
-    def from_template(cls, template: GraphTemplate, *, reissue=False):
+    def from_template(cls, template: GraphTemplate):
         return cls(
-            uuid=str(uuid4()) if reissue else template.uuid,
+            uuid=str(uuid4()),
             name=template.name,
             docs=template.docs,
             icon=template.icon,
@@ -51,9 +51,8 @@ class Graph:
             tags=deepcopy(template.tags),
         )
 
-    def as_template(self, *, reissue=False):
+    def as_template(self):
         return GraphTemplate(
-            uuid=str(uuid4()) if reissue else self.uuid,
             name=self.name,
             docs=self.docs,
             icon=self.icon,

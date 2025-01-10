@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Dict
 
-from cvp.flow.datas.templates.node import NodeTemplate
+from cvp.flow.templates.node import NodeTemplate
 from cvp.patterns.singleton import singleton
 
 

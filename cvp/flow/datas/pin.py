@@ -6,7 +6,7 @@ from typing import List
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
-from cvp.flow.datas.templates.pin import PinTemplate
+from cvp.flow.templates.pin import PinTemplate
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
