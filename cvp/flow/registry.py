@@ -3,7 +3,7 @@
 from functools import lru_cache
 from typing import Dict, Optional
 
-from cvp.flow.styles.dtype import DTYPE_ICON_MAPPING
+from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype
 from cvp.flow.templates.node import NodeTemplate
 from cvp.patterns.singleton import singleton
