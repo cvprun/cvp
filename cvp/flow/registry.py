@@ -5,13 +5,29 @@ from typing import Dict, Optional
 
 from cvp.flow.styles.dtype import DTYPE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype
+from cvp.flow.templates.node import NodeTemplate
 from cvp.patterns.singleton import singleton
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
-class FlowDtypeRegistry(Dict[str, Dtype]):
-    def register(
+class FlowRegistry:
+    _dtypes: Dict[str, Dtype]
+    _nodes: Dict[str, NodeTemplate]
+
+    def __init__(self):
+        self._dtypes = dict()
+        self._nodes = dict()
+
+    @property
+    def dtypes(self):
+        return self._dtypes
+
+    @property
+    def nodes(self):
+        return self._nodes
+
+    def register_dtype(
         self,
         name: Optional[str] = None,
         path: Optional[str] = None,
@@ -29,7 +45,7 @@ class FlowDtypeRegistry(Dict[str, Dtype]):
             b_icon = icon if icon else DTYPE_ICON_MAPPING[b_name[0]]
             b_color = color if color else WHITE_RGBA
 
-            if self.__contains__(b_path):
+            if b_path in self._dtypes:
                 raise KeyError(f"Duplicate dtype key: {b_path}")
 
             dtype = Dtype(
@@ -41,19 +57,23 @@ class FlowDtypeRegistry(Dict[str, Dtype]):
                 color=b_color,
             )
 
-            self.__setitem__(b_path, dtype)
+            self._dtypes[b_path] = dtype
 
         return _decorator
 
+    def update(self, other: "FlowRegistry") -> None:
+        self._dtypes.update(other.dtypes)
+        self._nodes.update(other.nodes)
+
 
 @singleton
-class GlobalFlowDtypeRegistry(FlowDtypeRegistry):
+class GlobalFlowRegistry(FlowRegistry):
     pass
 
 
 @lru_cache
-def global_dtype_registry() -> GlobalFlowDtypeRegistry:
-    return GlobalFlowDtypeRegistry()
+def global_registry() -> GlobalFlowRegistry:
+    return GlobalFlowRegistry()
 
 
 def register_dtype(
@@ -63,7 +83,7 @@ def register_dtype(
     icon: Optional[str] = None,
     color: Optional[RGBA] = None,
 ):
-    return global_dtype_registry().register(
+    return global_registry().register_dtype(
         name=name,
         path=path,
         docs=docs,

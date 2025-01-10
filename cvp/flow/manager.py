@@ -10,8 +10,7 @@ from yaml import dump, full_load
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.selection import Selection
-from cvp.flow.registry.dtype import FlowDtypeRegistry, global_dtype_registry
-from cvp.flow.registry.node import FlowNodeRegistry, global_node_registry
+from cvp.flow.registry import FlowRegistry, global_registry
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
@@ -24,12 +23,10 @@ class FlowManager(OrderedDict[str, Graph]):
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False, no_register=False):
         super().__init__()
-        self._dtypes = FlowDtypeRegistry()
-        self._nodes = FlowNodeRegistry()
+        self._registry = FlowRegistry()
 
         if not no_register:
-            self._dtypes.update(global_dtype_registry())
-            self._nodes.update(global_node_registry())
+            self._registry.update(global_registry())
 
         self._home = home
         self._clipboard_items = None
@@ -40,11 +37,11 @@ class FlowManager(OrderedDict[str, Graph]):
 
     @property
     def dtypes(self):
-        return self._dtypes
+        return self._registry.dtypes
 
     @property
     def nodes(self):
-        return self._nodes
+        return self._registry.nodes
 
     @property
     def has_clipboard(self) -> bool:
@@ -129,7 +126,7 @@ class FlowManager(OrderedDict[str, Graph]):
         self[graph.uuid] = graph
 
     def get_node_template(self, path: str):
-        return self._nodes[path]
+        return self.nodes[path]
 
     def add_node(self, graph: Graph, path: str) -> Node:
         node_template = self.get_node_template(path)
