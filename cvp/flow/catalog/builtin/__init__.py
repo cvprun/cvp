@@ -6,7 +6,6 @@ from typing import Dict, List
 
 from cvp.flow.catalog.builtin import events
 from cvp.flow.datas.templates.node import NodeTemplate
-from cvp.flow.path import FlowPath
 from cvp.inspect.member import is_dunder, is_sunder
 
 
@@ -16,7 +15,7 @@ def builtin_submodules() -> List[ModuleType]:
 
 
 @lru_cache
-def builtin_templates() -> Dict[FlowPath, NodeTemplate]:
+def builtin_templates() -> Dict[str, NodeTemplate]:
     result = dict()
     for module in builtin_submodules():
         assert isinstance(module, ModuleType)
@@ -37,7 +36,6 @@ def builtin_templates() -> Dict[FlowPath, NodeTemplate]:
                 continue
 
             template = o()
-            path = FlowPath(template.path).join(template.name)
-            result[path] = template
+            result[template.path] = template
 
     return result

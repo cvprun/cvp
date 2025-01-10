@@ -11,7 +11,6 @@ from cvp.flow.catalog import FlowCatalog
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.selection import Selection
-from cvp.flow.path import FlowPath
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
@@ -127,10 +126,10 @@ class FlowManager(OrderedDict[str, Graph]):
             raise ValueError("The 'uuid' of the flow graph does not exist")
         self[graph.uuid] = graph
 
-    def get_node_template(self, path: Union[str, FlowPath]):
+    def get_node_template(self, path: str):
         return self._catalog[path]
 
-    def add_node(self, graph: Graph, path: Union[str, FlowPath]) -> Node:
+    def add_node(self, graph: Graph, path: str) -> Node:
         node_template = self.get_node_template(path)
         node = Node.from_template(node_template, reissue=True)
         graph.nodes.insert(0, node)

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, TypeAlias, Union
+from typing import Dict, TypeAlias
 
 from cvp.flow.catalog.builtin import builtin_templates
 from cvp.flow.catalog.registry import global_node_registry
 from cvp.flow.datas.templates.node import NodeTemplate
-from cvp.flow.path import FlowPath
 
 ModulePath: TypeAlias = str
 NodeName: TypeAlias = str
@@ -13,7 +12,7 @@ ModuleToNodes: TypeAlias = Dict[ModulePath, Dict[NodeName, NodeTemplate]]
 
 
 class FlowCatalog:
-    _nodes: Dict[FlowPath, NodeTemplate]
+    _nodes: Dict[str, NodeTemplate]
 
     def __init__(self, *, no_builtins=False, no_global_register=False):
         self._nodes = dict()
@@ -22,22 +21,14 @@ class FlowCatalog:
         if not no_global_register:
             self._nodes.update(global_node_registry())
 
-    @staticmethod
-    def normalize_path(path: Union[str, FlowPath]) -> FlowPath:
-        if isinstance(path, FlowPath):
-            return path
-        if isinstance(path, str):
-            return FlowPath(path)
-        raise TypeError(f"Unsupported path type: {type(path).__name__}")
+    def __getitem__(self, path: str) -> NodeTemplate:
+        return self._nodes.__getitem__(path)
 
-    def __getitem__(self, path: Union[str, FlowPath]) -> NodeTemplate:
-        return self._nodes.__getitem__(self.normalize_path(path))
+    def __setitem__(self, path: str, value: NodeTemplate) -> None:
+        self._nodes.__setitem__(path, value)
 
-    def __setitem__(self, path: Union[str, FlowPath], value: NodeTemplate) -> None:
-        self._nodes.__setitem__(self.normalize_path(path), value)
-
-    def __contains__(self, path: Union[str, FlowPath]) -> bool:
-        return self._nodes.__contains__(self.normalize_path(path))
+    def __contains__(self, path: str) -> bool:
+        return self._nodes.__contains__(path)
 
     def __len__(self) -> int:
         return self._nodes.__len__()

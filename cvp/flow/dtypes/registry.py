@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Dict
 
 from cvp.flow.datas.templates.dtype import Dtype
-from cvp.flow.path import FlowPath
 from cvp.patterns.singleton import singleton
 
 
-class FlowDtypeRegistry(Dict[FlowPath, Dtype]):
+class FlowDtypeRegistry(Dict[str, Dtype]):
     def register_dtype(self):
         pass
 

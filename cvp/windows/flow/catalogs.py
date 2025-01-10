@@ -3,7 +3,6 @@
 import imgui
 
 from cvp.context.context import Context
-from cvp.flow.path import FlowPath
 from cvp.imgui.drag_types import DRAG_FLOW_GRAPH_TYPE as DRAG_GRAPH
 from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE as DRAG_NODE
 from cvp.imgui.indent import indent
@@ -58,10 +57,7 @@ class Catalogs(WidgetInterface):
                                 if drag_drop_src.dragging:
                                     node_name = node_template.name
                                     node_path = node_template.path
-
-                                    flow_path = FlowPath(node_path).join(node_name)
-                                    node_data = bytes(flow_path)
-
+                                    node_data = bytes(node_path)
                                     imgui.set_drag_drop_payload(DRAG_NODE, node_data)
                                     imgui.text(node_name)
             finally:

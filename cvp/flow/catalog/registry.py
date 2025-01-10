@@ -4,11 +4,10 @@ from functools import lru_cache
 from typing import Dict
 
 from cvp.flow.datas.templates.node import NodeTemplate
-from cvp.flow.path import FlowPath
 from cvp.patterns.singleton import singleton
 
 
-class FlowNodeRegistry(Dict[FlowPath, NodeTemplate]):
+class FlowNodeRegistry(Dict[str, NodeTemplate]):
     def register_node_template(self):
         pass
 

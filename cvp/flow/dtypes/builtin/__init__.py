@@ -5,7 +5,6 @@ from types import ModuleType
 from typing import Dict, List
 
 from cvp.flow.datas.templates.dtype import Dtype
-from cvp.flow.path import FlowPath
 from cvp.inspect.member import is_dunder, is_sunder
 
 
@@ -15,7 +14,7 @@ def builtin_submodules() -> List[ModuleType]:
 
 
 @lru_cache
-def builtin_dtypes() -> Dict[FlowPath, Dtype]:
+def builtin_dtypes() -> Dict[str, Dtype]:
     result = dict()
     for module in builtin_submodules():
         assert isinstance(module, ModuleType)
@@ -36,7 +35,6 @@ def builtin_dtypes() -> Dict[FlowPath, Dtype]:
                 continue
 
             dtype = o()
-            path = FlowPath(dtype.path).join(dtype.name)
-            result[path] = dtype
+            result[dtype.path] = dtype
 
     return result
