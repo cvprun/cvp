@@ -6,10 +6,6 @@ from cvp.flow.catalog.builtin import builtin_templates
 from cvp.flow.catalog.registry import global_node_registry
 from cvp.flow.datas.templates.node import NodeTemplate
 
-ModulePath: TypeAlias = str
-NodeName: TypeAlias = str
-ModuleToNodes: TypeAlias = Dict[ModulePath, Dict[NodeName, NodeTemplate]]
-
 
 class FlowCatalog:
     _nodes: Dict[str, NodeTemplate]
@@ -44,19 +40,3 @@ class FlowCatalog:
 
     def items(self):
         return self._nodes.items()
-
-    def as_module2nodes(self) -> ModuleToNodes:
-        result: ModuleToNodes = dict()
-        for path, node in self._nodes.items():
-            module_path, node_name = path.split()
-            assert isinstance(module_path, str)
-            assert isinstance(node_name, str)
-            if module_path not in result:
-                result[module_path] = dict()
-            nodes = result.get(module_path)
-            if nodes is None:
-                nodes = dict()
-                result[module_path] = nodes
-            assert isinstance(nodes, dict)
-            nodes[node_name] = node
-        return result

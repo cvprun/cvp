@@ -32,7 +32,7 @@ from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.graph import CanvasGraph
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
-from cvp.windows.flow.catalogs import Catalogs
+from cvp.windows.flow.catalogs import Catalog
 from cvp.windows.flow.cursor import FlowCursor
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
@@ -60,7 +60,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         self._fonts = fonts
         self._cursor = FlowCursor(fonts, context.config.flow_aui)
-        self._catalogs = Catalogs(context)
+        self._catalogs = Catalog(context)
         self._left_tabs = FlowLeftTabs(context, fonts)
         self._right_tabs = FlowRightTabs(context, fonts)
         self._bottom_tabs = FlowBottomTabs(context, fonts)
