@@ -53,7 +53,6 @@ PIN_DATA_INPUT_TEMPLATE: Final[PinTemplate] = PinTemplate(
 )
 
 NODE_OUTPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
-    uuid="NODE1_UUID",
     name="NODE1_NAME",
     docs="NODE1_DOCS",
     icon="NODE1_ICON",
@@ -63,7 +62,6 @@ NODE_OUTPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
 )
 
 NODE_INPUT_TEMPLATE: Final[NodeTemplate] = NodeTemplate(
-    uuid="NODE2_UUID",
     name="NODE2_NAME",
     docs="NODE2_DOCS",
     icon="NODE2_ICON",

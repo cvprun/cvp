@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from typing import List
-from uuid import uuid4
 
 from cvp.flow.datas.templates.pin import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -10,12 +9,10 @@ from cvp.types.colors import RGBA, WHITE_RGBA
 
 @dataclass
 class NodeTemplate:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
     path: str = field(default_factory=str)
     docs: str = field(default_factory=str)
     icon: str = field(default_factory=str)
-    func: str = field(default_factory=str)
     color: RGBA = WHITE_RGBA
     pins: List[PinTemplate] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)

@@ -32,7 +32,7 @@ from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.graph import CanvasGraph
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
-from cvp.windows.flow.catalogs import Catalog
+from cvp.windows.flow.catalog import Catalog
 from cvp.windows.flow.cursor import FlowCursor
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
@@ -60,7 +60,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         self._fonts = fonts
         self._cursor = FlowCursor(fonts, context.config.flow_aui)
-        self._catalogs = Catalog(context)
+        self._catalog = Catalog(context)
         self._left_tabs = FlowLeftTabs(context, fonts)
         self._right_tabs = FlowRightTabs(context, fonts)
         self._bottom_tabs = FlowBottomTabs(context, fonts)
@@ -466,7 +466,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         with begin_child("## ChildLeftBottom"):
             with style_item_spacing(0, 0):
                 imgui.dummy(0, self.padding_height)
-            self._catalogs.on_process()
+            self._catalog.on_process()
 
     @override
     def on_process_sidebar_right(self):

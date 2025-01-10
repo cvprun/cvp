@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from typing import Optional
 
 from cvp.types.colors import RGBA, WHITE_RGBA
 
 
-@dataclass
 class Dtype:
-    name: str = str()
-    path: str = str()
-    docs: str = str()
-    icon: str = str()
-    color: RGBA = WHITE_RGBA
+    def __init__(
+        self,
+        name: str,
+        path: str,
+        base: type,
+        docs: Optional[str] = None,
+        icon: Optional[str] = None,
+        color: Optional[RGBA] = None,
+    ):
+        self.name = name
+        self.path = path
+        self.base = base
+        self.docs = docs if docs else str()
+        self.icon = icon if icon else str()
+        self.color = color if color else WHITE_RGBA

@@ -11,7 +11,6 @@ from cvp.types.colors import WHITE_RGBA
 class ButtonEventNode(NodeTemplate):
     def __init__(self):
         super().__init__(
-            uuid="e29eb755-213f-48de-8ff7-c80be89ba60f",
             name=type(self).__name__,
             path=type(self).__module__,
             docs="Button Event Node",

@@ -41,15 +41,14 @@ class Node:
     _hovering: bool = False
 
     @classmethod
-    def from_template(cls, template: NodeTemplate, *, reissue=False):
+    def from_template(cls, template: NodeTemplate):
         return cls(
-            uuid=str(uuid4()) if reissue else template.uuid,
+            uuid=str(uuid4()),
             name=template.name,
             path=template.path,
             docs=template.docs,
             icon=template.icon,
             color=template.color,
-            func=template.func,
             flow_inputs=list(Pin.from_template(p) for p in template.flow_inputs),
             flow_outputs=list(Pin.from_template(p) for p in template.flow_outputs),
             data_inputs=list(Pin.from_template(p) for p in template.data_inputs),
@@ -57,15 +56,13 @@ class Node:
             tags=deepcopy(template.tags),
         )
 
-    def as_template(self, *, reissue=False):
+    def as_template(self):
         return NodeTemplate(
-            uuid=str(uuid4()) if reissue else self.uuid,
             name=self.name,
             path=self.path,
             docs=self.docs,
             icon=self.icon,
             color=self.color,
-            func=self.func,
             pins=list(p.as_template() for p in self.pins),
             tags=deepcopy(self.tags),
         )

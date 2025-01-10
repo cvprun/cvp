@@ -47,7 +47,7 @@ class Graph:
             docs=template.docs,
             icon=template.icon,
             color=template.color,
-            nodes=list(Node.from_template(n, reissue=reissue) for n in template.nodes),
+            nodes=list(Node.from_template(n) for n in template.nodes),
             tags=deepcopy(template.tags),
         )
 
@@ -58,7 +58,7 @@ class Graph:
             docs=self.docs,
             icon=self.icon,
             color=self.color,
-            nodes=list(n.as_template(reissue=reissue) for n in self.nodes),
+            nodes=list(n.as_template() for n in self.nodes),
             tags=deepcopy(self.tags),
         )
 
