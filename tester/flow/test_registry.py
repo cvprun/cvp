@@ -13,8 +13,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(registry0, registry1)
         self.assertEqual(registry0, registry2)
 
-    def test_register_dtype(self):
-        registry = FlowRegistry()
+    def test_empty_register_dtype(self):
+        registry = FlowRegistry(no_builtins=True)
         self.assertEqual(0, len(registry.nodes))
         self.assertEqual(0, len(registry.dtypes))
 
