@@ -17,7 +17,7 @@ from cvp.fonts.glyphs.mdi import (
     STOP,
 )
 from cvp.imgui.begin_child import begin_child
-from cvp.imgui.drag_types import DRAG_FLOW_NODE_TYPE
+from cvp.imgui.drag_types import DRAG_FLOW_NODE
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_item_spacing
@@ -60,7 +60,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         self._fonts = fonts
         self._cursor = FlowCursor(fonts, context.config.flow_aui)
-        self._catalog = Catalog(context)
+        self._catalog = Catalog(context, fonts)
         self._left_tabs = FlowLeftTabs(context, fonts)
         self._right_tabs = FlowRightTabs(context, fonts)
         self._bottom_tabs = FlowBottomTabs(context, fonts)
@@ -580,7 +580,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with imgui.begin_drag_drop_target() as target:
             if target.hovered:
-                if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE_TYPE):
+                if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE):
                     node_path = str(payload, encoding="utf-8")
                     node = self.context.fm.add_node(canvas.graph, node_path)
                     canvas.update_node_roi(node)
