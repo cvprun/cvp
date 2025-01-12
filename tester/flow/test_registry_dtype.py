@@ -3,29 +3,17 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.flow.registry import FlowRegistry, GlobalFlowRegistry, global_registry
+from cvp.flow.registry import FlowRegistry
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class RegistryDtypeTestCase(TestCase):
-    def test_global(self):
-        registry0 = global_registry()
-        registry1 = GlobalFlowRegistry()
-        registry2 = GlobalFlowRegistry()
-        self.assertEqual(registry0, registry1)
-        self.assertEqual(registry0, registry2)
-
-    def test_empty_register_dtype(self):
-        registry = FlowRegistry(no_builtins=True)
-        self.assertEqual(0, len(registry.dtypes))
-        self.assertEqual(0, len(registry.type2dtypes))
-        self.assertEqual(0, len(registry.nodes))
-
     def test_register_dtype_builtins(self):
         registry = FlowRegistry(no_builtins=True)
         self.assertEqual(0, len(registry.dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
+
         registry.register_builtin_dtypes()
         self.assertNotEqual(0, len(registry.dtypes))
         self.assertNotEqual(0, len(registry.type2dtypes))

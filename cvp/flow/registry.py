@@ -5,7 +5,7 @@ from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from cvp.flow.builtins.dtype import get_builtin_types
-from cvp.flow.builtins.node import get_builtin_nodes
+from cvp.flow.builtins.node import get_builtin_functions
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
 from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
@@ -41,12 +41,12 @@ class FlowRegistry:
             self.register_builtin_nodes()
 
     def register_builtin_dtypes(self) -> None:
-        for t in get_builtin_types():
-            self.add_new_type(t)
+        for cls in get_builtin_types():
+            self.add_new_type(cls)
 
     def register_builtin_nodes(self) -> None:
-        for node in get_builtin_nodes():
-            self.add_node(node)
+        for func in get_builtin_functions():
+            self.add_new_callable(func)
 
     @property
     def dtypes(self):
