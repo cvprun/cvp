@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional
+from inspect import Parameter
+from typing import Any, List, Optional
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
@@ -16,6 +17,7 @@ class PinTemplate:
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         arcs: Optional[List[str]] = None,
+        default: Any = Parameter.empty,
     ):
         self.name = name
         self.docs = docs if docs else str()
@@ -24,6 +26,7 @@ class PinTemplate:
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.arcs = list(arcs if arcs else [])
+        self.default = default
 
     @property
     def is_data_action(self):

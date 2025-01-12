@@ -144,12 +144,23 @@ class PropsTab(TabItem[FlowCursor]):
     def on_pin_item(self, pin: Pin) -> None:
         input_text_disabled("Type", type(pin).__name__)
         input_text_disabled("Name", pin.name)
-        input_text_disabled("Data Type", pin.dtype)
-        input_text_disabled("Action", str(pin.action))
-        input_text_disabled("Stream", str(pin.stream))
+        input_text_disabled("Docs", pin.docs)
+        input_text_disabled("Dtype", pin.dtype)
 
         with style_disable_input():
-            checkbox("Required", pin.required)
+            same_vertical_x = 90.0
+
+            imgui.radio_button("Flow", pin.is_flow_action)
+            imgui.same_line(same_vertical_x)
+            imgui.radio_button("Data", pin.is_data_action)
+
+            imgui.radio_button("Input", pin.is_input_stream)
+            imgui.same_line(same_vertical_x)
+            imgui.radio_button("Output", pin.is_output_stream)
+
+            imgui.radio_button("Required", pin.required)
+            imgui.same_line(same_vertical_x)
+            imgui.radio_button("Optional", not pin.required)
 
         if self.context.debug:
             self.tree_pin_debugging("Debugging", pin)

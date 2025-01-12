@@ -2,7 +2,8 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import List
+from inspect import Parameter
+from typing import Any, List
 
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
@@ -30,6 +31,8 @@ class Pin:
     _hovering: bool = False
     _connectable: bool = False
 
+    _default: Any = Parameter.empty
+
     @classmethod
     def from_template(cls, template: PinTemplate):
         return cls(
@@ -40,6 +43,7 @@ class Pin:
             stream=template.stream,
             required=template.required,
             arcs=deepcopy(template.arcs),
+            _default=template.default,
         )
 
     def as_template(self):
@@ -51,6 +55,7 @@ class Pin:
             stream=self.stream,
             required=self.required,
             arcs=deepcopy(self.arcs),
+            default=self.default,
         )
 
     def as_unformatted_text(self) -> str:
@@ -154,3 +159,11 @@ class Pin:
     @connectable.setter
     def connectable(self, value: bool) -> None:
         self._connectable = value
+
+    @property
+    def default(self):
+        return self._default
+
+    @default.setter
+    def default(self, value: Any) -> None:
+        self._default = value
