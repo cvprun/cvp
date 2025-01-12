@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# https://docs.python.org/3/library/functions.html
 
 from typing import Callable, List
 

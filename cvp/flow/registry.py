@@ -4,8 +4,8 @@ from functools import lru_cache
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Union
 
-from cvp.flow.builtins.dtype import get_builtin_types
-from cvp.flow.builtins.node import get_builtin_functions
+from cvp.flow.catalog.dtype.builtins import get_builtin_types
+from cvp.flow.catalog.node.builtins import get_builtin_functions
 from cvp.flow.datas.action import Action
 from cvp.flow.datas.stream import Stream
 from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
@@ -143,7 +143,7 @@ class FlowRegistry:
             dtype=None,
             docs=FLOW_PIN_NEXT_DOCS_DEFAULT,
             action=Action.flow,
-            stream=Stream.input,
+            stream=Stream.output,
             required=False,
         )
 
