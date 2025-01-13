@@ -10,7 +10,8 @@ from yaml import dump, full_load
 from cvp.flow.datas.graph import Graph
 from cvp.flow.datas.node import Node
 from cvp.flow.datas.selection import Selection
-from cvp.flow.registry import FlowRegistry, global_registry
+from cvp.flow.registry.globals import global_registry
+from cvp.flow.registry.registry import FlowRegistry
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point

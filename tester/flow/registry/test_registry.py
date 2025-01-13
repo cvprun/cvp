@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.flow.registry import FlowRegistry, GlobalFlowRegistry, global_registry
+from cvp.flow.registry.globals import FlowRegistry, GlobalFlowRegistry, global_registry
 
 
 class RegistryTestCase(TestCase):

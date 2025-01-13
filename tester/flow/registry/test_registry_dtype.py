@@ -3,7 +3,7 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.flow.registry import FlowRegistry
+from cvp.flow.registry.registry import FlowRegistry
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
@@ -82,7 +82,7 @@ class RegistryDtypeTestCase(TestCase):
         self.assertEqual(0, len(registry.nodes))
 
         test_path = _Custom.__module__ + FLOW_PATH_SEPARATOR + _Custom.__name__
-        self.assertEqual("tester.flow.test_registry_dtype._Custom", test_path)
+        self.assertEqual("tester.flow.registry.test_registry_dtype._Custom", test_path)
 
         self.assertEqual(_Custom, registry.get_dtype_with_type(_Custom).base)
         self.assertEqual(_Custom, registry.get_dtype(test_path).base)

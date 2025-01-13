@@ -3,7 +3,7 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.flow.registry import FlowRegistry
+from cvp.flow.registry.registry import FlowRegistry
 
 
 class RegistryNodeTestCase(TestCase):

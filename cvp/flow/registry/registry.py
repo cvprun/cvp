@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from functools import lru_cache
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Union
 
@@ -13,7 +12,6 @@ from cvp.flow.icons.node import NODE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
-from cvp.patterns.singleton import singleton
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.variables import (
     FLOW_PATH_SEPARATOR,
@@ -383,55 +381,3 @@ class FlowRegistry:
             return func
 
         return _decorator
-
-
-@singleton
-class GlobalFlowRegistry(FlowRegistry):
-    pass
-
-
-@lru_cache
-def global_registry() -> GlobalFlowRegistry:
-    return GlobalFlowRegistry()
-
-
-def register_dtype(
-    name: Optional[str] = None,
-    path: Optional[str] = None,
-    docs: Optional[str] = None,
-    icon: Optional[str] = None,
-    color: Optional[RGBA] = None,
-):
-    return global_registry().register_dtype(
-        name=name,
-        path=path,
-        docs=docs,
-        icon=icon,
-        color=color,
-    )
-
-
-def register_node(
-    name: Optional[str] = None,
-    path: Optional[str] = None,
-    docs: Optional[str] = None,
-    icon: Optional[str] = None,
-    color: Optional[RGBA] = None,
-    flow_inputs: Optional[List[PinTemplate]] = None,
-    flow_outputs: Optional[List[PinTemplate]] = None,
-    data_inputs: Optional[List[PinTemplate]] = None,
-    data_outputs: Optional[List[PinTemplate]] = None,
-    tags: Optional[List[str]] = None,
-):
-    return global_registry().register_node(
-        name=name,
-        path=path,
-        docs=docs,
-        icon=icon,
-        color=color,
-        flow_inputs=flow_inputs,
-        flow_outputs=flow_outputs,
-        data_inputs=data_inputs,
-        data_outputs=data_outputs,
-        tags=tags,
-    )
