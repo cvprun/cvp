@@ -19,12 +19,13 @@ class RegistryDtypeTestCase(TestCase):
         self.assertNotEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
 
-    def test_register_dtype_none(self):
+    def test_register_dtype_error(self):
         registry = FlowRegistry(no_builtins=True)
-
         with self.assertRaises(TypeError):
             registry.add_new_type(None)  # noqa
 
+    def test_register_dtype_none(self):
+        registry = FlowRegistry(no_builtins=True)
         self.assertEqual(0, len(registry.dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))

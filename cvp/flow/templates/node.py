@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, List, Optional
+from typing import Any, Callable, List, Optional
 
 from cvp.flow.templates.pin import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -26,6 +26,9 @@ class NodeTemplate:
         self.color = color if color else WHITE_RGBA
         self.pins = list(pins if pins else [])
         self.tags = list(tags if tags else [])
+
+    def __call__(self, *args, **kwargs) -> Any:
+        return self.func(*args, **kwargs)
 
     @property
     def flow_inputs(self) -> List[PinTemplate]:

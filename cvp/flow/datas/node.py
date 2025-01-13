@@ -18,7 +18,6 @@ class Node:
     path: str = field(default_factory=str)
     docs: str = field(default_factory=str)
     icon: str = field(default_factory=str)
-    func: str = field(default_factory=str)
     lock: bool = False
     color: RGBA = WHITE_RGBA
     flow_inputs: List[Pin] = field(default_factory=list)
@@ -89,13 +88,12 @@ class Node:
             f"Name: {self.name}\n"
             f"Docs: {self.docs}\n"
             f"Icon: {self.icon}\n"
-            f"Func: {self.func}\n"
             f"Lock: {self.lock}\n"
             f"Color: {self.color}\n"
-            f"Flow inputs ({len(self.flow_inputs)}): {self.as_flow_input_names}\n"
-            f"Flow outputs ({len(self.flow_outputs)}): {self.as_flow_output_names}\n"
-            f"Data inputs ({len(self.data_inputs)}): {self.as_data_input_names}\n"
-            f"Data outputs ({len(self.data_inputs)}): {self.as_data_output_names}\n"
+            f"Flow inputs: {len(self.flow_inputs)}\n"
+            f"Flow outputs: {len(self.flow_outputs)}\n"
+            f"Data inputs: {len(self.data_inputs)}\n"
+            f"Data outputs: {len(self.data_inputs)}\n"
             f"Begin: {self.is_begin}\n"
             f"Middle: {self.is_middle}\n"
             f"End: {self.is_end}\n"
