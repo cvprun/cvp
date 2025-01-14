@@ -28,6 +28,8 @@ class NodeTemplate:
         self.tags = list(tags if tags else [])
 
     def __call__(self, *args, **kwargs) -> Any:
+        if self.func is None:
+            raise ValueError("Node function is not set")
         return self.func(*args, **kwargs)
 
     @property
