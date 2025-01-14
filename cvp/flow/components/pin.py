@@ -2,8 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from inspect import Parameter
-from typing import Any, List
+from typing import List, Optional
 
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
@@ -31,7 +30,7 @@ class Pin:
     _hovering: bool = False
     _connectable: bool = False
 
-    _default: Any = Parameter.empty
+    _template: Optional[PinTemplate] = None
 
     @classmethod
     def from_template(cls, template: PinTemplate):
@@ -43,38 +42,12 @@ class Pin:
             stream=template.stream,
             required=template.required,
             arcs=deepcopy(template.arcs),
-            _default=template.default,
+            _template=template,
         )
 
-    def as_template(self):
-        return PinTemplate(
-            name=self.name,
-            docs=self.docs,
-            dtype=self.dtype,
-            action=self.action,
-            stream=self.stream,
-            required=self.required,
-            arcs=deepcopy(self.arcs),
-            default=self.default,
-        )
-
-    def as_unformatted_text(self) -> str:
-        return (
-            f"Name: {self.name}\n"
-            f"Docs: {self.docs}\n"
-            f"Data Type: {self.dtype}\n"
-            f"Action: {self.action}\n"
-            f"Stream: {self.stream}\n"
-            f"Required: {self.required}\n"
-            f"Arcs: {len(self.arcs)}\n"
-            f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
-            f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
-            f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
-            f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
-            f"Selected: {self._selected}\n"
-            f"Hovering: {self._hovering}\n"
-            f"Connectable: {self._connectable}\n"
-        )
+    @property
+    def template(self):
+        return self._template
 
     @property
     def is_data_action(self):
@@ -160,10 +133,20 @@ class Pin:
     def connectable(self, value: bool) -> None:
         self._connectable = value
 
-    @property
-    def default(self):
-        return self._default
-
-    @default.setter
-    def default(self, value: Any) -> None:
-        self._default = value
+    def as_unformatted_text(self) -> str:
+        return (
+            f"Name: {self.name}\n"
+            f"Docs: {self.docs}\n"
+            f"Data Type: {self.dtype}\n"
+            f"Action: {self.action}\n"
+            f"Stream: {self.stream}\n"
+            f"Required: {self.required}\n"
+            f"Arcs: {len(self.arcs)}\n"
+            f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
+            f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
+            f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
+            f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
+            f"Selected: {self._selected}\n"
+            f"Hovering: {self._hovering}\n"
+            f"Connectable: {self._connectable}\n"
+        )

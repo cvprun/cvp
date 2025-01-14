@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.flow.templates.pin import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -15,8 +15,8 @@ class NodeTemplate:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        pins: Optional[List[PinTemplate]] = None,
-        tags: Optional[List[str]] = None,
+        pins: Optional[Sequence[PinTemplate]] = None,
+        tags: Optional[Sequence[str]] = None,
     ):
         self.name = name
         self.path = path

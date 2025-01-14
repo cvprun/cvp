@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
-from typing import List, Optional
+from typing import Optional, Sequence
 
 from cvp.flow.registry.registry import FlowRegistry
 from cvp.flow.templates.pin import PinTemplate
@@ -41,11 +41,11 @@ def register_node(
     docs: Optional[str] = None,
     icon: Optional[str] = None,
     color: Optional[RGBA] = None,
-    flow_inputs: Optional[List[PinTemplate]] = None,
-    flow_outputs: Optional[List[PinTemplate]] = None,
-    data_inputs: Optional[List[PinTemplate]] = None,
-    data_outputs: Optional[List[PinTemplate]] = None,
-    tags: Optional[List[str]] = None,
+    flow_inputs: Optional[Sequence[PinTemplate]] = None,
+    flow_outputs: Optional[Sequence[PinTemplate]] = None,
+    data_inputs: Optional[Sequence[PinTemplate]] = None,
+    data_outputs: Optional[Sequence[PinTemplate]] = None,
+    tags: Optional[Sequence[str]] = None,
 ):
     return global_registry().register_node(
         name=name,

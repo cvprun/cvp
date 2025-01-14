@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
-from typing import Any, List, Optional
+from typing import Any, Optional, Sequence
 
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
@@ -16,7 +16,7 @@ class PinTemplate:
         action: Optional[Action] = None,
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
-        arcs: Optional[List[str]] = None,
+        arcs: Optional[Sequence[str]] = None,
         default: Any = Parameter.empty,
     ):
         self.name = name
@@ -59,3 +59,85 @@ class PinTemplate:
     @property
     def is_data_outputs(self) -> bool:
         return self.is_data_action and self.is_output_stream
+
+
+class FlowInputPinTemplate(PinTemplate):
+    def __init__(
+        self,
+        name: str,
+        dtype: Optional[str] = None,
+        docs: Optional[str] = None,
+        arcs: Optional[Sequence[str]] = None,
+    ):
+        super().__init__(
+            name=name,
+            dtype=dtype,
+            docs=docs,
+            action=Action.flow,
+            stream=Stream.input,
+            required=False,
+            arcs=arcs,
+        )
+
+
+class FlowOutputPinTemplate(PinTemplate):
+    def __init__(
+        self,
+        name: str,
+        dtype: Optional[str] = None,
+        docs: Optional[str] = None,
+        arcs: Optional[Sequence[str]] = None,
+    ):
+        super().__init__(
+            name=name,
+            dtype=dtype,
+            docs=docs,
+            action=Action.flow,
+            stream=Stream.output,
+            required=False,
+            arcs=arcs,
+        )
+
+
+class DataInputPinTemplate(PinTemplate):
+    def __init__(
+        self,
+        name: str,
+        dtype: Optional[str] = None,
+        docs: Optional[str] = None,
+        required: Optional[bool] = None,
+        arcs: Optional[Sequence[str]] = None,
+        default: Any = Parameter.empty,
+    ):
+        super().__init__(
+            name=name,
+            dtype=dtype,
+            docs=docs,
+            action=Action.data,
+            stream=Stream.input,
+            required=required,
+            arcs=arcs,
+            default=default,
+        )
+
+
+class DataOutputPinTemplate(PinTemplate):
+    def __init__(
+        self,
+        name: str,
+        dtype: Optional[str] = None,
+        docs: Optional[str] = None,
+        required: Optional[bool] = None,
+        arcs: Optional[Sequence[str]] = None,
+        default: Any = Parameter.empty,
+    ):
+        super().__init__(
+            name=name,
+            dtype=dtype,
+            docs=docs,
+            action=Action.data,
+            stream=Stream.output,
+            required=required,
+            arcs=arcs,
+            default=default,
+        )

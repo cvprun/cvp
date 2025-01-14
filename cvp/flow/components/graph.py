@@ -38,6 +38,7 @@ class Graph:
     control: Control = field(default_factory=Control)
 
     _selection: Selection = field(default_factory=Selection)
+    _template: Optional[GraphTemplate] = None
 
     @classmethod
     def from_template(cls, template: GraphTemplate):
@@ -49,17 +50,21 @@ class Graph:
             color=template.color,
             nodes=list(Node.from_template(n) for n in template.nodes),
             tags=deepcopy(template.tags),
+            arcs=list(),  # TODO ...
+            _template=template,
         )
 
-    def as_template(self):
-        return GraphTemplate(
-            name=self.name,
-            docs=self.docs,
-            icon=self.icon,
-            color=self.color,
-            nodes=list(n.as_template() for n in self.nodes),
-            tags=deepcopy(self.tags),
-        )
+    @property
+    def template(self):
+        return self._template
+
+    @property
+    def selection(self):
+        return self._selection
+
+    @property
+    def selected_arc_only(self) -> Optional[Arc]:
+        return self._selection.selected_arc_only
 
     def restore(self, other: "Graph") -> None:
         if self.uuid != other.uuid:
@@ -97,14 +102,6 @@ class Graph:
 
         self.update_selected_items()
         self.update_arcs_polyline(force=True)
-
-    @property
-    def selection(self):
-        return self._selection
-
-    @property
-    def selected_arc_only(self) -> Optional[Arc]:
-        return self._selection.selected_arc_only
 
     def update_selected_item(self, item: SelectableAny) -> None:
         self._selection.apply(item)

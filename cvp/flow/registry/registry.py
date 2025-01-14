@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter, signature
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from cvp.flow.catalog.dtype.builtins import get_builtin_types
 from cvp.flow.catalog.node.builtins import get_builtin_functions
@@ -187,7 +187,10 @@ class FlowRegistry:
             required=required,
         )
 
-    def create_parameter_pins(self, parameters: List[Parameter]) -> List[PinTemplate]:
+    def create_parameter_pins(
+        self,
+        parameters: Sequence[Parameter],
+    ) -> List[PinTemplate]:
         return list(self.create_parameter_pin(param) for param in parameters)
 
     def create_return_annotation_pin(self, return_annotation):
@@ -208,11 +211,11 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[List[PinTemplate]] = None,
-        flow_outputs: Optional[List[PinTemplate]] = None,
-        data_inputs: Optional[List[PinTemplate]] = None,
-        data_outputs: Optional[List[PinTemplate]] = None,
-        tags: Optional[List[str]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        tags: Optional[Sequence[str]] = None,
     ) -> NodeTemplate:
         if not callable(func):
             raise TypeError(f"Only callables can be registered: {func}")
@@ -309,11 +312,11 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[List[PinTemplate]] = None,
-        flow_outputs: Optional[List[PinTemplate]] = None,
-        data_inputs: Optional[List[PinTemplate]] = None,
-        data_outputs: Optional[List[PinTemplate]] = None,
-        tags: Optional[List[str]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        tags: Optional[Sequence[str]] = None,
     ):
         node = self.create_node(
             func=func,
@@ -358,11 +361,11 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[List[PinTemplate]] = None,
-        flow_outputs: Optional[List[PinTemplate]] = None,
-        data_inputs: Optional[List[PinTemplate]] = None,
-        data_outputs: Optional[List[PinTemplate]] = None,
-        tags: Optional[List[str]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        tags: Optional[Sequence[str]] = None,
     ):
         def _decorator(func: Callable):
             self.add_new_callable(

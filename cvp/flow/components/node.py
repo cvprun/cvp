@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Callable, List, Optional
+from typing import Any, List, Optional
 from uuid import uuid4
 
 from cvp.flow.components.pin import Pin
@@ -38,12 +38,12 @@ class Node:
 
     _selected: bool = False
     _hovering: bool = False
-    _func: Optional[Callable] = None
+    _template: Optional[NodeTemplate] = None
 
     def __call__(self, *args, **kwargs) -> Any:
-        if self._func is None:
+        if self._template is None:
             raise ValueError("Node function is not set")
-        return self._func(*args, **kwargs)
+        return self._template.__call__(*args, **kwargs)
 
     @classmethod
     def from_template(cls, template: NodeTemplate):
@@ -59,20 +59,12 @@ class Node:
             data_inputs=list(Pin.from_template(p) for p in template.data_inputs),
             data_outputs=list(Pin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
-            _func=template.func,
+            _template=template,
         )
 
-    def as_template(self):
-        return NodeTemplate(
-            name=self.name,
-            path=self.path,
-            func=self._func,
-            docs=self.docs,
-            icon=self.icon,
-            color=self.color,
-            pins=list(p.as_template() for p in self.pins),
-            tags=deepcopy(self.tags),
-        )
+    @property
+    def template(self):
+        return self._template
 
     @property
     def as_flow_input_names(self):
@@ -89,35 +81,6 @@ class Node:
     @property
     def as_data_output_names(self):
         return [pin.name for pin in self.data_outputs]
-
-    def as_unformatted_text(self) -> str:
-        return (
-            f"Uuid: {self.uuid}\n"
-            f"Name: {self.name}\n"
-            f"Docs: {self.docs}\n"
-            f"Icon: {self.icon}\n"
-            f"Lock: {self.lock}\n"
-            f"Color: {self.color}\n"
-            f"Flow inputs: {len(self.flow_inputs)}\n"
-            f"Flow outputs: {len(self.flow_outputs)}\n"
-            f"Data inputs: {len(self.data_inputs)}\n"
-            f"Data outputs: {len(self.data_inputs)}\n"
-            f"Begin: {self.is_begin}\n"
-            f"Middle: {self.is_middle}\n"
-            f"End: {self.is_end}\n"
-            f"Tags: {self.tags}\n"
-            f"Head height: {self.head_height:.02f}\n"
-            f"Flow height: {self.flow_height:.02f}\n"
-            f"Data height: {self.data_height:.02f}\n"
-            f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
-            f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
-            f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
-            f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
-            f"Node pos: {self.node_pos[0]:.02f}, {self.node_pos[1]:.02f}\n"
-            f"Node size: {self.node_size[0]:.02f}, {self.node_size[1]:.02f}\n"
-            f"Selected: {self._selected}\n"
-            f"Hovering: {self._hovering}\n"
-        )
 
     @property
     def node_roi(self) -> Rect:
@@ -218,6 +181,35 @@ class Node:
     @hovering.setter
     def hovering(self, value: bool) -> None:
         self._hovering = value
+
+    def as_unformatted_text(self) -> str:
+        return (
+            f"Uuid: {self.uuid}\n"
+            f"Name: {self.name}\n"
+            f"Docs: {self.docs}\n"
+            f"Icon: {self.icon}\n"
+            f"Lock: {self.lock}\n"
+            f"Color: {self.color}\n"
+            f"Flow inputs: {len(self.flow_inputs)}\n"
+            f"Flow outputs: {len(self.flow_outputs)}\n"
+            f"Data inputs: {len(self.data_inputs)}\n"
+            f"Data outputs: {len(self.data_inputs)}\n"
+            f"Begin: {self.is_begin}\n"
+            f"Middle: {self.is_middle}\n"
+            f"End: {self.is_end}\n"
+            f"Tags: {self.tags}\n"
+            f"Head height: {self.head_height:.02f}\n"
+            f"Flow height: {self.flow_height:.02f}\n"
+            f"Data height: {self.data_height:.02f}\n"
+            f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
+            f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
+            f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"
+            f"Name size: {self.name_size[0]:.02f}, {self.name_size[1]:.02f}\n"
+            f"Node pos: {self.node_pos[0]:.02f}, {self.node_pos[1]:.02f}\n"
+            f"Node size: {self.node_size[0]:.02f}, {self.node_size[1]:.02f}\n"
+            f"Selected: {self._selected}\n"
+            f"Hovering: {self._hovering}\n"
+        )
 
     def find_hovering_pin_with_mouse(self, mouse: Point) -> Optional[Pin]:
         mx, my = mouse
