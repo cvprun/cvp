@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from inspect import Parameter
 from typing import Any, Optional, Sequence
 
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
+from cvp.flow.templates.markers import NoDefault
 
 
 class PinTemplate:
@@ -17,7 +17,7 @@ class PinTemplate:
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
-        default: Any = Parameter.empty,
+        default: Any = NoDefault,
     ):
         self.name = name
         self.docs = docs if docs else str()

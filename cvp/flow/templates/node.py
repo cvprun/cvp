@@ -14,7 +14,11 @@ from cvp.types.override import override
 class NodeTemplateInterface(ABC):
     @abstractmethod
     def run(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
-        pass
+        raise NotImplementedError
+
+    @abstractmethod
+    def done(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+        raise NotImplementedError
 
 
 class NodeTemplate(NodeTemplateInterface):
@@ -92,3 +96,7 @@ class NodeTemplate(NodeTemplateInterface):
             return self.flow_outputs[0]
         else:
             return None
+
+    @override
+    def done(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+        return None

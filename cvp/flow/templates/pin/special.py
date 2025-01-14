@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from inspect import Parameter
 from typing import Any, Optional, Sequence
 
+from cvp.flow.templates.markers import NoDefault
 from cvp.flow.templates.pin.datas import DataOutputPinTemplate
 from cvp.flow.templates.pin.flows import FlowInputPinTemplate, FlowOutputPinTemplate
 
@@ -40,7 +40,7 @@ class ReturnPinTemplate(DataOutputPinTemplate):
         dtype: Optional[str] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
-        default: Any = Parameter.empty,
+        default: Any = NoDefault,
     ):
         super().__init__(
             name="return",
