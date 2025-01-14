@@ -12,16 +12,13 @@ from cvp.flow.icons.node import NODE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
-from cvp.types.colors import RGBA, WHITE_RGBA
-from cvp.variables import (
-    FLOW_PATH_SEPARATOR,
-    FLOW_PIN_NEXT_DOCS_DEFAULT,
-    FLOW_PIN_NEXT_NAME_DEFAULT,
-    FLOW_PIN_PREV_DOCS_DEFAULT,
-    FLOW_PIN_PREV_NAME_DEFAULT,
-    FLOW_PIN_RETURN_DOCS_DEFAULT,
-    FLOW_PIN_RETURN_NAME_DEFAULT,
+from cvp.flow.templates.pin.special import (
+    NextPinTemplate,
+    PrevPinTemplate,
+    ReturnPinTemplate,
 )
+from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class FlowRegistry:
@@ -123,28 +120,6 @@ class FlowRegistry:
             color=base_color,
         )
 
-    @staticmethod
-    def create_prev_pin():
-        return PinTemplate(
-            name=FLOW_PIN_PREV_NAME_DEFAULT,
-            dtype=None,
-            docs=FLOW_PIN_PREV_DOCS_DEFAULT,
-            action=Action.flow,
-            stream=Stream.input,
-            required=False,
-        )
-
-    @staticmethod
-    def create_next_pin():
-        return PinTemplate(
-            name=FLOW_PIN_NEXT_NAME_DEFAULT,
-            dtype=None,
-            docs=FLOW_PIN_NEXT_DOCS_DEFAULT,
-            action=Action.flow,
-            stream=Stream.output,
-            required=False,
-        )
-
     def dtype_path(self, return_annotation) -> str:
         if return_annotation == Parameter.empty:
             if Any in self._type2dtypes:
@@ -194,12 +169,8 @@ class FlowRegistry:
         return list(self.create_parameter_pin(param) for param in parameters)
 
     def create_return_annotation_pin(self, return_annotation):
-        return PinTemplate(
-            name=FLOW_PIN_RETURN_NAME_DEFAULT,
+        return ReturnPinTemplate(
             dtype=self.dtype_path(return_annotation),
-            docs=FLOW_PIN_RETURN_DOCS_DEFAULT,
-            action=Action.data,
-            stream=Stream.output,
             required=False,
         )
 
@@ -246,7 +217,7 @@ class FlowRegistry:
                     raise ValueError("Pin must be flow inputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(self.create_prev_pin())
+            base_pins.append(PrevPinTemplate())
 
         if flow_outputs:
             for pin in flow_outputs:
@@ -254,7 +225,7 @@ class FlowRegistry:
                     raise ValueError("Pin must be flow outputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(self.create_next_pin())
+            base_pins.append(NextPinTemplate())
 
         sig = signature(func)
 

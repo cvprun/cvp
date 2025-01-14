@@ -6,7 +6,7 @@ from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.flow.context import FlowContext
 from cvp.flow.templates.pin import PinTemplate
-from cvp.flow.templates.pin_flows_special import NextPinTemplate, PrevPinTemplate
+from cvp.flow.templates.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 

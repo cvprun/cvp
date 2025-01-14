@@ -11,13 +11,12 @@ class FlowInputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
-        dtype: Optional[str] = None,
         docs: Optional[str] = None,
         arcs: Optional[Sequence[str]] = None,
     ):
         super().__init__(
             name=name,
-            dtype=dtype,
+            dtype=None,
             docs=docs,
             action=Action.flow,
             stream=Stream.input,
@@ -30,13 +29,12 @@ class FlowOutputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
-        dtype: Optional[str] = None,
         docs: Optional[str] = None,
         arcs: Optional[Sequence[str]] = None,
     ):
         super().__init__(
             name=name,
-            dtype=dtype,
+            dtype=None,
             docs=docs,
             action=Action.flow,
             stream=Stream.output,

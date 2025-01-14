@@ -132,14 +132,6 @@ FLOW_PIN_NORMAL_COLOR: Final[RGBA] = 0.0, 0.0, 0.0, 0.8
 FLOW_PIN_CONNECTION_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.8
 FLOW_PIN_CONNECTION_THICKNESS: Final[float] = 2.0
 
-FLOW_PIN_PREV_NAME_DEFAULT: Final[str] = "prev"
-FLOW_PIN_NEXT_NAME_DEFAULT: Final[str] = "next"
-FLOW_PIN_PREV_DOCS_DEFAULT: Final[str] = "Input flow pin"
-FLOW_PIN_NEXT_DOCS_DEFAULT: Final[str] = "Output flow pin"
-
-FLOW_PIN_RETURN_NAME_DEFAULT: Final[str] = "return"
-FLOW_PIN_RETURN_DOCS_DEFAULT: Final[str] = "Output data pin"
-
 FLOW_ARC_SELECTED_COLOR: Final[RGBA] = 1.0, 0.0, 0.0, 0.9
 FLOW_ARC_HOVERING_COLOR: Final[RGBA] = 1.0, 0.49, 0.05, 0.9
 FLOW_ARC_NORMAL_COLOR: Final[RGBA] = 0.75, 0.75, 0.75, 0.8

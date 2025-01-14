@@ -6,9 +6,9 @@ from typing import Any, Dict, Optional, Tuple, TypedDict
 from cvp.flow.context import FlowContext
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
-from cvp.flow.templates.pin_datas import DataOutputPinTemplate
-from cvp.flow.templates.pin_flows import FlowOutputPinTemplate
-from cvp.flow.templates.pin_flows_special import EntrypointPinTemplate
+from cvp.flow.templates.pin.datas import DataOutputPinTemplate
+from cvp.flow.templates.pin.flows import FlowOutputPinTemplate
+from cvp.flow.templates.pin.special import EntrypointPinTemplate
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
