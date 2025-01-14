@@ -26,7 +26,7 @@ from cvp.logging.logging import flow_logger as logger
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 
 LEVEL_NAMES = [
     SEVERITY_NAME_CRITICAL,
@@ -59,7 +59,7 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
     logger.removeHandler(handler)
 
 
-class LogsTab(TabItem[FlowCursor]):
+class LogsTab(TabItem[Canvases]):
     _records: Deque[_LineRecord]
 
     def __init__(self, context: Context, fonts: FontMapper):

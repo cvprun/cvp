@@ -5,10 +5,10 @@ from cvp.imgui.fonts.mapper import FontMapper
 from cvp.widgets.tab import TabBar
 from cvp.windows.flow.bottom.logs import LogsTab
 from cvp.windows.flow.bottom.run import RunTab
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 
 
-class FlowBottomTabs(TabBar[FlowCursor]):
+class FlowBottomTabs(TabBar[Canvases]):
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(
             context=context,

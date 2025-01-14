@@ -32,8 +32,8 @@ from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.graph import CanvasGraph
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
+from cvp.windows.flow.canvases import Canvases
 from cvp.windows.flow.catalog import Catalog
-from cvp.windows.flow.cursor import FlowCursor
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
 
@@ -59,7 +59,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         )
 
         self._fonts = fonts
-        self._cursor = FlowCursor(fonts, context.config.flow_aui)
+        self._canvases = Canvases(fonts, context.config.flow_aui)
         self._catalog = Catalog(context, fonts)
         self._left_tabs = FlowLeftTabs(context, fonts)
         self._right_tabs = FlowRightTabs(context, fonts)
@@ -134,7 +134,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if filepath.exists():
             raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
         self.context.fm.write_graph_yaml(filepath, graph)
-        self._cursor.open(graph)
+        self._canvases.open(graph)
 
     def on_open_file_popup(self, file: str) -> None:
         pass
@@ -355,7 +355,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             self.show_new_graph_popup()
 
         imgui.separator()
-        has_opened_graph = self._cursor.opened
+        has_opened_graph = self._canvases.opened
         if menu_item("Save graph", enabled=has_opened_graph):
             self.save_current_graph()
         if menu_item("Save and close graph", enabled=has_opened_graph):
@@ -380,14 +380,14 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             self.close()
 
     def on_edit_menu(self) -> None:
-        if canvas := self._cursor.canvas:
+        if canvas := self._canvases.canvas:
             with canvas:
                 self._process_edit_menu(canvas)
         else:
             self._process_edit_menu()
 
     def on_layout_menu(self) -> None:
-        if canvas := self._cursor.canvas:
+        if canvas := self._canvases.canvas:
             with canvas:
                 self._process_layout_menu(canvas)
                 imgui.separator()
@@ -400,7 +400,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             self._process_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if canvas := self._cursor.canvas:
+        if canvas := self._canvases.canvas:
             with canvas:
                 self._process_run_menu(self._fonts, canvas)
         else:
@@ -418,7 +418,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self._new_graph_popup.show()
 
     def save_current_graph(self) -> None:
-        graph = self._cursor.graph
+        graph = self._canvases.graph
         if graph is None:
             return
 
@@ -429,21 +429,21 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             logger.error(f"Failed to save the flow graph: '{graph.uuid}' -> '{e}'")
 
     def close_current_graph(self):
-        graph = self._cursor.graph
+        graph = self._canvases.graph
         if graph is None:
             return
 
-        self._cursor.close()
+        self._canvases.close()
         logger.info(f"Close the flow graph: '{graph.uuid}'")
 
     def refresh_graphs(self) -> None:
         graph_uuid_stash = str()
 
-        if graph := self._cursor.graph:
+        if graph := self._canvases.graph:
             graph_uuid_stash = graph.uuid
 
         self.context.fm.clear()
-        self._cursor.clear()
+        self._canvases.clear()
 
         try:
             self.context.fm.refresh_flow_graphs()
@@ -453,12 +453,12 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if graph_uuid_stash:
             if graph := self.context.fm.get(graph_uuid_stash):
-                self._cursor.open(graph)
+                self._canvases.open(graph)
 
     @override
     def on_process_sidebar_left(self):
         with begin_child("## ChildLeftTop", 0, -self.split_tree):
-            self._left_tabs.do_process(self._cursor)
+            self._left_tabs.do_process(self._canvases)
 
         with style_item_spacing(0, -1):
             self._tree_splitter.do_process()
@@ -471,19 +471,19 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @override
     def on_process_sidebar_right(self):
         imgui.text("Canvas controller:")
-        if canvas := self._cursor.canvas:
+        if canvas := self._canvases.canvas:
             with canvas:
                 canvas.do_process_controllers(debugging=self.context.debug)
         imgui.spacing()
-        self._right_tabs.do_process(self._cursor)
+        self._right_tabs.do_process(self._canvases)
 
     @override
     def on_process_bottom(self):
-        self._bottom_tabs.do_process(self._cursor)
+        self._bottom_tabs.do_process(self._canvases)
 
     @override
     def on_process_main(self) -> None:
-        canvas = self._cursor.canvas
+        canvas = self._canvases.canvas
         if canvas is None:
             text_centered("Please select a graph")
             return

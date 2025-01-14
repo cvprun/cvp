@@ -10,7 +10,7 @@ from cvp.logging.logging import flow_logger as logger
 from cvp.widgets.canvas.graph import CanvasGraph
 
 
-class FlowCursor:
+class Canvases:
     _canvases: Dict[str, CanvasGraph]
     _ref: Optional[ReferenceType[Graph]]
 

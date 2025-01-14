@@ -8,10 +8,10 @@ from cvp.context.context import Context
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 
 
-class GraphsTab(TabItem[FlowCursor]):
+class GraphsTab(TabItem[Canvases]):
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(context, "Graphs")
         self._fonts = fonts
@@ -21,10 +21,10 @@ class GraphsTab(TabItem[FlowCursor]):
         self.listbox_graphs()
 
     @override
-    def on_item(self, item: FlowCursor) -> None:
+    def on_item(self, item: Canvases) -> None:
         self.listbox_graphs(item)
 
-    def listbox_graphs(self, cursor: Optional[FlowCursor] = None) -> None:
+    def listbox_graphs(self, cursor: Optional[Canvases] = None) -> None:
         flags = imgui.SELECTABLE_ALLOW_DOUBLE_CLICK
         current_uuid = str()
         if cursor is not None and cursor.opened:

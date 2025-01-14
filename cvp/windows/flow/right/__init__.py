@@ -3,12 +3,12 @@
 from cvp.context.context import Context
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.widgets.tab import TabBar
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 from cvp.windows.flow.right.history import HistoryTab
 from cvp.windows.flow.right.props import PropsTab
 
 
-class FlowRightTabs(TabBar[FlowCursor]):
+class FlowRightTabs(TabBar[Canvases]):
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(
             context=context,

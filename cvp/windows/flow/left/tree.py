@@ -9,7 +9,7 @@ from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 
 _LEAF = imgui.TREE_NODE_LEAF
 _NO_TREE_PUSH_ON_OPEN = imgui.TREE_NODE_NO_TREE_PUSH_ON_OPEN
@@ -22,7 +22,7 @@ PIN_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 ARC_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
-class TreeTab(TabItem[FlowCursor]):
+class TreeTab(TabItem[Canvases]):
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(context, "Tree")
         self._fonts = fonts
@@ -36,7 +36,7 @@ class TreeTab(TabItem[FlowCursor]):
         text_centered("Please select a graph")
 
     @override
-    def on_item(self, item: FlowCursor) -> None:
+    def on_item(self, item: Canvases) -> None:
         graph = item.graph
         if graph is None:
             self.on_none()

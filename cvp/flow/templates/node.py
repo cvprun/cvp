@@ -1,12 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from abc import ABC, abstractmethod
 from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.flow.templates.pin import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.types.override import override
 
 
-class NodeTemplate:
+class NodeTemplateInterface(ABC):
+    @abstractmethod
+    def run(self):
+        pass
+
+
+class NodeTemplate(NodeTemplateInterface):
     def __init__(
         self,
         name: str,
@@ -47,3 +55,7 @@ class NodeTemplate:
     @property
     def data_outputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_data_outputs, self.pins))
+
+    @override
+    def run(self):
+        pass

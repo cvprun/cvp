@@ -17,16 +17,16 @@ from cvp.imgui.button import button
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.cursor import FlowCursor
+from cvp.windows.flow.canvases import Canvases
 
 
-class RunTab(TabItem[FlowCursor]):
+class RunTab(TabItem[Canvases]):
     def __init__(self, context: Context, fonts: FontMapper):
         super().__init__(context, "Run")
         self._fonts = fonts
 
     @override
-    def on_item(self, item: FlowCursor) -> None:
+    def on_item(self, item: Canvases) -> None:
         opened = item.opened
         if self._fonts.normal_icon:
             button(f"{PLAY} Run", disabled=not opened)
