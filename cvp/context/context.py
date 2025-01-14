@@ -7,7 +7,7 @@ from typing import Optional, ParamSpec, TypeVar, Union
 
 from cvp.config.config import Config
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
-from cvp.flow.datas.graph import Graph
+from cvp.flow.components.graph import Graph
 from cvp.flow.manager import FlowManager
 from cvp.logging.logging import (
     convert_level_number,

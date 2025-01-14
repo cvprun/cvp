@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from inspect import Parameter
 from typing import Any, List
 
-from cvp.flow.datas.action import Action
-from cvp.flow.datas.stream import Stream
+from cvp.flow.components.action import Action
+from cvp.flow.components.stream import Stream
 from cvp.flow.templates.pin import PinTemplate
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 

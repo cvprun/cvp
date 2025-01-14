@@ -7,9 +7,9 @@ from typing import Optional, Union
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
-from cvp.flow.datas.graph import Graph
-from cvp.flow.datas.node import Node
-from cvp.flow.datas.selection import Selection
+from cvp.flow.components.graph import Graph
+from cvp.flow.components.node import Node
+from cvp.flow.components.selection import Selection
 from cvp.flow.registry.globals import global_registry
 from cvp.flow.registry.registry import FlowRegistry
 from cvp.resources.home import HomeDir

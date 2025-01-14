@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from weakref import ReferenceType, ref
 
 from cvp.config.sections.flow import FlowAuiConfig
-from cvp.flow.datas.graph import Graph
+from cvp.flow.components.graph import Graph
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.logging.logging import flow_logger as logger
 from cvp.widgets.canvas.graph import CanvasGraph

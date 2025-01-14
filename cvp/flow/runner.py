@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from cvp.flow.datas.graph import Graph
+from cvp.flow.components.graph import Graph
 
 
 class FlowRunner:

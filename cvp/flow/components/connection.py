@@ -2,8 +2,8 @@
 
 from typing import NamedTuple
 
-from cvp.flow.datas.node_pin import NodePin
-from cvp.flow.datas.prefix import Prefix
+from cvp.flow.components.node_pin import NodePin
+from cvp.flow.components.prefix import Prefix
 
 
 class Connection(NamedTuple):

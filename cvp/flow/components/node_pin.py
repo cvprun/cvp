@@ -2,9 +2,9 @@
 
 from typing import NamedTuple
 
-from cvp.flow.datas.node import Node
-from cvp.flow.datas.pin import Pin
-from cvp.flow.datas.prefix import Prefix
+from cvp.flow.components.node import Node
+from cvp.flow.components.pin import Pin
+from cvp.flow.components.prefix import Prefix
 
 
 class NodePin(NamedTuple):

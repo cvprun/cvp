@@ -5,8 +5,8 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 from cvp.flow.catalog.dtype.builtins import get_builtin_types
 from cvp.flow.catalog.node.builtins import get_builtin_functions
-from cvp.flow.datas.action import Action
-from cvp.flow.datas.stream import Stream
+from cvp.flow.components.action import Action
+from cvp.flow.components.stream import Stream
 from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
 from cvp.flow.icons.node import NODE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype

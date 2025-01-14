@@ -3,8 +3,8 @@
 from inspect import Parameter
 from typing import Any, List, Optional
 
-from cvp.flow.datas.action import Action
-from cvp.flow.datas.stream import Stream
+from cvp.flow.components.action import Action
+from cvp.flow.components.stream import Stream
 
 
 class PinTemplate:
