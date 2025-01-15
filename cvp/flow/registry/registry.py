@@ -35,7 +35,7 @@ class FlowRegistry:
             self.register_default_nodes()
 
     def register_default_dtypes(self) -> None:
-        for dtype in get_default_dtypes().values():
+        for dtype in get_default_dtypes():
             self.add_dtype(dtype)
 
     def register_default_nodes(self) -> None:

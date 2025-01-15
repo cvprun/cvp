@@ -14,7 +14,7 @@ import shelve
 import types
 import weakref
 from functools import lru_cache
-from typing import Dict, Sequence, Type
+from typing import Sequence, Type
 
 from cvp.flow.templates.dtype import Dtype
 
@@ -59,5 +59,5 @@ def get_standard_types() -> Sequence[Type]:
 
 
 @lru_cache
-def get_standard_dtypes() -> Dict[Type, Dtype]:
-    return {cls: Dtype(cls) for cls in get_standard_types()}
+def get_standard_dtypes() -> Sequence[Dtype]:
+    return tuple(Dtype(cls) for cls in get_standard_types())

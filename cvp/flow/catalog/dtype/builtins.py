@@ -2,7 +2,7 @@
 # https://docs.python.org/3/library/stdtypes.html
 
 from functools import lru_cache
-from typing import Any, Dict, Sequence, Type
+from typing import Any, Sequence, Type
 
 from cvp.flow.templates.dtype import Dtype
 
@@ -31,14 +31,13 @@ def get_builtin_types() -> Sequence[Type]:
 
 @lru_cache
 def get_typing_any() -> Dtype:
+    """
+    This is the default type for handling unknown types.
+    """
     assert isinstance(Any, type)
     return Dtype(Any)  # type: ignore[arg-type]
 
 
 @lru_cache
-def get_builtin_dtypes() -> Dict[Type, Dtype]:
-    result = {cls: Dtype(cls) for cls in get_builtin_types()}
-    assert isinstance(Any, type)
-    assert Any not in result
-    result[Any] = get_typing_any()
-    return result
+def get_builtin_dtypes() -> Sequence[Dtype]:
+    return tuple([Dtype(cls) for cls in get_builtin_types()] + [get_typing_any()])

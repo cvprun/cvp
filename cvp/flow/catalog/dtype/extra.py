@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
-from typing import Dict, Sequence, Type
+from typing import Sequence, Type
 
 import numpy
 
@@ -14,5 +14,5 @@ def get_extra_types() -> Sequence[Type]:
 
 
 @lru_cache
-def get_extra_dtypes() -> Dict[Type, Dtype]:
-    return {cls: Dtype(cls) for cls in get_extra_types()}
+def get_extra_dtypes() -> Sequence[Dtype]:
+    return tuple(Dtype(cls) for cls in get_extra_types())
