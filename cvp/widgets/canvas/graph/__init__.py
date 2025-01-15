@@ -643,10 +643,10 @@ class CanvasGraph(CanvasController):
             input_name_sizes = [p.name_size for p in node.input_pins]
             output_name_sizes = [p.name_size for p in node.output_pins]
 
-        inw = max(s[0] for s in input_name_sizes)
-        inh = max(s[1] for s in input_name_sizes)
-        onw = max(s[0] for s in output_name_sizes)
-        onh = max(s[1] for s in output_name_sizes)
+        inw = max(s[0] for s in input_name_sizes) if input_name_sizes else 0.0
+        inh = max(s[1] for s in input_name_sizes) if input_name_sizes else 0.0
+        onw = max(s[0] for s in output_name_sizes) if output_name_sizes else 0.0
+        onh = max(s[1] for s in output_name_sizes) if output_name_sizes else 0.0
         pin_name_h = max(inh, onh)
 
         pin_h = max(ih, inh, onh)

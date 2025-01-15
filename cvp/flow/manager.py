@@ -22,11 +22,11 @@ class FlowManager(OrderedDict[str, Graph]):
     _clipboard_items: Optional[Selection]
     _clipboard_pivot: Optional[Point]
 
-    def __init__(self, home: HomeDir, *, refresh_graphs=False, no_register=False):
+    def __init__(self, home: HomeDir, *, refresh_graphs=False, no_globals=False):
         super().__init__()
         self._registry = FlowRegistry()
 
-        if not no_register:
+        if not no_globals:
             self._registry.update(global_registry())
 
         self._home = home

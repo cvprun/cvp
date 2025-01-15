@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # https://docs.python.org/3/library/functions.html
 
-from typing import Callable, List
+from typing import Callable, Sequence
 
 
-def get_builtin_functions() -> List[Callable]:
+def get_builtin_functions() -> Sequence[Callable]:
     return [
         abs,
         all,

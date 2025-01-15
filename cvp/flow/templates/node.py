@@ -16,10 +16,6 @@ class NodeTemplateInterface(ABC):
     def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         raise NotImplementedError
 
-    @abstractmethod
-    def done(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
-        raise NotImplementedError
-
 
 class NodeTemplate(NodeTemplateInterface):
     def __init__(
@@ -96,7 +92,3 @@ class NodeTemplate(NodeTemplateInterface):
             return self.flow_outputs[0]
         else:
             return None
-
-    @override
-    def done(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
-        return None

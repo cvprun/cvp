@@ -4,7 +4,9 @@ from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from cvp.flow.catalog.dtype.builtins import get_builtin_types
+from cvp.flow.catalog.dtype.defaults import get_default_dtypes
 from cvp.flow.catalog.node.builtins import get_builtin_functions
+from cvp.flow.catalog.node.defaults import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
 from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
@@ -26,7 +28,7 @@ class FlowRegistry:
     _type2dtypes: Dict[type, Dtype]
     _nodes: Dict[str, NodeTemplate]
 
-    def __init__(self, *, no_builtins=False):
+    def __init__(self, *, no_builtins=False, no_defaults=False):
         self._dtypes = dict()
         self._type2dtypes = dict()
         self._nodes = dict()
@@ -35,6 +37,10 @@ class FlowRegistry:
             self.register_builtin_dtypes()
             self.register_builtin_nodes()
 
+        if not no_defaults:
+            self.register_default_dtypes()
+            self.register_default_nodes()
+
     def register_builtin_dtypes(self) -> None:
         for cls in get_builtin_types():
             self.add_new_type(cls)
@@ -42,6 +48,14 @@ class FlowRegistry:
     def register_builtin_nodes(self) -> None:
         for func in get_builtin_functions():
             self.add_new_callable(func)
+
+    def register_default_dtypes(self) -> None:
+        for dtype in get_default_dtypes():
+            self.add_dtype(dtype)
+
+    def register_default_nodes(self) -> None:
+        for node in get_default_nodes():
+            self.add_node(node)
 
     @property
     def dtypes(self):
