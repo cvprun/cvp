@@ -3,6 +3,7 @@
 from sys import exc_info
 from typing import Any, Dict, Optional, Tuple, TypedDict
 
+from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.record import FlowRecord
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
@@ -20,7 +21,7 @@ class EntrypointOutput(TypedDict):
 
 
 class EntrypointNodeTemplate(NodeTemplate):
-    def __init__(self):
+    def __init__(self, dtype_registry: DtypeRegistry):
         self._flow_start = FlowOutputPinTemplate(name="start")
         self._data_args = DataOutputPinTemplate(name="args")
         self._data_kwargs = DataOutputPinTemplate(name="kwargs")

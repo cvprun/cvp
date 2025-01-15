@@ -3,6 +3,7 @@
 from logging import DEBUG
 from typing import Optional
 
+from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.record import FlowRecord
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
@@ -14,7 +15,7 @@ from cvp.types.override import override
 
 
 class LoggingNodeTemplate(NodeTemplate):
-    def __init__(self):
+    def __init__(self, dtype_registry: DtypeRegistry):
         self._prev = PrevPinTemplate()
         self._level = DataInputPinTemplate(
             name="level",
