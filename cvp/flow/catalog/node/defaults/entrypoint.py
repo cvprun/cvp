@@ -19,7 +19,7 @@ class EntrypointOutput(TypedDict):
     kwargs: Dict[str, Any]
 
 
-class Entrypoint(NodeTemplate):
+class EntrypointNodeTemplate(NodeTemplate):
     def __init__(self):
         self._flow_start = FlowOutputPinTemplate(name="start")
         self._data_args = DataOutputPinTemplate(name="args")
