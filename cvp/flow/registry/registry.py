@@ -3,10 +3,8 @@
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
-from cvp.flow.catalog.dtype.builtins import get_builtin_types
-from cvp.flow.catalog.dtype.defaults import get_default_dtypes
-from cvp.flow.catalog.node.builtins import get_builtin_functions
-from cvp.flow.catalog.node.defaults import get_default_nodes
+from cvp.flow.catalog.dtype import get_default_dtypes
+from cvp.flow.catalog.node import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
 from cvp.flow.icons.node import NODE_ICON_MAPPING
@@ -27,33 +25,21 @@ class FlowRegistry:
     _type2dtypes: Dict[type, Dtype]
     _nodes: Dict[str, NodeTemplate]
 
-    def __init__(self, *, no_builtins=False, no_defaults=False):
+    def __init__(self, *, no_defaults=False):
         self._path2dtypes = dict()
         self._type2dtypes = dict()
         self._nodes = dict()
-
-        if not no_builtins:
-            self.register_builtin_dtypes()
-            self.register_builtin_nodes()
 
         if not no_defaults:
             self.register_default_dtypes()
             self.register_default_nodes()
 
-    def register_builtin_dtypes(self) -> None:
-        for cls in get_builtin_types():
-            self.add_new_type(cls)
-
-    def register_builtin_nodes(self) -> None:
-        for func in get_builtin_functions():
-            self.add_new_callable(func)
-
     def register_default_dtypes(self) -> None:
-        for dtype in get_default_dtypes():
+        for dtype in get_default_dtypes().values():
             self.add_dtype(dtype)
 
     def register_default_nodes(self) -> None:
-        for node in get_default_nodes():
+        for node in get_default_nodes().values():
             self.add_node(node)
 
     @property
@@ -246,8 +232,7 @@ class FlowRegistry:
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
     ):
-        dtype = Dtype(base, name, path, docs, icon, color)
-        self.add_dtype(dtype)
+        self.add_dtype(Dtype(base, name, path, docs, icon, color))
 
     def add_new_callable(
         self,
@@ -287,14 +272,7 @@ class FlowRegistry:
         color: Optional[RGBA] = None,
     ):
         def _decorator(base: type):
-            self.add_new_type(
-                base=base,
-                name=name,
-                path=path,
-                docs=docs,
-                icon=icon,
-                color=color,
-            )
+            self.add_new_type(base, name, path, docs, icon, color)
             return base
 
         return _decorator

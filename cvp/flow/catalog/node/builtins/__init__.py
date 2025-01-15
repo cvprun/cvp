@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 # https://docs.python.org/3/library/functions.html
 
+from functools import lru_cache
 from typing import Callable, Sequence
 
 
+@lru_cache
 def get_builtin_functions() -> Sequence[Callable]:
-    return [
+    return (
         abs,
         all,
         any,
@@ -33,4 +35,4 @@ def get_builtin_functions() -> Sequence[Callable]:
         round,
         sorted,
         sum,
-    ]
+    )

@@ -8,24 +8,24 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class RegistryDtypeTestCase(TestCase):
-    def test_register_dtype_builtins(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+    def test_register_dtype_defaults(self):
+        registry = FlowRegistry(no_defaults=True)
         self.assertEqual(0, len(registry.path2dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
 
-        registry.register_builtin_dtypes()
+        registry.register_default_dtypes()
         self.assertNotEqual(0, len(registry.path2dtypes))
         self.assertNotEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
 
     def test_register_dtype_error(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
         with self.assertRaises(TypeError):
             registry.add_new_type(None)  # noqa
 
     def test_register_dtype_none(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
         self.assertEqual(0, len(registry.path2dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
@@ -41,7 +41,7 @@ class RegistryDtypeTestCase(TestCase):
         self.assertEqual(type(None), registry.get_dtype_with_type(type(None)).base)
 
     def test_register_dtype_object(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
         registry.add_new_type(object)
 
         self.assertEqual(1, len(registry.path2dtypes))
@@ -52,7 +52,7 @@ class RegistryDtypeTestCase(TestCase):
         self.assertEqual(object, registry.get_dtype_with_path("builtins.object").base)
 
     def test_register_dtype_any(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
         registry.add_new_type(Any)
 
         self.assertEqual(1, len(registry.path2dtypes))
@@ -63,7 +63,7 @@ class RegistryDtypeTestCase(TestCase):
         self.assertEqual(Any, registry.get_dtype_with_path("typing.Any").base)
 
     def test_register_dtype_float(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
         registry.add_new_type(float)
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
@@ -73,7 +73,7 @@ class RegistryDtypeTestCase(TestCase):
         self.assertEqual(float, registry.get_dtype_with_path("builtins.float").base)
 
     def test_register_dtype_custom(self):
-        registry = FlowRegistry(no_builtins=True, no_defaults=True)
+        registry = FlowRegistry(no_defaults=True)
 
         @registry.register_dtype()
         class _Custom(object):
