@@ -30,6 +30,7 @@ from cvp.renderer.renderer import PygameRenderer
 from cvp.renderer.window.mapper import WindowMapper
 from cvp.renderer.world.world import World
 from cvp.windows.canvas import CanvasWindow
+from cvp.windows.dtype import DtypeManager
 from cvp.windows.files import FilesWindow
 from cvp.windows.flow import FlowWindow
 from cvp.windows.font import FontManager
@@ -63,6 +64,7 @@ class PlayerApplication:
         self._world = World(self._context)
 
         self._canvas = CanvasWindow(self._context, self._fonts)
+        self._dtype_manager = DtypeManager(self._context)
         self._files = FilesWindow(self._context, self._fonts)
         self._flow = FlowWindow(self._context, self._fonts)
         self._font_manager = FontManager(self._context, self._fonts)
@@ -261,6 +263,7 @@ class PlayerApplication:
         begin_order = self._context.config.window_manager.begin_order
         self._windows.add_windows(
             self._canvas,
+            self._dtype_manager,
             self._files,
             self._flow,
             self._font_manager,
@@ -403,6 +406,8 @@ class PlayerApplication:
         imgui.menu_item("Computer Vision", None, False, False)
         if imgui.menu_item("Flow", None, self._flow.opened)[0]:
             self._flow.flip_opened()
+        if imgui.menu_item("Dtype", None, self._dtype_manager.opened)[0]:
+            self._dtype_manager.flip_opened()
         if imgui.menu_item("Stitching", None, self._stitching.opened)[0]:
             self._stitching.flip_opened()
         if imgui.menu_item("Labeling", None, self._labeling_manager.opened)[0]:

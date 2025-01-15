@@ -13,6 +13,7 @@ from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.display import DisplayConfig
+from cvp.config.sections.dtype import DtypeManagerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.config.sections.files import FilesWindowConfig
 from cvp.config.sections.flow import FlowAuiConfig
@@ -51,6 +52,7 @@ class Config:
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
+    dtype_manager: DtypeManagerConfig = field(default_factory=DtypeManagerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
     files_window: FilesWindowConfig = field(default_factory=FilesWindowConfig)
     flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
