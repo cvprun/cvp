@@ -16,7 +16,7 @@ import weakref
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.flow.templates.dtype import Dtype
+from cvp.dtypes.dtype import Dtype
 
 
 @lru_cache

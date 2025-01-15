@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
+from cvp.dtypes.icons import DTYPE_ICON_MAPPING
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.variables import FLOW_PATH_SEPARATOR
 

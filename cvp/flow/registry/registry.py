@@ -3,12 +3,12 @@
 from inspect import Parameter, signature
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
-from cvp.flow.catalog.dtype import get_default_dtypes
+from cvp.dtypes.defaults import get_default_dtypes
+from cvp.dtypes.dtype import Dtype
 from cvp.flow.catalog.node import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
 from cvp.flow.icons.node import NODE_ICON_MAPPING
-from cvp.flow.templates.dtype import Dtype
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
 from cvp.flow.templates.pin.special import (
