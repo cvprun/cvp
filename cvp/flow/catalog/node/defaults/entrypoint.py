@@ -3,7 +3,7 @@
 from sys import exc_info
 from typing import Any, Dict, Optional, Tuple, TypedDict
 
-from cvp.flow.context import FlowContext
+from cvp.flow.record import FlowRecord
 from cvp.flow.templates.node import NodeTemplate
 from cvp.flow.templates.pin import PinTemplate
 from cvp.flow.templates.pin.datas import DataOutputPinTemplate
@@ -37,7 +37,7 @@ class Entrypoint(NodeTemplate):
         )
 
     @override
-    def run(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         try:
             if not isinstance(pin, EntrypointPinTemplate):
                 raise TypeError(

@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
-from cvp.flow.context import FlowContext
+from cvp.flow.record import FlowRecord
 from cvp.flow.templates.pin import PinTemplate
 from cvp.flow.templates.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -13,11 +13,11 @@ from cvp.types.override import override
 
 class NodeTemplateInterface(ABC):
     @abstractmethod
-    def run(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         raise NotImplementedError
 
     @abstractmethod
-    def done(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+    def done(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         raise NotImplementedError
 
 
@@ -86,7 +86,7 @@ class NodeTemplate(NodeTemplateInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         try:
             context.set_result(self.__call__(*context.args, **context.kwargs))
         except:  # noqa
@@ -98,5 +98,5 @@ class NodeTemplate(NodeTemplateInterface):
             return None
 
     @override
-    def done(self, pin: PinTemplate, context: FlowContext) -> Optional[PinTemplate]:
+    def done(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
         return None
