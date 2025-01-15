@@ -9,6 +9,7 @@ from yaml import dump, full_load
 
 from cvp.config.sections.appearance import AppearanceConfig
 from cvp.config.sections.canvas import CanvasWindowConfig
+from cvp.config.sections.catalog import CatalogManagerConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
@@ -48,6 +49,7 @@ from cvp.yaml.dumpers import DefaultDumper
 class Config:
     appearance: AppearanceConfig = field(default_factory=AppearanceConfig)
     canvas_window: CanvasWindowConfig = field(default_factory=CanvasWindowConfig)
+    catalog_manager: CatalogManagerConfig = field(default_factory=CatalogManagerConfig)
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
