@@ -23,12 +23,12 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class FlowRegistry:
-    _dtypes: Dict[str, Dtype]
+    _path2dtypes: Dict[str, Dtype]
     _type2dtypes: Dict[type, Dtype]
     _nodes: Dict[str, NodeTemplate]
 
     def __init__(self, *, no_builtins=False, no_defaults=False):
-        self._dtypes = dict()
+        self._path2dtypes = dict()
         self._type2dtypes = dict()
         self._nodes = dict()
 
@@ -57,8 +57,8 @@ class FlowRegistry:
             self.add_node(node)
 
     @property
-    def dtypes(self):
-        return self._dtypes
+    def path2dtypes(self):
+        return self._path2dtypes
 
     @property
     def type2dtypes(self):
@@ -69,12 +69,12 @@ class FlowRegistry:
         return self._nodes
 
     def update(self, other: "FlowRegistry") -> None:
-        self._dtypes.update(other.dtypes)
+        self._path2dtypes.update(other.path2dtypes)
         self._type2dtypes.update(other.type2dtypes)
         self._nodes.update(other.nodes)
 
-    def get_dtype(self, path: str) -> Dtype:
-        return self._dtypes[path]
+    def get_dtype_with_path(self, path: str) -> Dtype:
+        return self._path2dtypes[path]
 
     def get_dtype_with_type(self, base: type) -> Dtype:
         return self._type2dtypes[base]
@@ -83,9 +83,9 @@ class FlowRegistry:
         return self._nodes[path]
 
     def add_dtype(self, dtype: Dtype) -> None:
-        if dtype.path in self._dtypes:
+        if dtype.path in self._path2dtypes:
             raise KeyError(f"Duplicate dtype path: {dtype.path}")
-        self._dtypes[dtype.path] = dtype
+        self._path2dtypes[dtype.path] = dtype
         self._type2dtypes[dtype.base] = dtype
 
     def add_node(self, node: NodeTemplate) -> None:

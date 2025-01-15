@@ -38,7 +38,7 @@ class FlowManager(OrderedDict[str, Graph]):
 
     @property
     def dtypes(self):
-        return self._registry.dtypes
+        return self._registry.path2dtypes
 
     @property
     def nodes(self):

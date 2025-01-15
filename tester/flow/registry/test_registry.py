@@ -15,7 +15,7 @@ class RegistryTestCase(TestCase):
 
     def test_empty_register_dtype(self):
         registry = FlowRegistry(no_builtins=True, no_defaults=True)
-        self.assertEqual(0, len(registry.dtypes))
+        self.assertEqual(0, len(registry.path2dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
         self.assertEqual(0, len(registry.nodes))
 
