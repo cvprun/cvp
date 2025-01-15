@@ -43,6 +43,10 @@ class FlowRecord:
     def exc_info(self):
         return self._exc_info
 
+    def clear_result(self) -> None:
+        self._result = None
+        self._exc_info = None
+
     def set_result(self, value: Any) -> None:
         self._result = value
         self._exc_info = None

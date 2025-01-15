@@ -9,7 +9,6 @@ from cvp.flow.catalog.node.builtins import get_builtin_functions
 from cvp.flow.catalog.node.defaults import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
-from cvp.flow.icons.dtype import DTYPE_ICON_MAPPING
 from cvp.flow.icons.node import NODE_ICON_MAPPING
 from cvp.flow.templates.dtype import Dtype
 from cvp.flow.templates.node import NodeTemplate
@@ -102,51 +101,19 @@ class FlowRegistry:
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    @staticmethod
-    def create_dtype(
-        base: type,
-        name: Optional[str] = None,
-        path: Optional[str] = None,
-        docs: Optional[str] = None,
-        icon: Optional[str] = None,
-        color: Optional[RGBA] = None,
-    ) -> Dtype:
-        if not isinstance(base, type):
-            raise TypeError(f"Only types can be registered: {base}")
-
-        base_name = name if name else base.__name__
-        base_path = path if path else base.__module__ + FLOW_PATH_SEPARATOR + base_name
-        base_docs = docs if docs else base.__doc__
-        base_icon = icon if icon else DTYPE_ICON_MAPPING[base_name[0]]
-        base_color = color if color else WHITE_RGBA
-
-        if not base_name:
-            raise ValueError("The 'name' attribute is required")
-        if not base_path:
-            raise ValueError("The 'path' attribute is required")
-
-        return Dtype(
-            name=base_name,
-            path=base_path,
-            base=base,
-            docs=base_docs,
-            icon=base_icon,
-            color=base_color,
-        )
-
     def dtype_path(self, return_annotation) -> str:
         if return_annotation == Parameter.empty:
             if Any in self._type2dtypes:
                 return self._type2dtypes[Any].path  # type: ignore[index]
             else:
-                dtype = self.create_dtype(Any)  # type: ignore[arg-type]
+                dtype = Dtype(Any)  # type: ignore[arg-type]
                 self.add_dtype(dtype)
                 return dtype.path
 
         if return_annotation in self._type2dtypes:
             return self._type2dtypes[return_annotation].path
 
-        dtype = self.create_dtype(return_annotation)
+        dtype = Dtype(return_annotation)
         self.add_dtype(dtype)
         return dtype.path
 
@@ -279,14 +246,7 @@ class FlowRegistry:
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
     ):
-        dtype = self.create_dtype(
-            base=base,
-            name=name,
-            path=path,
-            docs=docs,
-            icon=icon,
-            color=color,
-        )
+        dtype = Dtype(base, name, path, docs, icon, color)
         self.add_dtype(dtype)
 
     def add_new_callable(
