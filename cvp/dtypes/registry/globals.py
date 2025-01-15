@@ -25,4 +25,4 @@ def register_dtype(
     icon: Optional[str] = None,
     color: Optional[RGBA] = None,
 ):
-    return global_registry().register_dtype(name, path, docs, icon, color)
+    return global_registry().register(name, path, docs, icon, color)

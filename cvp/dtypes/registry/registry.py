@@ -14,6 +14,10 @@ class DtypeRegistry:
         self._type2dtypes = dict(_TYPE_TO_DTYPES.items() if not no_defaults else list())
         assert len(self._path2dtypes) == len(self._type2dtypes)
 
+    def __len__(self) -> int:
+        assert len(self._path2dtypes) == len(self._type2dtypes)
+        return len(self._path2dtypes)
+
     @property
     def path2dtypes(self):
         return self._path2dtypes
@@ -22,21 +26,15 @@ class DtypeRegistry:
     def type2dtypes(self):
         return self._type2dtypes
 
-    def get_dtype_with_path(self, path: str) -> Dtype:
-        return self._path2dtypes[path]
-
-    def get_dtype_with_type(self, base: type) -> Dtype:
-        return self._type2dtypes[base]
-
-    def get_dtype(self, key: Any) -> Dtype:
+    def get(self, key: Any) -> Dtype:
         if isinstance(key, type):
-            return self.get_dtype_with_type(key)
+            return self._type2dtypes[key]
         elif isinstance(key, str):
-            return self.get_dtype_with_path(key)
+            return self._path2dtypes[key]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
-    def add_dtype(self, dtype: Dtype) -> None:
+    def add(self, dtype: Dtype) -> None:
         if dtype.path in self._path2dtypes:
             raise KeyError(f"Duplicate dtype path: {dtype.path}")
 
@@ -46,7 +44,7 @@ class DtypeRegistry:
         self._path2dtypes[dtype.path] = dtype
         self._type2dtypes[dtype.base] = dtype
 
-    def add_new_dtype(
+    def add_new(
         self,
         base: type,
         name: Optional[str] = None,
@@ -56,10 +54,10 @@ class DtypeRegistry:
         color: Optional[RGBA] = None,
     ) -> Dtype:
         result = Dtype(base, name, path, docs, icon, color)
-        self.add_dtype(result)
+        self.add(result)
         return result
 
-    def register_dtype(
+    def register(
         self,
         name: Optional[str] = None,
         path: Optional[str] = None,
@@ -68,7 +66,7 @@ class DtypeRegistry:
         color: Optional[RGBA] = None,
     ):
         def _decorator(base: type):
-            self.add_new_dtype(base, name, path, docs, icon, color)
+            self.add_new(base, name, path, docs, icon, color)
             return base
 
         return _decorator
