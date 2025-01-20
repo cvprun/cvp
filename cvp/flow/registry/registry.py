@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from cvp.dtypes.defaults import get_default_dtypes
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.catalog.node import get_default_nodes
+from cvp.flow.catalog import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
 from cvp.flow.icons.node import NODE_ICON_MAPPING
