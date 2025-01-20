@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 from cvp.dtypes.defaults import get_default_dtypes
 from cvp.dtypes.dtype import Dtype
 from cvp.nodes.action import Action
-from cvp.nodes.catalog import get_default_nodes
+from cvp.nodes.defaults import get_default_nodes
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.node import NodeTemplate
 from cvp.nodes.pin.pin import PinTemplate
