@@ -6,7 +6,7 @@ from typing import Any, List, Optional
 from uuid import uuid4
 
 from cvp.flow.pin import FlowPin
-from cvp.nodes.node import NodeTemplate
+from cvp.nodes.node import Node
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
@@ -38,7 +38,7 @@ class FlowNode:
 
     _selected: bool = False
     _hovering: bool = False
-    _template: Optional[NodeTemplate] = None
+    _template: Optional[Node] = None
 
     def __call__(self, *args, **kwargs) -> Any:
         if self._template is None:
@@ -46,7 +46,7 @@ class FlowNode:
         return self._template.__call__(*args, **kwargs)
 
     @classmethod
-    def from_template(cls, template: NodeTemplate):
+    def from_template(cls, template: Node):
         return cls(
             uuid=str(uuid4()),
             name=template.name,

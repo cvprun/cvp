@@ -7,7 +7,7 @@ from cvp.dtypes.defaults import get_default_dtypes
 from cvp.dtypes.dtype import Dtype
 from cvp.nodes.defaults import get_default_nodes
 from cvp.nodes.icons import NODE_ICON_MAPPING
-from cvp.nodes.node import NodeTemplate
+from cvp.nodes.node import Node
 from cvp.pins.action import Action
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
@@ -19,7 +19,7 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 class FlowRegistry:
     _path2dtypes: Dict[str, Dtype]
     _type2dtypes: Dict[type, Dtype]
-    _nodes: Dict[str, NodeTemplate]
+    _nodes: Dict[str, Node]
 
     def __init__(self, *, no_defaults=False):
         self._path2dtypes = dict()
@@ -61,7 +61,7 @@ class FlowRegistry:
     def get_dtype_with_type(self, base: type) -> Dtype:
         return self._type2dtypes[base]
 
-    def get_node(self, path: str) -> NodeTemplate:
+    def get_node(self, path: str) -> Node:
         return self._nodes[path]
 
     def add_dtype(self, dtype: Dtype) -> None:
@@ -70,15 +70,15 @@ class FlowRegistry:
         self._path2dtypes[dtype.path] = dtype
         self._type2dtypes[dtype.base] = dtype
 
-    def add_node(self, node: NodeTemplate) -> None:
+    def add_node(self, node: Node) -> None:
         if node.path in self._nodes:
             raise KeyError(f"Duplicate node path: {node.path}")
         self._nodes[node.path] = node
 
-    def add(self, item: Union[Dtype, NodeTemplate]):
+    def add(self, item: Union[Dtype, Node]):
         if isinstance(item, Dtype):
             self.add_dtype(item)
-        elif isinstance(item, NodeTemplate):
+        elif isinstance(item, Node):
             self.add_node(item)
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
@@ -144,7 +144,7 @@ class FlowRegistry:
         data_inputs: Optional[Sequence[Pin]] = None,
         data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
-    ) -> NodeTemplate:
+    ) -> Node:
         if not callable(func):
             raise TypeError(f"Only callables can be registered: {func}")
 
@@ -203,7 +203,7 @@ class FlowRegistry:
             return_pin = ReturnPin(dtype=self.get_dtype(sig.return_annotation))
             base_pins.append(return_pin)
 
-        return NodeTemplate(
+        return Node(
             name=base_name,
             path=base_path,
             func=func,

@@ -4,20 +4,20 @@ from abc import ABC, abstractmethod
 from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
-from cvp.nodes.record import FlowRecord
+from cvp.nodes.record import NodeRecord
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 
 
-class NodeTemplateInterface(ABC):
+class NodeInterface(ABC):
     @abstractmethod
-    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
         raise NotImplementedError
 
 
-class NodeTemplate(NodeTemplateInterface):
+class Node(NodeInterface):
     def __init__(
         self,
         name: str,
@@ -82,11 +82,11 @@ class NodeTemplate(NodeTemplateInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
         try:
-            context.set_result(self.__call__(*context.args, **context.kwargs))
+            record.set_result(self.__call__(*record.args, **record.kwargs))
         except:  # noqa
-            context.set_exception(exc_info())
+            record.set_exception(exc_info())
 
         if self.is_bypass_flow:
             return self.flow_outputs[0]

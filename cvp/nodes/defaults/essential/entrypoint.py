@@ -5,8 +5,8 @@ from typing import Any, Dict, Optional, Tuple, TypedDict
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
-from cvp.nodes.node import NodeTemplate
-from cvp.nodes.record import FlowRecord
+from cvp.nodes.node import Node
+from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowOutputPin
 from cvp.pins.pin import Pin
@@ -20,7 +20,7 @@ class EntrypointOutput(TypedDict):
     kwargs: Dict[str, Any]
 
 
-class EntrypointNodeTemplate(NodeTemplate):
+class EntrypointNodeTemplate(Node):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._start = FlowOutputPin(
             name="start",
@@ -49,7 +49,7 @@ class EntrypointNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
         try:
             if not isinstance(pin, EntrypointPin):
                 raise TypeError(
@@ -57,9 +57,9 @@ class EntrypointNodeTemplate(NodeTemplate):
                     f" {EntrypointPin.__name__}"
                 )
 
-            result = EntrypointOutput(args=context.args, kwargs=context.kwargs)
-            context.set_result(result)
+            result = EntrypointOutput(args=record.args, kwargs=record.kwargs)
+            record.set_result(result)
         except:  # noqa
-            context.set_exception(exc_info())
+            record.set_exception(exc_info())
 
         return self._start

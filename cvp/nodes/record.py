@@ -7,7 +7,7 @@ ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
 
 
-class FlowRecord:
+class NodeRecord:
     _args: Tuple[Any, ...]
     _kwargs: Dict[str, Any]
     _result: Any
