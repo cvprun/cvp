@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import List
 
 from cvp.pins.action import Action
 from cvp.pins.pin import Pin
@@ -30,24 +30,17 @@ class FlowPin:
     _hovering: bool = False
     _connectable: bool = False
 
-    _template: Optional[Pin] = None
-
     @classmethod
     def from_template(cls, template: Pin):
         return cls(
             name=template.name,
             docs=template.docs,
-            dtype=template.dtype,
+            dtype=template.path,
             action=template.action,
             stream=template.stream,
             required=template.required,
             arcs=deepcopy(template.arcs),
-            _template=template,
         )
-
-    @property
-    def template(self):
-        return self._template
 
     @property
     def is_data_action(self):

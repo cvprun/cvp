@@ -6,7 +6,7 @@ from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.nodes.record import FlowRecord
 from cvp.pins.pin import Pin
-from cvp.pins.special import NextPinTemplate, PrevPinTemplate
+from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 
@@ -67,9 +67,9 @@ class NodeTemplate(NodeTemplateInterface):
         if len(flow_outputs) != 1:
             return False
 
-        if not isinstance(flow_inputs[0], PrevPinTemplate):
+        if not isinstance(flow_inputs[0], PrevPin):
             return False
-        if not isinstance(flow_outputs[0], NextPinTemplate):
+        if not isinstance(flow_outputs[0], NextPin):
             return False
 
         assert 0 == len(self.data_inputs)

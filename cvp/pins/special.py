@@ -2,12 +2,13 @@
 
 from typing import Any, Optional, Sequence
 
+from cvp.dtypes.dtype import Dtype
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowInputPin, FlowOutputPin
 from cvp.pins.markers import NoDefault
 
 
-class EntrypointPinTemplate(FlowInputPin):
+class EntrypointPin(FlowInputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="entrypoint",
@@ -16,7 +17,7 @@ class EntrypointPinTemplate(FlowInputPin):
         )
 
 
-class PrevPinTemplate(FlowInputPin):
+class PrevPin(FlowInputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="prev",
@@ -25,7 +26,7 @@ class PrevPinTemplate(FlowInputPin):
         )
 
 
-class NextPinTemplate(FlowOutputPin):
+class NextPin(FlowOutputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="next",
@@ -34,11 +35,10 @@ class NextPinTemplate(FlowOutputPin):
         )
 
 
-class ReturnPinTemplate(DataOutputPin):
+class ReturnPin(DataOutputPin):
     def __init__(
         self,
-        dtype: Optional[str] = None,
-        required: Optional[bool] = None,
+        dtype: Optional[Dtype] = None,
         arcs: Optional[Sequence[str]] = None,
         default: Any = NoDefault,
     ):
@@ -46,7 +46,6 @@ class ReturnPinTemplate(DataOutputPin):
             name="return",
             dtype=dtype,
             docs="The return value of a function",
-            required=required,
             arcs=arcs,
             default=default,
         )

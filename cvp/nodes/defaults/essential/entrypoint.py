@@ -10,7 +10,7 @@ from cvp.nodes.record import FlowRecord
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowOutputPin
 from cvp.pins.pin import Pin
-from cvp.pins.special import EntrypointPinTemplate
+from cvp.pins.special import EntrypointPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
@@ -28,12 +28,12 @@ class EntrypointNodeTemplate(NodeTemplate):
         )
         self._args = DataOutputPin(
             name="args",
-            dtype=dtype_registry.get(list).path,
+            dtype=dtype_registry.get(list),
             docs="Arguments of list type",
         )
         self._kwargs = DataOutputPin(
             name="kwargs",
-            dtype=dtype_registry.get(dict).path,
+            dtype=dtype_registry.get(dict),
             docs="Arguments of dict type",
         )
 
@@ -51,10 +51,10 @@ class EntrypointNodeTemplate(NodeTemplate):
     @override
     def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
         try:
-            if not isinstance(pin, EntrypointPinTemplate):
+            if not isinstance(pin, EntrypointPin):
                 raise TypeError(
                     "The 'pin' argument must be an instance of"
-                    f" {EntrypointPinTemplate.__name__}"
+                    f" {EntrypointPin.__name__}"
                 )
 
             result = EntrypointOutput(args=context.args, kwargs=context.kwargs)

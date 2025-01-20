@@ -2,6 +2,7 @@
 
 from typing import Any, Optional, Sequence
 
+from cvp.dtypes.dtype import Dtype
 from cvp.pins.action import Action
 from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
@@ -11,7 +12,7 @@ class Pin:
     def __init__(
         self,
         name: str,
-        dtype: Optional[str] = None,
+        dtype: Optional[Dtype] = None,
         docs: Optional[str] = None,
         action: Optional[Action] = None,
         stream: Optional[Stream] = None,
@@ -20,13 +21,17 @@ class Pin:
         default: Any = NoDefault,
     ):
         self.name = name
+        self.dtype = dtype
         self.docs = docs if docs else str()
-        self.dtype = dtype if dtype else str()
         self.action = action if action is not None else Action.data
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.arcs = list(arcs if arcs else [])
         self.default = default
+
+    @property
+    def path(self):
+        return self.dtype.path if self.dtype else str()
 
     @property
     def is_data_action(self):

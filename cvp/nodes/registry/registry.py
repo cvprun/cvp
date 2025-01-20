@@ -10,7 +10,7 @@ from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.node import NodeTemplate
 from cvp.pins.action import Action
 from cvp.pins.pin import Pin
-from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
+from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.pins.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.variables import FLOW_PATH_SEPARATOR
@@ -83,24 +83,24 @@ class FlowRegistry:
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    def dtype_path(self, return_annotation) -> str:
+    def get_dtype(self, return_annotation) -> Dtype:
         if return_annotation == Parameter.empty:
             if Any in self._type2dtypes:
-                return self._type2dtypes[Any].path  # type: ignore[index]
+                return self._type2dtypes[Any]  # type: ignore[index]
             else:
                 dtype = Dtype(Any)  # type: ignore[arg-type]
                 self.add_dtype(dtype)
-                return dtype.path
+                return dtype
 
         if return_annotation in self._type2dtypes:
-            return self._type2dtypes[return_annotation].path
+            return self._type2dtypes[return_annotation]
 
         dtype = Dtype(return_annotation)
         self.add_dtype(dtype)
-        return dtype.path
+        return dtype
 
     def create_parameter_pin(self, parameter: Parameter) -> Pin:
-        dtype_path = self.dtype_path(parameter.annotation)
+        dtype = self.get_dtype(parameter.annotation)
 
         match parameter.kind:
             case Parameter.POSITIONAL_ONLY:
@@ -118,7 +118,7 @@ class FlowRegistry:
 
         return Pin(
             name=parameter.name,
-            dtype=dtype_path,
+            dtype=dtype,
             docs=str(),
             action=Action.data,
             stream=Stream.input,
@@ -130,12 +130,6 @@ class FlowRegistry:
         parameters: Sequence[Parameter],
     ) -> List[Pin]:
         return list(self.create_parameter_pin(param) for param in parameters)
-
-    def create_return_annotation_pin(self, return_annotation):
-        return ReturnPinTemplate(
-            dtype=self.dtype_path(return_annotation),
-            required=False,
-        )
 
     def create_node(
         self,
@@ -180,7 +174,7 @@ class FlowRegistry:
                     raise ValueError("Pin must be flow inputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(PrevPinTemplate())
+            base_pins.append(PrevPin())
 
         if flow_outputs:
             for pin in flow_outputs:
@@ -188,7 +182,7 @@ class FlowRegistry:
                     raise ValueError("Pin must be flow outputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(NextPinTemplate())
+            base_pins.append(NextPin())
 
         sig = signature(func)
 
@@ -206,7 +200,8 @@ class FlowRegistry:
                     raise ValueError("Pin must be data outputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(self.create_return_annotation_pin(sig.return_annotation))
+            return_pin = ReturnPin(dtype=self.get_dtype(sig.return_annotation))
+            base_pins.append(return_pin)
 
         return NodeTemplate(
             name=base_name,
