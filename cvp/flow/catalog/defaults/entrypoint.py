@@ -22,9 +22,20 @@ class EntrypointOutput(TypedDict):
 
 class EntrypointNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
-        self._flow_start = FlowOutputPinTemplate(name="start")
-        self._data_args = DataOutputPinTemplate(name="args")
-        self._data_kwargs = DataOutputPinTemplate(name="kwargs")
+        self._start = FlowOutputPinTemplate(
+            name="start",
+            docs="Entrypoint flow signal",
+        )
+        self._args = DataOutputPinTemplate(
+            name="args",
+            dtype=dtype_registry.get(list).path,
+            docs="Arguments of list type",
+        )
+        self._kwargs = DataOutputPinTemplate(
+            name="kwargs",
+            dtype=dtype_registry.get(dict).path,
+            docs="Arguments of dict type",
+        )
 
         super().__init__(
             name="entrypoint",
@@ -33,7 +44,7 @@ class EntrypointNodeTemplate(NodeTemplate):
             docs="Indicates the starting point of the graph",
             icon=PLAY,
             color=GREEN_RGBA,
-            pins=(self._flow_start, self._data_args, self._data_kwargs),
+            pins=(self._start, self._args, self._kwargs),
             tags=("entrypoint", "main"),
         )
 
@@ -51,4 +62,4 @@ class EntrypointNodeTemplate(NodeTemplate):
         except:  # noqa
             context.set_exception(exc_info())
 
-        return self._flow_start
+        return self._start

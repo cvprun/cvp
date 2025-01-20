@@ -35,6 +35,9 @@ class FlowRecord:
     def kwargs(self):
         return self._kwargs
 
+    def get(self, key: str):
+        return self._kwargs.get(key)
+
     @property
     def result(self):
         return self._result
