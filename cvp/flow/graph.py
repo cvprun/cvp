@@ -8,14 +8,14 @@ from uuid import uuid4
 
 import shapely
 
-from cvp.flow.components.anchor import Anchor
-from cvp.flow.components.arc import Arc
-from cvp.flow.components.connection import Connection
-from cvp.flow.components.control import Control
-from cvp.flow.components.node import Node
-from cvp.flow.components.node_pin import NodePin
-from cvp.flow.components.pin import Pin
-from cvp.flow.components.selection import SelectableAny, Selection
+from cvp.flow.anchor import Anchor
+from cvp.flow.arc import Arc
+from cvp.flow.connection import Connection
+from cvp.flow.control import Control
+from cvp.flow.node import Node
+from cvp.flow.node_pin import NodePin
+from cvp.flow.pin import Pin
+from cvp.flow.selection import SelectableAny, Selection
 from cvp.nodes.action import Action
 from cvp.nodes.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA

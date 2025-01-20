@@ -4,7 +4,7 @@ from collections import deque
 from copy import deepcopy
 from typing import Deque, NamedTuple, Optional
 
-from cvp.flow.components.graph import Graph
+from cvp.flow.graph import Graph
 
 
 class RecordItem(NamedTuple):

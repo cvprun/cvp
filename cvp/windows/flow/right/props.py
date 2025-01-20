@@ -6,17 +6,17 @@ import imgui
 
 from cvp.config.sections.canvas.axis import Axis
 from cvp.context.context import Context
-from cvp.flow.components.arc import Arc
-from cvp.flow.components.graph import Graph
-from cvp.flow.components.line_type import (
+from cvp.flow.arc import Arc
+from cvp.flow.graph import Graph
+from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
     LINE_TYPE_NAME2INDEX,
     LINE_TYPE_NAMES,
     LineType,
 )
-from cvp.flow.components.node import Node
-from cvp.flow.components.pin import Pin
-from cvp.flow.components.selection import Selection
+from cvp.flow.node import Node
+from cvp.flow.pin import Pin
+from cvp.flow.selection import Selection
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo

@@ -3,8 +3,8 @@
 import imgui
 
 from cvp.context.context import Context
-from cvp.flow.components.graph import Graph
-from cvp.flow.components.node import Node
+from cvp.flow.graph import Graph
+from cvp.flow.node import Node
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override

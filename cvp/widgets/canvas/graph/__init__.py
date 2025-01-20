@@ -6,13 +6,13 @@ from weakref import ReferenceType, ref
 import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
-from cvp.flow.components.anchor import Anchor
-from cvp.flow.components.arc import Arc
-from cvp.flow.components.graph import Graph
-from cvp.flow.components.node import Node
-from cvp.flow.components.node_pin import NodePin
-from cvp.flow.components.pin import Pin
-from cvp.flow.components.selection import Selection
+from cvp.flow.anchor import Anchor
+from cvp.flow.arc import Arc
+from cvp.flow.graph import Graph
+from cvp.flow.node import Node
+from cvp.flow.node_pin import NodePin
+from cvp.flow.pin import Pin
+from cvp.flow.selection import Selection
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale

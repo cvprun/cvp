@@ -2,8 +2,8 @@
 
 from typing import NamedTuple
 
-from cvp.flow.components.node import Node
-from cvp.flow.components.pin import Pin
+from cvp.flow.node import Node
+from cvp.flow.pin import Pin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 

@@ -2,7 +2,7 @@
 
 from typing import NamedTuple
 
-from cvp.flow.components.node_pin import NodePin
+from cvp.flow.node_pin import NodePin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 

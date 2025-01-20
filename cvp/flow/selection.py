@@ -15,10 +15,10 @@ from typing import (
 )
 from uuid import uuid4
 
-from cvp.flow.components.arc import Arc
-from cvp.flow.components.node import Node
-from cvp.flow.components.node_pin import NodePin
-from cvp.flow.components.pin import Pin
+from cvp.flow.arc import Arc
+from cvp.flow.node import Node
+from cvp.flow.node_pin import NodePin
+from cvp.flow.pin import Pin
 from cvp.types.shapes import Point
 
 SelectableKey: TypeAlias = int

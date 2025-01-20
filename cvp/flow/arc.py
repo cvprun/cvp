@@ -4,9 +4,9 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 from uuid import uuid4
 
-from cvp.flow.components.anchor import Anchor
-from cvp.flow.components.line_type import LineType
-from cvp.flow.components.node_pin import NodePin
+from cvp.flow.anchor import Anchor
+from cvp.flow.line_type import LineType
+from cvp.flow.node_pin import NodePin
 from cvp.maths.bezier.casteljau.cubic import bezier_cubic_casteljau_points
 from cvp.types.shapes import Point, Rect
 
