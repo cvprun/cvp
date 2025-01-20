@@ -5,7 +5,7 @@ from inspect import signature
 from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
-from cvp.dtypes.registry.globals import global_registry
+from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
@@ -100,7 +100,7 @@ class Node(NodeInterface):
             base_pins.append(NextPin())
 
         if dtype_registry is None:
-            dtype_registry = global_registry()
+            dtype_registry = global_dtype_registry()
 
         assert dtype_registry is not None
         sig = signature(func)

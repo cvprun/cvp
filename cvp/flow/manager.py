@@ -11,7 +11,6 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.selection import FlowSelection
-from cvp.nodes.registry.globals import global_registry
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
@@ -23,13 +22,10 @@ class FlowManager(OrderedDict[str, FlowGraph]):
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
-    def __init__(self, home: HomeDir, *, refresh_graphs=False, no_globals=False):
+    def __init__(self, home: HomeDir, *, refresh_graphs=False):
         super().__init__()
-        self._node_registry = NodeRegistry()
         self._dtype_registry = DtypeRegistry()
-
-        if not no_globals:
-            self._node_registry.update(global_registry())
+        self._node_registry = NodeRegistry(self._dtype_registry)
 
         self._home = home
         self._clipboard_items = None

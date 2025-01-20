@@ -1,19 +1,27 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
-from typing import Any, Optional
+from typing import Any, Dict, Optional, Type
 
-from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES as _PATH_TO_DTYPES
-from cvp.dtypes.defaults import DEFAULT_TYPE_TO_DTYPES as _TYPE_TO_DTYPES
+from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
 from cvp.dtypes.defaults.builtins import get_typing_any
 from cvp.dtypes.dtype import Dtype
 from cvp.types.colors import RGBA
 
 
 class DtypeRegistry:
+    _path2dtypes: Dict[str, Dtype]
+    _type2dtypes: Dict[Type, Dtype]
+
     def __init__(self, *, no_defaults=False):
-        self._path2dtypes = dict(_PATH_TO_DTYPES.items() if not no_defaults else list())
-        self._type2dtypes = dict(_TYPE_TO_DTYPES.items() if not no_defaults else list())
+        self._path2dtypes = dict()
+        self._type2dtypes = dict()
+
+        if not no_defaults:
+            self._path2dtypes.update(DEFAULT_PATH_TO_DTYPES)
+            self._type2dtypes.update(DEFAULT_TYPE_TO_DTYPES)
+            assert Any in self._type2dtypes
+
         assert len(self._path2dtypes) == len(self._type2dtypes)
 
     def __len__(self) -> int:
@@ -30,8 +38,10 @@ class DtypeRegistry:
 
     @property
     def any_dtype(self) -> Dtype:
-        dtype = self._type2dtypes.get(Any)
-        return dtype if dtype is not None else get_typing_any()
+        dtype = self._type2dtypes.get(Any)  # type: ignore[call-overload]
+        if dtype is not None:
+            return dtype
+        return get_typing_any()
 
     def update(self, other: "DtypeRegistry") -> None:
         self._path2dtypes.update(other.path2dtypes)
@@ -45,7 +55,7 @@ class DtypeRegistry:
         elif isinstance(key, str):
             return key in self._path2dtypes
         else:
-            return False
+            raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
     def get(self, key) -> Dtype:
         if key in (Parameter.empty, Any):

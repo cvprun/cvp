@@ -3,14 +3,14 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.dtypes.registry.globals import GlobalDtypeRegistry, global_registry
+from cvp.dtypes.registry.globals import GlobalDtypeRegistry, global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class RegistryTestCase(TestCase):
     def test_global(self):
-        registry0 = global_registry()
+        registry0 = global_dtype_registry()
         registry1 = GlobalDtypeRegistry()
         registry2 = GlobalDtypeRegistry()
         self.assertEqual(registry0, registry1)

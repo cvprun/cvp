@@ -14,7 +14,7 @@ class GlobalDtypeRegistry(DtypeRegistry):
 
 
 @lru_cache
-def global_registry() -> GlobalDtypeRegistry:
+def global_dtype_registry() -> GlobalDtypeRegistry:
     return GlobalDtypeRegistry()
 
 
@@ -25,4 +25,4 @@ def register_dtype(
     icon: Optional[str] = None,
     color: Optional[RGBA] = None,
 ):
-    return global_registry().register(name, path, docs, icon, color)
+    return global_dtype_registry().register(name, path, docs, icon, color)

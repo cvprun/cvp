@@ -4,7 +4,7 @@ from inspect import Parameter
 from typing import Any, Optional, Sequence
 
 from cvp.dtypes.dtype import Dtype
-from cvp.dtypes.registry.globals import global_registry
+from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.pins.action import Action
 from cvp.pins.markers import NoDefault
@@ -94,7 +94,7 @@ class Pin:
         dtype_registry: Optional[DtypeRegistry] = None,
     ):
         if dtype_registry is None:
-            dtype_registry = global_registry()
+            dtype_registry = global_dtype_registry()
 
         assert dtype_registry is not None
         dtype = dtype_registry.get(parameter.annotation)

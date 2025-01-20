@@ -15,7 +15,7 @@ class GlobalNodeRegistry(NodeRegistry):
 
 
 @lru_cache
-def global_registry() -> GlobalNodeRegistry:
+def global_node_registry() -> GlobalNodeRegistry:
     return GlobalNodeRegistry()
 
 
@@ -31,7 +31,7 @@ def register_node(
     data_outputs: Optional[Sequence[Pin]] = None,
     tags: Optional[Sequence[str]] = None,
 ):
-    return global_registry().register_node(
+    return global_node_registry().register(
         name=name,
         path=path,
         docs=docs,
