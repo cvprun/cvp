@@ -6,13 +6,13 @@ from weakref import ReferenceType, ref
 import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
-from cvp.flow.anchor import Anchor
-from cvp.flow.arc import Arc
-from cvp.flow.graph import Graph
-from cvp.flow.node import Node
-from cvp.flow.node_pin import NodePin
-from cvp.flow.pin import Pin
-from cvp.flow.selection import Selection
+from cvp.flow.anchor import FlowAnchor
+from cvp.flow.arc import FlowArc
+from cvp.flow.graph import FlowGraph
+from cvp.flow.node import FlowNode
+from cvp.flow.node_pin import FlowNodePin
+from cvp.flow.pin import FlowPin
+from cvp.flow.selection import FlowSelection
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
@@ -27,20 +27,20 @@ from cvp.widgets.canvas.graph.mode import ControlMode
 
 
 class CanvasGraph(CanvasController):
-    _graph_ref: ReferenceType[Graph]
+    _graph_ref: ReferenceType[FlowGraph]
     _fonts_ref: ReferenceType[FontMapper]
     _config_ref: ReferenceType[FlowAuiConfig]
 
-    _graph: Optional[Graph]
+    _graph: Optional[FlowGraph]
     _fonts: Optional[FontMapper]
     _config: Optional[FlowAuiConfig]
 
     _mode: ControlMode
-    _connects: List[NodePin]
+    _connects: List[FlowNodePin]
     _roi: Optional[Rect]
-    _selection_stash: Optional[Selection]
+    _selection_stash: Optional[FlowSelection]
 
-    def __init__(self, graph: Graph, fonts: FontMapper, config: FlowAuiConfig):
+    def __init__(self, graph: FlowGraph, fonts: FontMapper, config: FlowAuiConfig):
         super().__init__()
 
         self._pan_x.update(graph.control.pan_x, no_emit=True)
@@ -112,7 +112,7 @@ class CanvasGraph(CanvasController):
     # ==================================================================================
 
     @property
-    def graph(self) -> Graph:
+    def graph(self) -> FlowGraph:
         if self._graph is None:
             raise ReferenceError("The graph instance has expired")
         return self._graph
@@ -398,7 +398,7 @@ class CanvasGraph(CanvasController):
                 if hovering_pin := hovering_node.find_hovering_pin():
                     self._mode = ControlMode.pin_connecting
                     self._connects.clear()
-                    self._connects.append(NodePin(hovering_node, hovering_pin))
+                    self._connects.append(FlowNodePin(hovering_node, hovering_pin))
                 else:
                     self._mode = ControlMode.node_moving
                     if not hovering_node.selected:
@@ -506,10 +506,10 @@ class CanvasGraph(CanvasController):
         return self.config.nodes.item_spacing
 
     @staticmethod
-    def get_node_color_u32(node: Node) -> int:
+    def get_node_color_u32(node: FlowNode) -> int:
         return imgui.get_color_u32_rgba(*node.color)
 
-    def get_node_line_color(self, node: Node) -> RGBA:
+    def get_node_line_color(self, node: FlowNode) -> RGBA:
         if node.selected:
             return self.config.nodes.selected_color
         elif node.hovering:
@@ -517,7 +517,7 @@ class CanvasGraph(CanvasController):
         else:
             return self.config.nodes.normal_color
 
-    def get_node_line_color_u32(self, node: Node) -> int:
+    def get_node_line_color_u32(self, node: FlowNode) -> int:
         return imgui.get_color_u32_rgba(*self.get_node_line_color(node))
 
     @property
@@ -532,7 +532,7 @@ class CanvasGraph(CanvasController):
     def node_background_color_u32(self) -> int:
         return imgui.get_color_u32_rgba(*self.config.nodes.background_color)
 
-    def get_node_line_thickness(self, node: Node) -> float:
+    def get_node_line_thickness(self, node: FlowNode) -> float:
         if node.selected:
             return self.config.nodes.selected_thickness
         elif node.hovering:
@@ -564,7 +564,7 @@ class CanvasGraph(CanvasController):
     def pin_font(self):
         return self.fonts.get_scaled_icon(self.config.pins.icon_size)
 
-    def get_pin_color(self, pin: Pin) -> RGBA:
+    def get_pin_color(self, pin: FlowPin) -> RGBA:
         if self.is_pin_connecting_mode:
             if pin.hovering and pin.connectable:
                 return self.config.pins.selected_color
@@ -578,7 +578,7 @@ class CanvasGraph(CanvasController):
             else:
                 return self.config.pins.normal_color
 
-    def get_arc_color(self, arc: Arc) -> RGBA:
+    def get_arc_color(self, arc: FlowArc) -> RGBA:
         if arc.selected:
             return self.config.arcs.selected_color
         elif arc.hovering:
@@ -586,10 +586,10 @@ class CanvasGraph(CanvasController):
         else:
             return self.config.arcs.normal_color
 
-    def get_arc_color_u32(self, arc: Arc) -> int:
+    def get_arc_color_u32(self, arc: FlowArc) -> int:
         return imgui.get_color_u32_rgba(*self.get_arc_color(arc))
 
-    def get_arc_thickness(self, arc: Arc) -> float:
+    def get_arc_thickness(self, arc: FlowArc) -> float:
         if arc.selected:
             return self.config.arcs.selected_thickness
         elif arc.hovering:
@@ -597,7 +597,7 @@ class CanvasGraph(CanvasController):
         else:
             return self.config.arcs.normal_thickness
 
-    def get_anchor_color(self, anchor: Anchor) -> RGBA:
+    def get_anchor_color(self, anchor: FlowAnchor) -> RGBA:
         if anchor.selected:
             return self.config.anchors.selected_color
         elif anchor.hovering:
@@ -605,7 +605,7 @@ class CanvasGraph(CanvasController):
         else:
             return self.config.anchors.normal_color
 
-    def get_anchor_color_u32(self, anchor: Anchor) -> int:
+    def get_anchor_color_u32(self, anchor: FlowAnchor) -> int:
         return imgui.get_color_u32_rgba(*self.get_anchor_color(anchor))
 
     # ==================================================================================
@@ -616,7 +616,7 @@ class CanvasGraph(CanvasController):
         for node in self.graph.nodes:
             self.update_node_roi(node)
 
-    def update_node_roi(self, node: Node) -> None:
+    def update_node_roi(self, node: FlowNode) -> None:
         with self.icon_font:
             node_icon_w, node_icon_h = imgui.calc_text_size(node.icon)
 
@@ -723,7 +723,7 @@ class CanvasGraph(CanvasController):
         for node in reversed(self.graph.nodes):
             self.draw_node(node)
 
-    def draw_node(self, node: Node) -> None:
+    def draw_node(self, node: FlowNode) -> None:
         node_roi = self.canvas_to_screen_roi(node.node_roi)
         thickness = self.get_node_line_thickness(node)
         rounding = self.node_rounding
@@ -814,13 +814,13 @@ class CanvasGraph(CanvasController):
             if selected_arc.selected and selected_arc.is_bezier_cubic_line_type:
                 self.draw_bezier_cubic_anchors(selected_arc)
 
-    def draw_arc(self, arc: Arc) -> None:
+    def draw_arc(self, arc: FlowArc) -> None:
         color = self.get_arc_color_u32(arc)
         thickness = self.get_arc_thickness(arc)
         polyline = [self.canvas_to_screen_coords(p) for p in arc.polyline]
         self._draw_list.add_polyline(polyline, color, 0, thickness)
 
-    def draw_bezier_cubic_anchors(self, arc: Arc) -> None:
+    def draw_bezier_cubic_anchors(self, arc: FlowArc) -> None:
         assert arc.is_bezier_cubic_line_type
         assert 2 <= len(arc.polyline)
 
@@ -845,7 +845,7 @@ class CanvasGraph(CanvasController):
     # Pin Operations
     # ==================================================================================
 
-    def draw_pin_connect(self, connect: NodePin) -> None:
+    def draw_pin_connect(self, connect: FlowNodePin) -> None:
         node = connect.node
         pin = connect.pin
 

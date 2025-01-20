@@ -15,31 +15,31 @@ from typing import (
 )
 from uuid import uuid4
 
-from cvp.flow.arc import Arc
-from cvp.flow.node import Node
-from cvp.flow.node_pin import NodePin
-from cvp.flow.pin import Pin
+from cvp.flow.arc import FlowArc
+from cvp.flow.node import FlowNode
+from cvp.flow.node_pin import FlowNodePin
+from cvp.flow.pin import FlowPin
 from cvp.types.shapes import Point
 
-SelectableKey: TypeAlias = int
-SelectableAny = Union[Node, Pin, Arc]
-SelectableDict = OrderedDict[SelectableKey, SelectableAny]
+FlowSelectableKey: TypeAlias = int
+FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc]
+FlowSelectableDict = OrderedDict[FlowSelectableKey, FlowSelectableAny]
 
 
-class Selection:
-    _items: SelectableDict
+class FlowSelection:
+    _items: FlowSelectableDict
 
-    def __init__(self, items: Optional[SelectableDict] = None):
-        self._items = items if items else SelectableDict()
+    def __init__(self, items: Optional[FlowSelectableDict] = None):
+        self._items = items if items else FlowSelectableDict()
 
     def __len__(self) -> int:
         return self._items.__len__()
 
-    def __contains__(self, item: Union[SelectableKey, SelectableAny]) -> bool:
-        if not isinstance(item, SelectableKey):
+    def __contains__(self, item: Union[FlowSelectableKey, FlowSelectableAny]) -> bool:
+        if not isinstance(item, FlowSelectableKey):
             item = id(item)
 
-        assert isinstance(item, SelectableKey)
+        assert isinstance(item, FlowSelectableKey)
         return self._items.__contains__(item)
 
     def __bool__(self):
@@ -76,78 +76,78 @@ class Selection:
         return self.__deepcopy__()
 
     @staticmethod
-    def _is_node(item: SelectableAny) -> TypeGuard[Node]:
-        return isinstance(item, Node)
+    def _is_node(item: FlowSelectableAny) -> TypeGuard[FlowNode]:
+        return isinstance(item, FlowNode)
 
     @staticmethod
-    def _is_pin(item: SelectableAny) -> TypeGuard[Pin]:
-        return isinstance(item, Pin)
+    def _is_pin(item: FlowSelectableAny) -> TypeGuard[FlowPin]:
+        return isinstance(item, FlowPin)
 
     @staticmethod
-    def _is_arc(item: SelectableAny) -> TypeGuard[Arc]:
-        return isinstance(item, Arc)
+    def _is_arc(item: FlowSelectableAny) -> TypeGuard[FlowArc]:
+        return isinstance(item, FlowArc)
 
     @property
-    def nodes(self) -> List[Node]:
+    def nodes(self) -> List[FlowNode]:
         return list(filter(self._is_node, self._items.values()))
 
     @property
-    def pins(self) -> List[Pin]:
+    def pins(self) -> List[FlowPin]:
         return list(filter(self._is_pin, self._items.values()))
 
     @property
-    def arcs(self) -> List[Arc]:
+    def arcs(self) -> List[FlowArc]:
         return list(filter(self._is_arc, self._items.values()))
 
     @property
-    def first(self) -> SelectableAny:
+    def first(self) -> FlowSelectableAny:
         return next(iter(self._items.values()))
 
     @property
-    def last(self) -> SelectableAny:
+    def last(self) -> FlowSelectableAny:
         return next(reversed(self._items.values()))
 
     @property
-    def selected_node_only(self) -> Optional[Node]:
+    def selected_node_only(self) -> Optional[FlowNode]:
         if 1 != len(self._items):
             return None
         first = self.first
-        return first if isinstance(first, Node) else None
+        return first if isinstance(first, FlowNode) else None
 
     @property
-    def selected_pin_only(self) -> Optional[Pin]:
+    def selected_pin_only(self) -> Optional[FlowPin]:
         if 1 != len(self._items):
             return None
         first = self.first
-        return first if isinstance(first, Pin) else None
+        return first if isinstance(first, FlowPin) else None
 
     @property
-    def selected_arc_only(self) -> Optional[Arc]:
+    def selected_arc_only(self) -> Optional[FlowArc]:
         if 1 != len(self._items):
             return None
         first = self.first
-        return first if isinstance(first, Arc) else None
+        return first if isinstance(first, FlowArc) else None
 
     def clear(self) -> None:
         self._items.clear()
 
-    def extends(self, items: Iterable[SelectableAny]) -> None:
+    def extends(self, items: Iterable[FlowSelectableAny]) -> None:
         for item in items:
             self._items[id(item)] = item
 
-    def add(self, item: SelectableAny) -> None:
+    def add(self, item: FlowSelectableAny) -> None:
         self._items[id(item)] = item
 
-    def remove(self, item: SelectableAny) -> None:
+    def remove(self, item: FlowSelectableAny) -> None:
         self._items.pop(id(item))
 
-    def remove_noraise(self, item: SelectableAny) -> None:
+    def remove_noraise(self, item: FlowSelectableAny) -> None:
         try:
             self.remove(item)
         except KeyError:
             pass
 
-    def apply(self, item: SelectableAny) -> None:
+    def apply(self, item: FlowSelectableAny) -> None:
         if item.selected:
             self.add(item)
         else:
@@ -159,7 +159,10 @@ class Selection:
         y = min([node.y1 for node in self.nodes])
         return x, y
 
-    def copy_validated_items(self, point: Point) -> Tuple[List[Node], List[Arc]]:
+    def copy_validated_items(
+        self,
+        point: Point,
+    ) -> Tuple[List[FlowNode], List[FlowArc]]:
         nodes = self.nodes
         arcs = self.arcs
         dx, dy = self.group_pos
@@ -201,11 +204,11 @@ class Selection:
             for new_node in new_nodes:
                 if candidate_arc.input is None:
                     if input_pin := new_node.find_input_pin(candidate_arc.uuid):
-                        candidate_arc.input = NodePin(new_node, input_pin)
+                        candidate_arc.input = FlowNodePin(new_node, input_pin)
 
                 if candidate_arc.output is None:
                     if output_pin := new_node.find_output_pin(candidate_arc.uuid):
-                        candidate_arc.output = NodePin(new_node, output_pin)
+                        candidate_arc.output = FlowNodePin(new_node, output_pin)
 
             if candidate_arc.input and candidate_arc.output:
                 new_arcs.append(candidate_arc)

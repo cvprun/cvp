@@ -4,7 +4,7 @@ from typing import Dict, Optional
 from weakref import ReferenceType, ref
 
 from cvp.config.sections.flow import FlowAuiConfig
-from cvp.flow.graph import Graph
+from cvp.flow.graph import FlowGraph
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.logging.logging import flow_logger as logger
 from cvp.widgets.canvas.graph import CanvasGraph
@@ -12,7 +12,7 @@ from cvp.widgets.canvas.graph import CanvasGraph
 
 class Canvases:
     _canvases: Dict[str, CanvasGraph]
-    _ref: Optional[ReferenceType[Graph]]
+    _ref: Optional[ReferenceType[FlowGraph]]
 
     def __init__(self, fonts: FontMapper, config: FlowAuiConfig):
         self._fonts = fonts
@@ -20,7 +20,7 @@ class Canvases:
         self._canvases = dict()
         self._ref = None
 
-    def _create_canvas(self, graph: Graph) -> CanvasGraph:
+    def _create_canvas(self, graph: FlowGraph) -> CanvasGraph:
         canvas = CanvasGraph(graph, self._fonts, self._config)
         self._canvases[graph.uuid] = canvas
         return canvas
@@ -43,7 +43,7 @@ class Canvases:
         return self._create_canvas(graph)
 
     @property
-    def graph(self) -> Optional[Graph]:
+    def graph(self) -> Optional[FlowGraph]:
         if self._ref is None:
             return None
         return self._ref()
@@ -54,7 +54,7 @@ class Canvases:
             return False
         return self._ref() is not None
 
-    def open(self, graph: Graph) -> None:
+    def open(self, graph: FlowGraph) -> None:
         if self._ref is not None:
             prev_graph = self._ref()
             if prev_graph is not None:

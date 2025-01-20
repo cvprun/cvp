@@ -11,7 +11,7 @@ from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
 @dataclass
-class Pin:
+class FlowPin:
     name: str = str()
     docs: str = str()
     dtype: str = str()

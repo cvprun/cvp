@@ -2,14 +2,14 @@
 
 from typing import NamedTuple
 
-from cvp.flow.node import Node
-from cvp.flow.pin import Pin
+from cvp.flow.node import FlowNode
+from cvp.flow.pin import FlowPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
-class NodePin(NamedTuple):
-    node: Node
-    pin: Pin
+class FlowNodePin(NamedTuple):
+    node: FlowNode
+    pin: FlowPin
 
     def __str__(self):
         return f"{self.node.name}{FLOW_PATH_SEPARATOR}{self.pin.name}"

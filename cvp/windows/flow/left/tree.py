@@ -3,8 +3,8 @@
 import imgui
 
 from cvp.context.context import Context
-from cvp.flow.graph import Graph
-from cvp.flow.node import Node
+from cvp.flow.graph import FlowGraph
+from cvp.flow.node import FlowNode
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
@@ -50,7 +50,7 @@ class TreeTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def on_node(self, graph: Graph, node: Node) -> None:
+    def on_node(self, graph: FlowGraph, node: FlowNode) -> None:
         flow_pin_n_icon = self.context.config.flow_aui.pins.flow_n_icon
         flow_pin_y_icon = self.context.config.flow_aui.pins.flow_y_icon
         data_pin_n_icon = self.context.config.flow_aui.pins.data_n_icon

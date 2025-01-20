@@ -8,14 +8,14 @@ from uuid import uuid4
 
 import shapely
 
-from cvp.flow.anchor import Anchor
-from cvp.flow.arc import Arc
-from cvp.flow.connection import Connection
-from cvp.flow.control import Control
-from cvp.flow.node import Node
-from cvp.flow.node_pin import NodePin
-from cvp.flow.pin import Pin
-from cvp.flow.selection import SelectableAny, Selection
+from cvp.flow.anchor import FlowAnchor
+from cvp.flow.arc import FlowArc
+from cvp.flow.connection import FlowConnection
+from cvp.flow.control import FlowControl
+from cvp.flow.node import FlowNode
+from cvp.flow.node_pin import FlowNodePin
+from cvp.flow.pin import FlowPin
+from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.pins.action import Action
 from cvp.pins.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -23,29 +23,29 @@ from cvp.types.shapes import Point, Size
 
 
 @dataclass
-class Graph:
+class FlowGraph:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = str()
     docs: str = str()
     icon: str = str()
     lock: bool = False
     color: RGBA = WHITE_RGBA
-    nodes: List[Node] = field(default_factory=list)
+    nodes: List[FlowNode] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
-    arcs: List[Arc] = field(default_factory=list)
-    control: Control = field(default_factory=Control)
+    arcs: List[FlowArc] = field(default_factory=list)
+    control: FlowControl = field(default_factory=FlowControl)
 
-    _selection: Selection = field(default_factory=Selection)
+    _selection: FlowSelection = field(default_factory=FlowSelection)
 
     @property
     def selection(self):
         return self._selection
 
     @property
-    def selected_arc_only(self) -> Optional[Arc]:
+    def selected_arc_only(self) -> Optional[FlowArc]:
         return self._selection.selected_arc_only
 
-    def restore(self, other: "Graph") -> None:
+    def restore(self, other: "FlowGraph") -> None:
         if self.uuid != other.uuid:
             raise ValueError("The uuid of the graph to be restored does not match")
 
@@ -59,7 +59,7 @@ class Graph:
 
     def paste_selection(
         self,
-        items: Selection,
+        items: FlowSelection,
         point: Point,
         *,
         selected: Optional[bool] = None,
@@ -82,7 +82,7 @@ class Graph:
         self.update_selected_items()
         self.update_arcs_polyline(force=True)
 
-    def update_selected_item(self, item: SelectableAny) -> None:
+    def update_selected_item(self, item: FlowSelectableAny) -> None:
         self._selection.apply(item)
 
     def update_selected_items(self) -> None:
@@ -101,7 +101,7 @@ class Graph:
         for arc in self.arcs:
             self._selection.apply(arc)
 
-    def select_item(self, item: SelectableAny, *, selected=True) -> None:
+    def select_item(self, item: FlowSelectableAny, *, selected=True) -> None:
         item.selected = selected
         if selected:
             self._selection.add(item)
@@ -125,10 +125,10 @@ class Graph:
         self.select_all_nodes()
         self.select_all_arcs()
 
-    def unselect_item(self, item: SelectableAny) -> None:
+    def unselect_item(self, item: FlowSelectableAny) -> None:
         self.select_item(item, selected=False)
 
-    def flip_select_item(self, item: SelectableAny) -> None:
+    def flip_select_item(self, item: FlowSelectableAny) -> None:
         self.select_item(item, selected=not item.selected)
 
     def clear_state(self) -> None:
@@ -144,7 +144,7 @@ class Graph:
             arc.start_anchor.hovering = False
             arc.end_anchor.hovering = False
 
-    def find_hovering_node_with_mouse(self, mouse: Point) -> Optional[Node]:
+    def find_hovering_node_with_mouse(self, mouse: Point) -> Optional[FlowNode]:
         mx, my = mouse
         for node in self.nodes:
             x1, y1, x2, y2 = node.node_roi
@@ -156,13 +156,13 @@ class Graph:
                 return node
         return None
 
-    def find_hovering_node(self) -> Optional[Node]:
+    def find_hovering_node(self) -> Optional[FlowNode]:
         for node in self.nodes:
             if node.hovering:
                 return node
         return None
 
-    def find_hovering_pin(self) -> Optional[NodePin]:
+    def find_hovering_pin(self) -> Optional[FlowNodePin]:
         node = self.find_hovering_node()
         if node is None:
             return None
@@ -174,9 +174,9 @@ class Graph:
         if pin is None:
             return None
 
-        return NodePin(node, pin)
+        return FlowNodePin(node, pin)
 
-    def find_hovering_arc_with_mouse(self, mouse: Point) -> Optional[Arc]:
+    def find_hovering_arc_with_mouse(self, mouse: Point) -> Optional[FlowArc]:
         mp = shapely.Point(mouse)
         for arc in self.arcs:
             distance = shapely.LineString(arc.polyline).distance(mp)
@@ -184,7 +184,7 @@ class Graph:
                 return arc
         return None
 
-    def find_hovering_arc(self) -> Optional[Arc]:
+    def find_hovering_arc(self) -> Optional[FlowArc]:
         for arc in self.arcs:
             if arc.hovering:
                 return arc
@@ -192,9 +192,9 @@ class Graph:
 
     def find_hovering_anchor_with_mouse(
         self,
-        arc: Arc,
+        arc: FlowArc,
         mouse: Point,
-    ) -> Optional[Anchor]:
+    ) -> Optional[FlowAnchor]:
         mx, my = mouse
 
         start, end = arc.get_bezier_cubic_anchors()
@@ -213,7 +213,7 @@ class Graph:
             return arc.end_anchor
         return None
 
-    def find_hovering_anchor(self) -> Optional[Anchor]:
+    def find_hovering_anchor(self) -> Optional[FlowAnchor]:
         if selected_arc := self.selected_arc_only:
             if selected_arc.start_anchor.hovering:
                 return selected_arc.start_anchor
@@ -221,7 +221,7 @@ class Graph:
                 return selected_arc.end_anchor
         return None
 
-    def find_hovering_item(self) -> Optional[Union[Node, Pin, Arc]]:
+    def find_hovering_item(self) -> Optional[Union[FlowNode, FlowPin, FlowArc]]:
         if node := self.find_hovering_node():
             assert node.hovering
 
@@ -237,13 +237,13 @@ class Graph:
 
         return None
 
-    def find_arc(self, arc_uuid: str) -> Optional[Arc]:
+    def find_arc(self, arc_uuid: str) -> Optional[FlowArc]:
         for arc in self.arcs:
             if arc.uuid == arc_uuid:
                 return arc
         return None
 
-    def pop_arcs(self, uuids: Union[Set[str], Sequence[str]]) -> List[Arc]:
+    def pop_arcs(self, uuids: Union[Set[str], Sequence[str]]) -> List[FlowArc]:
         if not isinstance(uuids, set):
             uuids = set(uuids)
         remain_arcs = list()
@@ -257,20 +257,20 @@ class Graph:
         self.arcs.extend(remain_arcs)
         return pop_arcs
 
-    def find_selected_arcs(self) -> List[Arc]:
+    def find_selected_arcs(self) -> List[FlowArc]:
         result = list()
         for arc in self.arcs:
             if arc.selected:
                 result.append(arc)
         return result
 
-    def find_selected_pins(self) -> List[Pin]:
+    def find_selected_pins(self) -> List[FlowPin]:
         result = list()
         for node in self.nodes:
             result.extend(node.find_selected_pins())
         return result
 
-    def find_selected_nodes(self) -> List[Node]:
+    def find_selected_nodes(self) -> List[FlowNode]:
         result = list()
         for node in self.nodes:
             if node.selected:
@@ -291,7 +291,7 @@ class Graph:
 
         self._selection.clear()
 
-    def flip_selected_on_hovering_item(self) -> Optional[Union[Node, Pin, Arc]]:
+    def flip_selected_on_hovering_item(self) -> Optional[FlowSelectableAny]:
         if node := self.find_hovering_node():
             assert node.hovering
 
@@ -313,7 +313,7 @@ class Graph:
 
         return None
 
-    def move_node(self, node: Node, pos: Point) -> None:
+    def move_node(self, node: FlowNode, pos: Point) -> None:
         node.node_pos = pos
         for pin in node.pins:
             for arc_uuid in pin.arcs:
@@ -356,34 +356,37 @@ class Graph:
         for arc in self.arcs:
             self.update_arc_io(arc, force=force)
 
-    def update_arc_io(self, arc: Arc, *, force=False) -> None:
+    def update_arc_io(self, arc: FlowArc, *, force=False) -> None:
         self.update_arc_output(arc, force=force)
         self.update_arc_input(arc, force=force)
 
-    def update_arc_output(self, arc: Arc, *, force=False) -> None:
+    def update_arc_output(self, arc: FlowArc, *, force=False) -> None:
         if not force and arc.output is not None:
             return
 
         for node in self.nodes:
             if pin := node.find_output_pin(arc.uuid):
-                arc.output = NodePin(node, pin)
+                arc.output = FlowNodePin(node, pin)
                 return
 
         raise IndexError("Could not find the output pin of the arc")
 
-    def update_arc_input(self, arc: Arc, *, force=False) -> None:
+    def update_arc_input(self, arc: FlowArc, *, force=False) -> None:
         if not force and arc.input is not None:
             return
 
         for node in self.nodes:
             if pin := node.find_input_pin(arc.uuid):
-                arc.input = NodePin(node, pin)
+                arc.input = FlowNodePin(node, pin)
                 return
 
         raise IndexError("Could not find the input pin of the arc")
 
     @staticmethod
-    def reorder_connectable_pins(left: NodePin, right: NodePin) -> Connection:
+    def reorder_connectable_pins(
+        left: FlowNodePin,
+        right: FlowNodePin,
+    ) -> FlowConnection:
         if left.node == right.node:
             raise ValueError("Identical nodes cannot be connected")
         if left.pin.stream == right.pin.stream:
@@ -415,12 +418,12 @@ class Graph:
         if action == Action.data and in_pin.arcs:
             raise ValueError("There cannot be multiple input data pins")
 
-        return Connection(out_conn, in_conn)
+        return FlowConnection(out_conn, in_conn)
 
     @staticmethod
-    def is_connectable_pins(left: NodePin, right: NodePin) -> bool:
+    def is_connectable_pins(left: FlowNodePin, right: FlowNodePin) -> bool:
         try:
-            Graph.reorder_connectable_pins(left, right)
+            FlowGraph.reorder_connectable_pins(left, right)
         except ValueError:
             return False
         else:
@@ -430,7 +433,7 @@ class Graph:
         for arc in self.arcs:
             self.update_arc_polyline(arc, force=force)
 
-    def update_arc_polyline(self, arc: Arc, *, force=False) -> None:
+    def update_arc_polyline(self, arc: FlowArc, *, force=False) -> None:
         if not force and arc.polyline:
             return
 
@@ -446,15 +449,15 @@ class Graph:
 
     def connect_pins(
         self,
-        out_conn: NodePin,
-        in_conn: NodePin,
+        out_conn: FlowNodePin,
+        in_conn: FlowNodePin,
         *,
         no_reorder=False,
-    ) -> Arc:
+    ) -> FlowArc:
         if not no_reorder:
             out_conn, in_conn = self.reorder_connectable_pins(out_conn, in_conn)
 
-        arc = Arc.from_connect_pair(
+        arc = FlowArc.from_connect_pair(
             out_conn,
             in_conn,
             self.control.bezier_curve_tessellation_tolerance,
@@ -480,7 +483,7 @@ class Graph:
             if anchor := self.find_hovering_anchor_with_mouse(selected_arc_only, mouse):
                 anchor.hovering = True
 
-    def remove_arc(self, arc: Arc) -> None:
+    def remove_arc(self, arc: FlowArc) -> None:
         if arc.input:
             arc.input.pin.arcs.remove(arc.uuid)
         if arc.output:
@@ -492,7 +495,7 @@ class Graph:
         for arc in self.find_selected_arcs():
             self.remove_arc(arc)
 
-    def remove_node(self, node: Node):
+    def remove_node(self, node: FlowNode):
         for pin in node.pins:
             for arc_uuid in pin.arcs:
                 if arc := self.find_arc(arc_uuid):
@@ -509,102 +512,102 @@ class Graph:
         self.remove_selected_nodes()
         self.remove_selected_arcs()
 
-    def items_to_front(self, items: Sequence[SelectableAny]) -> None:
+    def items_to_front(self, items: Sequence[FlowSelectableAny]) -> None:
         for item in items:
             self.item_to_front(item)
 
-    def item_to_front(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
+    def item_to_front(self, item: FlowSelectableAny) -> None:
+        if isinstance(item, FlowNode):
             self.node_to_front(item)
-        elif isinstance(item, Arc):
+        elif isinstance(item, FlowArc):
             self.arc_to_front(item)
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    def node_to_front(self, node: Node) -> None:
+    def node_to_front(self, node: FlowNode) -> None:
         index = self.nodes.index(node)
         if 0 <= index - 1:
             assert node == self.nodes.pop(index)
             self.nodes.insert(index - 1, node)
 
-    def arc_to_front(self, arc: Arc) -> None:
+    def arc_to_front(self, arc: FlowArc) -> None:
         index = self.arcs.index(arc)
         if 0 <= index - 1:
             assert arc == self.arcs.pop(index)
             self.arcs.insert(index - 1, arc)
 
-    def items_to_back(self, items: Sequence[SelectableAny]) -> None:
+    def items_to_back(self, items: Sequence[FlowSelectableAny]) -> None:
         for item in items:
             self.item_to_back(item)
 
-    def item_to_back(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
+    def item_to_back(self, item: FlowSelectableAny) -> None:
+        if isinstance(item, FlowNode):
             self.node_to_back(item)
-        elif isinstance(item, Arc):
+        elif isinstance(item, FlowArc):
             self.arc_to_back(item)
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    def node_to_back(self, node: Node) -> None:
+    def node_to_back(self, node: FlowNode) -> None:
         index = self.nodes.index(node)
         if index + 1 < len(self.nodes):
             assert node == self.nodes.pop(index)
             self.nodes.insert(index + 1, node)
 
-    def arc_to_back(self, arc: Arc) -> None:
+    def arc_to_back(self, arc: FlowArc) -> None:
         index = self.arcs.index(arc)
         if index + 1 < len(self.arcs):
             assert arc == self.arcs.pop(index)
             self.arcs.insert(index + 1, arc)
 
-    def item_bring_forward(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
+    def item_bring_forward(self, item: FlowSelectableAny) -> None:
+        if isinstance(item, FlowNode):
             self.node_bring_forward(item)
-        elif isinstance(item, Arc):
+        elif isinstance(item, FlowArc):
             self.arc_bring_forward(item)
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    def node_bring_forward(self, node: Node) -> None:
+    def node_bring_forward(self, node: FlowNode) -> None:
         index = self.nodes.index(node)
         if 0 != index:
             assert node == self.nodes.pop(index)
             self.nodes.insert(0, node)
 
-    def arc_bring_forward(self, arc: Arc) -> None:
+    def arc_bring_forward(self, arc: FlowArc) -> None:
         index = self.arcs.index(arc)
         if 0 != index:
             assert arc == self.arcs.pop(index)
             self.arcs.insert(0, arc)
 
-    def item_send_backward(self, item: SelectableAny) -> None:
-        if isinstance(item, Node):
+    def item_send_backward(self, item: FlowSelectableAny) -> None:
+        if isinstance(item, FlowNode):
             self.node_send_backward(item)
-        elif isinstance(item, Arc):
+        elif isinstance(item, FlowArc):
             self.arc_send_backward(item)
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
-    def node_send_backward(self, node: Node) -> None:
+    def node_send_backward(self, node: FlowNode) -> None:
         index = self.nodes.index(node)
         if index < len(self.arcs) - 1:
             assert node == self.nodes.pop(index)
             self.nodes.append(node)
 
-    def arc_send_backward(self, arc: Arc) -> None:
+    def arc_send_backward(self, arc: FlowArc) -> None:
         index = self.arcs.index(arc)
         if index < len(self.arcs) - 1:
             assert arc == self.arcs.pop(index)
             self.arcs.append(arc)
 
-    def nodes_align_left(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_left(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             px, py = pivot.node_pos
             next_pox = px, ny
             self.move_node(node, next_pox)
 
-    def nodes_align_center(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_center(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -613,7 +616,7 @@ class Graph:
             next_pos = px + (pw / 2) - (nw / 2), ny
             self.move_node(node, next_pos)
 
-    def nodes_align_right(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_right(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -622,14 +625,14 @@ class Graph:
             next_pos = px + pw - nw, ny
             self.move_node(node, next_pos)
 
-    def nodes_align_top(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_top(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             px, py = pivot.node_pos
             next_pox = nx, py
             self.move_node(node, next_pox)
 
-    def nodes_align_middle(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_middle(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -638,7 +641,7 @@ class Graph:
             next_pos = nx, py + (ph / 2) - (nh / 2)
             self.move_node(node, next_pos)
 
-    def nodes_align_bottom(self, nodes: Sequence[Node], pivot: Node) -> None:
+    def nodes_align_bottom(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -647,7 +650,7 @@ class Graph:
             next_pos = nx, py + ph - nh
             self.move_node(node, next_pos)
 
-    def nodes_distribute_horizontal(self, nodes: Sequence[Node]) -> None:
+    def nodes_distribute_horizontal(self, nodes: Sequence[FlowNode]) -> None:
         nx1s = [n.x1 for n in nodes]
         nx2s = [n.x2 for n in nodes]
         nws = [n.width for n in nodes]
@@ -664,7 +667,7 @@ class Graph:
             self.move_node(node, next_pos)
             cursor += node.width + space
 
-    def nodes_distribute_vertical(self, nodes: Sequence[Node]) -> None:
+    def nodes_distribute_vertical(self, nodes: Sequence[FlowNode]) -> None:
         ny1s = [n.y1 for n in nodes]
         ny2s = [n.y2 for n in nodes]
         nhs = [n.height for n in nodes]

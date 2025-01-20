@@ -4,25 +4,25 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 from uuid import uuid4
 
-from cvp.flow.anchor import Anchor
-from cvp.flow.line_type import LineType
-from cvp.flow.node_pin import NodePin
+from cvp.flow.anchor import FlowAnchor
+from cvp.flow.line_type import FlowLineType
+from cvp.flow.node_pin import FlowNodePin
 from cvp.maths.bezier.casteljau.cubic import bezier_cubic_casteljau_points
 from cvp.types.shapes import Point, Rect
 
 
 @dataclass
-class Arc:
+class FlowArc:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = str()
     docs: str = str()
 
-    line_type: LineType = LineType.bezier_cubic
-    start_anchor: Anchor = field(default_factory=Anchor)
-    end_anchor: Anchor = field(default_factory=Anchor)
+    line_type: FlowLineType = FlowLineType.bezier_cubic
+    start_anchor: FlowAnchor = field(default_factory=FlowAnchor)
+    end_anchor: FlowAnchor = field(default_factory=FlowAnchor)
 
-    _output: Optional[NodePin] = None
-    _input: Optional[NodePin] = None
+    _output: Optional[FlowNodePin] = None
+    _input: Optional[FlowNodePin] = None
 
     _selected: bool = False
     _hovering: bool = False
@@ -32,8 +32,8 @@ class Arc:
     @classmethod
     def from_connect_pair(
         cls,
-        output_np: NodePin,
-        input_np: NodePin,
+        output_np: FlowNodePin,
+        input_np: FlowNodePin,
         tess_tol: float,
     ):
         result = cls()
@@ -51,18 +51,18 @@ class Arc:
 
     @property
     def is_linear_line_type(self) -> bool:
-        return self.line_type == LineType.linear
+        return self.line_type == FlowLineType.linear
 
     @property
     def is_bezier_cubic_line_type(self) -> bool:
-        return self.line_type == LineType.bezier_cubic
+        return self.line_type == FlowLineType.bezier_cubic
 
     @property
     def output(self):
         return self._output
 
     @output.setter
-    def output(self, value: Optional[NodePin]) -> None:
+    def output(self, value: Optional[FlowNodePin]) -> None:
         self._output = value
 
     @property
@@ -70,7 +70,7 @@ class Arc:
         return self._input
 
     @input.setter
-    def input(self, value: Optional[NodePin]) -> None:
+    def input(self, value: Optional[FlowNodePin]) -> None:
         self._input = value
 
     @property
@@ -128,9 +128,9 @@ class Arc:
 
     def calc_polyline(self, tess_tol: float) -> List[Point]:
         match self.line_type:
-            case LineType.linear:
+            case FlowLineType.linear:
                 return self.calc_linear_polyline()
-            case LineType.bezier_cubic:
+            case FlowLineType.bezier_cubic:
                 return self.calc_bezier_cubic_polyline(tess_tol)
             case _:
                 assert False, "Inaccessible section"

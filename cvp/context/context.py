@@ -7,7 +7,7 @@ from typing import Optional, ParamSpec, TypeVar, Union
 
 from cvp.config.config import Config
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
-from cvp.flow.graph import Graph
+from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
 from cvp.logging.logging import (
     convert_level_number,
@@ -169,7 +169,7 @@ class Context:
         self._config.write_yaml(self._home.cvp_yml)
         logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
 
-    def save_graph(self, graph: Graph) -> None:
+    def save_graph(self, graph: FlowGraph) -> None:
         filepath = self._home.flows.graph_filepath(graph.uuid)
         self._flow_manager.write_graph_yaml(filepath, graph)
         logger.info(f"Save the graph file: '{str(filepath)}'")

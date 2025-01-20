@@ -7,9 +7,9 @@ from typing import Optional, Union
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
-from cvp.flow.graph import Graph
-from cvp.flow.node import Node
-from cvp.flow.selection import Selection
+from cvp.flow.graph import FlowGraph
+from cvp.flow.node import FlowNode
+from cvp.flow.selection import FlowSelection
 from cvp.nodes.registry.globals import global_registry
 from cvp.nodes.registry.registry import FlowRegistry
 from cvp.resources.home import HomeDir
@@ -18,8 +18,8 @@ from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
 
 
-class FlowManager(OrderedDict[str, Graph]):
-    _clipboard_items: Optional[Selection]
+class FlowManager(OrderedDict[str, FlowGraph]):
+    _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False, no_globals=False):
@@ -53,7 +53,7 @@ class FlowManager(OrderedDict[str, Graph]):
         return self._clipboard_items
 
     @clipboard_items.setter
-    def clipboard_items(self, value: Selection) -> None:
+    def clipboard_items(self, value: FlowSelection) -> None:
         self._clipboard_items = value
 
     @property
@@ -78,10 +78,10 @@ class FlowManager(OrderedDict[str, Graph]):
         *,
         template: Optional[str] = None,
         append=False,
-    ) -> Graph:
+    ) -> FlowGraph:
         template = template if template else str()
         assert isinstance(template, str)
-        graph = Graph(name=name)
+        graph = FlowGraph(name=name)
         assert is_uuid4(graph.uuid)
 
         if append:
@@ -91,32 +91,32 @@ class FlowManager(OrderedDict[str, Graph]):
 
         return graph
 
-    def remove_graph(self, uuid: str) -> Graph:
+    def remove_graph(self, uuid: str) -> FlowGraph:
         if uuid in self:
             raise KeyError(f"Not exists flow graph: '{uuid}'")
         return self.pop(uuid)
 
     @staticmethod
-    def dumps_graph_yaml(graph: Graph, encoding="utf-8") -> bytes:
+    def dumps_graph_yaml(graph: FlowGraph, encoding="utf-8") -> bytes:
         return dump(serialize(graph), Dumper=IndentListDumper).encode(encoding)
 
     @staticmethod
-    def loads_graph_yaml(data: bytes) -> Graph:
-        result = deserialize(full_load(data), Graph)
-        assert isinstance(result, Graph)
+    def loads_graph_yaml(data: bytes) -> FlowGraph:
+        result = deserialize(full_load(data), FlowGraph)
+        assert isinstance(result, FlowGraph)
         return result
 
     @staticmethod
     def write_graph_yaml(
         filepath: Union[str, PathLike[str]],
-        graph: Graph,
+        graph: FlowGraph,
         encoding="utf-8",
     ) -> None:
         with open(filepath, "wb") as f:
             f.write(FlowManager.dumps_graph_yaml(graph, encoding=encoding))
 
     @staticmethod
-    def read_graph_yaml(filepath: Union[str, PathLike[str]]) -> Graph:
+    def read_graph_yaml(filepath: Union[str, PathLike[str]]) -> FlowGraph:
         with open(filepath, "rb") as f:
             return FlowManager.loads_graph_yaml(f.read())
 
@@ -129,8 +129,8 @@ class FlowManager(OrderedDict[str, Graph]):
     def get_node_template(self, path: str):
         return self.nodes[path]
 
-    def add_node(self, graph: Graph, path: str) -> Node:
+    def add_node(self, graph: FlowGraph, path: str) -> FlowNode:
         node_template = self.get_node_template(path)
-        node = Node.from_template(node_template)
+        node = FlowNode.from_template(node_template)
         graph.nodes.insert(0, node)
         return node

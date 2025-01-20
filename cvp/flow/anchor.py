@@ -6,7 +6,7 @@ from cvp.types.shapes import Point
 
 
 @dataclass
-class Anchor:
+class FlowAnchor:
     x: float = 0.0
     y: float = 0.0
 

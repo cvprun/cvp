@@ -6,17 +6,17 @@ import imgui
 
 from cvp.config.sections.canvas.axis import Axis
 from cvp.context.context import Context
-from cvp.flow.arc import Arc
-from cvp.flow.graph import Graph
+from cvp.flow.arc import FlowArc
+from cvp.flow.graph import FlowGraph
 from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
     LINE_TYPE_NAME2INDEX,
     LINE_TYPE_NAMES,
-    LineType,
+    FlowLineType,
 )
-from cvp.flow.node import Node
-from cvp.flow.pin import Pin
-from cvp.flow.selection import Selection
+from cvp.flow.node import FlowNode
+from cvp.flow.pin import FlowPin
+from cvp.flow.selection import FlowSelection
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -94,7 +94,7 @@ class PropsTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def on_graph_cursor(self, graph: Graph) -> None:
+    def on_graph_cursor(self, graph: FlowGraph) -> None:
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.uuid)
 
@@ -104,7 +104,7 @@ class PropsTab(TabItem[Canvases]):
         self.input_icon("Icon", graph.icon)
 
     @staticmethod
-    def tree_node_debugging(label: str, node: Node) -> None:
+    def tree_node_debugging(label: str, node: FlowNode) -> None:
         if imgui.tree_node(label):
             try:
                 message = node.as_unformatted_text()
@@ -112,7 +112,7 @@ class PropsTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def on_node_item(self, node: Node) -> None:
+    def on_node_item(self, node: FlowNode) -> None:
         input_text_disabled("Type", type(node).__name__)
         input_text_disabled("UUID", node.uuid)
 
@@ -133,7 +133,7 @@ class PropsTab(TabItem[Canvases]):
         # data_outputs: List[Pin] = field(default_factory=list)
 
     @staticmethod
-    def tree_pin_debugging(label: str, pin: Pin) -> None:
+    def tree_pin_debugging(label: str, pin: FlowPin) -> None:
         if imgui.tree_node(label):
             try:
                 message = pin.as_unformatted_text()
@@ -141,7 +141,7 @@ class PropsTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def on_pin_item(self, pin: Pin) -> None:
+    def on_pin_item(self, pin: FlowPin) -> None:
         input_text_disabled("Type", type(pin).__name__)
         input_text_disabled("Name", pin.name)
         input_text_disabled("Docs", pin.docs)
@@ -165,7 +165,7 @@ class PropsTab(TabItem[Canvases]):
         if self.context.debug:
             self.tree_pin_debugging("Debugging", pin)
 
-    def on_arc_item(self, graph: Graph, arc: Arc) -> None:
+    def on_arc_item(self, graph: FlowGraph, arc: FlowArc) -> None:
         input_text_disabled("Type", type(arc).__name__)
         input_text_disabled("UUID", arc.uuid)
 
@@ -175,7 +175,7 @@ class PropsTab(TabItem[Canvases]):
         line_index = LINE_TYPE_NAME2INDEX[str(arc.line_type)]
         if line_result := combo("Line Type", line_index, LINE_TYPE_NAMES):
             line_name = LINE_TYPE_INDEX2NAME[line_result.value]
-            arc.line_type = LineType(line_name)
+            arc.line_type = FlowLineType(line_name)
             graph.update_arc_polyline(arc, force=True)
 
         sax, say = arc.start_anchor.point
@@ -202,7 +202,7 @@ class PropsTab(TabItem[Canvases]):
                 finally:
                     imgui.tree_pop()
 
-    def on_multiple_items(self, graph: Graph, items: Selection) -> None:
+    def on_multiple_items(self, graph: FlowGraph, items: FlowSelection) -> None:
         input_text_disabled("Type", "Multiple")
 
         for key, item in items.items():
@@ -211,11 +211,11 @@ class PropsTab(TabItem[Canvases]):
             label = f"{title}###{key}"
             if imgui.tree_node(label):
                 try:
-                    if isinstance(item, Node):
+                    if isinstance(item, FlowNode):
                         self.on_node_item(item)
-                    elif isinstance(item, Pin):
+                    elif isinstance(item, FlowPin):
                         self.on_pin_item(item)
-                    elif isinstance(item, Arc):
+                    elif isinstance(item, FlowArc):
                         self.on_arc_item(graph, item)
                     else:
                         assert False, "Inaccessible section"

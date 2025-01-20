@@ -5,14 +5,14 @@ from dataclasses import dataclass, field
 from typing import Any, List, Optional
 from uuid import uuid4
 
-from cvp.flow.pin import Pin
+from cvp.flow.pin import FlowPin
 from cvp.nodes.node import NodeTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
 @dataclass
-class Node:
+class FlowNode:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
     path: str = field(default_factory=str)
@@ -20,10 +20,10 @@ class Node:
     icon: str = field(default_factory=str)
     lock: bool = False
     color: RGBA = WHITE_RGBA
-    flow_inputs: List[Pin] = field(default_factory=list)
-    flow_outputs: List[Pin] = field(default_factory=list)
-    data_inputs: List[Pin] = field(default_factory=list)
-    data_outputs: List[Pin] = field(default_factory=list)
+    flow_inputs: List[FlowPin] = field(default_factory=list)
+    flow_outputs: List[FlowPin] = field(default_factory=list)
+    data_inputs: List[FlowPin] = field(default_factory=list)
+    data_outputs: List[FlowPin] = field(default_factory=list)
     tags: List[str] = field(default_factory=list)
 
     head_height: float = 0.0
@@ -54,10 +54,10 @@ class Node:
             docs=template.docs,
             icon=template.icon,
             color=template.color,
-            flow_inputs=list(Pin.from_template(p) for p in template.flow_inputs),
-            flow_outputs=list(Pin.from_template(p) for p in template.flow_outputs),
-            data_inputs=list(Pin.from_template(p) for p in template.data_inputs),
-            data_outputs=list(Pin.from_template(p) for p in template.data_outputs),
+            flow_inputs=list(FlowPin.from_template(p) for p in template.flow_inputs),
+            flow_outputs=list(FlowPin.from_template(p) for p in template.flow_outputs),
+            data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
+            data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
             _template=template,
         )
@@ -119,23 +119,23 @@ class Node:
         return self.y1 + self.height
 
     @property
-    def flow_pins(self) -> List[Pin]:
+    def flow_pins(self) -> List[FlowPin]:
         return self.flow_inputs + self.flow_outputs
 
     @property
-    def data_pins(self) -> List[Pin]:
+    def data_pins(self) -> List[FlowPin]:
         return self.data_inputs + self.data_outputs
 
     @property
-    def input_pins(self) -> List[Pin]:
+    def input_pins(self) -> List[FlowPin]:
         return self.flow_inputs + self.data_inputs
 
     @property
-    def output_pins(self) -> List[Pin]:
+    def output_pins(self) -> List[FlowPin]:
         return self.flow_outputs + self.data_outputs
 
     @property
-    def pins(self) -> List[Pin]:
+    def pins(self) -> List[FlowPin]:
         return self.flow_pins + self.data_pins
 
     @property
@@ -211,7 +211,7 @@ class Node:
             f"Hovering: {self._hovering}\n"
         )
 
-    def find_hovering_pin_with_mouse(self, mouse: Point) -> Optional[Pin]:
+    def find_hovering_pin_with_mouse(self, mouse: Point) -> Optional[FlowPin]:
         mx, my = mouse
         for pin in self.pins:
             icon_x1 = self.node_pos[0] + pin.icon_pos[0]
@@ -230,26 +230,26 @@ class Node:
                 return pin
         return None
 
-    def find_hovering_pin(self) -> Optional[Pin]:
+    def find_hovering_pin(self) -> Optional[FlowPin]:
         for pin in self.pins:
             if pin.hovering:
                 return pin
         return None
 
-    def find_selected_pins(self) -> List[Pin]:
+    def find_selected_pins(self) -> List[FlowPin]:
         result = list()
         for pin in self.pins:
             if pin.selected:
                 result.append(pin)
         return result
 
-    def find_output_pin(self, arc_uuid: str) -> Optional[Pin]:
+    def find_output_pin(self, arc_uuid: str) -> Optional[FlowPin]:
         for pin in self.output_pins:
             if arc_uuid in pin.arcs:
                 return pin
         return None
 
-    def find_input_pin(self, arc_uuid: str) -> Optional[Pin]:
+    def find_input_pin(self, arc_uuid: str) -> Optional[FlowPin]:
         for pin in self.input_pins:
             if arc_uuid in pin.arcs:
                 return pin
