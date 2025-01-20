@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from inspect import Parameter
 from typing import Any, Optional, Sequence
 
 from cvp.pins.action import Action
-from cvp.pins.pin import PinTemplate
+from cvp.pins.markers import NoDefault
+from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 
 
-class DataInputPinTemplate(PinTemplate):
+class DataInputPin(Pin):
     def __init__(
         self,
         name: str,
@@ -16,7 +16,7 @@ class DataInputPinTemplate(PinTemplate):
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
-        default: Any = Parameter.empty,
+        default: Any = NoDefault,
     ):
         super().__init__(
             name=name,
@@ -30,7 +30,7 @@ class DataInputPinTemplate(PinTemplate):
         )
 
 
-class DataOutputPinTemplate(PinTemplate):
+class DataOutputPin(Pin):
     def __init__(
         self,
         name: str,
@@ -38,7 +38,7 @@ class DataOutputPinTemplate(PinTemplate):
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
-        default: Any = Parameter.empty,
+        default: Any = NoDefault,
     ):
         super().__init__(
             name=name,

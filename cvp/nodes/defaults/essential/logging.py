@@ -9,8 +9,8 @@ from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import NodeTemplate
 from cvp.nodes.record import FlowRecord
-from cvp.pins.datas import DataInputPinTemplate
-from cvp.pins.pin import PinTemplate
+from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import Pin
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
@@ -20,19 +20,19 @@ class LoggingNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._prev = PrevPinTemplate()
         self._next = NextPinTemplate()
-        self._name = DataInputPinTemplate(
+        self._name = DataInputPin(
             name="name",
             dtype=dtype_registry.get(str).path,
             docs="Logger's name",
             default=CVP_FLOW_LOGGER_NAME,
         )
-        self._level = DataInputPinTemplate(
+        self._level = DataInputPin(
             name="level",
             dtype=dtype_registry.get(int).path,
             docs="The threshold of this logger",
             default=DEBUG,
         )
-        self._msg = DataInputPinTemplate(
+        self._msg = DataInputPin(
             name="msg",
             dtype=dtype_registry.get(str).path,
             docs="The message format string",
@@ -51,7 +51,7 @@ class LoggingNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
+    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
         assert pin == self._prev
 
         try:

@@ -7,7 +7,7 @@ from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
 
 
-class PinTemplate:
+class Pin:
     def __init__(
         self,
         name: str,

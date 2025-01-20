@@ -2,12 +2,12 @@
 
 from typing import Any, Optional, Sequence
 
-from cvp.pins.datas import DataOutputPinTemplate
-from cvp.pins.flows import FlowInputPinTemplate, FlowOutputPinTemplate
+from cvp.pins.datas import DataOutputPin
+from cvp.pins.flows import FlowInputPin, FlowOutputPin
 from cvp.pins.markers import NoDefault
 
 
-class EntrypointPinTemplate(FlowInputPinTemplate):
+class EntrypointPinTemplate(FlowInputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="entrypoint",
@@ -16,7 +16,7 @@ class EntrypointPinTemplate(FlowInputPinTemplate):
         )
 
 
-class PrevPinTemplate(FlowInputPinTemplate):
+class PrevPinTemplate(FlowInputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="prev",
@@ -25,7 +25,7 @@ class PrevPinTemplate(FlowInputPinTemplate):
         )
 
 
-class NextPinTemplate(FlowOutputPinTemplate):
+class NextPinTemplate(FlowOutputPin):
     def __init__(self, arcs: Optional[Sequence[str]] = None):
         super().__init__(
             name="next",
@@ -34,7 +34,7 @@ class NextPinTemplate(FlowOutputPinTemplate):
         )
 
 
-class ReturnPinTemplate(DataOutputPinTemplate):
+class ReturnPinTemplate(DataOutputPin):
     def __init__(
         self,
         dtype: Optional[str] = None,

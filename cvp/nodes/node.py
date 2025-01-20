@@ -5,7 +5,7 @@ from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.nodes.record import FlowRecord
-from cvp.pins.pin import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
@@ -13,7 +13,7 @@ from cvp.types.override import override
 
 class NodeTemplateInterface(ABC):
     @abstractmethod
-    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
+    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
         raise NotImplementedError
 
 
@@ -26,7 +26,7 @@ class NodeTemplate(NodeTemplateInterface):
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        pins: Optional[Sequence[PinTemplate]] = None,
+        pins: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
     ):
         self.name = name
@@ -39,19 +39,19 @@ class NodeTemplate(NodeTemplateInterface):
         self.tags = list(tags if tags else [])
 
     @property
-    def flow_inputs(self) -> List[PinTemplate]:
+    def flow_inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_flow_inputs, self.pins))
 
     @property
-    def flow_outputs(self) -> List[PinTemplate]:
+    def flow_outputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_flow_outputs, self.pins))
 
     @property
-    def data_inputs(self) -> List[PinTemplate]:
+    def data_inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_data_inputs, self.pins))
 
     @property
-    def data_outputs(self) -> List[PinTemplate]:
+    def data_outputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_data_outputs, self.pins))
 
     @property
@@ -82,7 +82,7 @@ class NodeTemplate(NodeTemplateInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
+    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
         try:
             context.set_result(self.__call__(*context.args, **context.kwargs))
         except:  # noqa

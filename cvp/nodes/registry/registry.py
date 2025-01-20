@@ -9,7 +9,7 @@ from cvp.nodes.defaults import get_default_nodes
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.node import NodeTemplate
 from cvp.pins.action import Action
-from cvp.pins.pin import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
 from cvp.pins.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -99,7 +99,7 @@ class FlowRegistry:
         self.add_dtype(dtype)
         return dtype.path
 
-    def create_parameter_pin(self, parameter: Parameter) -> PinTemplate:
+    def create_parameter_pin(self, parameter: Parameter) -> Pin:
         dtype_path = self.dtype_path(parameter.annotation)
 
         match parameter.kind:
@@ -116,7 +116,7 @@ class FlowRegistry:
             case _:
                 raise ValueError(f"Unexpected parameter kind: {parameter.kind}")
 
-        return PinTemplate(
+        return Pin(
             name=parameter.name,
             dtype=dtype_path,
             docs=str(),
@@ -128,7 +128,7 @@ class FlowRegistry:
     def create_parameter_pins(
         self,
         parameters: Sequence[Parameter],
-    ) -> List[PinTemplate]:
+    ) -> List[Pin]:
         return list(self.create_parameter_pin(param) for param in parameters)
 
     def create_return_annotation_pin(self, return_annotation):
@@ -145,10 +145,10 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[PinTemplate]] = None,
-        flow_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        flow_inputs: Optional[Sequence[Pin]] = None,
+        flow_outputs: Optional[Sequence[Pin]] = None,
+        data_inputs: Optional[Sequence[Pin]] = None,
+        data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
     ) -> NodeTemplate:
         if not callable(func):
@@ -238,10 +238,10 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[PinTemplate]] = None,
-        flow_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        flow_inputs: Optional[Sequence[Pin]] = None,
+        flow_outputs: Optional[Sequence[Pin]] = None,
+        data_inputs: Optional[Sequence[Pin]] = None,
+        data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
     ):
         node = self.create_node(
@@ -280,10 +280,10 @@ class FlowRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[PinTemplate]] = None,
-        flow_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
+        flow_inputs: Optional[Sequence[Pin]] = None,
+        flow_outputs: Optional[Sequence[Pin]] = None,
+        data_inputs: Optional[Sequence[Pin]] = None,
+        data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
     ):
         def _decorator(func: Callable):

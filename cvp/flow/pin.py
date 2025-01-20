@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from cvp.pins.action import Action
-from cvp.pins.pin import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
@@ -30,10 +30,10 @@ class FlowPin:
     _hovering: bool = False
     _connectable: bool = False
 
-    _template: Optional[PinTemplate] = None
+    _template: Optional[Pin] = None
 
     @classmethod
-    def from_template(cls, template: PinTemplate):
+    def from_template(cls, template: Pin):
         return cls(
             name=template.name,
             docs=template.docs,

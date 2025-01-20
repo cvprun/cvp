@@ -5,7 +5,7 @@ from typing import Optional, Sequence
 
 from cvp.nodes.registry.registry import FlowRegistry
 from cvp.patterns.singleton import singleton
-from cvp.pins.pin import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
 
 
@@ -41,10 +41,10 @@ def register_node(
     docs: Optional[str] = None,
     icon: Optional[str] = None,
     color: Optional[RGBA] = None,
-    flow_inputs: Optional[Sequence[PinTemplate]] = None,
-    flow_outputs: Optional[Sequence[PinTemplate]] = None,
-    data_inputs: Optional[Sequence[PinTemplate]] = None,
-    data_outputs: Optional[Sequence[PinTemplate]] = None,
+    flow_inputs: Optional[Sequence[Pin]] = None,
+    flow_outputs: Optional[Sequence[Pin]] = None,
+    data_inputs: Optional[Sequence[Pin]] = None,
+    data_outputs: Optional[Sequence[Pin]] = None,
     tags: Optional[Sequence[str]] = None,
 ):
     return global_registry().register_node(

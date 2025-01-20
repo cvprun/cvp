@@ -7,9 +7,9 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import NodeTemplate
 from cvp.nodes.record import FlowRecord
-from cvp.pins.datas import DataOutputPinTemplate
-from cvp.pins.flows import FlowOutputPinTemplate
-from cvp.pins.pin import PinTemplate
+from cvp.pins.datas import DataOutputPin
+from cvp.pins.flows import FlowOutputPin
+from cvp.pins.pin import Pin
 from cvp.pins.special import EntrypointPinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
@@ -22,16 +22,16 @@ class EntrypointOutput(TypedDict):
 
 class EntrypointNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
-        self._start = FlowOutputPinTemplate(
+        self._start = FlowOutputPin(
             name="start",
             docs="Entrypoint flow signal",
         )
-        self._args = DataOutputPinTemplate(
+        self._args = DataOutputPin(
             name="args",
             dtype=dtype_registry.get(list).path,
             docs="Arguments of list type",
         )
-        self._kwargs = DataOutputPinTemplate(
+        self._kwargs = DataOutputPin(
             name="kwargs",
             dtype=dtype_registry.get(dict).path,
             docs="Arguments of dict type",
@@ -49,7 +49,7 @@ class EntrypointNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, pin: PinTemplate, context: FlowRecord) -> Optional[PinTemplate]:
+    def run(self, pin: Pin, context: FlowRecord) -> Optional[Pin]:
         try:
             if not isinstance(pin, EntrypointPinTemplate):
                 raise TypeError(
