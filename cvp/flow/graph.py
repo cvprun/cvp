@@ -16,8 +16,6 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
-from cvp.pins.action import Action
-from cvp.pins.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
@@ -382,53 +380,6 @@ class FlowGraph:
 
         raise IndexError("Could not find the input pin of the arc")
 
-    @staticmethod
-    def reorder_connectable_pins(
-        left: FlowNodePin,
-        right: FlowNodePin,
-    ) -> FlowConnection:
-        if left.node == right.node:
-            raise ValueError("Identical nodes cannot be connected")
-        if left.pin.stream == right.pin.stream:
-            raise ValueError("Identical streams cannot be connected")
-        if left.pin.action != right.pin.action:
-            raise ValueError("The action of the pins must match")
-        if left.pin.dtype != right.pin.dtype:
-            raise ValueError("The dtype of the pins must match")
-
-        if left.pin.stream == Stream.input:
-            assert right.pin.stream == Stream.output
-            out_conn = right
-            in_conn = left
-        else:
-            assert left.pin.stream == Stream.output
-            assert right.pin.stream == Stream.input
-            out_conn = left
-            in_conn = right
-
-        out_pin = out_conn.pin
-        in_pin = in_conn.pin
-        assert out_pin.stream == Stream.output
-        assert in_pin.stream == Stream.input
-        assert out_pin.action == in_pin.action
-        action = in_pin.action
-
-        if action == Action.flow and out_pin.arcs:
-            raise ValueError("There cannot be multiple output flow pins")
-        if action == Action.data and in_pin.arcs:
-            raise ValueError("There cannot be multiple input data pins")
-
-        return FlowConnection(out_conn, in_conn)
-
-    @staticmethod
-    def is_connectable_pins(left: FlowNodePin, right: FlowNodePin) -> bool:
-        try:
-            FlowGraph.reorder_connectable_pins(left, right)
-        except ValueError:
-            return False
-        else:
-            return True
-
     def update_arcs_polyline(self, *, force=False) -> None:
         for arc in self.arcs:
             self.update_arc_polyline(arc, force=force)
@@ -455,7 +406,8 @@ class FlowGraph:
         no_reorder=False,
     ) -> FlowArc:
         if not no_reorder:
-            out_conn, in_conn = self.reorder_connectable_pins(out_conn, in_conn)
+            connection_pair = FlowConnection.reorder_connectable_pins(out_conn, in_conn)
+            out_conn, in_conn = connection_pair
 
         arc = FlowArc.from_connect_pair(
             out_conn,

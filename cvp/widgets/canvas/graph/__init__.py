@@ -8,6 +8,7 @@ import imgui
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.arc import FlowArc
+from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
@@ -439,7 +440,7 @@ class CanvasGraph(CanvasController):
         if hovering_np := self.graph.find_hovering_pin():
             for conn in self._connects:
                 try:
-                    pair = self.graph.reorder_connectable_pins(conn, hovering_np)
+                    pair = FlowConnection.reorder_connectable_pins(conn, hovering_np)
                     connect_pairs.append(pair)
                 except ValueError:
                     connect_pairs.clear()
