@@ -5,7 +5,7 @@ from typing import Any, Optional, Sequence
 
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
-from cvp.flow.templates.pin import PinTemplate
+from cvp.templates.pin.pin import PinTemplate
 
 
 class DataInputPinTemplate(PinTemplate):

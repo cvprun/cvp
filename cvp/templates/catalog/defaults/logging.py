@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from sys import exc_info
 from logging import DEBUG, getLogger
-from typing import Any, Dict, Optional, TypedDict
+from sys import exc_info
+from typing import Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.record import FlowRecord
-from cvp.flow.templates.node import NodeTemplate
-from cvp.flow.templates.pin import PinTemplate
-from cvp.flow.templates.pin.datas import DataInputPinTemplate
-from cvp.flow.templates.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.fonts.glyphs.mdi import PLAY
+from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
+from cvp.templates.node import NodeTemplate
+from cvp.templates.pin.datas import DataInputPinTemplate
+from cvp.templates.pin.pin import PinTemplate
+from cvp.templates.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
-from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 
 
 class LoggingNodeTemplate(NodeTemplate):

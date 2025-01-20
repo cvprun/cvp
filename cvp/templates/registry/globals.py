@@ -3,9 +3,9 @@
 from functools import lru_cache
 from typing import Optional, Sequence
 
-from cvp.flow.registry.registry import FlowRegistry
-from cvp.flow.templates.pin import PinTemplate
 from cvp.patterns.singleton import singleton
+from cvp.templates.pin.pin import PinTemplate
+from cvp.templates.registry.registry import FlowRegistry
 from cvp.types.colors import RGBA
 
 

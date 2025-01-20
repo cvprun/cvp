@@ -5,8 +5,8 @@ from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.flow.record import FlowRecord
-from cvp.flow.templates.pin import PinTemplate
-from cvp.flow.templates.pin.special import NextPinTemplate, PrevPinTemplate
+from cvp.templates.pin.pin import PinTemplate
+from cvp.templates.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 

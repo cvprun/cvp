@@ -5,13 +5,13 @@ from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from cvp.dtypes.defaults import get_default_dtypes
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.catalog import get_default_nodes
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
-from cvp.flow.icons.node import NODE_ICON_MAPPING
-from cvp.flow.templates.node import NodeTemplate
-from cvp.flow.templates.pin import PinTemplate
-from cvp.flow.templates.pin.special import (
+from cvp.templates.catalog import get_default_nodes
+from cvp.templates.icons import NODE_ICON_MAPPING
+from cvp.templates.node import NodeTemplate
+from cvp.templates.pin.pin import PinTemplate
+from cvp.templates.pin.special import (
     NextPinTemplate,
     PrevPinTemplate,
     ReturnPinTemplate,

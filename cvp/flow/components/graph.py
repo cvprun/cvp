@@ -19,7 +19,7 @@ from cvp.flow.components.node_pin import NodePin
 from cvp.flow.components.pin import Pin
 from cvp.flow.components.selection import SelectableAny, Selection
 from cvp.flow.components.stream import Stream
-from cvp.flow.templates.graph import GraphTemplate
+from cvp.templates.graph import GraphTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 

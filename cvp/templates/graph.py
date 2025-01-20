@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from cvp.flow.templates.node import NodeTemplate
+from cvp.templates.node import NodeTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 
 

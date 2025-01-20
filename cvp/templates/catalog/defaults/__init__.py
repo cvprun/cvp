@@ -4,9 +4,9 @@ from typing import Optional, Sequence
 
 from cvp.dtypes.registry.globals import global_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.flow.catalog.defaults.entrypoint import EntrypointNodeTemplate
-from cvp.flow.catalog.defaults.logging import LoggingNodeTemplate
-from cvp.flow.templates.node import NodeTemplate
+from cvp.templates.catalog.defaults.entrypoint import EntrypointNodeTemplate
+from cvp.templates.catalog.defaults.logging import LoggingNodeTemplate
+from cvp.templates.node import NodeTemplate
 
 
 def get_default_nodes(

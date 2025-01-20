@@ -4,7 +4,7 @@ from typing import Any, Optional, Sequence
 
 from cvp.flow.components.action import Action
 from cvp.flow.components.stream import Stream
-from cvp.flow.templates.markers import NoDefault
+from cvp.templates.pin.markers import NoDefault
 
 
 class PinTemplate:
