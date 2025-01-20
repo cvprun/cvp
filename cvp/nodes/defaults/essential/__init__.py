@@ -12,7 +12,8 @@ from cvp.nodes.node import Node
 def get_essential_nodes(
     dtype_registry: Optional[DtypeRegistry] = None,
 ) -> Sequence[Node]:
-    dtype_registry = dtype_registry if dtype_registry else global_dtype_registry()
+    if dtype_registry is None:
+        dtype_registry = global_dtype_registry()
     assert dtype_registry is not None
 
     return (

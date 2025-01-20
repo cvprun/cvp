@@ -1,19 +1,30 @@
 # -*- coding: utf-8 -*-
 
-from functools import lru_cache
 from types import MappingProxyType
-from typing import Optional
+from typing import List, Optional, Sequence
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.nodes.defaults.builtins import get_builtin_nodes
+from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.node import Node
 
 NodeMapping = MappingProxyType[str, Node]
 
 
-@lru_cache
-def get_default_nodes(dtype_registry: Optional[DtypeRegistry] = None) -> NodeMapping:
+def get_default_nodes(
+    dtype_registry: Optional[DtypeRegistry] = None,
+) -> Sequence[Node]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None
-    return NodeMapping({})
+    result: List[Node] = list()
+    result.extend(get_essential_nodes(dtype_registry))
+    result.extend(get_builtin_nodes(dtype_registry))
+    return tuple(result)
+
+
+def get_default_path2nodes(
+    dtype_registry: Optional[DtypeRegistry] = None,
+) -> NodeMapping:
+    return NodeMapping({node.path: node for node in get_default_nodes(dtype_registry)})

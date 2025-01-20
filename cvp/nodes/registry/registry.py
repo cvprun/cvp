@@ -5,7 +5,7 @@ from weakref import ReferenceType, ref
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.defaults import get_default_nodes
+from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.node import Node
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
@@ -28,7 +28,7 @@ class NodeRegistry:
         self._nodes = dict()
 
         if not no_defaults:
-            self._nodes.update(get_default_nodes(dtype_registry))
+            self._nodes.update(get_default_path2nodes(dtype_registry))
 
     @property
     def nodes(self):

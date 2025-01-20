@@ -4,7 +4,7 @@ from inspect import Parameter
 from typing import Any, Dict, Optional, Type
 
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
-from cvp.dtypes.defaults.builtins import get_typing_any
+from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
 from cvp.types.colors import RGBA
 

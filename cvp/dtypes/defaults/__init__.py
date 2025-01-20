@@ -7,6 +7,7 @@ from typing import Final, List, Sequence, Type
 from cvp.dtypes.defaults.builtins import get_builtin_dtypes
 from cvp.dtypes.defaults.extras import get_extra_dtypes
 from cvp.dtypes.defaults.standards import get_standard_dtypes
+from cvp.dtypes.defaults.typing import get_typing_dtypes
 from cvp.dtypes.dtype import Dtype
 
 TypeToDtypeMapping = MappingProxyType[Type, Dtype]
@@ -19,6 +20,7 @@ def get_default_dtypes() -> Sequence[Dtype]:
     result.extend(get_builtin_dtypes())
     result.extend(get_standard_dtypes())
     result.extend(get_extra_dtypes())
+    result.extend(get_typing_dtypes())
     return tuple(result)
 
 

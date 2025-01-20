@@ -51,18 +51,18 @@ class LoggingNodeTemplate(Node):
         )
 
     @override
-    def run(self, pin: Pin, context: NodeRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
         assert pin == self._prev
 
         try:
-            logger_name = context.get(self._name.name)
+            logger_name = record.get(self._name.name)
             logger = getLogger(logger_name)
             logger.log(
-                level=context.get(self._level.name),
-                msg=context.get(self._msg.name),
+                level=record.get(self._level.name),
+                msg=record.get(self._msg.name),
             )
-            context.set_result(None)
+            record.set_result(None)
         except:  # noqa
-            context.set_exception(exc_info())
+            record.set_exception(exc_info())
 
         return self._next
