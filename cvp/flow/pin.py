@@ -4,9 +4,9 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import List, Optional
 
-from cvp.nodes.action import Action
-from cvp.nodes.pin.pin import PinTemplate
-from cvp.nodes.stream import Stream
+from cvp.pins.action import Action
+from cvp.pins.pin import PinTemplate
+from cvp.pins.stream import Stream
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 

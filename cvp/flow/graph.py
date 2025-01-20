@@ -16,8 +16,8 @@ from cvp.flow.node import Node
 from cvp.flow.node_pin import NodePin
 from cvp.flow.pin import Pin
 from cvp.flow.selection import SelectableAny, Selection
-from cvp.nodes.action import Action
-from cvp.nodes.stream import Stream
+from cvp.pins.action import Action
+from cvp.pins.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 

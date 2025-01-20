@@ -8,10 +8,10 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import NodeTemplate
-from cvp.nodes.pin.datas import DataInputPinTemplate
-from cvp.nodes.pin.pin import PinTemplate
-from cvp.nodes.pin.special import NextPinTemplate, PrevPinTemplate
 from cvp.nodes.record import FlowRecord
+from cvp.pins.datas import DataInputPinTemplate
+from cvp.pins.pin import PinTemplate
+from cvp.pins.special import NextPinTemplate, PrevPinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 

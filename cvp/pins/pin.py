@@ -2,9 +2,9 @@
 
 from typing import Any, Optional, Sequence
 
-from cvp.nodes.action import Action
-from cvp.nodes.pin.markers import NoDefault
-from cvp.nodes.stream import Stream
+from cvp.pins.action import Action
+from cvp.pins.markers import NoDefault
+from cvp.pins.stream import Stream
 
 
 class PinTemplate:
