@@ -4,7 +4,7 @@ from typing import NamedTuple
 
 from cvp.flow.components.node import Node
 from cvp.flow.components.pin import Pin
-from cvp.flow.components.prefix import Prefix
+from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class NodePin(NamedTuple):
@@ -12,4 +12,4 @@ class NodePin(NamedTuple):
     pin: Pin
 
     def __str__(self):
-        return f"{self.node.name}{Prefix.pin.value}{self.pin.name}"
+        return f"{self.node.name}{FLOW_PATH_SEPARATOR}{self.pin.name}"

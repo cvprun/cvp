@@ -3,7 +3,7 @@
 from typing import NamedTuple
 
 from cvp.flow.components.node_pin import NodePin
-from cvp.flow.components.prefix import Prefix
+from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class Connection(NamedTuple):
@@ -11,4 +11,4 @@ class Connection(NamedTuple):
     input: NodePin
 
     def __str__(self):
-        return f"{self.output}{Prefix.arc.value}{self.input}"
+        return f"{self.output}{FLOW_PATH_SEPARATOR}{self.input}"
