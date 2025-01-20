@@ -11,13 +11,13 @@ class NodeRecord:
     _args: Tuple[Any, ...]
     _kwargs: Dict[str, Any]
     _result: Any
-    _exc_info: Optional[ExceptionInfo]
+    _exception: Optional[ExceptionInfo]
 
     def __init__(self, *args, **kwargs):
         self._args = args
         self._kwargs = kwargs
         self._result = None
-        self._exc_info = None
+        self._exception = None
 
     @property
     def args(self):
@@ -35,20 +35,20 @@ class NodeRecord:
         return self._result
 
     @property
-    def exc_info(self):
-        return self._exc_info
+    def exception(self):
+        return self._exception
 
     def clear_result(self) -> None:
         self._result = None
-        self._exc_info = None
+        self._exception = None
 
     def set_result(self, value: Any) -> None:
         self._result = value
-        self._exc_info = None
+        self._exception = None
 
     def set_exception(self, value: Union[ExceptionInfo, NullInfo]) -> None:
         assert value[0] is not None
         assert value[1] is not None
         assert value[2] is not None
         self._result = None
-        self._exc_info = value
+        self._exception = value

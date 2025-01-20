@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from inspect import Parameter
 from typing import Any, Optional
 
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES as _PATH_TO_DTYPES
 from cvp.dtypes.defaults import DEFAULT_TYPE_TO_DTYPES as _TYPE_TO_DTYPES
+from cvp.dtypes.defaults.builtins import get_typing_any
 from cvp.dtypes.dtype import Dtype
 from cvp.types.colors import RGBA
 
@@ -26,8 +28,29 @@ class DtypeRegistry:
     def type2dtypes(self):
         return self._type2dtypes
 
-    def get(self, key: Any) -> Dtype:
-        if isinstance(key, type):
+    @property
+    def any_dtype(self) -> Dtype:
+        dtype = self._type2dtypes.get(Any)
+        return dtype if dtype is not None else get_typing_any()
+
+    def update(self, other: "DtypeRegistry") -> None:
+        self._path2dtypes.update(other.path2dtypes)
+        self._type2dtypes.update(other.type2dtypes)
+
+    def has(self, key) -> bool:
+        if key in (Parameter.empty, Any):
+            return True
+        elif isinstance(key, type):
+            return key in self._type2dtypes
+        elif isinstance(key, str):
+            return key in self._path2dtypes
+        else:
+            return False
+
+    def get(self, key) -> Dtype:
+        if key in (Parameter.empty, Any):
+            return self.any_dtype
+        elif isinstance(key, type):
             return self._type2dtypes[key]
         elif isinstance(key, str):
             return self._path2dtypes[key]

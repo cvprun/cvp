@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from inspect import Parameter
 from typing import Any, Optional, Sequence
 
 from cvp.dtypes.dtype import Dtype
+from cvp.dtypes.registry.globals import global_registry
+from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.pins.action import Action
 from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
@@ -64,3 +67,46 @@ class Pin:
     @property
     def is_data_outputs(self) -> bool:
         return self.is_data_action and self.is_output_stream
+
+    @staticmethod
+    def inspect_parameter_required(parameter: Parameter) -> bool:
+        match parameter.kind:
+            case Parameter.POSITIONAL_ONLY:
+                return parameter.default == Parameter.empty
+            case Parameter.POSITIONAL_OR_KEYWORD:
+                return parameter.default == Parameter.empty
+            case Parameter.VAR_POSITIONAL:
+                return False
+            case Parameter.KEYWORD_ONLY:
+                return parameter.default == Parameter.empty
+            case Parameter.VAR_KEYWORD:
+                return False
+            case _:
+                raise ValueError(f"Unexpected parameter kind: {parameter.kind}")
+
+    @classmethod
+    def from_parameter(
+        cls,
+        parameter: Parameter,
+        docs: Optional[str] = None,
+        arcs: Optional[Sequence[str]] = None,
+        *,
+        dtype_registry: Optional[DtypeRegistry] = None,
+    ):
+        if dtype_registry is None:
+            dtype_registry = global_registry()
+
+        assert dtype_registry is not None
+        dtype = dtype_registry.get(parameter.annotation)
+        required = cls.inspect_parameter_required(parameter)
+
+        return cls(
+            name=parameter.name,
+            dtype=dtype,
+            docs=docs if docs else str(),
+            action=Action.data,
+            stream=Stream.input,
+            required=required,
+            arcs=arcs,
+            default=parameter.default,
+        )

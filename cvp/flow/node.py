@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, List, Optional
+from typing import List, Optional
 from uuid import uuid4
 
 from cvp.flow.pin import FlowPin
@@ -38,12 +38,6 @@ class FlowNode:
 
     _selected: bool = False
     _hovering: bool = False
-    _template: Optional[Node] = None
-
-    def __call__(self, *args, **kwargs) -> Any:
-        if self._template is None:
-            raise ValueError("Node function is not set")
-        return self._template.__call__(*args, **kwargs)
 
     @classmethod
     def from_template(cls, template: Node):
@@ -59,12 +53,7 @@ class FlowNode:
             data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
-            _template=template,
         )
-
-    @property
-    def template(self):
-        return self._template
 
     @property
     def as_flow_input_names(self):

@@ -3,36 +3,20 @@
 from functools import lru_cache
 from typing import Optional, Sequence
 
-from cvp.nodes.registry.registry import FlowRegistry
+from cvp.nodes.registry.registry import NodeRegistry
 from cvp.patterns.singleton import singleton
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
 
 
 @singleton
-class GlobalFlowRegistry(FlowRegistry):
+class GlobalNodeRegistry(NodeRegistry):
     pass
 
 
 @lru_cache
-def global_registry() -> GlobalFlowRegistry:
-    return GlobalFlowRegistry()
-
-
-def register_dtype(
-    name: Optional[str] = None,
-    path: Optional[str] = None,
-    docs: Optional[str] = None,
-    icon: Optional[str] = None,
-    color: Optional[RGBA] = None,
-):
-    return global_registry().register_dtype(
-        name=name,
-        path=path,
-        docs=docs,
-        icon=icon,
-        color=color,
-    )
+def global_registry() -> GlobalNodeRegistry:
+    return GlobalNodeRegistry()
 
 
 def register_node(
