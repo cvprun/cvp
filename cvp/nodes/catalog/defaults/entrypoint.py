@@ -4,13 +4,13 @@ from sys import exc_info
 from typing import Any, Dict, Optional, Tuple, TypedDict
 
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.flow.record import FlowRecord
 from cvp.fonts.glyphs.mdi import PLAY
-from cvp.templates.node import NodeTemplate
-from cvp.templates.pin.datas import DataOutputPinTemplate
-from cvp.templates.pin.flows import FlowOutputPinTemplate
-from cvp.templates.pin.pin import PinTemplate
-from cvp.templates.pin.special import EntrypointPinTemplate
+from cvp.nodes.node import NodeTemplate
+from cvp.nodes.pin.datas import DataOutputPinTemplate
+from cvp.nodes.pin.flows import FlowOutputPinTemplate
+from cvp.nodes.pin.pin import PinTemplate
+from cvp.nodes.pin.special import EntrypointPinTemplate
+from cvp.nodes.record import FlowRecord
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 

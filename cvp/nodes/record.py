@@ -3,29 +3,21 @@
 from types import TracebackType
 from typing import Any, Dict, Optional, Tuple, Type, Union
 
-from cvp.flow.envs import FlowEnvs
-
 ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
 
 
 class FlowRecord:
-    _envs: FlowEnvs
     _args: Tuple[Any, ...]
     _kwargs: Dict[str, Any]
     _result: Any
     _exc_info: Optional[ExceptionInfo]
 
-    def __init__(self, __flow_envs__: FlowEnvs, /, *args, **kwargs):
-        self._envs = __flow_envs__
+    def __init__(self, *args, **kwargs):
         self._args = args
         self._kwargs = kwargs
         self._result = None
         self._exc_info = None
-
-    @property
-    def envs(self):
-        return self._envs
 
     @property
     def args(self):

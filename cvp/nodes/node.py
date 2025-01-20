@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
-from cvp.flow.record import FlowRecord
-from cvp.templates.pin.pin import PinTemplate
-from cvp.templates.pin.special import NextPinTemplate, PrevPinTemplate
+from cvp.nodes.pin.pin import PinTemplate
+from cvp.nodes.pin.special import NextPinTemplate, PrevPinTemplate
+from cvp.nodes.record import FlowRecord
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import reduce
 from math import sqrt
@@ -9,7 +8,6 @@ from uuid import uuid4
 
 import shapely
 
-from cvp.flow.components.action import Action
 from cvp.flow.components.anchor import Anchor
 from cvp.flow.components.arc import Arc
 from cvp.flow.components.connection import Connection
@@ -18,8 +16,8 @@ from cvp.flow.components.node import Node
 from cvp.flow.components.node_pin import NodePin
 from cvp.flow.components.pin import Pin
 from cvp.flow.components.selection import SelectableAny, Selection
-from cvp.flow.components.stream import Stream
-from cvp.templates.graph import GraphTemplate
+from cvp.nodes.action import Action
+from cvp.nodes.stream import Stream
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
@@ -38,25 +36,6 @@ class Graph:
     control: Control = field(default_factory=Control)
 
     _selection: Selection = field(default_factory=Selection)
-    _template: Optional[GraphTemplate] = None
-
-    @classmethod
-    def from_template(cls, template: GraphTemplate):
-        return cls(
-            uuid=str(uuid4()),
-            name=template.name,
-            docs=template.docs,
-            icon=template.icon,
-            color=template.color,
-            nodes=list(Node.from_template(n) for n in template.nodes),
-            tags=deepcopy(template.tags),
-            arcs=list(),  # TODO ...
-            _template=template,
-        )
-
-    @property
-    def template(self):
-        return self._template
 
     @property
     def selection(self):

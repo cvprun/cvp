@@ -2,9 +2,9 @@
 
 from typing import Optional, Sequence
 
-from cvp.flow.components.action import Action
-from cvp.flow.components.stream import Stream
-from cvp.templates.pin.pin import PinTemplate
+from cvp.nodes.action import Action
+from cvp.nodes.pin.pin import PinTemplate
+from cvp.nodes.stream import Stream
 
 
 class FlowInputPinTemplate(PinTemplate):

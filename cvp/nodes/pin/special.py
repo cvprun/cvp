@@ -2,9 +2,9 @@
 
 from typing import Any, Optional, Sequence
 
-from cvp.templates.pin.datas import DataOutputPinTemplate
-from cvp.templates.pin.flows import FlowInputPinTemplate, FlowOutputPinTemplate
-from cvp.templates.pin.markers import NoDefault
+from cvp.nodes.pin.datas import DataOutputPinTemplate
+from cvp.nodes.pin.flows import FlowInputPinTemplate, FlowOutputPinTemplate
+from cvp.nodes.pin.markers import NoDefault
 
 
 class EntrypointPinTemplate(FlowInputPinTemplate):

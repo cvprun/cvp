@@ -7,7 +7,7 @@ import imgui
 from cvp.config.sections.catalog import CatalogManagerConfig
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
-from cvp.templates.node import NodeTemplate
+from cvp.nodes.node import NodeTemplate
 from cvp.types.override import override
 from cvp.widgets.manager import Manager
 

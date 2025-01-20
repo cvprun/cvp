@@ -10,10 +10,10 @@ from yaml import dump, full_load
 from cvp.flow.components.graph import Graph
 from cvp.flow.components.node import Node
 from cvp.flow.components.selection import Selection
+from cvp.nodes.registry.globals import global_registry
+from cvp.nodes.registry.registry import FlowRegistry
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
-from cvp.templates.registry.globals import global_registry
-from cvp.templates.registry.registry import FlowRegistry
 from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
 

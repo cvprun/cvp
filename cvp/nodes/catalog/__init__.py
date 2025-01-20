@@ -3,7 +3,7 @@
 from functools import lru_cache
 from types import MappingProxyType
 
-from cvp.templates.node import NodeTemplate
+from cvp.nodes.node import NodeTemplate
 
 NodeMapping = MappingProxyType[str, NodeTemplate]
 
