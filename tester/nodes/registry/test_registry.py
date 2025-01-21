@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from typing import Annotated, Optional, Union
 from unittest import TestCase, main
 
 from cvp.nodes.registry.globals import GlobalNodeRegistry, global_node_registry
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.pins.markers import NoDefault
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -68,7 +70,79 @@ class RegistryTestCase(TestCase):
         self.assertEqual("b", add_node.data_inputs[1].name)
         self.assertEqual(any_dtype, add_node.data_inputs[0].dtype)
         self.assertEqual(any_dtype, add_node.data_inputs[1].dtype)
+        self.assertTrue(add_node.data_inputs[0].required)
+        self.assertTrue(add_node.data_inputs[1].required)
+        self.assertEqual(NoDefault, add_node.data_inputs[0].default)
+        self.assertEqual(NoDefault, add_node.data_inputs[1].default)
         self.assertIsInstance(add_node.data_outputs[0], ReturnPin)
+        self.assertEqual(any_dtype, add_node.data_outputs[0].dtype)
+
+    def test_register_node_custom_annotation_int(self):
+        registry = NodeRegistry(no_defaults=True)
+
+        @registry.register()
+        def _add(a: int, b: int) -> int:
+            return a + b
+
+        self.assertEqual(1, len(registry))
+        add_node = next(iter(registry.values()))
+
+        int_dtype = registry.dtype_registry.get(int)
+        self.assertEqual(int_dtype, add_node.data_inputs[0].dtype)
+        self.assertEqual(int_dtype, add_node.data_inputs[1].dtype)
+        self.assertEqual(int_dtype, add_node.data_outputs[0].dtype)
+
+    def test_register_node_custom_annotation_union(self):
+        registry = NodeRegistry(no_defaults=True)
+        self.assertEqual(0, len(registry))
+
+        with self.assertRaises(TypeError):
+
+            @registry.register()
+            def _add1(a: Union[int, float], b: Union[int, float]):
+                return a + b
+
+        with self.assertRaises(TypeError):
+
+            @registry.register()
+            def _add2(a, b) -> Union[int, float]:
+                return a + b
+
+        self.assertEqual(0, len(registry))
+
+    def test_register_node_custom_annotation_optional(self):
+        registry = NodeRegistry(no_defaults=True)
+        self.assertEqual(0, len(registry))
+
+        with self.assertRaises(TypeError):
+
+            @registry.register()
+            def _add1(a: Optional[int], b: Optional[int]):
+                return a + b  # type: ignore[operator]
+
+        with self.assertRaises(TypeError):
+
+            @registry.register()
+            def _add2(a, b) -> Optional[int]:
+                return a + b
+
+        self.assertEqual(0, len(registry))
+
+    def test_register_node_custom_annotated(self):
+        registry = NodeRegistry(no_defaults=True)
+        self.assertEqual(0, len(registry))
+
+        @registry.register()
+        def _pow(a: Annotated[int, "base"]) -> Annotated[int, "result"]:
+            return pow(a, 2)
+
+        self.assertEqual(1, len(registry))
+
+        pow_node = next(iter(registry.values()))
+
+        int_dtype = registry.dtype_registry.get(int)
+        self.assertEqual(int_dtype, pow_node.data_inputs[0].dtype)
+        self.assertEqual(int_dtype, pow_node.data_outputs[0].dtype)
 
 
 if __name__ == "__main__":

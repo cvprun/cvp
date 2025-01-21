@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional, Sequence
+from typing import Optional, Sequence
 
 from cvp.dtypes.dtype import Dtype
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowInputPin, FlowOutputPin
-from cvp.pins.markers import NoDefault
 
 
 class EntrypointPin(FlowInputPin):
@@ -40,12 +39,10 @@ class ReturnPin(DataOutputPin):
         self,
         dtype: Optional[Dtype] = None,
         arcs: Optional[Sequence[str]] = None,
-        default: Any = NoDefault,
     ):
         super().__init__(
             name="return",
             dtype=dtype,
             docs="The return value of a function",
             arcs=arcs,
-            default=default,
         )

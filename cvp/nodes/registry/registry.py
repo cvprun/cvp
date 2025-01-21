@@ -97,7 +97,7 @@ class NodeRegistry:
         data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
     ) -> Node:
-        node = Node.from_grouped_pins(
+        node = Node.auto_parse(
             func=func,
             name=name,
             path=path,

@@ -50,6 +50,6 @@ def get_builtin_nodes(
     assert dtype_registry is not None
     result = list()
     for func in get_builtin_functions():
-        node = Node.from_grouped_pins(func, dtype_registry=dtype_registry)
+        node = Node.auto_parse(func, dtype_registry=dtype_registry)
         result.append(node)
     return tuple(result)

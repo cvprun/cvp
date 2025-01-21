@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
-from typing import Any, Dict, Optional, Type
+from typing import Any, Dict, List, Optional, Type, Union, get_args, get_origin
 
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
 from cvp.dtypes.defaults.typing import get_typing_any
@@ -66,7 +66,9 @@ class DtypeRegistry:
         self._type2dtypes.update(other.type2dtypes)
 
     def has(self, key) -> bool:
-        if key in (Parameter.empty, Any):
+        if get_origin(key) == Union:
+            return all(self.has(tp) for tp in get_args(key))
+        elif key in (Parameter.empty, Any):
             return True
         elif isinstance(key, type):
             return key in self._type2dtypes
@@ -76,7 +78,9 @@ class DtypeRegistry:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
     def get(self, key) -> Dtype:
-        if key in (Parameter.empty, Any):
+        if get_origin(key) == Union:
+            raise TypeError("Union key type is not supported")
+        elif key in (Parameter.empty, Any):
             return self.any_dtype
         elif isinstance(key, type):
             return self._type2dtypes[key]
@@ -84,6 +88,12 @@ class DtypeRegistry:
             return self._path2dtypes[key]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
+
+    def get_with_union(self, key) -> List[Dtype]:
+        if get_origin(key) == Union:
+            return [self.get(tp) for tp in get_args(key)]
+        else:
+            return [self.get(key)]
 
     def __len__(self) -> int:
         assert len(self._path2dtypes) == len(self._type2dtypes)
