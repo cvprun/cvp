@@ -55,14 +55,11 @@ class LoggingNode(Node):
         assert pin == self._prev
 
         try:
-            logger_name = record.get(self._name.name)
+            logger_name = record.get(self._name)
             logger = getLogger(logger_name)
-            logger.log(
-                level=record.get(self._level.name),
-                msg=record.get(self._msg.name),
-            )
-            record.set_result(None)
+            logger.log(level=record.get(self._level), msg=record.get(self._msg))
+            record.result = None
         except:  # noqa
-            record.set_exception(exc_info())
+            record.exception = exc_info()
 
         return self._next

@@ -184,9 +184,9 @@ class Node(NodeInterface):
     @override
     def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
         try:
-            record.set_result(self.__call__(*record.args, **record.kwargs))
+            record.result = self.__call__(*record.args, **record.kwargs)
         except:  # noqa
-            record.set_exception(exc_info())
+            record.exception = exc_info()
 
         if self.is_bypass_flow:
             return self.flow_outputs[0]

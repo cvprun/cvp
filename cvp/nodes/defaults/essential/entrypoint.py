@@ -58,8 +58,8 @@ class EntrypointNode(Node):
                 )
 
             result = EntrypointOutput(args=record.args, kwargs=record.kwargs)
-            record.set_result(result)
+            record.result = result
         except:  # noqa
-            record.set_exception(exc_info())
+            record.exception = exc_info()
 
         return self._start
