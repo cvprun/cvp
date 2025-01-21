@@ -20,7 +20,7 @@ class EntrypointOutput(TypedDict):
     kwargs: Dict[str, Any]
 
 
-class EntrypointNodeTemplate(Node):
+class EntrypointNode(Node):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._start = FlowOutputPin(
             name="start",

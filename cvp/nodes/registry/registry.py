@@ -57,6 +57,15 @@ class NodeRegistry:
         else:
             raise TypeError(f"Unsupported path type: {type(path).__name__}")
 
+    def __len__(self) -> int:
+        return len(self._nodes)
+
+    def __contains__(self, path: Union[str, Node]) -> bool:
+        return self.has(path)
+
+    def __getitem__(self, path: Union[str, Node]) -> Node:
+        return self.get(path)
+
     def add(self, node: Node) -> None:
         if node.path in self._nodes:
             raise KeyError(f"Duplicate node path: {node.path}")

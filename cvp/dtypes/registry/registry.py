@@ -24,10 +24,6 @@ class DtypeRegistry:
 
         assert len(self._path2dtypes) == len(self._type2dtypes)
 
-    def __len__(self) -> int:
-        assert len(self._path2dtypes) == len(self._type2dtypes)
-        return len(self._path2dtypes)
-
     @property
     def path2dtypes(self):
         return self._path2dtypes
@@ -66,6 +62,16 @@ class DtypeRegistry:
             return self._path2dtypes[key]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
+
+    def __len__(self) -> int:
+        assert len(self._path2dtypes) == len(self._type2dtypes)
+        return len(self._path2dtypes)
+
+    def __contains__(self, key) -> bool:
+        return self.has(key)
+
+    def __getitem__(self, key) -> Dtype:
+        return self.get(key)
 
     def add(self, dtype: Dtype) -> None:
         if dtype.path in self._path2dtypes:

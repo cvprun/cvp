@@ -16,7 +16,7 @@ from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
-class LoggingNodeTemplate(Node):
+class LoggingNode(Node):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._prev = PrevPin()
         self._next = NextPin()
