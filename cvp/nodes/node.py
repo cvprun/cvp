@@ -3,25 +3,12 @@
 from abc import ABC, abstractmethod
 from inspect import signature
 from sys import exc_info
-from typing import (
-    Annotated,
-    Any,
-    Callable,
-    List,
-    Optional,
-    Sequence,
-    Union,
-    get_args,
-    get_origin,
-)
+from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.inspect.parameter import inspect_parameter_required
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
-from cvp.pins.annotated import get_arcs, get_docs, get_name, get_required
-from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -125,35 +112,8 @@ class Node(NodeInterface):
                 base_pins.append(pin)
         else:
             for param in sig.parameters.values():
-                param_origin = get_origin(param.annotation)
-                if param_origin == Union:
-                    raise TypeError("Union parameter is not supported")
-
-                param_name = param.name
-                param_docs = str()
-                param_arcs = list()
-                param_required = inspect_parameter_required(param)
-
-                if param_origin == Annotated:
-                    param_args = get_args(param.annotation)
-                    assert 2 <= len(param_args)
-                    param_dtype = dtype_registry.get(param_args[0])
-                    param_name = get_name(*param_args, param_name)
-                    param_docs = get_docs(*param_args, param_docs)
-                    param_arcs = get_arcs(*param_args)
-                    param_required = get_required(*param_args, param_required)
-                else:
-                    param_dtype = dtype_registry.get(param.annotation)
-
-                pin = DataInputPin(
-                    name=param_name,
-                    dtype=param_dtype,
-                    docs=param_docs,
-                    required=param_required,
-                    arcs=param_arcs,
-                    default=param.default,
-                )
-                base_pins.append(pin)
+                param_pin = Pin.from_parameter(param, dtype_registry=dtype_registry)
+                base_pins.append(param_pin)
 
         if data_outputs:
             for pin in data_outputs:
@@ -161,21 +121,13 @@ class Node(NodeInterface):
                     raise ValueError("Pin must be data outputs")
                 base_pins.append(pin)
         else:
-            return_origin = get_origin(sig.return_annotation)
-            if return_origin == Union:
-                raise TypeError("Union return is not supported")
-
-            if return_origin == Annotated:
-                return_args = get_args(sig.return_annotation)
-                assert 2 <= len(return_args)
-                return_dtype = dtype_registry.get(return_args[0])
-            else:
-                return_dtype = dtype_registry.get(sig.return_annotation)
-
-            return_pin = ReturnPin(return_dtype)
+            return_pin = ReturnPin.from_return_annotation(
+                sig.return_annotation,
+                dtype_registry=dtype_registry,
+            )
             base_pins.append(return_pin)
 
-        return Node(
+        return cls(
             name=base_name,
             path=base_path,
             func=func,

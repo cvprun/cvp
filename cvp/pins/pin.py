@@ -1,9 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional, Sequence
+from inspect import Parameter
+from typing import Annotated, Any, Optional, Sequence, Union, get_args, get_origin
 
 from cvp.dtypes.dtype import Dtype
+from cvp.dtypes.registry.globals import global_dtype_registry
+from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.inspect.parameter import inspect_parameter_required
 from cvp.pins.action import Action
+from cvp.pins.annotated import (
+    get_action,
+    get_arcs,
+    get_default,
+    get_docs,
+    get_name,
+    get_required,
+    get_stream,
+)
 from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
 
@@ -28,6 +41,54 @@ class Pin:
         self.required = bool(required)
         self.arcs = list(arcs if arcs else [])
         self.default = default
+
+    @classmethod
+    def from_parameter(
+        cls,
+        parameter: Parameter,
+        *,
+        dtype_registry: Optional[DtypeRegistry] = None,
+    ):
+        if dtype_registry is None:
+            dtype_registry = global_dtype_registry()
+        assert dtype_registry is not None
+
+        param_origin = get_origin(parameter.annotation)
+        if param_origin == Union:
+            raise TypeError("Union parameter is not supported")
+
+        param_required = inspect_parameter_required(parameter)
+
+        if param_origin == Annotated:
+            param_args = get_args(parameter.annotation)
+            assert 2 <= len(param_args)
+            param_dtype = dtype_registry.get(param_args[0])
+            param_name = get_name(*param_args, default=parameter.name)
+            param_docs = get_docs(*param_args, default=None)
+            param_action = get_action(*param_args, default=Action.data)
+            param_stream = get_stream(*param_args, default=Stream.input)
+            param_arcs = get_arcs(*param_args)
+            param_default = get_default(*param_args, default=parameter.default)
+            param_required = get_required(*param_args, default=param_required)
+        else:
+            param_dtype = dtype_registry.get(parameter.annotation)
+            param_name = parameter.name
+            param_docs = str()
+            param_action = Action.data
+            param_stream = Stream.input
+            param_arcs = list()
+            param_default = parameter.default
+
+        return cls(
+            name=param_name,
+            dtype=param_dtype,
+            docs=param_docs,
+            action=param_action,
+            stream=param_stream,
+            required=param_required,
+            arcs=param_arcs,
+            default=param_default,
+        )
 
     @property
     def path(self):
