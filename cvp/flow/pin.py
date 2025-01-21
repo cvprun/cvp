@@ -2,7 +2,7 @@
 
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import List
+from typing import List, Optional
 
 from cvp.pins.action import Action
 from cvp.pins.pin import Pin
@@ -26,6 +26,7 @@ class FlowPin:
     name_pos: Point = EMPTY_POINT
     name_size: Size = EMPTY_SIZE
 
+    _template: Optional[Pin] = None
     _selected: bool = False
     _hovering: bool = False
     _connectable: bool = False
@@ -40,7 +41,12 @@ class FlowPin:
             stream=template.stream,
             required=template.required,
             arcs=deepcopy(template.arcs),
+            _template=template,
         )
+
+    @property
+    def template(self):
+        return self._template
 
     @property
     def is_data_action(self):

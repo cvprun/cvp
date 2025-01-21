@@ -36,6 +36,7 @@ class FlowNode:
     node_pos: Point = EMPTY_POINT
     node_size: Size = EMPTY_SIZE
 
+    _template: Optional[Node] = None
     _selected: bool = False
     _hovering: bool = False
 
@@ -53,7 +54,12 @@ class FlowNode:
             data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
+            _template=template,
         )
+
+    @property
+    def template(self):
+        return self._template
 
     @property
     def as_flow_input_names(self):

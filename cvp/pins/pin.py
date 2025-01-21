@@ -96,6 +96,10 @@ class Pin:
         )
 
     @property
+    def has_dtype(self):
+        return self.dtype is not None
+
+    @property
     def path(self):
         return self.dtype.path if self.dtype else str()
 
@@ -130,3 +134,7 @@ class Pin:
     @property
     def is_data_outputs(self) -> bool:
         return self.is_data_action and self.is_output_stream
+
+    @property
+    def has_default(self) -> bool:
+        return self.default != NoDefault
