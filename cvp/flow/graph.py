@@ -142,6 +142,15 @@ class FlowGraph:
             arc.start_anchor.hovering = False
             arc.end_anchor.hovering = False
 
+    def find_begin_nodes(self) -> List[FlowNode]:
+        return list(filter(lambda node: node.is_begin, self.nodes))
+
+    def find_begin_node(self, node_uuid: str) -> Optional[FlowNode]:
+        for node in self.find_begin_nodes():
+            if node.uuid == node_uuid:
+                return node
+        return None
+
     def find_hovering_node_with_mouse(self, mouse: Point) -> Optional[FlowNode]:
         mx, my = mouse
         for node in self.nodes:

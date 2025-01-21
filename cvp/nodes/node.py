@@ -139,6 +139,22 @@ class Node(NodeInterface):
         )
 
     @property
+    def flows(self) -> List[Pin]:
+        return list(filter(lambda p: p.is_flow_action, self.pins))
+
+    @property
+    def datas(self) -> List[Pin]:
+        return list(filter(lambda p: p.is_data_action, self.pins))
+
+    @property
+    def inputs(self) -> List[Pin]:
+        return list(filter(lambda p: p.is_input_stream, self.pins))
+
+    @property
+    def outputs(self) -> List[Pin]:
+        return list(filter(lambda p: p.is_output_stream, self.pins))
+
+    @property
     def flow_inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_flow_inputs, self.pins))
 

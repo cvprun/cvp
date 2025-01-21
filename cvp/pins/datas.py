@@ -4,6 +4,7 @@ from typing import Any, Optional, Sequence
 
 from cvp.dtypes.dtype import Dtype
 from cvp.pins.action import Action
+from cvp.pins.kind import PinKind
 from cvp.pins.markers import NoDefault
 from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
@@ -17,6 +18,7 @@ class DataInputPin(Pin):
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
+        kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
         super().__init__(
@@ -27,6 +29,7 @@ class DataInputPin(Pin):
             stream=Stream.input,
             required=required,
             arcs=arcs,
+            kind=kind,
             default=default,
         )
 
@@ -38,6 +41,7 @@ class DataOutputPin(Pin):
         dtype: Optional[Dtype] = None,
         docs: Optional[str] = None,
         arcs: Optional[Sequence[str]] = None,
+        kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
         super().__init__(
@@ -48,5 +52,6 @@ class DataOutputPin(Pin):
             stream=Stream.output,
             required=False,
             arcs=arcs,
+            kind=kind,
             default=default,
         )

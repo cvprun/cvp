@@ -17,6 +17,7 @@ from cvp.pins.annotated import (
     get_required,
     get_stream,
 )
+from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
 
@@ -31,6 +32,7 @@ class Pin:
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
+        kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
         self.name = name
@@ -40,6 +42,7 @@ class Pin:
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.arcs = list(arcs if arcs else [])
+        self.kind = kind
         self.default = default
 
     @classmethod
@@ -58,6 +61,7 @@ class Pin:
             raise TypeError("Union parameter is not supported")
 
         param_required = inspect_parameter_required(parameter)
+        param_kind = parameter_to_kind(parameter)
 
         if param_origin == Annotated:
             param_args = get_args(parameter.annotation)
@@ -87,6 +91,7 @@ class Pin:
             stream=param_stream,
             required=param_required,
             arcs=param_arcs,
+            kind=param_kind,
             default=param_default,
         )
 

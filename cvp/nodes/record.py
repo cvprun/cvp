@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from types import TracebackType
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
 
 from cvp.pins.pin import Pin
 
@@ -10,22 +10,21 @@ NullInfo = Tuple[None, None, None]
 
 
 class NodeRecord:
-    _inputs: Dict[str, Any]
-    _outputs: Dict[str, Any]
-
-    _args: Tuple[Any, ...]
-    _kwargs: Dict[str, Any]
-
-    _result: Any
-    _exception: Optional[ExceptionInfo]
-
-    def __init__(self, *args, **kwargs):
-        self._inputs = dict()
-        self._outputs = dict()
-        self._args = args
+    def __init__(
+        self,
+        inputs: Dict[str, Any],
+        outputs: Dict[str, Any],
+        args: Sequence[Any],
+        kwargs: Dict[str, Any],
+        result: Any = None,
+        exception: Optional[ExceptionInfo] = None,
+    ):
+        self._inputs = inputs
+        self._outputs = outputs
+        self._args = tuple(args)
         self._kwargs = kwargs
-        self._result = None
-        self._exception = None
+        self._result = result
+        self._exception = exception
 
     @property
     def inputs(self):
