@@ -39,6 +39,28 @@ class DtypeRegistry:
             return dtype
         return get_typing_any()
 
+    def path_keys(self):
+        return self._path2dtypes.keys()
+
+    def type_keys(self):
+        return self._type2dtypes.keys()
+
+    def path_values(self):
+        return self._path2dtypes.values()
+
+    def type_values(self):
+        return self._type2dtypes.values()
+
+    def path_items(self):
+        return self._path2dtypes.items()
+
+    def type_items(self):
+        return self._type2dtypes.items()
+
+    def clear(self) -> None:
+        self._path2dtypes.clear()
+        self._type2dtypes.clear()
+
     def update(self, other: "DtypeRegistry") -> None:
         self._path2dtypes.update(other.path2dtypes)
         self._type2dtypes.update(other.type2dtypes)

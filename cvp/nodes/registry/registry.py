@@ -38,6 +38,18 @@ class NodeRegistry:
     def dtype_registry(self) -> Optional[DtypeRegistry]:
         return self._dtype_registry()
 
+    def keys(self):
+        return self._nodes.keys()
+
+    def values(self):
+        return self._nodes.values()
+
+    def items(self):
+        return self._nodes.items()
+
+    def clear(self) -> None:
+        self._nodes.clear()
+
     def update(self, other: "NodeRegistry") -> None:
         self._nodes.update(other.nodes)
 
@@ -84,7 +96,7 @@ class NodeRegistry:
         data_inputs: Optional[Sequence[Pin]] = None,
         data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
-    ):
+    ) -> Node:
         node = Node.from_grouped_pins(
             func=func,
             name=name,
@@ -100,6 +112,7 @@ class NodeRegistry:
             dtype_registry=self.dtype_registry,
         )
         self.add(node)
+        return node
 
     def register(
         self,
