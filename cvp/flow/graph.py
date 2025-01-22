@@ -142,6 +142,12 @@ class FlowGraph:
             arc.start_anchor.hovering = False
             arc.end_anchor.hovering = False
 
+    def find_node(self, node_uuid: str) -> Optional[FlowNode]:
+        for node in self.nodes:
+            if node.uuid == node_uuid:
+                return node
+        return None
+
     def find_begin_nodes(self) -> List[FlowNode]:
         return list(filter(lambda node: node.is_begin, self.nodes))
 
@@ -644,14 +650,3 @@ class FlowGraph:
             next_pos = x1, cursor
             self.move_node(node, next_pos)
             cursor += node.height + space
-
-    def validate_templates(self) -> None:
-        for node in self.nodes:
-            if node.template is None:
-                raise ValueError(f"The node template is invalid: '{node.name}'")
-
-            for pin in node.pins:
-                if pin.template is None:
-                    raise ValueError(
-                        f"The pin template is invalid: '{node.name}.{pin.name}'"
-                    )

@@ -225,6 +225,12 @@ class FlowNode:
                 return pin
         return None
 
+    def find_pin(self, pin_name: str) -> Optional[FlowPin]:
+        for pin in self.pins:
+            if pin.name == pin_name:
+                return pin
+        return None
+
     def find_hovering_pin(self) -> Optional[FlowPin]:
         for pin in self.pins:
             if pin.hovering:
