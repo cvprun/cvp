@@ -1,24 +1,45 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy, deepcopy
 from typing import Any, Dict, TypeAlias
 
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.kind import PinKind
+from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 VariableKey: TypeAlias = str
 VariableVal: TypeAlias = Any
-VariableRaw: TypeAlias = Dict[VariableKey, VariableVal]
 
 
-class VariableStore(VariableRaw):
+class VariableStore(Dict[VariableKey, VariableVal]):
+    @staticmethod
+    def gen_pin_key(node_uuid: str, pin_name: str):
+        return node_uuid + FLOW_PATH_SEPARATOR + pin_name
+
+    def get_pin_value(self, node_uuid: str, pin: Pin) -> Any:
+        key = self.gen_pin_key(node_uuid, pin.name)
+        if pin.has_default:
+            return self.get(key, pin.has_default)
+
+        if not self.__contains__(key):
+            raise KeyError(f"Not found variable: '{key}'")
+
+        return self.__getitem__(key)
+
     def create_node_execution_record(
         self,
         node: Node,
         node_uuid: str,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
     ) -> NodeExecutionRecord:
+        if use_copy and use_deepcopy:
+            raise ValueError("use_copy and use_deepcopy cannot coexist.")
+
         inputs = dict()
         outputs = dict()
 
@@ -26,8 +47,11 @@ class VariableStore(VariableRaw):
         bind_kwargs = dict()
 
         for pin in node.datas:
-            key = node_uuid + FLOW_PATH_SEPARATOR + pin.name
-            value = self.get(key, pin.default)
+            value = self.get_pin_value(node_uuid, pin)
+            if use_copy:
+                value = copy(value)
+            elif use_deepcopy:
+                value = deepcopy(value)
 
             match pin.stream:
                 case Stream.input:
