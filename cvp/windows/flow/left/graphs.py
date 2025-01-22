@@ -32,7 +32,7 @@ class GraphsTab(TabItem[Canvases]):
             assert current_graph is not None
             current_uuid = current_graph.uuid
 
-        for uuid, graph in self.context.fm.items():
+        for uuid, graph in self.context.fm.graphs.items():
             imgui.bullet()
             imgui.same_line()
 

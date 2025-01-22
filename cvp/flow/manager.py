@@ -18,12 +18,13 @@ from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
 
 
-class FlowManager(OrderedDict[str, FlowGraph]):
+class FlowManager:
+    _graphs: OrderedDict[str, FlowGraph]
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False):
-        super().__init__()
+        self._graphs = OrderedDict()
         self._dtype_registry = DtypeRegistry()
         self._node_registry = NodeRegistry(self._dtype_registry)
 
@@ -33,6 +34,10 @@ class FlowManager(OrderedDict[str, FlowGraph]):
 
         if refresh_graphs:
             self.refresh_flow_graphs()
+
+    @property
+    def graphs(self):
+        return self._graphs
 
     @property
     def dtypes(self):
@@ -84,15 +89,15 @@ class FlowManager(OrderedDict[str, FlowGraph]):
 
         if append:
             assert graph.uuid
-            assert graph.uuid not in self
-            self[graph.uuid] = graph
+            assert graph.uuid not in self._graphs
+            self._graphs[graph.uuid] = graph
 
         return graph
 
     def remove_graph(self, uuid: str) -> FlowGraph:
-        if uuid in self:
+        if uuid in self._graphs:
             raise KeyError(f"Not exists flow graph: '{uuid}'")
-        return self.pop(uuid)
+        return self._graphs.pop(uuid)
 
     @staticmethod
     def dumps_graph_yaml(graph: FlowGraph, encoding="utf-8") -> bytes:
@@ -122,7 +127,7 @@ class FlowManager(OrderedDict[str, FlowGraph]):
         graph = self.read_graph_yaml(filepath)
         if not graph.uuid:
             raise ValueError("The 'uuid' of the flow graph does not exist")
-        self[graph.uuid] = graph
+        self._graphs[graph.uuid] = graph
 
     def get_node_template(self, path: str):
         return self.nodes[path]

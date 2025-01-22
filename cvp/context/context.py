@@ -176,5 +176,5 @@ class Context:
         logger.info(f"Save the graph file: '{str(filepath)}'")
 
     def save_graphs(self) -> None:
-        for graph in self._flow_manager.values():
+        for graph in self._flow_manager.graphs.values():
             self.save_graph(graph)

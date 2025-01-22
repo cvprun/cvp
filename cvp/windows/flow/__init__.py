@@ -442,7 +442,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if graph := self._canvases.graph:
             graph_uuid_stash = graph.uuid
 
-        self.context.fm.clear()
+        self.context.fm.graphs.clear()
         self._canvases.clear()
 
         try:
@@ -452,7 +452,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             logger.error(e)
 
         if graph_uuid_stash:
-            if graph := self.context.fm.get(graph_uuid_stash):
+            if graph := self.context.fm.graphs.get(graph_uuid_stash):
                 self._canvases.open(graph)
 
     @override
