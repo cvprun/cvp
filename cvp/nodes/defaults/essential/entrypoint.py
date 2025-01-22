@@ -6,7 +6,7 @@ from typing import Any, Dict, Optional, Tuple, TypedDict
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node
-from cvp.nodes.record import NodeRecord
+from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowOutputPin
 from cvp.pins.pin import Pin
@@ -49,7 +49,7 @@ class EntrypointNode(Node):
         )
 
     @override
-    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
         try:
             if not isinstance(pin, EntrypointPin):
                 raise TypeError(

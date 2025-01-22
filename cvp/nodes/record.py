@@ -9,7 +9,7 @@ ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
 
 
-class NodeRecord:
+class NodeExecutionRecord:
     def __init__(
         self,
         inputs: Dict[str, Any],

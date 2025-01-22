@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict
+from typing import Any, Dict, TypeAlias
 
 from cvp.nodes.node import Node
-from cvp.nodes.record import NodeRecord
+from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
 from cvp.variables import FLOW_PATH_SEPARATOR
 
+VariableKey: TypeAlias = str
+VariableVal: TypeAlias = Any
+VariableRaw: TypeAlias = Dict[VariableKey, VariableVal]
 
-class FlowMemory(Dict[str, Any]):
-    def create_record(self, node: Node, node_uuid: str) -> NodeRecord:
+
+class VariableStore(VariableRaw):
+    def create_node_execution_record(
+        self,
+        node: Node,
+        node_uuid: str,
+    ) -> NodeExecutionRecord:
         inputs = dict()
         outputs = dict()
 
@@ -44,7 +52,7 @@ class FlowMemory(Dict[str, Any]):
                     case _:
                         assert False, "Inaccessible section"
 
-        return NodeRecord(
+        return NodeExecutionRecord(
             inputs=inputs,
             outputs=outputs,
             args=bind_args,

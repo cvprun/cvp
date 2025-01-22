@@ -8,7 +8,7 @@ from typing import Any, Callable, List, Optional, Sequence
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.icons import NODE_ICON_MAPPING
-from cvp.nodes.record import NodeRecord
+from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -18,7 +18,7 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 
 class NodeInterface(ABC):
     @abstractmethod
-    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
         raise NotImplementedError
 
 
@@ -198,7 +198,7 @@ class Node(NodeInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, pin: Pin, record: NodeRecord) -> Optional[Pin]:
+    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
         try:
             record.result = self.__call__(*record.args, **record.kwargs)
         except:  # noqa

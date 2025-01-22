@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from cvp.flow.graph import FlowGraph
-from cvp.flow.memory import FlowMemory
 from cvp.itertools.find_index import NOT_FOUND_INDEX, find_index
+from cvp.memory.store import VariableStore
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.pins.pin import Pin
@@ -23,12 +23,12 @@ class FlowRunner:
         if begin_node is None:
             raise KeyError(f"Not found begin node: '{node_uuid}'")
 
-        memory = FlowMemory()
+        memory = VariableStore()
         node = self._node_registry.get(begin_node.path)
         self.run(self._entrypoint, node, node_uuid, memory)
 
-    def run(self, pin: Pin, node: Node, node_uuid: str, memory: FlowMemory) -> None:
-        record = memory.create_record(node, node_uuid)
+    def run(self, pin: Pin, node: Node, node_uuid: str, memory: VariableStore) -> None:
+        record = memory.create_node_execution_record(node, node_uuid)
         next_output_pin = node.run(pin, record)
 
         if next_output_pin is None:
