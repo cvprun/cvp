@@ -44,9 +44,7 @@ class DownloadRunner:
         follow_redirects=True,
         verify: Union[str, bool, SSLContext] = True,
     ):
-        self._future = executor.submit(self._runner)
         self._downloader = downloader
-
         self._download_timeout = download_timeout
         self._verify_checksum = verify_checksum
         self._follow_redirects = follow_redirects
@@ -57,6 +55,8 @@ class DownloadRunner:
         self._content_length = 0
         self._download_bytes = 0
         self._exception = None
+
+        self._future = executor.submit(self._runner)
 
     @property
     def future(self):

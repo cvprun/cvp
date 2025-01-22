@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Dict, TypeAlias
+from typing import Any, Dict, Optional, TypeAlias
 
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
@@ -15,6 +15,27 @@ VariableVal: TypeAlias = Any
 
 
 class VariableStore(Dict[VariableKey, VariableVal]):
+    @classmethod
+    def from_other(
+        cls,
+        other: Optional["VariableStore"] = None,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+    ):
+        if use_copy and use_deepcopy:
+            raise ValueError("use_copy and use_deepcopy cannot coexist.")
+
+        if other is not None:
+            if use_copy:
+                return other.copy()
+            elif use_deepcopy:
+                return deepcopy(other)
+            else:
+                return other
+        else:
+            return cls()
+
     @staticmethod
     def gen_pin_key(node_uuid: str, pin_name: str):
         return node_uuid + FLOW_PATH_SEPARATOR + pin_name
