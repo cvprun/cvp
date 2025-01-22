@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from cvp.flow.graph import FlowGraph
+from cvp.flow.store import VariableStore
 from cvp.itertools.find_index import NOT_FOUND_INDEX, find_index
-from cvp.memory.store import VariableStore
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.pins.pin import Pin

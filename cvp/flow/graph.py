@@ -644,3 +644,14 @@ class FlowGraph:
             next_pos = x1, cursor
             self.move_node(node, next_pos)
             cursor += node.height + space
+
+    def validate_templates(self) -> None:
+        for node in self.nodes:
+            if node.template is None:
+                raise ValueError(f"The node template is invalid: '{node.name}'")
+
+            for pin in node.pins:
+                if pin.template is None:
+                    raise ValueError(
+                        f"The pin template is invalid: '{node.name}.{pin.name}'"
+                    )
