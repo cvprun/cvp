@@ -28,32 +28,26 @@ class RunTab(TabItem[Canvases]):
     @override
     def on_item(self, item: Canvases) -> None:
         opened = item.opened
-        if self._fonts.normal_icon:
-            button(f"{PLAY} Run", disabled=not opened)
+        opened = False  # TODO: Remove
+        button(f"{PLAY} Run", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{BUG} Debug", disabled=not opened)
+        button(f"{BUG} Debug", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{PAUSE} Pause", disabled=not opened)
+        button(f"{PAUSE} Pause", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{STOP} Stop", disabled=not opened)
+        button(f"{STOP} Stop", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{DEBUG_STEP_OVER} Step Over", disabled=not opened)
+        button(f"{DEBUG_STEP_OVER} Step Over", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{DEBUG_STEP_INTO} Step Into", disabled=not opened)
+        button(f"{DEBUG_STEP_INTO} Step Into", disabled=not opened)
 
         imgui.same_line()
-        if self._fonts.normal_icon:
-            button(f"{DEBUG_STEP_OUT} Step Out", disabled=not opened)
+        button(f"{DEBUG_STEP_OUT} Step Out", disabled=not opened)
 
         imgui.separator()
         bottom_spacing = imgui.get_style().item_spacing.y

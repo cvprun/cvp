@@ -48,6 +48,10 @@ class FlowPin:
     def template(self):
         return self._template
 
+    @template.setter
+    def template(self, value: Pin) -> None:
+        self._template = value
+
     @property
     def is_data_action(self):
         return self.action == Action.data

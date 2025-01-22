@@ -14,11 +14,11 @@ VariableKey: TypeAlias = str
 VariableVal: TypeAlias = Any
 
 
-class VariableStore(Dict[VariableKey, VariableVal]):
+class NodeVariableStore(Dict[VariableKey, VariableVal]):
     @classmethod
     def from_other(
         cls,
-        other: Optional["VariableStore"] = None,
+        other: Optional["NodeVariableStore"] = None,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -42,13 +42,22 @@ class VariableStore(Dict[VariableKey, VariableVal]):
 
     def get_pin_value(self, node_uuid: str, pin: Pin) -> Any:
         key = self.gen_pin_key(node_uuid, pin.name)
-        if pin.has_default:
-            return self.get(key, pin.has_default)
+        if self.__contains__(key):
+            return self.__getitem__(key)
 
-        if not self.__contains__(key):
-            raise KeyError(f"Not found variable: '{key}'")
+        if pin.dtype is not None:
+            if pin.has_default:
+                value = pin.dtype.base(pin.default)
+            else:
+                value = pin.dtype.base()
+        else:
+            if pin.has_default:
+                value = pin.default
+            else:
+                value = None
 
-        return self.__getitem__(key)
+        self.__setitem__(key, value)
+        return value
 
     def create_node_execution_record(
         self,

@@ -192,6 +192,12 @@ class Node(NodeInterface):
         assert 0 == len(self.data_outputs)
         return True
 
+    def find_pin(self, pin_name: str) -> Optional[Pin]:
+        for pin in self.pins:
+            if pin.name == pin_name:
+                return pin
+        return None
+
     def __call__(self, *args, **kwargs) -> Any:
         if self.func is None:
             raise ValueError("Node function is not set")

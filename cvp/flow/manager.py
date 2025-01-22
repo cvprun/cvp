@@ -10,6 +10,7 @@ from yaml import dump, full_load
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
+from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.resources.home import HomeDir
@@ -20,11 +21,14 @@ from cvp.yaml.dumpers import IndentListDumper
 
 class FlowManager:
     _graphs: OrderedDict[str, FlowGraph]
+    _runners: OrderedDict[str, FlowRunner]
+
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False):
         self._graphs = OrderedDict()
+        self._runners = OrderedDict()
         self._dtype_registry = DtypeRegistry()
         self._node_registry = NodeRegistry(self._dtype_registry)
 
@@ -38,6 +42,10 @@ class FlowManager:
     @property
     def graphs(self):
         return self._graphs
+
+    @property
+    def runners(self):
+        return self._runners
 
     @property
     def dtypes(self):
@@ -104,12 +112,6 @@ class FlowManager:
         return dump(serialize(graph), Dumper=IndentListDumper).encode(encoding)
 
     @staticmethod
-    def loads_graph_yaml(data: bytes) -> FlowGraph:
-        result = deserialize(full_load(data), FlowGraph)
-        assert isinstance(result, FlowGraph)
-        return result
-
-    @staticmethod
     def write_graph_yaml(
         filepath: Union[str, PathLike[str]],
         graph: FlowGraph,
@@ -118,10 +120,22 @@ class FlowManager:
         with open(filepath, "wb") as f:
             f.write(FlowManager.dumps_graph_yaml(graph, encoding=encoding))
 
-    @staticmethod
-    def read_graph_yaml(filepath: Union[str, PathLike[str]]) -> FlowGraph:
+    def loads_graph_yaml(self, data: bytes) -> FlowGraph:
+        result = deserialize(full_load(data), FlowGraph)
+        assert isinstance(result, FlowGraph)
+        for node in result.nodes:
+            assert node.template is None
+            node.template = self._node_registry.nodes[node.path]
+            for pin in node.pins:
+                assert pin.template is None
+                if pin_template := node.template.find_pin(pin.name):
+                    pin.template = pin_template
+        result.update_arcs_io(force=True)
+        return result
+
+    def read_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> FlowGraph:
         with open(filepath, "rb") as f:
-            return FlowManager.loads_graph_yaml(f.read())
+            return self.loads_graph_yaml(f.read())
 
     def update_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> None:
         graph = self.read_graph_yaml(filepath)

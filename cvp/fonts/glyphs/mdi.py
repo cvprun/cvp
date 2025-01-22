@@ -43,6 +43,7 @@ BUG_PLAY: Final[str] = "\U000F1AF7"
 BUG_STOP: Final[str] = "\U000F1AF9"
 
 MINUS: Final[str] = "\U000F0374"
+PACKAGE_VARIANT_CLOSED: Final[str] = "\U000F03D7"
 MINUS_BOX_OUTLINE: Final[str] = "\U000F06F2"
 
 ALPHA_A: Final[str] = "\U000F0AEE"

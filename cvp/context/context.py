@@ -9,6 +9,8 @@ from cvp.config.config import Config
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
 from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
+from cvp.flow.node import FlowNode
+from cvp.flow.runner import FlowRunner
 from cvp.logging.logging import (
     convert_level_number,
     dumps_default_logging_config,
@@ -161,6 +163,17 @@ class Context:
             download_timeout=download_timeout,
             verify_checksum=verify_checksum,
         )
+
+    def start_flow_thread(self, graph: FlowGraph, start_node: Union[FlowNode, str]):
+        runner = FlowRunner(
+            executor=self._process_manager.thread_pool,
+            graph=graph,
+            start_node=start_node,
+            use_copy=False,
+            use_deepcopy=False,
+        )
+        self._flow_manager.runners[graph.uuid] = runner
+        return runner
 
     def teardown_process_manager(self) -> None:
         timeout = self._config.process_manager.teardown_timeout

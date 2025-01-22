@@ -78,6 +78,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             ("Edit", self.on_edit_menu),
             ("Layout", self.on_layout_menu),
             ("Run", self.on_run_menu),
+            ("Deploy", self.on_deploy_menu),
             ("View", self.on_view_menu),
         )
 
@@ -314,8 +315,51 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 canvas.save_history("Distribute vertical nodes")
             imgui.end_menu()
 
+    def _process_run_menu(self, canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            opened = True
+        else:
+            opened = False
+
+        with imgui.begin_menu(f"{PLAY} Run", enabled=opened) as run_menu:
+            if run_menu.opened:
+                assert canvas is not None
+                begin_nodes = canvas.graph.find_begin_nodes()
+                if begin_nodes:
+                    for node in begin_nodes:
+                        if menu_item(node.name):
+                            self.context.start_flow_thread(canvas.graph, node)
+                else:
+                    menu_item("[Empty]", enabled=False)
+
+        opened = False  # TODO: Remove
+
+        with imgui.begin_menu(f"{BUG} Debug", enabled=opened) as debug_menu:
+            if debug_menu.opened:
+                assert canvas is not None
+                begin_nodes = canvas.graph.find_begin_nodes()
+                if begin_nodes:
+                    for node in begin_nodes:
+                        if menu_item(node.name):
+                            pass
+                else:
+                    menu_item("[Empty]", enabled=False)
+
+        imgui.separator()
+
+        if menu_item(f"{PAUSE} Pause", enabled=opened):
+            pass
+        if menu_item(f"{STOP} Stop", enabled=opened):
+            pass
+        if menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=opened):
+            pass
+        if menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=opened):
+            pass
+        if menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=opened):
+            pass
+
     @staticmethod
-    def _process_run_menu(
+    def _process_deploy_menu(
         fonts: FontMapper,
         canvas: Optional[CanvasGraph] = None,
     ) -> None:
@@ -324,21 +368,10 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         else:
             opened = False
 
-        if fonts.normal_icon:
-            if menu_item(f"{PLAY} Run", enabled=opened):
-                pass
-            if menu_item(f"{BUG} Debug", enabled=opened):
-                pass
-            if menu_item(f"{PAUSE} Pause", enabled=opened):
-                pass
-            if menu_item(f"{STOP} Stop", enabled=opened):
-                pass
-            if menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=opened):
-                pass
-            if menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=opened):
-                pass
-            if menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=opened):
-                pass
+        opened = False  # TODO: Remove
+
+        if menu_item("Upload to ...", enabled=opened):
+            pass
 
     def on_menu(self) -> None:
         with imgui.begin_menu_bar() as menu_bar:
@@ -402,9 +435,16 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_run_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_run_menu(self._fonts, canvas)
+                self._process_run_menu(canvas)
         else:
-            self._process_run_menu(self._fonts)
+            self._process_run_menu()
+
+    def on_deploy_menu(self) -> None:
+        if canvas := self._canvases.canvas:
+            with canvas:
+                self._process_deploy_menu(self._fonts, canvas)
+        else:
+            self._process_deploy_menu(self._fonts)
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):

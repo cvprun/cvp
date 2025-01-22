@@ -61,6 +61,10 @@ class FlowNode:
     def template(self):
         return self._template
 
+    @template.setter
+    def template(self, value: Node) -> None:
+        self._template = value
+
     @property
     def as_flow_input_names(self):
         return [pin.name for pin in self.flow_inputs]

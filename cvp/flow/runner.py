@@ -12,10 +12,10 @@ from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
-from cvp.flow.store import VariableStore
 from cvp.logging.logging import flow_logger
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.store import NodeVariableStore
 from cvp.pins.special import EntrypointPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -42,12 +42,11 @@ class FlowRunner:
         executor: Executor,
         graph: FlowGraph,
         start_node: Union[FlowNode, str],
-        memory: Optional[VariableStore] = None,
+        memory: Optional[NodeVariableStore] = None,
         *,
         logger: Optional[Logger] = None,
         use_copy=False,
         use_deepcopy=False,
-        use_graph_lock=False,
     ):
         if use_copy and use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist.")
@@ -79,12 +78,11 @@ class FlowRunner:
         self._logger = logger if logger else flow_logger
         self._use_copy = use_copy
         self._use_deepcopy = use_deepcopy
-        self._use_graph_lock = use_graph_lock
 
         self._step = FlowRunnerStep.done
         self._records = deque()
         self._exception = None
-        self._memory = VariableStore.from_other(
+        self._memory = NodeVariableStore.from_other(
             other=memory,
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
@@ -102,7 +100,7 @@ class FlowRunner:
         with self._lock:
             return FlowRunnerState(FlowRunnerStep(self._step))
 
-    def create_record(self, node_template: Node, node_uuid: str) -> NodeExecutionRecord:
+    def create_record(self, node_template: Node, node_uuid: str):
         with self._lock:
             return self._memory.create_node_execution_record(
                 node_template,
@@ -128,10 +126,6 @@ class FlowRunner:
         self._logger.info(f"{type(self).__name__} start")
         with self._lock:
             self._step = FlowRunnerStep.running
-            graph_lock = self._use_graph_lock
-            prev_lock = self._graph.lock
-            if graph_lock:
-                self._graph.lock = True
 
         cursor = self.get_start_cursor()
         try:
@@ -145,8 +139,6 @@ class FlowRunner:
             self._logger.info(f"{type(self).__name__} done")
             with self._lock:
                 self._step = FlowRunnerStep.done
-                if graph_lock:
-                    self._graph.lock = prev_lock
                 return self._records.copy()
 
     def _execute_node(self, np: FlowNodePin) -> Optional[FlowNodePin]:
