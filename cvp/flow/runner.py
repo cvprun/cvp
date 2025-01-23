@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
-from concurrent.futures import Executor
-from copy import deepcopy
+from concurrent.futures import Executor, Future
 from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
-from threading import Lock
-from typing import Deque, NamedTuple, Optional, Union
+from threading import Condition, Lock
+from typing import Deque, Final, NamedTuple, Optional, Union
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
@@ -20,18 +19,22 @@ from cvp.nodes.store import NodeVariableStore
 from cvp.pins.special import EntrypointPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
+INFINITY_COUNTER: Final[int] = -1
+STOP_COUNTER: Final[int] = -2
+
 
 @unique
 class FlowRunnerStep(IntEnum):
     done = auto()
     running = auto()
+    waiting = auto()
 
 
 class FlowRunnerState(NamedTuple):
     step: FlowRunnerStep
 
     def __str__(self):
-        return f"step={self.step}"
+        return f"<{type(self).__name__} step={self.step}>"
 
 
 @dataclass
@@ -76,8 +79,8 @@ class FlowRunnerArguments:
 
 
 class FlowRunner:
-    _exception: Optional[BaseException]
     _records: Deque[NodeExecutionRecord]
+    _future: Future[Deque[NodeExecutionRecord]]
 
     def __init__(
         self,
@@ -116,9 +119,10 @@ class FlowRunner:
         assert isinstance(start_node, FlowNode)
 
         self._lock = Lock()
+        self._counter = INFINITY_COUNTER
+        self._condition = Condition(self._lock)
         self._step = FlowRunnerStep.done
         self._records = deque()
-        self._exception = None
         self._memory = NodeVariableStore.from_other(
             other=memory,
             use_copy=use_copy,
@@ -170,10 +174,49 @@ class FlowRunner:
             self._memory.update_with_node_execution_record(node_uuid, record)
             self._records.append(record)
 
-    @property
-    def exception(self) -> Optional[BaseException]:
-        with self._lock:
-            return deepcopy(self._exception)
+    def stop(self) -> None:
+        with self._condition:
+            self._counter = STOP_COUNTER
+            self._condition.notify_all()
+
+    def pause(self) -> None:
+        with self._condition:
+            self._counter = 0
+
+    def pause_if_running(self) -> None:
+        with self._condition:
+            if self._counter == INFINITY_COUNTER:
+                self._counter = 0
+
+    def resume(self) -> None:
+        with self._condition:
+            self._counter = INFINITY_COUNTER
+            self._condition.notify_all()
+
+    def step(self, count=1) -> None:
+        with self._condition:
+            if self._counter <= INFINITY_COUNTER:
+                self._counter = count
+            elif 0 <= self._counter:
+                self._counter += count
+            self._condition.notify_all()
+
+    def _wait_for_next_step(self) -> None:
+        with self._condition:
+            if 1 <= self._counter:
+                self._counter -= 1
+            elif self._counter == INFINITY_COUNTER:
+                pass
+            elif self._counter == STOP_COUNTER:
+                raise InterruptedError("The STOP counter has been detected")
+
+            if self._counter == 0:
+                self._step = FlowRunnerStep.waiting
+                try:
+                    while self._counter == 0:
+                        self._condition.wait()
+                finally:
+                    self._step = FlowRunnerStep.running
 
     def _runner(self, args: FlowRunnerArguments):
         args.info("Running ...")
@@ -186,6 +229,11 @@ class FlowRunner:
 
         try:
             while next_cursor is not None:
+                if next_cursor.node.breakpoint:
+                    self.pause_if_running()
+
+                self._wait_for_next_step()
+
                 prev_cursor = next_cursor
                 args.info(f"[{str(prev_cursor)}] Begin")
                 next_cursor = self._execute_node(
@@ -199,8 +247,7 @@ class FlowRunner:
                 args.info(f"[{str(prev_cursor)}] End")
         except BaseException as e:
             args.error(f"An exception occurred in {str(prev_cursor)}: {e}")
-            with self._lock:
-                self._exception = e
+            raise
         finally:
             args.info("Done!")
             with self._lock:
@@ -228,6 +275,7 @@ class FlowRunner:
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
         )
+
         try:
             next_pin_template = node_template.run(pin_template, record)
         finally:

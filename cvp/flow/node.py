@@ -19,6 +19,7 @@ class FlowNode:
     docs: str = field(default_factory=str)
     icon: str = field(default_factory=str)
     lock: bool = False
+    breakpoint: bool = False
     color: RGBA = WHITE_RGBA
     flow_inputs: List[FlowPin] = field(default_factory=list)
     flow_outputs: List[FlowPin] = field(default_factory=list)
