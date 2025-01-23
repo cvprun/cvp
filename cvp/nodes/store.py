@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Dict, Optional, TypeAlias
+from typing import Any, Dict, Optional, Sequence, TypeAlias
 
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
+from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
@@ -37,7 +37,7 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
             return cls()
 
     @staticmethod
-    def gen_pin_key(node_uuid: str, pin_name: str):
+    def gen_pin_key(node_uuid: str, pin_name: str) -> VariableKey:
         return node_uuid + FLOW_PATH_SEPARATOR + pin_name
 
     def get_pin_value(self, node_uuid: str, pin: Pin) -> Any:
@@ -52,7 +52,7 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
                 value = pin.dtype.base()
         else:
             if pin.has_default:
-                value = pin.default
+                value = deepcopy(pin.default)  # It should not affect the original value
             else:
                 value = None
 
@@ -61,22 +61,24 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
 
     def create_node_execution_record(
         self,
-        node: Node,
         node_uuid: str,
+        data_pins: Sequence[Pin],
         *,
         use_copy=False,
         use_deepcopy=False,
     ) -> NodeExecutionRecord:
         if use_copy and use_deepcopy:
-            raise ValueError("use_copy and use_deepcopy cannot coexist.")
+            raise ValueError("'use_copy' and 'use_deepcopy' cannot coexist")
 
-        inputs = dict()
-        outputs = dict()
-
+        variables = dict()
         bind_args = list()
         bind_kwargs = dict()
+        result_key = str()
 
-        for pin in node.datas:
+        for pin in data_pins:
+            if not pin.is_data_action:
+                raise ValueError(f"Only '{Action.data}' are allowed")
+
             value = self.get_pin_value(node_uuid, pin)
             if use_copy:
                 value = copy(value)
@@ -85,14 +87,16 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
 
             match pin.stream:
                 case Stream.input:
-                    inputs[pin.name] = value
+                    variables[pin.name] = value
                 case Stream.output:
-                    outputs[pin.name] = value
+                    variables[pin.name] = value
                 case _:
                     assert False, "Inaccessible section"
 
             if pin.kind is not None:
                 match pin.kind:
+                    case PinKind.unknown:
+                        pass
                     case PinKind.positional_only:
                         bind_args.append(value)
                     case PinKind.positional_or_keyword:
@@ -103,12 +107,25 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
                         bind_kwargs[pin.name] = value
                     case PinKind.var_keyword:
                         bind_kwargs[pin.name] = value
+                    case PinKind.return_only:
+                        result_key = pin.name
+                    case PinKind.flow_only:
+                        assert False, "Inaccessible section"
                     case _:
                         assert False, "Inaccessible section"
 
-        return NodeExecutionRecord(
-            inputs=inputs,
-            outputs=outputs,
-            args=bind_args,
-            kwargs=bind_kwargs,
-        )
+        return NodeExecutionRecord(variables, bind_args, bind_kwargs, result_key)
+
+    def update_with_node_execution_record(
+        self,
+        node_uuid: str,
+        record: NodeExecutionRecord,
+    ) -> None:
+        for pin_name, pin_variable in record.variables.items():
+            key = self.gen_pin_key(node_uuid, pin_name)
+            self.__setitem__(key, pin_variable)
+
+        if not record.has_exception:
+            if record.result_key:
+                key = self.gen_pin_key(node_uuid, record.result_key)
+                self.__setitem__(key, record.result)

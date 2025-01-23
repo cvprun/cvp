@@ -3,6 +3,7 @@
 from typing import Optional, Sequence
 
 from cvp.pins.action import Action
+from cvp.pins.kind import PinKind
 from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 
@@ -22,6 +23,7 @@ class FlowInputPin(Pin):
             stream=Stream.input,
             required=False,
             arcs=arcs,
+            kind=PinKind.flow_only,
         )
 
 
@@ -40,4 +42,5 @@ class FlowOutputPin(Pin):
             stream=Stream.output,
             required=False,
             arcs=arcs,
+            kind=PinKind.flow_only,
         )

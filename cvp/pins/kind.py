@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum, unique
+from enum import IntEnum, auto, unique
 from inspect import Parameter
 
 
@@ -11,6 +11,9 @@ class PinKind(IntEnum):
     var_positional = Parameter.VAR_POSITIONAL.value
     keyword_only = Parameter.KEYWORD_ONLY.value
     var_keyword = Parameter.VAR_KEYWORD.value
+    return_only = auto()
+    flow_only = auto()
+    unknown = auto()
 
 
 def parameter_to_kind(parameter: Parameter) -> PinKind:
@@ -31,6 +34,8 @@ def parameter_to_kind(parameter: Parameter) -> PinKind:
 
 def kind_to_parameter(kind: PinKind):
     match kind:
+        case PinKind.unknown:
+            raise ValueError(f"Unsupported '{PinKind.unknown.name}' pin")
         case PinKind.positional_only:
             return Parameter.POSITIONAL_ONLY
         case PinKind.positional_or_keyword:
@@ -41,5 +46,9 @@ def kind_to_parameter(kind: PinKind):
             return Parameter.KEYWORD_ONLY
         case PinKind.var_keyword:
             return Parameter.VAR_KEYWORD
+        case PinKind.return_only:
+            raise ValueError(f"Unsupported '{PinKind.return_only.name}' pin")
+        case PinKind.flow_only:
+            raise ValueError(f"Unsupported '{PinKind.flow_only.name}' pin")
         case _:
-            raise ValueError(f"Unexpected pin kind: {kind.name}")
+            raise ValueError(f"Unexpected pin kind: '{kind.name}'")

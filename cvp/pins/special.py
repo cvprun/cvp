@@ -8,6 +8,7 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.pins.annotated import get_arcs, get_docs, get_name
 from cvp.pins.datas import DataOutputPin
 from cvp.pins.flows import FlowInputPin, FlowOutputPin
+from cvp.pins.kind import PinKind
 
 
 class EntrypointPin(FlowInputPin):
@@ -65,6 +66,7 @@ class ReturnPin(DataOutputPin):
             dtype=dtype,
             docs=docs if docs else "The return value of a function",
             arcs=arcs,
+            kind=PinKind.return_only,
         )
 
     @classmethod

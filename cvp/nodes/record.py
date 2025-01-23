@@ -12,27 +12,23 @@ NullInfo = Tuple[None, None, None]
 class NodeExecutionRecord:
     def __init__(
         self,
-        inputs: Dict[str, Any],
-        outputs: Dict[str, Any],
+        variables: Dict[str, Any],
         args: Sequence[Any],
         kwargs: Dict[str, Any],
+        result_key: Optional[str] = None,
         result: Any = None,
         exception: Optional[ExceptionInfo] = None,
     ):
-        self._inputs = inputs
-        self._outputs = outputs
+        self._variables = variables
         self._args = tuple(args)
         self._kwargs = kwargs
         self._result = result
         self._exception = exception
+        self._result_key = result_key if result_key else str()
 
     @property
-    def inputs(self):
-        return self._inputs
-
-    @property
-    def outputs(self):
-        return self._outputs
+    def variables(self):
+        return self._variables
 
     @property
     def args(self):
@@ -52,6 +48,10 @@ class NodeExecutionRecord:
         self._exception = None
 
     @property
+    def has_exception(self) -> bool:
+        return self._exception is not None
+
+    @property
     def exception(self):
         return self._exception
 
@@ -69,7 +69,7 @@ class NodeExecutionRecord:
         return self._exception[0]
 
     @property
-    def exc_info(self) -> BaseException:
+    def exc_val(self) -> BaseException:
         assert self._exception is not None
         return self._exception[1]
 
@@ -78,12 +78,16 @@ class NodeExecutionRecord:
         assert self._exception is not None
         return self._exception[2]
 
+    @property
+    def result_key(self) -> str:
+        return self._result_key
+
     def clear(self) -> None:
         self._result = None
         self._exception = None
 
     def get(self, key: Pin) -> Any:
-        return self._inputs[key.name]
+        return self._variables[key.name]
 
     def set(self, key: Pin, value: Any) -> None:
-        self._outputs[key.name] = value
+        self._variables[key.name] = value

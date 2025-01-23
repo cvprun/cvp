@@ -42,7 +42,7 @@ class Pin:
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.arcs = list(arcs if arcs else [])
-        self.kind = kind
+        self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
 
     @classmethod

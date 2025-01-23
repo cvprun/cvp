@@ -72,13 +72,20 @@ class FlowRunner:
             raise TypeError(f"Invalid node type: '{type(start_node).__name__}'")
 
         assert isinstance(start_node, FlowNode)
+
+        # ------------------------------------------------------------------------------
+        # [READ-ONLY PROPERTIES]
+        # Do not use locks.
         self._start_node = start_node
         self._entrypoint = FlowPin.from_template(EntrypointPin())
         self._graph = graph
-        self._logger = logger if logger else flow_logger
+        self._graph_name = graph.name
+        self._graph_uuid = graph.uuid
         self._use_copy = use_copy
         self._use_deepcopy = use_deepcopy
+        # ------------------------------------------------------------------------------
 
+        self._lock = Lock()
         self._step = FlowRunnerStep.done
         self._records = deque()
         self._exception = None
@@ -88,8 +95,10 @@ class FlowRunner:
             use_deepcopy=use_deepcopy,
         )
 
-        self._lock = Lock()
-        self._future = executor.submit(self._runner)
+        # [IMPORTANT]
+        # After initializing the variables, you must do 'submit' at the end.
+        logger = logger if logger else flow_logger
+        self._future = executor.submit(self._runner, logger=logger)
 
     @property
     def future(self):
@@ -100,11 +109,11 @@ class FlowRunner:
         with self._lock:
             return FlowRunnerState(FlowRunnerStep(self._step))
 
-    def create_record(self, node_template: Node, node_uuid: str):
+    def create_record(self, node_uuid: str, node_template: Node):
         with self._lock:
             return self._memory.create_node_execution_record(
-                node_template,
                 node_uuid,
+                node_template.datas,
                 use_copy=self._use_copy,
                 use_deepcopy=self._use_deepcopy,
             )
@@ -113,30 +122,42 @@ class FlowRunner:
         with self._lock:
             self._records.append(record)
 
-    def get_start_cursor(self) -> Optional[FlowNodePin]:
-        with self._lock:
-            return FlowNodePin(self._start_node, self._entrypoint)
-
     @property
     def exception(self) -> Optional[BaseException]:
         with self._lock:
             return deepcopy(self._exception)
 
-    def _runner(self):
-        self._logger.info(f"{type(self).__name__} start")
+    @property
+    def logger_prefix(self) -> str:
+        return f"<{type(self).__name__} {self._graph_name}('{self._graph_uuid}')>"
+
+    @property
+    def start_cursor(self) -> Optional[FlowNodePin]:
+        """The Optional return value is to automatically infer the type of 'cursor'."""
+        return FlowNodePin(self._start_node, self._entrypoint)
+
+    def _runner(self, logger: Logger):
+        logger.info(f"{self.logger_prefix} running ...")
         with self._lock:
             self._step = FlowRunnerStep.running
 
-        cursor = self.get_start_cursor()
+        prev_cursor = self.start_cursor
+        next_cursor = prev_cursor
         try:
-            while cursor is not None:
-                cursor = self._execute_node(cursor)
+            while next_cursor is not None:
+                prev_cursor = next_cursor
+                logger.info(f"{self.logger_prefix} [{str(prev_cursor)}] begin")
+                next_cursor = self._execute_node(prev_cursor)
+                logger.info(f"{self.logger_prefix} [{str(prev_cursor)}] end")
         except BaseException as e:
-            self._logger.error(e)
+            logger.error(
+                f"{self.logger_prefix} An exception occurred in "
+                f"{str(prev_cursor)}: {e}"
+            )
             with self._lock:
                 self._exception = e
         finally:
-            self._logger.info(f"{type(self).__name__} done")
+            logger.info(f"{self.logger_prefix} done!")
             with self._lock:
                 self._step = FlowRunnerStep.done
                 return self._records.copy()
@@ -147,11 +168,14 @@ class FlowRunner:
         assert node_template is not None
         assert pin_template is not None
 
-        record = self.create_record(node_template, np.node.uuid)
+        record = self.create_record(np.node.uuid, node_template)
         try:
             next_pin_template = node_template.run(pin_template, record)
         finally:
+            self._memory.update_with_node_execution_record(np.node.uuid, record)
             self.append_record(record)
+            if record.has_exception:
+                raise record.exc_val.with_traceback(record.exc_tb)
 
         if next_pin_template is None:
             return None  # There is no next flow.
