@@ -3,6 +3,7 @@
 from collections import deque
 from concurrent.futures import Executor
 from copy import deepcopy
+from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
 from threading import Lock
@@ -31,6 +32,47 @@ class FlowRunnerState(NamedTuple):
 
     def __str__(self):
         return f"step={self.step}"
+
+
+@dataclass
+class FlowRunnerArguments:
+    """Do not use locks."""
+
+    graph: FlowGraph
+    start_node: FlowNode
+    entrypoint: FlowPin
+    logger: Logger
+    use_copy: bool
+    use_deepcopy: bool
+
+    @property
+    def graph_name(self):
+        return self.graph.name
+
+    @property
+    def graph_uuid(self):
+        return self.graph.uuid
+
+    @property
+    def logger_prefix(self) -> str:
+        return f"<{FlowRunner.__name__} {self.graph_name}({self.graph_uuid})>"
+
+    @property
+    def start_cursor(self) -> Optional[FlowNodePin]:
+        """The Optional return value is to automatically infer the type of 'cursor'."""
+        return FlowNodePin(self.start_node, self.entrypoint)
+
+    def error(self, message: str) -> None:
+        self.logger.error(f"{self.logger_prefix} {message}")
+
+    def warning(self, message: str) -> None:
+        self.logger.warning(f"{self.logger_prefix} {message}")
+
+    def info(self, message: str) -> None:
+        self.logger.info(f"{self.logger_prefix} {message}")
+
+    def debug(self, message: str) -> None:
+        self.logger.debug(f"{self.logger_prefix} {message}")
 
 
 class FlowRunner:
@@ -73,18 +115,6 @@ class FlowRunner:
 
         assert isinstance(start_node, FlowNode)
 
-        # ------------------------------------------------------------------------------
-        # [READ-ONLY PROPERTIES]
-        # Do not use locks.
-        self._start_node = start_node
-        self._entrypoint = FlowPin.from_template(EntrypointPin())
-        self._graph = graph
-        self._graph_name = graph.name
-        self._graph_uuid = graph.uuid
-        self._use_copy = use_copy
-        self._use_deepcopy = use_deepcopy
-        # ------------------------------------------------------------------------------
-
         self._lock = Lock()
         self._step = FlowRunnerStep.done
         self._records = deque()
@@ -95,10 +125,18 @@ class FlowRunner:
             use_deepcopy=use_deepcopy,
         )
 
+        arguments = FlowRunnerArguments(
+            start_node=start_node,
+            entrypoint=FlowPin.from_template(EntrypointPin()),
+            graph=graph,
+            logger=logger if logger else flow_logger,
+            use_copy=use_copy,
+            use_deepcopy=use_deepcopy,
+        )
+
         # [IMPORTANT]
         # After initializing the variables, you must do 'submit' at the end.
-        logger = logger if logger else flow_logger
-        self._future = executor.submit(self._runner, logger=logger)
+        self._future = executor.submit(self._runner, arguments)
 
     @property
     def future(self):
@@ -109,17 +147,27 @@ class FlowRunner:
         with self._lock:
             return FlowRunnerState(FlowRunnerStep(self._step))
 
-    def create_record(self, node_uuid: str, node_template: Node):
+    def create_record(
+        self,
+        index: int,
+        node_uuid: str,
+        node_template: Node,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+    ):
         with self._lock:
             return self._memory.create_node_execution_record(
-                node_uuid,
-                node_template.datas,
-                use_copy=self._use_copy,
-                use_deepcopy=self._use_deepcopy,
+                index=index,
+                node_uuid=node_uuid,
+                data_pins=node_template.datas,
+                use_copy=use_copy,
+                use_deepcopy=use_deepcopy,
             )
 
-    def append_record(self, record: NodeExecutionRecord) -> None:
+    def update_result_record(self, node_uuid: str, record: NodeExecutionRecord) -> None:
         with self._lock:
+            self._memory.update_with_node_execution_record(node_uuid, record)
             self._records.append(record)
 
     @property
@@ -127,53 +175,63 @@ class FlowRunner:
         with self._lock:
             return deepcopy(self._exception)
 
-    @property
-    def logger_prefix(self) -> str:
-        return f"<{type(self).__name__} {self._graph_name}('{self._graph_uuid}')>"
-
-    @property
-    def start_cursor(self) -> Optional[FlowNodePin]:
-        """The Optional return value is to automatically infer the type of 'cursor'."""
-        return FlowNodePin(self._start_node, self._entrypoint)
-
-    def _runner(self, logger: Logger):
-        logger.info(f"{self.logger_prefix} running ...")
+    def _runner(self, args: FlowRunnerArguments):
+        args.info("Running ...")
         with self._lock:
             self._step = FlowRunnerStep.running
 
-        prev_cursor = self.start_cursor
+        index = 0
+        prev_cursor = args.start_cursor
         next_cursor = prev_cursor
+
         try:
             while next_cursor is not None:
                 prev_cursor = next_cursor
-                logger.info(f"{self.logger_prefix} [{str(prev_cursor)}] begin")
-                next_cursor = self._execute_node(prev_cursor)
-                logger.info(f"{self.logger_prefix} [{str(prev_cursor)}] end")
+                args.info(f"[{str(prev_cursor)}] Begin")
+                next_cursor = self._execute_node(
+                    index=index,
+                    graph=args.graph,
+                    np=prev_cursor,
+                    use_copy=args.use_copy,
+                    use_deepcopy=args.use_deepcopy,
+                )
+                index += 1
+                args.info(f"[{str(prev_cursor)}] End")
         except BaseException as e:
-            logger.error(
-                f"{self.logger_prefix} An exception occurred in "
-                f"{str(prev_cursor)}: {e}"
-            )
+            args.error(f"An exception occurred in {str(prev_cursor)}: {e}")
             with self._lock:
                 self._exception = e
         finally:
-            logger.info(f"{self.logger_prefix} done!")
+            args.info("Done!")
             with self._lock:
                 self._step = FlowRunnerStep.done
                 return self._records.copy()
 
-    def _execute_node(self, np: FlowNodePin) -> Optional[FlowNodePin]:
+    def _execute_node(
+        self,
+        index: int,
+        graph: FlowGraph,
+        np: FlowNodePin,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+    ) -> Optional[FlowNodePin]:
         node_template = np.node.template
         pin_template = np.pin.template
         assert node_template is not None
         assert pin_template is not None
 
-        record = self.create_record(np.node.uuid, node_template)
+        record = self.create_record(
+            index,
+            np.node.uuid,
+            node_template,
+            use_copy=use_copy,
+            use_deepcopy=use_deepcopy,
+        )
         try:
             next_pin_template = node_template.run(pin_template, record)
         finally:
-            self._memory.update_with_node_execution_record(np.node.uuid, record)
-            self.append_record(record)
+            self.update_result_record(np.node.uuid, record)
             if record.has_exception:
                 raise record.exc_val.with_traceback(record.exc_tb)
 
@@ -191,7 +249,7 @@ class FlowRunner:
             raise ValueError("Only one output arc is allowed")
 
         arc_uuid = next_pin.arcs[0]
-        arc = self._graph.find_arc(arc_uuid)
+        arc = graph.find_arc(arc_uuid)
         if arc is None:
             raise IndexError(f"Not found arc: '{arc_uuid}'")
 
@@ -199,7 +257,7 @@ class FlowRunner:
         assert next_pin.name == arc.output.pin.name
 
         input_node_uuid = arc.input.node.uuid
-        input_node = self._graph.find_node(input_node_uuid)
+        input_node = graph.find_node(input_node_uuid)
         if input_node is None:
             raise IndexError(f"Not found input node: '{input_node_uuid}'")
 

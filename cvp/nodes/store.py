@@ -61,6 +61,7 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
 
     def create_node_execution_record(
         self,
+        index: int,
         node_uuid: str,
         data_pins: Sequence[Pin],
         *,
@@ -114,7 +115,14 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
                     case _:
                         assert False, "Inaccessible section"
 
-        return NodeExecutionRecord(variables, bind_args, bind_kwargs, result_key)
+        return NodeExecutionRecord(
+            index=index,
+            node_uuid=node_uuid,
+            variables=variables,
+            args=bind_args,
+            kwargs=bind_kwargs,
+            result_key=result_key,
+        )
 
     def update_with_node_execution_record(
         self,

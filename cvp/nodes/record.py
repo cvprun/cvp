@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta
 from types import TracebackType
 from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
 
@@ -12,6 +13,8 @@ NullInfo = Tuple[None, None, None]
 class NodeExecutionRecord:
     def __init__(
         self,
+        index: int,
+        node_uuid: str,
         variables: Dict[str, Any],
         args: Sequence[Any],
         kwargs: Dict[str, Any],
@@ -19,12 +22,24 @@ class NodeExecutionRecord:
         result: Any = None,
         exception: Optional[ExceptionInfo] = None,
     ):
+        self._index = index
+        self._node_uuid = node_uuid
         self._variables = variables
         self._args = tuple(args)
         self._kwargs = kwargs
+        self._begin = datetime.now()
+        self._end = datetime.now()
+        self._result_key = result_key if result_key else str()
         self._result = result
         self._exception = exception
-        self._result_key = result_key if result_key else str()
+
+    @property
+    def index(self):
+        return self._index
+
+    @property
+    def node_uuid(self):
+        return self._node_uuid
 
     @property
     def variables(self):
@@ -37,6 +52,28 @@ class NodeExecutionRecord:
     @property
     def kwargs(self):
         return self._kwargs
+
+    @property
+    def begin(self) -> datetime:
+        return self._begin
+
+    def set_begin_now(self) -> None:
+        self._begin = datetime.now()
+
+    @property
+    def end(self) -> datetime:
+        return self._end
+
+    def set_end_now(self) -> None:
+        self._end = datetime.now()
+
+    @property
+    def duration(self) -> timedelta:
+        return self._end - self._begin
+
+    @property
+    def result_key(self) -> str:
+        return self._result_key
 
     @property
     def result(self):
@@ -77,10 +114,6 @@ class NodeExecutionRecord:
     def exc_tb(self) -> TracebackType:
         assert self._exception is not None
         return self._exception[2]
-
-    @property
-    def result_key(self) -> str:
-        return self._result_key
 
     def clear(self) -> None:
         self._result = None
