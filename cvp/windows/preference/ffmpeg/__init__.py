@@ -2,7 +2,7 @@
 
 from typing import Sequence
 
-from cvp.context.context import Context
+from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.base import PopupBase
 from cvp.renderer.popup.propagator import PopupPropagator
 from cvp.types.override import override
@@ -11,7 +11,7 @@ from cvp.windows.preference.ffmpeg.exe import ExeTabs
 
 
 class FFmpegPreference(PopupPropagator, PreferenceWidget):
-    def __init__(self, context: Context, label="FFmpeg"):
+    def __init__(self, context: RendererContext, label="FFmpeg"):
         self._config = context.config.ffmpeg
         self._label = label
         self._tabs = ExeTabs(context)

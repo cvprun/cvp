@@ -5,9 +5,9 @@ from typing import Mapping
 import imgui
 
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.popups.confirm import ConfirmPopup
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.mapper import WindowMapper
 from cvp.types.override import override
 from cvp.widgets.manager_tabs import ManagerTabs
@@ -15,7 +15,7 @@ from cvp.windows.layout.info import LayoutInfoTab
 
 
 class LayoutManager(ManagerTabs[LayoutManagerConfig, LayoutConfig]):
-    def __init__(self, context: Context, windows: WindowMapper):
+    def __init__(self, context: RendererContext, windows: WindowMapper):
         super().__init__(
             context=context,
             window_config=context.config.layout_manager,

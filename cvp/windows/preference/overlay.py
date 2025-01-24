@@ -3,12 +3,12 @@
 from typing import List
 
 from cvp.config.sections.overlay import Anchor
-from cvp.context.context import Context
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
 from cvp.imgui.input_int import input_int
 from cvp.imgui.slider_float import slider_float
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
@@ -16,7 +16,7 @@ from cvp.windows.preference._base import PreferenceWidget
 class OverlayPreference(PreferenceWidget):
     _anchors: List[Anchor]
 
-    def __init__(self, context: Context, label="Overlay"):
+    def __init__(self, context: RendererContext, label="Overlay"):
         self._config = context.config.overlay_window
         self._label = label
         self._anchors = list(Anchor)

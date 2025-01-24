@@ -6,12 +6,12 @@ from typing import Final, Tuple
 import imgui
 
 from cvp.config.sections.overlay import OverlayWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.begin_popup_context_window import (
     begin_popup_context_window,
     end_popup_context_window,
 )
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.system.usage import SystemUsage
 from cvp.types.colors import RGBA
@@ -27,7 +27,7 @@ OVERLAY_WINDOW_FLAGS: Final[int] = (
 
 
 class OverlayWindow(WindowBase[OverlayWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.overlay_window,

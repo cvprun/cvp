@@ -19,15 +19,14 @@ from cvp.assets.icons import get_default_icon_path
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.push_style_var import default_style_colors
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
 from cvp.popups.confirm import ConfirmPopup
+from cvp.renderer.context import RendererContext
 from cvp.renderer.renderer import PygameRenderer
-from cvp.renderer.window.mapper import WindowMapper
 from cvp.renderer.world.world import World
 from cvp.windows.canvas import CanvasWindow
 from cvp.windows.catalog import CatalogManager
@@ -58,22 +57,20 @@ class PlayerApplication:
     _renderer: PygameRenderer
 
     def __init__(self, context: Context):
-        self._context = context
-        self._windows = WindowMapper()
-        self._fonts = FontMapper()
+        self._context = RendererContext.from_context(context, with_init=True)
         self._profiler = ProfileLogging(profile_logger)
         self._world = World(self._context)
 
-        self._canvas = CanvasWindow(self._context, self._fonts)
+        self._canvas = CanvasWindow(self._context, self._context.fonts)
         self._catalog_manager = CatalogManager(self._context)
         self._dtype_manager = DtypeManager(self._context)
-        self._files = FilesWindow(self._context, self._fonts)
-        self._flow = FlowWindow(self._context, self._fonts)
-        self._font_manager = FontManager(self._context, self._fonts)
+        self._files = FilesWindow(self._context, self._context.fonts)
+        self._flow = FlowWindow(self._context, self._context.fonts)
+        self._font_manager = FontManager(self._context, self._context.fonts)
         self._glyph_hack = GlyphHackWindow(self._context)
         self._labeling_manager = LabelingWindow(self._context)
-        self._layout_manager = LayoutManager(self._context, self._windows)
-        self._media_manager = MediaManager(self._context, self._windows)
+        self._layout_manager = LayoutManager(self._context, self._context.windows)
+        self._media_manager = MediaManager(self._context, self._context.windows)
         self._onvif_manager = OnvifManager(self._context)
         self._overlay = OverlayWindow(self._context)
         self._plot = PlotWindow(self._context)
@@ -84,7 +81,7 @@ class PlayerApplication:
         self._tetrix = TetrixWindow(self._context)
         self._text = TextWindow(self._context)
         self._toast = ToastWindow(self._context)
-        self._window_manager = WindowManager(self._context, self._windows)
+        self._window_manager = WindowManager(self._context, self._context.windows)
         self._worker_manager = WorkerManager(self._context)
         self._wsd_manager = WsdManager(self._context)
 
@@ -230,26 +227,7 @@ class PlayerApplication:
         self._renderer = PygameRenderer()
 
         io.fonts.clear()
-        normal_text_size_pixels = self.config.font.normal_text_size_pixels
-        medium_text_size_pixels = self.config.font.medium_text_size_pixels
-        large_text_size_pixels = self.config.font.large_text_size_pixels
-
-        user_font = self.config.font.user_font
-        if os.path.isfile(user_font):
-            self._fonts.add_normal_ttf(user_font, normal_text_size_pixels)
-            self._fonts.add_medium_ttf(user_font, medium_text_size_pixels)
-            self._fonts.add_large_ttf(user_font, large_text_size_pixels)
-        else:
-            self._fonts.add_mixed_normal_text_font(normal_text_size_pixels)
-            self._fonts.add_mixed_medium_text_font(medium_text_size_pixels)
-            self._fonts.add_mixed_large_text_font(large_text_size_pixels)
-
-        normal_icon_size_pixels = self.config.font.normal_icon_size_pixels
-        medium_icon_size_pixels = self.config.font.medium_icon_size_pixels
-        large_icon_size_pixels = self.config.font.large_icon_size_pixels
-        self._fonts.add_mdi_normal_icon_font(normal_icon_size_pixels)
-        self._fonts.add_mdi_medium_icon_font(medium_icon_size_pixels)
-        self._fonts.add_mdi_large_icon_font(large_icon_size_pixels)
+        self._context.add_default_fonts()
 
         io.font_global_scale = self.config.font.scale
         self._renderer.refresh_font_texture()
@@ -263,7 +241,7 @@ class PlayerApplication:
         self._world.on_window_resized(size[0], size[1])
 
         begin_order = self._context.config.window_manager.begin_order
-        self._windows.add_windows(
+        self._context.windows.add_windows(
             self._canvas,
             self._catalog_manager,
             self._dtype_manager,
@@ -292,9 +270,9 @@ class PlayerApplication:
 
     def on_exit(self) -> None:
         self._context.teardown_process_manager()
-        self._windows.do_destroy()
+        self._context.windows.do_destroy()
         self._world.on_destroy()
-        self._fonts.close()
+        self._context.delete_fonts()
 
         self.config.display.fullscreen = pygame.display.is_fullscreen()
         self.config.display.size = pygame.display.get_window_size()
@@ -332,7 +310,7 @@ class PlayerApplication:
         assert NOEVENT < event.type < NUMEVENTS
         event_logger.debug(f"Event {event_name(event.type)}: {event.dict}")
 
-        consumed_event = self._windows.do_event(event)
+        consumed_event = self._context.windows.do_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -358,7 +336,7 @@ class PlayerApplication:
         args = msg.as_args()
         msg_logger.debug(f"<Msg {name} {uuid}> {args}")
 
-        consumed_msg = self._windows.do_msg(msg)
+        consumed_msg = self._context.windows.do_msg(msg)
         if not consumed_msg:
             self.on_msg_fallback(msg)
 
@@ -382,7 +360,7 @@ class PlayerApplication:
 
             self.on_main_menu()
             self.on_popups()
-            self._windows.do_process()
+            self._context.windows.do_process()
 
             if self.debug:
                 self.on_metrics_window()
@@ -398,7 +376,7 @@ class PlayerApplication:
             pygame.display.flip()
 
     def on_next(self) -> None:
-        self._windows.do_next()
+        self._context.windows.do_next()
 
     def on_file_menu(self) -> None:
         # imgui.separator()
@@ -471,7 +449,7 @@ class PlayerApplication:
             self._pref_manager.opened = not self._pref_manager.opened
 
     def on_windows_menu(self) -> None:
-        for key, win in self._windows.items():
+        for key, win in self._context.windows.items():
             if imgui.menu_item(key, None, win.opened)[0]:
                 win.opened = not win.opened
 

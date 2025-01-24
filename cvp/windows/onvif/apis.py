@@ -7,13 +7,13 @@ from typing import Any, Dict, Final, Sequence, Tuple
 import imgui
 
 from cvp.config.sections.onvif import OnvifConfig
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.push_item_width import item_width
 from cvp.imgui.slider_float import slider_float
 from cvp.onvif.client import OnvifClient
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 from cvp.widgets.wsdl_operation import WsdlOperationWidget
@@ -35,7 +35,7 @@ class OnvifApisTab(TabItem[OnvifConfig]):
     _response_cache: Dict[Tuple[str, str, str], str]
     _response_error: Dict[Tuple[str, str, str], BaseException]
 
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "APIs")
         self._operation_widget = WsdlOperationWidget()
         self._request_runner = self.context.pm.create_thread_runner(self.on_api_request)

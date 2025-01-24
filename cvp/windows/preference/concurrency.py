@@ -2,14 +2,14 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class ConcurrencyPreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Concurrency"):
+    def __init__(self, context: RendererContext, label="Concurrency"):
         self._config = context.config.concurrency
         self._label = label
         self._show_restart = False

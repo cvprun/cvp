@@ -3,19 +3,19 @@
 import imgui
 
 from cvp.config.sections.media import MediaWindowConfig
-from cvp.context.context import Context
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size
 from cvp.imgui.button import button
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
 
 class MediaInfoTab(TabItem[MediaWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Info")
 
     @override

@@ -2,15 +2,15 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE
 from cvp.imgui.fonts.mapper import FontMapper
+from cvp.renderer.context import RendererContext
 from cvp.renderer.widget.interface import WidgetInterface
 from cvp.types.override import override
 
 
 class Catalog(WidgetInterface):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         self._context = context
         self._fonts = fonts
 

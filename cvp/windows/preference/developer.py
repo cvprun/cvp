@@ -2,14 +2,14 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class DeveloperPreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Developer"):
+    def __init__(self, context: RendererContext, label="Developer"):
         self._config = context.config.developer
         self._label = label
 

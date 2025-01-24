@@ -2,16 +2,16 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.process.process import Process
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
 
 class ProcessInfoTab(TabItem[Process]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Info")
 
     @override

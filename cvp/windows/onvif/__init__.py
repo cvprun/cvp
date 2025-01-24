@@ -5,10 +5,10 @@ from typing import Mapping
 import imgui
 
 from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.manager_tabs import ManagerTabs
 from cvp.windows.onvif.apis import OnvifApisTab
@@ -18,7 +18,7 @@ from cvp.windows.onvif.service import OnvifServiceTab
 
 
 class OnvifManager(ManagerTabs[OnvifManagerConfig, OnvifConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.onvif_manager,

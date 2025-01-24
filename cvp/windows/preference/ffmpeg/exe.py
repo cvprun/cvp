@@ -6,10 +6,10 @@ from typing import List, Optional, Sequence
 import imgui
 
 from cvp.config.sections.proxies.ffmpeg import FFmpegProxy, FFprobeProxy
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.patterns.proxy import ValueProxy
 from cvp.popups.open_file import OpenFilePopup
+from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.base import PopupBase
 from cvp.renderer.popup.propagator import PopupPropagator
 from cvp.resources.download.links.ffmpeg import FFMPEG_LINKS, FFPROBE_LINKS, LinkMap
@@ -24,7 +24,7 @@ class ExeItem(TabItem, PopupPropagator):
 
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         name: str,
         proxy: ValueProxy,
         links: LinkMap,
@@ -46,7 +46,7 @@ class ExeItem(TabItem, PopupPropagator):
         self._runner = None
 
     @classmethod
-    def from_ffmpeg(cls, context: Context):
+    def from_ffmpeg(cls, context: RendererContext):
         return cls(
             context=context,
             name="ffmpeg",
@@ -55,7 +55,7 @@ class ExeItem(TabItem, PopupPropagator):
         )
 
     @classmethod
-    def from_ffprobe(cls, context: Context):
+    def from_ffprobe(cls, context: RendererContext):
         return cls(
             context=context,
             name="ffprobe",
@@ -141,7 +141,7 @@ class ExeItem(TabItem, PopupPropagator):
 
 
 class ExeTabs(TabBar, PopupPropagator):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context)
         self.register(ExeItem.from_ffmpeg(context))
         self.register(ExeItem.from_ffprobe(context))

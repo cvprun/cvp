@@ -4,15 +4,15 @@ from typing import Optional
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.fonts.mapper import FontMapper
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 from cvp.windows.flow.canvases import Canvases
 
 
 class GraphsTab(TabItem[Canvases]):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(context, "Graphs")
         self._fonts = fonts
 

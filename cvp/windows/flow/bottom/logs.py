@@ -7,7 +7,6 @@ from weakref import finalize
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
@@ -23,6 +22,7 @@ from cvp.logging.logging import (
     convert_level_number,
 )
 from cvp.logging.logging import flow_logger as logger
+from cvp.renderer.context import RendererContext
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
@@ -62,7 +62,7 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
 class LogsTab(TabItem[Canvases]):
     _records: Deque[_LineRecord]
 
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(context, "Logs")
         self._fonts = fonts
 

@@ -3,14 +3,14 @@
 import imgui
 
 from cvp.config.sections.plot import PlotWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
 class PlotWindow(WindowBase[PlotWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.plot_window,

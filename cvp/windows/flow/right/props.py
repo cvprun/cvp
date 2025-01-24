@@ -5,7 +5,6 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.canvas.axis import Axis
-from cvp.context.context import Context
 from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.line_type import (
@@ -26,6 +25,7 @@ from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_var import style_disable_input
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 from cvp.windows.flow.canvases import Canvases
@@ -35,7 +35,7 @@ ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 
 
 class PropsTab(TabItem[Canvases]):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(context, "Props")
         self._fonts = fonts
 

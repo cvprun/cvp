@@ -5,7 +5,6 @@ from typing import Final, Sequence
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.logging.logging import (
     SEVERITIES,
     convert_level_number,
@@ -14,6 +13,7 @@ from cvp.logging.logging import (
     set_root_level,
 )
 from cvp.popups.open_file import OpenFilePopup
+from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.base import PopupBase
 from cvp.renderer.popup.propagator import PopupPropagator
 from cvp.types.override import override
@@ -23,7 +23,7 @@ NOT_FOUND_INDEX: Final[int] = -1
 
 
 class LoggingPreference(PopupPropagator, PreferenceWidget):
-    def __init__(self, context: Context, label="Logging"):
+    def __init__(self, context: RendererContext, label="Logging"):
         self._config = context.config.logging
         self._label = label
         self._severities = list(SEVERITIES)

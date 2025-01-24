@@ -11,15 +11,15 @@ from cvp.config.sections.games.glyph_hack import (
     DEFAULT_CELL_PIXELS,
     GlyphHackWindowConfig,
 )
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.text_centered import text_centered
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
 class GlyphHackWindow(WindowBase[GlyphHackWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.glyph_hack_window,

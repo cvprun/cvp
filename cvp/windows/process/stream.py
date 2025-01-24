@@ -4,10 +4,10 @@ from enum import StrEnum, auto, unique
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.text_centered import text_centered
 from cvp.process.process import Process
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
@@ -19,17 +19,17 @@ class StreamType(StrEnum):
 
 
 class ProcessStreamTab(TabItem[Process]):
-    def __init__(self, context: Context, stream: StreamType):
+    def __init__(self, context: RendererContext, stream: StreamType):
         super().__init__(context, str(stream))
         self._stream = stream
         self._auto_scroll = True
 
     @classmethod
-    def from_stdout(cls, context: Context):
+    def from_stdout(cls, context: RendererContext):
         return cls(context, StreamType.stdout)
 
     @classmethod
-    def from_stderr(cls, context: Context):
+    def from_stderr(cls, context: RendererContext):
         return cls(context, StreamType.stderr)
 
     @override

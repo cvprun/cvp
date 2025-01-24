@@ -14,11 +14,11 @@ from cvp.config.sections.games.tetrix import (
     DEFAULT_DROP_INTERVAL_STEP,
     TetrixWindowConfig,
 )
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.draw_list.types import DrawList
 from cvp.imgui.text_centered import text_centered
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 from cvp.types.shapes import Rect
@@ -61,7 +61,7 @@ BLOCKS: Final[Sequence[BlockShapeType]] = (
 
 
 class TetrixWindow(WindowBase[TetrixWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.tetrix_window,

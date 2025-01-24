@@ -3,8 +3,8 @@
 from typing import Mapping
 
 from cvp.config.sections.process import ProcessManagerConfig
-from cvp.context.context import Context
 from cvp.process.process import Process
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.manager_tabs import ManagerTabs
 from cvp.windows.process.info import ProcessInfoTab
@@ -12,7 +12,7 @@ from cvp.windows.process.stream import ProcessStreamTab
 
 
 class ProcessManager(ManagerTabs[ProcessManagerConfig, Process]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.process_manager,

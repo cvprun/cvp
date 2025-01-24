@@ -2,15 +2,15 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.keyring.keyring import list_keyring_names, load_keyring, set_keyring
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class KeyringPreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Keyring"):
+    def __init__(self, context: RendererContext, label="Keyring"):
         self._config = context.config.keyring
         self._label = label
         self._backends = list_keyring_names()

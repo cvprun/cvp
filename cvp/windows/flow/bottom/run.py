@@ -2,7 +2,6 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.fonts.glyphs.mdi import (
     BUG,
     DEBUG_STEP_INTO,
@@ -15,13 +14,14 @@ from cvp.fonts.glyphs.mdi import (
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button
 from cvp.imgui.fonts.mapper import FontMapper
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 from cvp.windows.flow.canvases import Canvases
 
 
 class RunTab(TabItem[Canvases]):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(context, "Run")
         self._fonts = fonts
 

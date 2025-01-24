@@ -5,8 +5,8 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.labeling import LabelingAuiConfig
-from cvp.context.context import Context
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.aui import AuiWindow
 
@@ -16,7 +16,7 @@ WINDOW_NO_RESIZE: Final[int] = imgui.WINDOW_NO_RESIZE
 
 
 class LabelingWindow(AuiWindow[LabelingAuiConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.labeling_aui,

@@ -3,14 +3,14 @@
 import imgui
 
 from cvp.config.sections.terminal import TerminalWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
 class TerminalWindow(WindowBase[TerminalWindowConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.terminal_window,

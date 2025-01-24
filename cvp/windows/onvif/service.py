@@ -5,8 +5,8 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.onvif import OnvifConfig
-from cvp.context.context import Context
 from cvp.imgui.button import button
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
@@ -21,7 +21,7 @@ TABLE_FLAGS: Final[int] = (
 
 
 class OnvifServiceTab(TabItem[OnvifConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Service")
         self._error_color = 1.0, 0.0, 0.0, 1.0
         self._update_runner = self.context.pm.create_thread_runner(

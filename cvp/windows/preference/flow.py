@@ -7,7 +7,6 @@ from cvp.config.sections.canvas.grid import Grid
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
-from cvp.context.context import Context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -16,12 +15,13 @@ from cvp.imgui.input_float2 import input_float2
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class FlowPreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Flow"):
+    def __init__(self, context: RendererContext, label="Flow"):
         self._config = context.config.flow_aui
         self._label = label
 

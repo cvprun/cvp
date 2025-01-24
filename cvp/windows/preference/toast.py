@@ -3,18 +3,18 @@
 import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.color_edit3 import color_edit3
 from cvp.imgui.drag_float import drag_float
 from cvp.imgui.drag_float2 import drag_float2
 from cvp.imgui.slider_float2 import slider_float2
 from cvp.inspect.member import get_public_instance_attributes
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class ToastPreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Toast"):
+    def __init__(self, context: RendererContext, label="Toast"):
         self._config = context.config.toast_window
         self._label = label
         self._mq = context.mq

@@ -6,7 +6,6 @@ from typing import Mapping, Tuple
 import imgui
 
 from cvp.config.sections.font import FontManagerConfig
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
@@ -16,13 +15,14 @@ from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
 from cvp.imgui.slider_float import slider_float
 from cvp.imgui.text_centered import text_centered
+from cvp.renderer.context import RendererContext
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.widgets.manager import Manager
 
 
 class FontManager(Manager[FontManagerConfig, Font]):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(
             context=context,
             window_config=context.config.font_manager,

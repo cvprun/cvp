@@ -5,8 +5,8 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.onvif import HttpAuth, OnvifConfig
-from cvp.context.context import Context
 from cvp.imgui.input_text_value import input_text_value
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
@@ -16,7 +16,7 @@ INPUT_BUFFER_SIZE: Final[int] = 2048
 
 
 class OnvifAuthTab(TabItem[OnvifConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Auth")
         self._show_password = False
 

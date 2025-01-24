@@ -6,7 +6,7 @@ from typing import Mapping
 import imgui
 
 from cvp.config.sections.preference import PreferenceManagerConfig
-from cvp.context.context import Context
+from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.propagator import PopupPropagator
 from cvp.types.override import override
 from cvp.widgets.manager import Manager
@@ -24,7 +24,7 @@ from cvp.windows.preference.wsdl import WsdlPreference
 
 
 class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.preference_manager,

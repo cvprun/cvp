@@ -7,12 +7,12 @@ from wsdiscovery import WSDiscovery
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.wsd import WsdConfig, WsdManagerConfig
-from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
 from cvp.logging.logging import logger
 from cvp.popups.confirm import ConfirmPopup
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import WSD_NAME_DEFAULT
 from cvp.widgets.manager import Manager
@@ -25,7 +25,7 @@ WSD_NAME_SCOPE_PREFIX_LEN: Final[int] = len(WSD_NAME_SCOPE_PREFIX)
 
 
 class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.wsd_manager,

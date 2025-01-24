@@ -5,15 +5,15 @@ from typing import Mapping
 import imgui
 
 from cvp.config.sections.catalog import CatalogManagerConfig
-from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.nodes.node import Node
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.manager import Manager
 
 
 class CatalogManager(Manager[CatalogManagerConfig, Node]):
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.catalog_manager,

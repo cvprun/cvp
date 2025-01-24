@@ -2,15 +2,15 @@
 
 import imgui
 
-from cvp.context.context import Context
 from cvp.imgui.push_style_var import DefaultStyles, style_colors
 from cvp.logging.logging import logger
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.windows.preference._base import PreferenceWidget
 
 
 class AppearancePreference(PreferenceWidget):
-    def __init__(self, context: Context, label="Appearance"):
+    def __init__(self, context: RendererContext, label="Appearance"):
         self._config = context.config.appearance
         self._label = label
         self._styles = [str(s.name) for s in DefaultStyles]

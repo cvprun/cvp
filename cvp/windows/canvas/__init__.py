@@ -3,15 +3,15 @@
 import imgui
 
 from cvp.config.sections.canvas import CanvasWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
 class CanvasWindow(WindowBase[CanvasWindowConfig]):
-    def __init__(self, context: Context, fonts: FontMapper):
+    def __init__(self, context: RendererContext, fonts: FontMapper):
         super().__init__(
             context=context,
             window_config=context.config.canvas_window,

@@ -7,10 +7,10 @@ from typing import Deque, Final, Optional, Union
 import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list
 from cvp.imgui.measure_window_roi import get_window_roi
 from cvp.logging.logging import INFO, convert_level_number
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.transitions.fade import measure_fade_ratio
 from cvp.types.override import override
@@ -43,7 +43,7 @@ class ToastMessage:
 class ToastWindow(WindowBase[ToastWindowConfig]):
     _items: Deque[ToastMessage]
 
-    def __init__(self, context: Context):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.toast_window,
