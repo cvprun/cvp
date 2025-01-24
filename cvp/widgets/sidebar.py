@@ -7,8 +7,8 @@ import imgui
 
 from cvp.config.sections.bases.sidebar import SidebarWindowConfig
 from cvp.config.sections.proxies.sidebar import SidebarWidthProxy
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 from cvp.variables import (
@@ -35,7 +35,7 @@ class SidebarWindowInterface(ABC):
 class SidebarWindow(WindowBase[SidebarWidthT], SidebarWindowInterface):
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         window_config: SidebarWidthT,
         title: Optional[str] = None,
         closable: Optional[bool] = None,

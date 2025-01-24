@@ -7,8 +7,8 @@ from typing import Generic, Mapping, Optional, TypeVar
 import imgui
 
 from cvp.config.sections.bases.manager import ManagerWindowConfig
-from cvp.context.context import Context
 from cvp.imgui.text_centered import text_centered
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import (
     MAX_SIDEBAR_WIDTH,
@@ -56,7 +56,7 @@ class Manager(SidebarWindow[ManagerWindowConfigT], ManagerInterface[MenuItemT]):
 
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         window_config: ManagerWindowConfigT,
         title: Optional[str] = None,
         closable: Optional[bool] = None,

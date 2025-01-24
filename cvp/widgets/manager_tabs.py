@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from cvp.context.context import Context
+from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import (
     MAX_SIDEBAR_WIDTH,
@@ -17,7 +17,7 @@ from cvp.widgets.tab import TabBar, TabItem
 class ManagerTabs(Manager[ManagerWindowConfigT, MenuItemT]):
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         window_config: ManagerWindowConfigT,
         title: Optional[str] = None,
         closable: Optional[bool] = None,

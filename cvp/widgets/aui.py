@@ -7,10 +7,10 @@ import imgui
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
 from cvp.config.sections.proxies.aui import AuiBottomProxy, AuiLeftProxy, AuiRightProxy
-from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.cursor import cursor_pos_y
 from cvp.imgui.push_style_var import style_item_spacing, style_window_padding
+from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
@@ -40,7 +40,7 @@ class AuiInterface(ABC):
 class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         window_config: AuiSectionT,
         title: Optional[str] = None,
         closable: Optional[bool] = None,

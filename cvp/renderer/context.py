@@ -5,9 +5,7 @@ from os import PathLike
 from typing import Union
 
 from cvp.context.context import Context
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.inspect.member import get_attribute_keys
-from cvp.renderer.window.mapper import WindowMapper
 
 
 class RendererContext(Context):
@@ -26,6 +24,10 @@ class RendererContext(Context):
         return result
 
     def _initialize(self):
+        # [IMPORTANT] Avoid 'circular import' issues
+        from cvp.imgui.fonts.mapper import FontMapper
+        from cvp.renderer.window.mapper import WindowMapper
+
         self.windows = WindowMapper()
         self.fonts = FontMapper()
 

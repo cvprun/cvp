@@ -6,7 +6,6 @@ import imgui
 from pygame.event import Event
 
 from cvp.config.sections.bases.window import WindowConfig
-from cvp.context.context import Context
 from cvp.imgui.able.pressable import Pressable
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.logging.logging import logger
@@ -21,6 +20,7 @@ from cvp.pygame.constants import Constants
 from cvp.pygame.constants.event_type import EventType
 from cvp.pygame.events.callbacks import EventCallbacks
 from cvp.pygame.events.event_map import EventWrapper, create_event_map
+from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.base import PopupBase
 from cvp.renderer.window.interface import WindowInterface
 from cvp.renderer.window.query import WindowQuery
@@ -47,7 +47,7 @@ class WindowBase(
 
     def __init__(
         self,
-        context: Context,
+        context: RendererContext,
         window_config: WindowConfigT,
         title: Optional[str] = None,
         closable: Optional[bool] = None,
