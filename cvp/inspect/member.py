@@ -38,3 +38,16 @@ def get_public_instance_attributes(data: Any) -> List[Tuple[str, Any]]:
         return [(str(i), v) for i, v in enumerate(data)]
     attributes = getmembers(data, lambda a: not isroutine(a))
     return list(filter(lambda x: is_instance_public_member(data, x[0]), attributes))
+
+
+def get_attribute_keys(obj: Any) -> List[str]:
+    result = list()
+    for key in dir(obj):
+        if is_dunder(key):
+            continue
+        if is_property(obj, key):
+            continue
+        if isroutine(getattr(obj, key)):
+            continue
+        result.append(key)
+    return result

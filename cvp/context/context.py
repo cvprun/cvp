@@ -80,13 +80,13 @@ class Context:
             process_workers=process_workers,
         )
 
-        if self.config.graphic.force_egl is not None:
-            force_egl = self.config.graphic.force_egl_environ
+        if self._config.graphic.force_egl is not None:
+            force_egl = self._config.graphic.force_egl_environ
             os.environ[SDL_VIDEO_X11_FORCE_EGL] = force_egl
             logger.info(f"Update environ: {SDL_VIDEO_X11_FORCE_EGL}={force_egl}")
 
-        if self.config.graphic.use_accelerate is not None:
-            use_accelerate = self.config.graphic.use_accelerate_environ
+        if self._config.graphic.use_accelerate is not None:
+            use_accelerate = self._config.graphic.use_accelerate_environ
             os.environ[PYOPENGL_USE_ACCELERATE] = use_accelerate
             logger.info(f"Update environ: {PYOPENGL_USE_ACCELERATE}={use_accelerate}")
 
