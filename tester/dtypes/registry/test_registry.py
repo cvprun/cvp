@@ -3,19 +3,11 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.dtypes.registry.globals import GlobalDtypeRegistry, global_dtype_registry
+from cvp.dtypes.dtype import default_dtype_path_with_type
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.variables import FLOW_PATH_SEPARATOR
 
 
 class RegistryTestCase(TestCase):
-    def test_global(self):
-        registry0 = global_dtype_registry()
-        registry1 = GlobalDtypeRegistry()
-        registry2 = GlobalDtypeRegistry()
-        self.assertEqual(registry0, registry1)
-        self.assertEqual(registry0, registry2)
-
     def test_empty_register_dtype(self):
         registry = DtypeRegistry(no_defaults=True)
         self.assertEqual(0, len(registry.path2dtypes))
@@ -86,7 +78,7 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 
-        test_path = _Custom.__module__ + FLOW_PATH_SEPARATOR + _Custom.__name__
+        test_path = default_dtype_path_with_type(_Custom)
         self.assertEqual("tester.dtypes.registry.test_registry._Custom", test_path)
 
         self.assertEqual(_Custom, registry.get(_Custom).base)
