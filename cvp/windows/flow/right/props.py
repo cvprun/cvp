@@ -20,7 +20,6 @@ from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
 from cvp.imgui.drag_float2 import drag_float2
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
@@ -35,9 +34,8 @@ ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 
 
 class PropsTab(TabItem[Canvases]):
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Props")
-        self._fonts = fonts
 
     @override
     def on_item(self, item: Canvases) -> None:
@@ -76,7 +74,7 @@ class PropsTab(TabItem[Canvases]):
             self.on_multiple_items(graph, selected_items)
 
     def input_icon(self, label: str, icon: str) -> None:
-        with self._fonts.normal_icon:
+        with self.context.fonts.normal_icon:
             input_text_disabled(f"##{label}", icon)
         imgui.same_line(0.0, imgui.get_style().item_inner_spacing[0])
         imgui.text(label)

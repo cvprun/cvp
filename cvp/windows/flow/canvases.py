@@ -3,10 +3,9 @@
 from typing import Dict, Optional
 from weakref import ReferenceType, ref
 
-from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.graph import FlowGraph
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.logging.logging import flow_logger as logger
+from cvp.renderer.context import RendererContext
 from cvp.widgets.canvas.graph import CanvasGraph
 
 
@@ -14,14 +13,13 @@ class Canvases:
     _canvases: Dict[str, CanvasGraph]
     _ref: Optional[ReferenceType[FlowGraph]]
 
-    def __init__(self, fonts: FontMapper, config: FlowAuiConfig):
-        self._fonts = fonts
-        self._config = config
+    def __init__(self, context: RendererContext):
+        self._context = context
         self._canvases = dict()
         self._ref = None
 
     def _create_canvas(self, graph: FlowGraph) -> CanvasGraph:
-        canvas = CanvasGraph(graph, self._fonts, self._config)
+        canvas = CanvasGraph(graph, self._context.fonts, self._context.config.flow_aui)
         self._canvases[graph.uuid] = canvas
         return canvas
 

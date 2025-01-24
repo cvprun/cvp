@@ -2,7 +2,6 @@
 
 import imgui
 
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
@@ -10,9 +9,8 @@ from cvp.windows.flow.canvases import Canvases
 
 
 class HistoryTab(TabItem[Canvases]):
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "History")
-        self._fonts = fonts
 
     @override
     def on_item(self, item: Canvases) -> None:

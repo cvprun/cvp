@@ -10,7 +10,6 @@ import imgui
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.logging.logging import (
     SEVERITY_NAME_CRITICAL,
     SEVERITY_NAME_DEBUG,
@@ -62,10 +61,8 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
 class LogsTab(TabItem[Canvases]):
     _records: Deque[_LineRecord]
 
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Logs")
-        self._fonts = fonts
-
         assert 1 <= self.context.config.flow_aui.logs.lines
         self._records = deque(maxlen=self.context.config.flow_aui.logs.lines)
         self._handler = _LoggingHandler(self.on_logging)

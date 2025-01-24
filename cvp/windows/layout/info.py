@@ -9,7 +9,6 @@ from cvp.imgui.button import button
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
 from cvp.renderer.context import RendererContext
-from cvp.renderer.window.mapper import WindowMapper
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
@@ -17,9 +16,8 @@ ENTER_RETURNS: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 
 
 class LayoutInfoTab(TabItem[LayoutConfig]):
-    def __init__(self, context: RendererContext, windows: WindowMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Info")
-        self._windows = windows
 
     def get_layout_filepath(self, layout: LayoutConfig) -> str:
         return str(self.context.home.layouts.key_filepath(layout.uuid))

@@ -34,6 +34,7 @@ class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
             flags=None,
         )
 
+        self._wsd_running = False
         self._confirm_remove = ConfirmPopup(
             title="Remove",
             label="Are you sure you want to remove device?",
@@ -43,8 +44,6 @@ class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
         )
 
         self.register_popup(self._confirm_remove)
-
-        self._wsd_running = False
 
     def run_discovery(self) -> None:
         if self._wsd_running:

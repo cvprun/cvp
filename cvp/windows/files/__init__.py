@@ -3,7 +3,6 @@
 import imgui
 
 from cvp.config.sections.files import FilesWindowConfig
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
@@ -11,7 +10,7 @@ from cvp.types.override import override
 
 
 class FilesWindow(WindowBase[FilesWindowConfig]):
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.files_window,
@@ -20,7 +19,6 @@ class FilesWindow(WindowBase[FilesWindowConfig]):
             flags=None,
             modifiable_title=True,
         )
-        self._fonts = fonts
         self._label = "##FilesEditor"
         self._content = ""
         self._length = -1

@@ -8,14 +8,13 @@ from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
 from cvp.imgui.button import button
 from cvp.popups.confirm import ConfirmPopup
 from cvp.renderer.context import RendererContext
-from cvp.renderer.window.mapper import WindowMapper
 from cvp.types.override import override
 from cvp.widgets.manager_tabs import ManagerTabs
 from cvp.windows.layout.info import LayoutInfoTab
 
 
 class LayoutManager(ManagerTabs[LayoutManagerConfig, LayoutConfig]):
-    def __init__(self, context: RendererContext, windows: WindowMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.layout_manager,
@@ -23,8 +22,7 @@ class LayoutManager(ManagerTabs[LayoutManagerConfig, LayoutConfig]):
             closable=True,
             flags=None,
         )
-        self._windows = windows
-        self.register(LayoutInfoTab(context, self._windows))
+        self.register(LayoutInfoTab(context))
 
         self._confirm_remove = ConfirmPopup(
             title="Remove",

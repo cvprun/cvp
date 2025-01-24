@@ -46,7 +46,7 @@ _CANVAS_FLAGS: Final[int] = _WINDOW_NO_MOVE | _WINDOW_NO_SCROLLBAR | _WINDOW_NO_
 class FlowWindow(AuiWindow[FlowAuiConfig]):
     _menus: Sequence[Tuple[str, Callable[[], None]]]
 
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
             window_config=context.config.flow_aui,
@@ -58,12 +58,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             modifiable_title=False,
         )
 
-        self._fonts = fonts
-        self._canvases = Canvases(fonts, context.config.flow_aui)
-        self._catalog = Catalog(context, fonts)
-        self._left_tabs = FlowLeftTabs(context, fonts)
-        self._right_tabs = FlowRightTabs(context, fonts)
-        self._bottom_tabs = FlowBottomTabs(context, fonts)
+        self._canvases = Canvases(context)
+        self._catalog = Catalog(context)
+        self._left_tabs = FlowLeftTabs(context)
+        self._right_tabs = FlowRightTabs(context)
+        self._bottom_tabs = FlowBottomTabs(context)
 
         self._split_tree = SplitTreeProxy(context.config.flow_aui)
         self._tree_splitter = Splitter.from_horizontal(
@@ -442,9 +441,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_deploy_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_deploy_menu(self._fonts, canvas)
+                self._process_deploy_menu(self.context.fonts, canvas)
         else:
-            self._process_deploy_menu(self._fonts)
+            self._process_deploy_menu(self.context.fonts)
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):

@@ -4,7 +4,6 @@ import imgui
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -23,13 +22,12 @@ ARC_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
 class TreeTab(TabItem[Canvases]):
-    def __init__(self, context: RendererContext, fonts: FontMapper):
+    def __init__(self, context: RendererContext):
         super().__init__(context, "Tree")
-        self._fonts = fonts
 
     @property
     def normal_icon(self):
-        return self._fonts.normal_icon
+        return self.context.fonts.normal_icon
 
     @override
     def on_none(self) -> None:
