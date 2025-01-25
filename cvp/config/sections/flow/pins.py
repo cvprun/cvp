@@ -8,6 +8,9 @@ from cvp.fonts.glyphs.mdi import (
     ARROW_RIGHT_BOLD_OUTLINE,
     CIRCLE,
     CIRCLE_OUTLINE,
+    LINK,
+    LINK_OFF,
+    VARIABLE,
 )
 from cvp.fonts.size import FontSize
 from cvp.types.colors import RGBA
@@ -23,6 +26,9 @@ FLOW_PIN_UNCONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD_OUTLINE
 FLOW_PIN_CONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD
 DATA_PIN_UNCONNECTED_ICON: Final[str] = CIRCLE_OUTLINE
 DATA_PIN_CONNECTED_ICON: Final[str] = CIRCLE
+ARC_UNCONNECTED_ICON: Final[str] = LINK_OFF
+ARC_CONNECTED_ICON: Final[str] = LINK
+VARIABLE_ICON: Final[str] = VARIABLE
 
 
 @dataclass
@@ -31,6 +37,9 @@ class Pins:
     flow_y_icon: str = FLOW_PIN_CONNECTED_ICON
     data_n_icon: str = DATA_PIN_UNCONNECTED_ICON
     data_y_icon: str = DATA_PIN_CONNECTED_ICON
+    arc_n_icon: str = ARC_UNCONNECTED_ICON
+    arc_y_icon: str = ARC_CONNECTED_ICON
+    variable_icon: str = VARIABLE_ICON
 
     icon_size: FontSize = FontSize.normal
 

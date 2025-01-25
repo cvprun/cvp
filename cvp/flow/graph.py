@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import shapely
 
+from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.arc import FlowArc
 from cvp.flow.connection import FlowConnection
@@ -66,7 +67,7 @@ class FlowGraph:
         *,
         selected: Optional[bool] = None,
     ) -> None:
-        nodes, arcs = items.copy_validated_items(point)
+        nodes, arcs, variables = items.copy_validated_items(point)
 
         if selected is not None:
             for node in nodes:
@@ -75,11 +76,15 @@ class FlowGraph:
                 node.selected = selected
             for arc in arcs:
                 arc.selected = selected
+            for variable in variables:
+                variable.selected = selected
 
         for node in nodes:
             self.nodes.insert(0, node)
         for arc in arcs:
             self.arcs.insert(0, arc)
+        for variable in variables:
+            self.variables.insert(0, variable)
 
         self.update_selected_items()
         self.update_arcs_polyline(force=True)
@@ -94,6 +99,8 @@ class FlowGraph:
             self._selection.apply(node)
         for arc in self.arcs:
             self._selection.apply(arc)
+        for variable in self.variables:
+            self._selection.apply(variable)
 
     def update_selected_nodes(self) -> None:
         for node in self.nodes:
@@ -102,6 +109,10 @@ class FlowGraph:
     def update_selected_arcs(self) -> None:
         for arc in self.arcs:
             self._selection.apply(arc)
+
+    def update_selected_variables(self) -> None:
+        for variable in self.variables:
+            self._selection.apply(variable)
 
     def select_item(self, item: FlowSelectableAny, *, selected=True) -> None:
         item.selected = selected
@@ -145,6 +156,9 @@ class FlowGraph:
             arc.hovering = False
             arc.start_anchor.hovering = False
             arc.end_anchor.hovering = False
+
+        for variable in self.variables:
+            variable.hovering = False
 
     def find_node(self, node_uuid: str) -> Optional[FlowNode]:
         for node in self.nodes:
@@ -207,6 +221,12 @@ class FlowGraph:
                 return arc
         return None
 
+    def find_hovering_variable(self) -> Optional[FlowVariable]:
+        for variable in self.variables:
+            if variable.hovering:
+                return variable
+        return None
+
     def find_hovering_anchor_with_mouse(
         self,
         arc: FlowArc,
@@ -238,7 +258,7 @@ class FlowGraph:
                 return selected_arc.end_anchor
         return None
 
-    def find_hovering_item(self) -> Optional[Union[FlowNode, FlowPin, FlowArc]]:
+    def find_hovering_item(self) -> Optional[FlowSelectableAny]:
         if node := self.find_hovering_node():
             assert node.hovering
 
@@ -251,6 +271,10 @@ class FlowGraph:
         if arc := self.find_hovering_arc():
             assert arc.hovering
             return arc
+
+        if variable := self.find_hovering_variable():
+            assert variable.hovering
+            return variable
 
         return None
 
@@ -294,6 +318,13 @@ class FlowGraph:
                 result.append(node)
         return result
 
+    def find_selected_variables(self) -> List[FlowVariable]:
+        result = list()
+        for variable in self.variables:
+            if variable.selected:
+                result.append(variable)
+        return result
+
     def unselect_all_items(self) -> None:
         for node in self.nodes:
             node.selected = False
@@ -305,6 +336,9 @@ class FlowGraph:
             arc.selected = False
             arc.start_anchor.selected = False
             arc.end_anchor.selected = False
+
+        for variable in self.variables:
+            variable.selected = False
 
         self._selection.clear()
 
@@ -327,6 +361,12 @@ class FlowGraph:
             arc.selected = not arc.selected
             self._selection.apply(arc)
             return arc
+
+        if variable := self.find_hovering_variable():
+            assert variable.hovering
+            variable.selected = not variable.selected
+            self._selection.apply(variable)
+            return variable
 
         return None
 
@@ -454,6 +494,14 @@ class FlowGraph:
             if anchor := self.find_hovering_anchor_with_mouse(selected_arc_only, mouse):
                 anchor.hovering = True
 
+    def remove_variable(self, variable: FlowVariable) -> None:
+        self.variables.remove(variable)
+        self._selection.remove_noraise(variable)
+
+    def remove_selected_variable(self) -> None:
+        for variable in self.find_selected_variables():
+            self.remove_variable(variable)
+
     def remove_arc(self, arc: FlowArc) -> None:
         if arc.input:
             arc.input.pin.arcs.remove(arc.uuid)
@@ -482,6 +530,7 @@ class FlowGraph:
     def remove_selected_items(self) -> None:
         self.remove_selected_nodes()
         self.remove_selected_arcs()
+        self.remove_selected_variable()
 
     def items_to_front(self, items: Sequence[FlowSelectableAny]) -> None:
         for item in items:
@@ -492,6 +541,8 @@ class FlowGraph:
             self.node_to_front(item)
         elif isinstance(item, FlowArc):
             self.arc_to_front(item)
+        elif isinstance(item, (FlowPin, FlowVariable)):
+            pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
@@ -516,6 +567,8 @@ class FlowGraph:
             self.node_to_back(item)
         elif isinstance(item, FlowArc):
             self.arc_to_back(item)
+        elif isinstance(item, (FlowPin, FlowVariable)):
+            pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
@@ -536,6 +589,8 @@ class FlowGraph:
             self.node_bring_forward(item)
         elif isinstance(item, FlowArc):
             self.arc_bring_forward(item)
+        elif isinstance(item, (FlowPin, FlowVariable)):
+            pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
@@ -556,6 +611,8 @@ class FlowGraph:
             self.node_send_backward(item)
         elif isinstance(item, FlowArc):
             self.arc_send_backward(item)
+        elif isinstance(item, (FlowPin, FlowVariable)):
+            pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
 
@@ -654,3 +711,14 @@ class FlowGraph:
             next_pos = x1, cursor
             self.move_node(node, next_pos)
             cursor += node.height + space
+
+    def add_variable(self, name: str, dtype: Dtype) -> FlowVariable:
+        result = FlowVariable(
+            name=name,
+            dtype=dtype.path,
+            docs=None,
+            value=dtype.base(),
+            initial=dtype.base(),
+        )
+        self.variables.append(result)
+        return result

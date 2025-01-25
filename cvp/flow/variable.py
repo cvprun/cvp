@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from pickle import dumps, loads
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 from type_serialize import Serializable
 
@@ -57,9 +58,45 @@ class FlowVariable(Serializable):
         self.use_copy = use_copy
         self.use_deepcopy = use_deepcopy
 
+        self._selected = False
+        self._hovering = False
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.name = copy(self.name)
+        result.dtype = copy(self.dtype)
+        result.docs = copy(self.docs)
+        result._value = copy(self._value)
+        result._initial = copy(self._initial)
+        result.persistent = copy(self.persistent)
+        result.use_copy = copy(self.use_copy)
+        result.use_deepcopy = copy(self.use_deepcopy)
+        result._selected = copy(self._selected)
+        result._hovering = copy(self._hovering)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.name = deepcopy(self.name, memo)
+        result.dtype = deepcopy(self.dtype, memo)
+        result.docs = deepcopy(self.docs, memo)
+        result._value = deepcopy(self._value, memo)
+        result._initial = deepcopy(self._initial, memo)
+        result.persistent = deepcopy(self.persistent, memo)
+        result.use_copy = deepcopy(self.use_copy, memo)
+        result.use_deepcopy = deepcopy(self.use_deepcopy, memo)
+        result._selected = deepcopy(self._selected, memo)
+        result._hovering = deepcopy(self._hovering, memo)
+        memo[id(self)] = result
+        return result
+
     @override
     def __serialize__(self) -> Any:
-        return {
+        result = {
             self.Keys.name_: self.name,
             self.Keys.dtype: self.dtype,
             self.Keys.docs: self.docs,
@@ -69,6 +106,7 @@ class FlowVariable(Serializable):
             self.Keys.use_copy: self.use_copy,
             self.Keys.use_deepcopy: self.use_deepcopy,
         }
+        return {str(key): val for key, val in result.items()}
 
     @override
     def __deserialize__(self, data: Any) -> None:
@@ -123,3 +161,33 @@ class FlowVariable(Serializable):
             use_copy=self.use_copy,
             use_deepcopy=self.use_deepcopy,
         )
+
+    def as_unformatted_text(self) -> str:
+        return (
+            f"Name: {self.name}\n"
+            f"Docs: {self.docs}\n"
+            f"Data Type: {self.dtype}\n"
+            f"Value: {str(self._value)}\n"
+            f"Initial: {str(self._initial)}\n"
+            f"Persistent: {self.persistent}\n"
+            f"Copy: {self.use_copy}\n"
+            f"Deepcopy: {self.use_deepcopy}\n"
+            f"Selected: {self._selected}\n"
+            f"Hovering: {self._hovering}\n"
+        )
+
+    @property
+    def selected(self):
+        return self._selected
+
+    @selected.setter
+    def selected(self, value: bool) -> None:
+        self._selected = value
+
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value: bool) -> None:
+        self._hovering = value

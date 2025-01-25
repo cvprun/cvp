@@ -19,10 +19,11 @@ from cvp.flow.arc import FlowArc
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
+from cvp.flow.variable import FlowVariable
 from cvp.types.shapes import Point
 
 FlowSelectableKey: TypeAlias = int
-FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc]
+FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc, FlowVariable]
 FlowSelectableDict = OrderedDict[FlowSelectableKey, FlowSelectableAny]
 
 
@@ -87,6 +88,10 @@ class FlowSelection:
     def _is_arc(item: FlowSelectableAny) -> TypeGuard[FlowArc]:
         return isinstance(item, FlowArc)
 
+    @staticmethod
+    def _is_variable(item: FlowSelectableAny) -> TypeGuard[FlowVariable]:
+        return isinstance(item, FlowVariable)
+
     @property
     def nodes(self) -> List[FlowNode]:
         return list(filter(self._is_node, self._items.values()))
@@ -98,6 +103,10 @@ class FlowSelection:
     @property
     def arcs(self) -> List[FlowArc]:
         return list(filter(self._is_arc, self._items.values()))
+
+    @property
+    def variables(self) -> List[FlowVariable]:
+        return list(filter(self._is_variable, self._items.values()))
 
     @property
     def first(self) -> FlowSelectableAny:
@@ -127,6 +136,13 @@ class FlowSelection:
             return None
         first = self.first
         return first if isinstance(first, FlowArc) else None
+
+    @property
+    def selected_variable_only(self) -> Optional[FlowVariable]:
+        if 1 != len(self._items):
+            return None
+        first = self.first
+        return first if isinstance(first, FlowVariable) else None
 
     def clear(self) -> None:
         self._items.clear()
@@ -162,9 +178,10 @@ class FlowSelection:
     def copy_validated_items(
         self,
         point: Point,
-    ) -> Tuple[List[FlowNode], List[FlowArc]]:
+    ) -> Tuple[List[FlowNode], List[FlowArc], List[FlowVariable]]:
         nodes = self.nodes
         arcs = self.arcs
+        variables = self.variables
         dx, dy = self.group_pos
         x = point[0] - dx
         y = point[1] - dy
@@ -213,4 +230,6 @@ class FlowSelection:
             if candidate_arc.input and candidate_arc.output:
                 new_arcs.append(candidate_arc)
 
-        return new_nodes, new_arcs
+        new_variables = [deepcopy(variable) for variable in variables]
+
+        return new_nodes, new_arcs, new_variables

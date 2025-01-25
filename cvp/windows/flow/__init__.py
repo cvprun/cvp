@@ -16,7 +16,7 @@ from cvp.fonts.glyphs.mdi import (
     STOP,
 )
 from cvp.imgui.begin_child import begin_child
-from cvp.imgui.drag_types import DRAG_FLOW_NODE
+from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_item_spacing
@@ -72,6 +72,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             negative_delta=True,
         )
 
+        self._drag_dtype = context.fm.dtype_registry.any_dtype
+
         self._menus = (
             ("File", self.on_file_menu),
             ("Edit", self.on_edit_menu),
@@ -99,10 +101,18 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             cancel="No",
             target=self.on_confirm_remove,
         )
+        self._add_variable_popup = InputTextPopup(
+            title="New variable",
+            label="Please enter a variable name:",
+            ok="Add",
+            cancel="Cancel",
+            target=self.on_add_variable,
+        )
 
         self.register_popup(self._new_graph_popup)
         self.register_popup(self._open_graph_popup)
         self.register_popup(self._confirm_remove)
+        self.register_popup(self._add_variable_popup)
 
     @property
     def split_tree(self) -> float:
@@ -141,6 +151,17 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     def on_confirm_remove(self, value: bool) -> None:
         pass
+
+    def on_add_variable(self, name: str) -> None:
+        if not name:
+            raise ValueError("Variable name cannot be empty")
+
+        canvas = self._canvases.canvas
+        if canvas is None:
+            raise ValueError("Canvas cannot be none")
+
+        with canvas:
+            canvas.graph.add_variable(name, self._drag_dtype)
 
     @override
     def on_process(self) -> None:
@@ -384,7 +405,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     def on_file_menu(self) -> None:
         if menu_item("New graph"):
-            self.show_new_graph_popup()
+            self._new_graph_popup.show()
 
         imgui.separator()
         has_opened_graph = self._canvases.opened
@@ -452,9 +473,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.separator()
         if show_layout := menu_item("Show Layout", selected=self.show_layout):
             self.show_layout = show_layout.state
-
-    def show_new_graph_popup(self) -> None:
-        self._new_graph_popup.show()
 
     def save_current_graph(self) -> None:
         graph = self._canvases.graph
@@ -619,6 +637,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with imgui.begin_drag_drop_target() as target:
             if target.hovered:
+                if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_DTYPE):
+                    dtype_path = str(payload, encoding="utf-8")
+                    self._drag_dtype = self.context.fm.dtypes[dtype_path]
+                    self._add_variable_popup.show()
+
                 if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE):
                     node_path = str(payload, encoding="utf-8")
                     node = self.context.fm.add_node(canvas.graph, node_path)

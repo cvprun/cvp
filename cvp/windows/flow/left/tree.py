@@ -2,8 +2,10 @@
 
 import imgui
 
+from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
+from cvp.flow.variable import FlowVariable
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -19,6 +21,7 @@ _SPAN_AVAILABLE_WIDTH = imgui.TREE_NODE_SPAN_AVAILABLE_WIDTH
 NODE_FLAGS = _OPEN_ON_ARROW | _OPEN_ON_DOUBLE_CLICK | _SPAN_AVAILABLE_WIDTH
 PIN_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 ARC_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
+VARIABLE_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
 class TreeTab(TabItem[Canvases]):
@@ -43,12 +46,21 @@ class TreeTab(TabItem[Canvases]):
         graph_label = f"{graph.name}###{graph.uuid}"
         if imgui.tree_node(graph_label, imgui.TREE_NODE_DEFAULT_OPEN):
             try:
-                for node in graph.nodes:
-                    self.on_node(graph, node)
+                self.tree_nodes(graph)
+                self.tree_arcs(graph)
+                self.tree_variables(graph)
             finally:
                 imgui.tree_pop()
 
-    def on_node(self, graph: FlowGraph, node: FlowNode) -> None:
+    def tree_nodes(self, graph: FlowGraph) -> None:
+        if imgui.tree_node("Nodes"):
+            try:
+                for node in graph.nodes:
+                    self.tree_node(graph, node)
+            finally:
+                imgui.tree_pop()
+
+    def tree_node(self, graph: FlowGraph, node: FlowNode) -> None:
         flow_pin_n_icon = self.context.config.flow_aui.pins.flow_n_icon
         flow_pin_y_icon = self.context.config.flow_aui.pins.flow_y_icon
         data_pin_n_icon = self.context.config.flow_aui.pins.data_n_icon
@@ -69,7 +81,7 @@ class TreeTab(TabItem[Canvases]):
             return
 
         try:
-            for i, pin in enumerate(node.pins):
+            for pin in node.pins:
                 if pin.is_flow_action:
                     pin_icon = flow_pin_y_icon if pin.connected else flow_pin_n_icon
                 elif pin.is_data_action:
@@ -81,7 +93,7 @@ class TreeTab(TabItem[Canvases]):
                 if pin.selected:
                     flags |= imgui.TREE_NODE_SELECTED
 
-                imgui.tree_node(f"{pin.name}##{i}", flags)
+                imgui.tree_node(pin.name, flags)
                 if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
                     if not key_ctrl:
                         graph.unselect_all_items()
@@ -93,3 +105,59 @@ class TreeTab(TabItem[Canvases]):
                     imgui.text(pin_icon)
         finally:
             imgui.tree_pop()
+
+    def tree_arcs(self, graph: FlowGraph) -> None:
+        if imgui.tree_node("Arcs"):
+            try:
+                for arc in graph.arcs:
+                    self.tree_arc(graph, arc)
+            finally:
+                imgui.tree_pop()
+
+    def tree_arc(self, graph: FlowGraph, arc: FlowArc) -> None:
+        arc_n_icon = self.context.config.flow_aui.pins.arc_n_icon
+        arc_y_icon = self.context.config.flow_aui.pins.arc_y_icon
+        arc_icon = arc_y_icon if arc.selected else arc_n_icon
+        key_ctrl = imgui.get_io().key_ctrl
+
+        flags = ARC_FLAGS
+        if arc.selected:
+            flags |= imgui.TREE_NODE_SELECTED
+
+        imgui.tree_node(f"{arc.name}###{arc.uuid}", flags)
+        if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
+            if not key_ctrl:
+                graph.unselect_all_items()
+            graph.flip_select_item(arc)
+
+        imgui.same_line(imgui.get_cursor_pos_x())
+
+        with self.normal_icon:
+            imgui.text(arc_icon)
+
+    def tree_variables(self, graph: FlowGraph) -> None:
+        if imgui.tree_node("Variables"):
+            try:
+                for variable in graph.variables:
+                    self.tree_variable(graph, variable)
+            finally:
+                imgui.tree_pop()
+
+    def tree_variable(self, graph: FlowGraph, variable: FlowVariable) -> None:
+        variable_icon = self.context.config.flow_aui.pins.variable_icon
+        key_ctrl = imgui.get_io().key_ctrl
+
+        flags = VARIABLE_FLAGS
+        if variable.selected:
+            flags |= imgui.TREE_NODE_SELECTED
+
+        imgui.tree_node(variable.name, flags)
+        if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
+            if not key_ctrl:
+                graph.unselect_all_items()
+            graph.flip_select_item(variable)
+
+        imgui.same_line(imgui.get_cursor_pos_x())
+
+        with self.normal_icon:
+            imgui.text(variable_icon)

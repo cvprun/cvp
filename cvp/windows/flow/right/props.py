@@ -16,6 +16,7 @@ from cvp.flow.line_type import (
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
+from cvp.flow.variable import FlowVariable
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -48,6 +49,7 @@ class PropsTab(TabItem[Canvases]):
         selected_nodes = selected_items.nodes
         selected_pins = selected_items.pins
         selected_arcs = selected_items.arcs
+        selected_variables = selected_items.variables
 
         if len(selected_items) == 0:
             self.on_graph_cursor(graph)
@@ -56,17 +58,26 @@ class PropsTab(TabItem[Canvases]):
                 assert 1 == len(selected_nodes)
                 assert 0 == len(selected_pins)
                 assert 0 == len(selected_arcs)
+                assert 0 == len(selected_variables)
                 self.on_node_item(selected_nodes[0])
             elif selected_items.pins:
                 assert 0 == len(selected_nodes)
                 assert 1 == len(selected_pins)
                 assert 0 == len(selected_arcs)
+                assert 0 == len(selected_variables)
                 self.on_pin_item(selected_pins[0])
             elif selected_items.arcs:
                 assert 0 == len(selected_nodes)
                 assert 0 == len(selected_pins)
                 assert 1 == len(selected_arcs)
+                assert 0 == len(selected_variables)
                 self.on_arc_item(graph, selected_arcs[0])
+            elif selected_items.variables:
+                assert 0 == len(selected_nodes)
+                assert 0 == len(selected_pins)
+                assert 0 == len(selected_arcs)
+                assert 1 == len(selected_variables)
+                self.on_variable_item(selected_variables[0])
             else:
                 assert False, "Inaccessible section"
         else:
@@ -200,6 +211,22 @@ class PropsTab(TabItem[Canvases]):
                 finally:
                     imgui.tree_pop()
 
+    @staticmethod
+    def tree_variable_debugging(label: str, variable: FlowVariable) -> None:
+        if imgui.tree_node(label):
+            try:
+                message = variable.as_unformatted_text()
+                imgui.text_unformatted(message.strip())
+            finally:
+                imgui.tree_pop()
+
+    def on_variable_item(self, variable: FlowVariable) -> None:
+        input_text_disabled("Type", type(variable).__name__)
+        input_text_disabled("Name", variable.name)
+
+        if self.context.debug:
+            self.tree_variable_debugging("Debugging", variable)
+
     def on_multiple_items(self, graph: FlowGraph, items: FlowSelection) -> None:
         input_text_disabled("Type", "Multiple")
 
@@ -215,6 +242,8 @@ class PropsTab(TabItem[Canvases]):
                         self.on_pin_item(item)
                     elif isinstance(item, FlowArc):
                         self.on_arc_item(graph, item)
+                    elif isinstance(item, FlowVariable):
+                        self.on_variable_item(item)
                     else:
                         assert False, "Inaccessible section"
                 finally:

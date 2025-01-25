@@ -48,6 +48,14 @@ class FlowManager:
         return self._runners
 
     @property
+    def dtype_registry(self):
+        return self._dtype_registry
+
+    @property
+    def node_registry(self):
+        return self._node_registry
+
+    @property
     def dtypes(self):
         return self._dtype_registry.path2dtypes
 
