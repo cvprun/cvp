@@ -2,8 +2,8 @@
 
 from typing import Any, List, Optional, Sequence
 
+from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
-from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
 
 

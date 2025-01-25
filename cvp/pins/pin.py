@@ -6,7 +6,7 @@ from typing import Annotated, Any, Optional, Sequence, Union, get_args, get_orig
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.inspect.parameter import inspect_parameter_required
+from cvp.inspect.parameter import NoDefault, inspect_parameter_required
 from cvp.pins.action import Action
 from cvp.pins.annotated import (
     get_action,
@@ -18,7 +18,6 @@ from cvp.pins.annotated import (
     get_stream,
 )
 from cvp.pins.kind import PinKind, parameter_to_kind
-from cvp.pins.markers import NoDefault
 from cvp.pins.stream import Stream
 
 

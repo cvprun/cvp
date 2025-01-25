@@ -17,6 +17,6 @@ def get_essential_nodes(
     assert dtype_registry is not None
 
     return (
-        EntrypointNode(dtype_registry),
+        EntrypointNode(),
         LoggingNode(dtype_registry),
     )

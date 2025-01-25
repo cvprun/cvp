@@ -3,9 +3,9 @@
 from typing import Annotated, Optional, Union
 from unittest import TestCase, main
 
+from cvp.inspect.parameter import NoDefault
 from cvp.nodes.registry.globals import GlobalNodeRegistry, global_node_registry
 from cvp.nodes.registry.registry import NodeRegistry
-from cvp.pins.markers import NoDefault
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 

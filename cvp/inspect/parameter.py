@@ -2,6 +2,8 @@
 
 from inspect import Parameter
 
+NoDefault = Parameter.empty
+
 
 def inspect_parameter_required(parameter: Parameter) -> bool:
     match parameter.kind:
