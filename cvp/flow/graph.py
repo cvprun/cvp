@@ -16,6 +16,7 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
+from cvp.flow.variable import FlowVariable
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
@@ -29,9 +30,10 @@ class FlowGraph:
     lock: bool = False
     color: RGBA = WHITE_RGBA
     nodes: List[FlowNode] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
     arcs: List[FlowArc] = field(default_factory=list)
+    variables: List[FlowVariable] = field(default_factory=list)
     control: FlowControl = field(default_factory=FlowControl)
+    tags: List[str] = field(default_factory=list)
 
     _selection: FlowSelection = field(default_factory=FlowSelection)
 
@@ -52,7 +54,9 @@ class FlowGraph:
         self.icon = other.icon
         self.nodes = other.nodes
         self.arcs = other.arcs
+        self.variables = other.variables
         self.control = other.control
+        self.tags = other.tags
         self._selection = other._selection
 
     def paste_selection(

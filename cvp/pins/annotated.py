@@ -52,8 +52,13 @@ class PinOutput(PinStream):
 
 
 class PinRequired(PinAnnotated):
-    def __init__(self, required: bool):
+    def __init__(self, required=True):
         self.required = required
+
+
+class PinOptional(PinRequired):
+    def __init__(self, optional=True):
+        super().__init__(not optional)
 
 
 class PinArcs(PinAnnotated):
