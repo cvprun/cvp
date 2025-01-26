@@ -2,16 +2,31 @@
 
 from re import Pattern
 from re import compile as re_compile
-from typing import Final, Optional, Sequence, Set, Union
+from typing import Final, Optional, Sequence, Set, Tuple, Union
 
 RENAME_SUFFIX_PATTERN: Final[Pattern[str]] = re_compile(r"^(.*) \((\d+)\)$")
 
 
-def _new_naming(prefix: str, index: int) -> str:
+def append_suffix_index(prefix: str, index: int) -> str:
     return f"{prefix} ({index})"
 
 
-def new_name(name: str, names: Optional[Union[Sequence[str], Set[str]]] = None) -> str:
+def split_prefix_and_index(name: str) -> Tuple[str, int]:
+    match = RENAME_SUFFIX_PATTERN.match(name)
+    if match is None:
+        raise ValueError(f"Partitioning failed: '{name}'")
+    prefix = match.group(1)
+    index = int(match.group(2))
+    return prefix, index
+
+
+def new_name(
+    name: str,
+    names: Optional[Union[Sequence[str], Set[str]]] = None,
+    *,
+    first=1,
+    step=1,
+) -> str:
     if not names:
         return name
 
@@ -21,11 +36,11 @@ def new_name(name: str, names: Optional[Union[Sequence[str], Set[str]]] = None) 
         unique_names = set(names)
 
     if name in unique_names:
-        if match_group := RENAME_SUFFIX_PATTERN.match(name):
-            prefix = match_group.group(1)
-            index = int(match_group.group(2))
-            return new_name(_new_naming(prefix, index + 1), names)
+        try:
+            prefix, index = split_prefix_and_index(name)
+        except ValueError:
+            return new_name(append_suffix_index(name, first), names)
         else:
-            return new_name(_new_naming(name, 1), names)
+            return new_name(append_suffix_index(prefix, index + step), names)
     else:
         return name
