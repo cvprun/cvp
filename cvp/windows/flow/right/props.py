@@ -16,7 +16,6 @@ from cvp.flow.line_type import (
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
-from cvp.flow.variable import FlowVariable
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -25,6 +24,7 @@ from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_var import style_disable_input
+from cvp.memory.variable import Variable
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
@@ -212,7 +212,7 @@ class PropsTab(TabItem[Canvases]):
                     imgui.tree_pop()
 
     @staticmethod
-    def tree_variable_debugging(label: str, variable: FlowVariable) -> None:
+    def tree_variable_debugging(label: str, variable: Variable) -> None:
         if imgui.tree_node(label):
             try:
                 message = variable.as_unformatted_text()
@@ -220,7 +220,7 @@ class PropsTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def on_variable_item(self, variable: FlowVariable) -> None:
+    def on_variable_item(self, variable: Variable) -> None:
         input_text_disabled("Type", type(variable).__name__)
         input_text_disabled("Name", variable.name)
 
@@ -242,7 +242,7 @@ class PropsTab(TabItem[Canvases]):
                         self.on_pin_item(item)
                     elif isinstance(item, FlowArc):
                         self.on_arc_item(graph, item)
-                    elif isinstance(item, FlowVariable):
+                    elif isinstance(item, Variable):
                         self.on_variable_item(item)
                     else:
                         assert False, "Inaccessible section"

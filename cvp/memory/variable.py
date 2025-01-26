@@ -12,7 +12,7 @@ from cvp.types.override import override
 
 
 @unique
-class FlowVariableKeys(StrEnum):
+class VariableKeys(StrEnum):
     name_ = "name"
     dtype = auto()
     docs = auto()
@@ -25,8 +25,8 @@ class FlowVariableKeys(StrEnum):
     use_deepcopy = auto()
 
 
-class FlowVariable(Serializable):
-    Keys = FlowVariableKeys
+class Variable(Serializable):
+    Keys = VariableKeys
 
     _value: Any
     _initial: Any

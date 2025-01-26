@@ -6,8 +6,8 @@ from unittest import TestCase, main
 
 from type_serialize import deserialize, serialize
 
-from cvp.flow.variable import FlowVariable
 from cvp.inspect.member import get_public_instance_attributes
+from cvp.memory.variable import Variable
 
 
 @dataclass
@@ -21,14 +21,14 @@ class TestValue:
 
 class VariableTestCase(TestCase):
     def test_serialize_deserialize(self):
-        name = "flow_name"
-        dtype = "flow_dtype"
+        name = "name"
+        dtype = "dtype"
         persistent = True
-        docs = "flow_docs"
+        docs = "docs"
         value = TestValue()
         initial = TestValue(200, "test2")
 
-        original = FlowVariable(
+        original = Variable(
             name=name,
             dtype=dtype,
             docs=docs,
@@ -42,17 +42,17 @@ class VariableTestCase(TestCase):
         serialized = serialize(original)
         self.assertIsInstance(serialized, dict)
         self.assertEqual(8, len(serialized))
-        self.assertEqual(name, serialized[FlowVariable.Keys.name_])
-        self.assertEqual(dtype, serialized[FlowVariable.Keys.dtype])
-        self.assertEqual(docs, serialized[FlowVariable.Keys.docs])
-        self.assertIsInstance(serialized[FlowVariable.Keys.value_], bytes)
-        self.assertIsInstance(serialized[FlowVariable.Keys.initial], bytes)
-        self.assertEqual(persistent, serialized[FlowVariable.Keys.persistent])
-        self.assertFalse(serialized[FlowVariable.Keys.use_copy])
-        self.assertTrue(serialized[FlowVariable.Keys.use_deepcopy])
+        self.assertEqual(name, serialized[Variable.Keys.name_])
+        self.assertEqual(dtype, serialized[Variable.Keys.dtype])
+        self.assertEqual(docs, serialized[Variable.Keys.docs])
+        self.assertIsInstance(serialized[Variable.Keys.value_], bytes)
+        self.assertIsInstance(serialized[Variable.Keys.initial], bytes)
+        self.assertEqual(persistent, serialized[Variable.Keys.persistent])
+        self.assertFalse(serialized[Variable.Keys.use_copy])
+        self.assertTrue(serialized[Variable.Keys.use_deepcopy])
 
-        deserialized = deserialize(serialized, FlowVariable)
-        self.assertIsInstance(deserialized, FlowVariable)
+        deserialized = deserialize(serialized, Variable)
+        self.assertIsInstance(deserialized, Variable)
 
         lh = {key: val for key, val in get_public_instance_attributes(original)}
         rh = {key: val for key, val in get_public_instance_attributes(deserialized)}

@@ -7,16 +7,16 @@ import pygame
 
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.variable import FlowVariable
 from cvp.imgui.button import button
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
+from cvp.memory.variable import Variable
 from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_VARIABLE_HEIGHT, MIN_POPUP_VARIABLE_WIDTH
 
 
-class InputVariablePopup(PopupBase[FlowVariable]):
+class InputVariablePopup(PopupBase[Variable]):
     def __init__(
         self,
         title: Optional[str] = None,
@@ -28,7 +28,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         *,
         min_width=MIN_POPUP_VARIABLE_WIDTH,
         min_height=MIN_POPUP_VARIABLE_HEIGHT,
-        target: Optional[Callable[[FlowVariable], None]] = None,
+        target: Optional[Callable[[Variable], None]] = None,
         oneshot: Optional[bool] = None,
     ):
         super().__init__(
@@ -59,10 +59,10 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         return self._name
 
     def create_variable(self):
-        return FlowVariable(self._name, self._dtype.path)
+        return Variable(self._name, self._dtype.path)
 
     @override
-    def on_process(self) -> Optional[FlowVariable]:
+    def on_process(self) -> Optional[Variable]:
         if self._label:
             imgui.text(self._label)
 
@@ -93,7 +93,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         self,
         dtype: Dtype,
         title: Optional[str] = None,
-        target: Optional[Callable[[FlowVariable], None]] = None,
+        target: Optional[Callable[[Variable], None]] = None,
         oneshot: Optional[bool] = None,
     ) -> None:
         self._dtype = dtype
