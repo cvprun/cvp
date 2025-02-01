@@ -94,7 +94,7 @@ class FlowRunner:
         use_deepcopy=False,
     ):
         if use_copy and use_deepcopy:
-            raise ValueError("use_copy and use_deepcopy cannot coexist.")
+            raise ValueError("use_copy and use_deepcopy cannot coexist")
 
         for node in graph.nodes:
             if node.template is None:

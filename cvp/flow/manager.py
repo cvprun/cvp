@@ -151,11 +151,8 @@ class FlowManager:
             raise ValueError("The 'uuid' of the flow graph does not exist")
         self._graphs[graph.uuid] = graph
 
-    def get_node_template(self, path: str):
-        return self.nodes[path]
-
     def add_node(self, graph: FlowGraph, path: str) -> FlowNode:
-        node_template = self.get_node_template(path)
+        node_template = self._node_registry.nodes[path]
         node = FlowNode.from_template(node_template)
         graph.nodes.insert(0, node)
         return node

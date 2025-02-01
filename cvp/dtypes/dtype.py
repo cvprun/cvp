@@ -32,6 +32,8 @@ class Dtype:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
+        *,
+        visible=False,
     ):
         if not isinstance(base, type):
             raise TypeError(f"Only types can be registered: {base}")
@@ -42,6 +44,7 @@ class Dtype:
         self.docs = docs if docs else default_dtype_docs_with_type(base)
         self.icon = icon if icon else default_dtype_icon_with_type(base, self.name)
         self.color = color if color else WHITE_RGBA
+        self.visible = visible
 
         if not self.name:
             raise ValueError("The 'name' attribute is required")

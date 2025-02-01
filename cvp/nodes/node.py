@@ -33,6 +33,7 @@ class Node(NodeInterface):
         color: Optional[RGBA] = None,
         pins: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
+        visible: Optional[bool] = None,
     ):
         self.name = name
         self.path = path
@@ -42,6 +43,7 @@ class Node(NodeInterface):
         self.color = color if color else WHITE_RGBA
         self.pins = list(pins if pins else [])
         self.tags = list(tags if tags else [])
+        self.visible = bool(visible)
 
     @classmethod
     def auto_parse(
@@ -57,6 +59,7 @@ class Node(NodeInterface):
         data_inputs: Optional[Sequence[Pin]] = None,
         data_outputs: Optional[Sequence[Pin]] = None,
         tags: Optional[Sequence[str]] = None,
+        visible: Optional[bool] = None,
         *,
         dtype_registry: Optional[DtypeRegistry] = None,
     ):
@@ -68,6 +71,7 @@ class Node(NodeInterface):
         base_icon = icon if icon else NODE_ICON_MAPPING[base_name[0]]
         base_color = color if color else WHITE_RGBA
         base_tags = list(tags if tags else list())
+        base_visible = bool(visible)
 
         if path:
             base_path = path
@@ -136,6 +140,7 @@ class Node(NodeInterface):
             color=base_color,
             pins=base_pins,
             tags=base_tags,
+            visible=base_visible,
         )
 
     @property

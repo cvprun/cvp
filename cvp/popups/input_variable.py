@@ -7,10 +7,10 @@ import pygame
 
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
+from cvp.flow.variable import Variable
 from cvp.imgui.button import button
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
-from cvp.memory.variable import Variable
 from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_VARIABLE_HEIGHT, MIN_POPUP_VARIABLE_WIDTH

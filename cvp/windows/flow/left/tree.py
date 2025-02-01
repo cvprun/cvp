@@ -5,8 +5,8 @@ import imgui
 from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
+from cvp.flow.variable import Variable
 from cvp.imgui.text_centered import text_centered
-from cvp.memory.variable import Variable
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem

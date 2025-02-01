@@ -6,8 +6,8 @@ from unittest import TestCase, main
 
 from type_serialize import deserialize, serialize
 
+from cvp.flow.variable import Variable
 from cvp.inspect.member import get_public_instance_attributes
-from cvp.memory.variable import Variable
 
 
 @dataclass

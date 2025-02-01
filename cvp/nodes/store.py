@@ -24,7 +24,7 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
         use_deepcopy=False,
     ):
         if use_copy and use_deepcopy:
-            raise ValueError("use_copy and use_deepcopy cannot coexist.")
+            raise ValueError("use_copy and use_deepcopy cannot coexist")
 
         if other is not None:
             if use_copy:
