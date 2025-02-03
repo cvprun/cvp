@@ -194,6 +194,7 @@ ssse
 stillimage
 strfmt
 strftime
+strptime
 subpath
 surfaceable
 svga
