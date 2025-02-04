@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date, datetime
-from typing import NamedTuple
+from datetime import date, datetime, tzinfo
+from typing import NamedTuple, Optional
 
 
 class MonthDay(NamedTuple):
@@ -22,6 +22,10 @@ class MonthDay(NamedTuple):
     @classmethod
     def from_format(cls, text: str, fmt="%m/%d"):
         return cls.from_datetime(datetime.strptime(text, fmt))
+
+    @classmethod
+    def now(cls, tz: Optional[tzinfo] = None):
+        return cls.from_datetime(datetime.now(tz))
 
 
 def in_month_day(
