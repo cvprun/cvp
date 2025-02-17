@@ -391,17 +391,20 @@ class PlayerApplication:
             self._dtype_manager.flip_opened()
         if imgui.menu_item("Catalog", None, self._catalog_manager.opened)[0]:
             self._catalog_manager.flip_opened()
-        if imgui.menu_item("Stitching", None, self._stitching.opened)[0]:
-            self._stitching.flip_opened()
-        if imgui.menu_item("Labeling", None, self._labeling_manager.opened)[0]:
-            self._labeling_manager.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Editors", None, False, False)
-        if imgui.menu_item("Text", None, self._text.opened)[0]:
-            self._text.flip_opened()
-        if imgui.menu_item("Canvas", None, self._canvas.opened)[0]:
-            self._canvas.flip_opened()
+        if self.debug:
+            if imgui.menu_item("Stitching", None, self._stitching.opened)[0]:
+                self._stitching.flip_opened()
+            if imgui.menu_item("Labeling", None, self._labeling_manager.opened)[0]:
+                self._labeling_manager.flip_opened()
+
+        if self.debug:
+            imgui.separator()
+            imgui.menu_item("Editors", None, False, False)
+            if imgui.menu_item("Text", None, self._text.opened)[0]:
+                self._text.flip_opened()
+            if imgui.menu_item("Canvas", None, self._canvas.opened)[0]:
+                self._canvas.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Network Device", None, False, False)
@@ -425,22 +428,27 @@ class PlayerApplication:
             self._process_manager.flip_opened()
         if imgui.menu_item("Window", None, self._window_manager.opened)[0]:
             self._window_manager.flip_opened()
-        if imgui.menu_item("Worker", None, self._worker_manager.opened)[0]:
-            self._worker_manager.flip_opened()
-        if imgui.menu_item("Files", None, self._files.opened)[0]:
-            self._files.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Development", None, False, False)
-        if imgui.menu_item("Terminal", None, self._terminal.opened)[0]:
-            self._terminal.flip_opened()
+        if self.debug:
+            if imgui.menu_item("Worker", None, self._worker_manager.opened)[0]:
+                self._worker_manager.flip_opened()
+            if imgui.menu_item("Files", None, self._files.opened)[0]:
+                self._files.flip_opened()
+
+        if self.debug:
+            imgui.separator()
+            imgui.menu_item("Development", None, False, False)
+            if imgui.menu_item("Terminal", None, self._terminal.opened)[0]:
+                self._terminal.flip_opened()
 
         imgui.separator()
         imgui.menu_item("Game", None, False, False)
         if imgui.menu_item("TetriX", None, self._tetrix.opened)[0]:
             self._tetrix.flip_opened()
-        if imgui.menu_item("GlyphWorld", None, self._glyph_hack.opened)[0]:
-            self._glyph_hack.flip_opened()
+
+        if self.debug:
+            if imgui.menu_item("GlyphWorld", None, self._glyph_hack.opened)[0]:
+                self._glyph_hack.flip_opened()
 
         imgui.separator()
         if imgui.menu_item("Font", None, self._font_manager.opened)[0]:
