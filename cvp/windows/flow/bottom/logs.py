@@ -21,6 +21,7 @@ from cvp.logging.logging import (
     convert_level_number,
 )
 from cvp.logging.logging import flow_logger as logger
+from cvp.patterns.delta import Delta
 from cvp.renderer.context import RendererContext
 from cvp.types.colors import RGBA
 from cvp.types.override import override
@@ -64,6 +65,7 @@ class LogsTab(TabItem[Canvases]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Logs")
         assert 1 <= self.context.config.flow_aui.logs.lines
+        self._mouse_wheel = Delta.from_single_value(0.0)
         self._records = deque(maxlen=self.context.config.flow_aui.logs.lines)
         self._handler = _LoggingHandler(self.on_logging)
         logger.addHandler(self._handler)
@@ -150,12 +152,18 @@ class LogsTab(TabItem[Canvases]):
 
         bottom_spacing = imgui.get_style().item_spacing.y
         with begin_child("##Logging", 0, -bottom_spacing, border=False):
-            if self.autoscroll:
-                if imgui.is_window_hovered(imgui.HOVERED_ROOT_AND_CHILD_WINDOWS):
-                    if imgui.is_mouse_down(imgui.MOUSE_BUTTON_LEFT):
-                        self.autoscroll = False
-                    elif imgui.get_io().mouse_wheel != 0:
-                        self.autoscroll = False
+            if imgui.is_window_hovered(imgui.HOVERED_ROOT_AND_CHILD_WINDOWS):
+                if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
+                    if 0 < self._mouse_wheel.value:
+                        # Drag Up
+                        if imgui.get_scroll_y() < imgui.get_scroll_max_y():
+                            self.autoscroll = False
+                    elif self._mouse_wheel.value < 0:
+                        # Drag Down
+                        if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
+                            self.autoscroll = True
+                    else:
+                        assert 0 == self._mouse_wheel.value
 
             filter_level = self.get_level_number()
 
