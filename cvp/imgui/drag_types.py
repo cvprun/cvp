@@ -9,8 +9,10 @@ class DragTypes(StrEnum):
     flow_graph = auto()
     flow_node = auto()
     flow_dtype = auto()
+    flow_variable = auto()
 
 
 DRAG_FLOW_GRAPH: Final[str] = str(DragTypes.flow_graph)
 DRAG_FLOW_NODE: Final[str] = str(DragTypes.flow_node)
 DRAG_FLOW_DTYPE: Final[str] = str(DragTypes.flow_dtype)
+DRAG_FLOW_VARIABLE: Final[str] = str(DragTypes.flow_variable)

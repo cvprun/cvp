@@ -16,7 +16,7 @@ from cvp.fonts.glyphs.mdi import (
     STOP,
 )
 from cvp.imgui.begin_child import begin_child
-from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE
+from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_item_spacing
@@ -641,12 +641,17 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                     dtype_path = str(payload, encoding="utf-8")
                     self._drag_dtype = self.context.fm.dtypes[dtype_path]
                     self._add_variable_popup.show()
-
-                if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE):
+                elif payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE):
                     node_path = str(payload, encoding="utf-8")
                     node = self.context.fm.add_node(canvas.graph, node_path)
                     canvas.update_node_roi(node)
                     canvas.save_history("Add a new node", node_path)
+                elif payload := imgui.accept_drag_drop_payload(DRAG_FLOW_VARIABLE):
+                    variable_name = str(payload, encoding="utf-8")
+                    print(variable_name)
+                    # node = self.context.fm.add_node(canvas.graph, node_path)
+                    # canvas.update_node_roi(node)
+                    # canvas.save_history("Add a new node", node_path)
 
         if imgui.begin_popup_context_window().opened:
             try:

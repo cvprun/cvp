@@ -6,6 +6,7 @@ from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import Variable
+from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -156,6 +157,12 @@ class TreeTab(TabItem[Canvases]):
             if not key_ctrl:
                 graph.unselect_all_items()
             graph.flip_select_item(variable)
+
+        with imgui.begin_drag_drop_source() as drag_drop_src:
+            if drag_drop_src.dragging:
+                payload = variable.name.encode()
+                imgui.set_drag_drop_payload(DRAG_FLOW_VARIABLE, payload)
+                imgui.text(variable.name)
 
         imgui.same_line(imgui.get_cursor_pos_x())
 
