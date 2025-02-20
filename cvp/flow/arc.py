@@ -18,7 +18,7 @@ from cvp.types.shapes import Point, Rect
 @unique
 class FlowArcKeys(StrEnum):
     uuid = auto()
-    name_ = auto()
+    name_ = "name"
     docs = auto()
     line_type = auto()
     start_anchor = auto()
@@ -121,7 +121,7 @@ class FlowArc(Serializable):
             self.Keys.uuid: self.uuid,
             self.Keys.name_: self.name,
             self.Keys.docs: self.docs,
-            self.Keys.line_type: self.line_type,
+            self.Keys.line_type: str(self.line_type),
             self.Keys.start_anchor: serialize(self.start_anchor),
             self.Keys.end_anchor: serialize(self.end_anchor),
         }
@@ -135,7 +135,11 @@ class FlowArc(Serializable):
         self.uuid = data.get(self.Keys.uuid, str())
         self.name = data.get(self.Keys.name_, str())
         self.docs = data.get(self.Keys.docs, str())
-        self.line_type = data.get(self.Keys.line_type, FlowLineType.bezier_cubic)
+
+        if line_type := data.get(self.Keys.line_type):
+            self.line_type = FlowLineType(line_type)
+        else:
+            self.line_type = FlowLineType.bezier_cubic
 
         if start_anchor := data.get(self.Keys.start_anchor):
             self.start_anchor = deserialize(start_anchor, FlowAnchor)

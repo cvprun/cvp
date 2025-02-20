@@ -157,8 +157,17 @@ class FlowPin(Serializable):
         self.name = data.get(self.Keys.name_, str())
         self.docs = data.get(self.Keys.docs, str())
         self.dtype = data.get(self.Keys.dtype, str())
-        self.action = data.get(self.Keys.action, Action.data)
-        self.stream = data.get(self.Keys.stream, Stream.input)
+
+        if action := data.get(self.Keys.action):
+            self.action = Action(action)
+        else:
+            self.action = Action.data
+
+        if stream := data.get(self.Keys.stream):
+            self.stream = Stream(stream)
+        else:
+            self.stream = Stream.input
+
         self.required = data.get(self.Keys.required, False)
         self.hidden = data.get(self.Keys.hidden, False)
         self.arcs = data.get(self.Keys.arcs, list())
@@ -166,6 +175,7 @@ class FlowPin(Serializable):
         self.icon_size = data.get(self.Keys.icon_size, EMPTY_SIZE)
         self.name_pos = data.get(self.Keys.name_pos, EMPTY_POINT)
         self.name_size = data.get(self.Keys.name_size, EMPTY_SIZE)
+
         self._template = None
         self._selected = False
         self._hovering = False

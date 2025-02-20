@@ -1,45 +1,110 @@
 # -*- coding: utf-8 -*-
 
-from copy import deepcopy
-from dataclasses import dataclass, field
-from typing import List, Optional
+from copy import copy, deepcopy
+from enum import StrEnum, auto, unique
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
+
+from type_serialize import Serializable, deserialize, serialize
 
 from cvp.flow.pin import FlowPin
 from cvp.nodes.node import Node
 from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
-@dataclass
-class FlowNode:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
-    name: str = field(default_factory=str)
-    path: str = field(default_factory=str)
-    docs: str = field(default_factory=str)
-    icon: str = field(default_factory=str)
-    lock: bool = False
-    breakpoint: bool = False
-    color: RGBA = WHITE_RGBA
-    flow_inputs: List[FlowPin] = field(default_factory=list)
-    flow_outputs: List[FlowPin] = field(default_factory=list)
-    data_inputs: List[FlowPin] = field(default_factory=list)
-    data_outputs: List[FlowPin] = field(default_factory=list)
-    tags: List[str] = field(default_factory=list)
+@unique
+class FlowNodeKeys(StrEnum):
+    uuid = auto()
+    name_ = "name"
+    path = auto()
+    docs = auto()
+    icon = auto()
+    lock = auto()
+    breakpoint = auto()
+    hidden = auto()
+    color = auto()
+    flow_inputs = auto()
+    flow_outputs = auto()
+    data_inputs = auto()
+    data_outputs = auto()
+    tags = auto()
+    head_height = auto()
+    flow_height = auto()
+    data_height = auto()
+    icon_pos = auto()
+    icon_size = auto()
+    name_pos = auto()
+    name_size = auto()
+    node_pos = auto()
+    node_size = auto()
 
-    head_height: float = 0.0
-    flow_height: float = 0.0
-    data_height: float = 0.0
-    icon_pos: Point = EMPTY_POINT
-    icon_size: Size = EMPTY_SIZE
-    name_pos: Point = EMPTY_POINT
-    name_size: Size = EMPTY_SIZE
-    node_pos: Point = EMPTY_POINT
-    node_size: Size = EMPTY_SIZE
 
-    _template: Optional[Node] = None
-    _selected: bool = False
-    _hovering: bool = False
+class FlowNode(Serializable):
+    Keys = FlowNodeKeys
+
+    # noinspection PyShadowingBuiltins
+    def __init__(
+        self,
+        uuid: Optional[str] = None,
+        name: Optional[str] = None,
+        path: Optional[str] = None,
+        docs: Optional[str] = None,
+        icon: Optional[str] = None,
+        lock=False,
+        breakpoint=False,
+        hidden=False,
+        color: RGBA = WHITE_RGBA,
+        flow_inputs: Optional[List[FlowPin]] = None,
+        flow_outputs: Optional[List[FlowPin]] = None,
+        data_inputs: Optional[List[FlowPin]] = None,
+        data_outputs: Optional[List[FlowPin]] = None,
+        tags: Optional[List[str]] = None,
+        head_height=0.0,
+        flow_height=0.0,
+        data_height=0.0,
+        icon_pos: Point = EMPTY_POINT,
+        icon_size: Size = EMPTY_SIZE,
+        name_pos: Point = EMPTY_POINT,
+        name_size: Size = EMPTY_SIZE,
+        node_pos: Point = EMPTY_POINT,
+        node_size: Size = EMPTY_SIZE,
+        *,
+        template: Optional[Node] = None,
+        selected: bool = False,
+        hovering: bool = False,
+    ):
+        self.uuid = uuid if uuid else str(uuid4())
+        self.name = name if name else str()
+        self.path = path if path else str()
+        self.docs = docs if docs else str()
+        self.icon = icon if icon else str()
+        self.lock = lock
+        self.breakpoint = breakpoint
+        self.hidden = hidden
+        self.color = color
+
+        self.flow_inputs = list(flow_inputs if flow_inputs else list())
+        self.flow_outputs = list(flow_outputs if flow_outputs else list())
+        self.data_inputs = list(data_inputs if data_inputs else list())
+        self.data_outputs = list(data_outputs if data_outputs else list())
+        self.tags = list(tags if tags else list())
+
+        self.head_height = head_height
+        self.flow_height = flow_height
+        self.data_height = data_height
+
+        self.icon_pos = icon_pos
+        self.icon_size = icon_size
+        self.name_pos = name_pos
+        self.name_size = name_size
+        self.node_pos = node_pos
+        self.node_size = node_size
+
+        self._template = template
+        self._selected = selected
+        self._hovering = hovering
 
     @classmethod
     def from_template(cls, template: Node):
@@ -49,14 +114,161 @@ class FlowNode:
             path=template.path,
             docs=template.docs,
             icon=template.icon,
+            lock=False,
+            breakpoint=False,
+            hidden=False,
             color=template.color,
             flow_inputs=list(FlowPin.from_template(p) for p in template.flow_inputs),
             flow_outputs=list(FlowPin.from_template(p) for p in template.flow_outputs),
             data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
-            _template=template,
+            template=template,
         )
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = copy(self.uuid)
+        result.name = copy(self.name)
+        result.path = copy(self.path)
+        result.docs = copy(self.docs)
+        result.icon = copy(self.icon)
+        result.lock = copy(self.lock)
+        result.breakpoint = copy(self.breakpoint)
+        result.hidden = copy(self.hidden)
+        result.color = copy(self.color)
+        result.flow_inputs = copy(self.flow_inputs)
+        result.flow_outputs = copy(self.flow_outputs)
+        result.data_inputs = copy(self.data_inputs)
+        result.data_outputs = copy(self.data_outputs)
+        result.tags = copy(self.tags)
+        result.head_height = copy(self.head_height)
+        result.flow_height = copy(self.flow_height)
+        result.data_height = copy(self.data_height)
+        result.icon_pos = copy(self.icon_pos)
+        result.icon_size = copy(self.icon_size)
+        result.name_pos = copy(self.name_pos)
+        result.name_size = copy(self.name_size)
+        result.node_pos = copy(self.node_pos)
+        result.node_size = copy(self.node_size)
+        result._template = copy(self._template)
+        result._selected = copy(self._selected)
+        result._hovering = copy(self._hovering)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = deepcopy(self.uuid, memo)
+        result.name = deepcopy(self.name, memo)
+        result.path = deepcopy(self.path, memo)
+        result.docs = deepcopy(self.docs, memo)
+        result.icon = deepcopy(self.icon, memo)
+        result.lock = deepcopy(self.lock, memo)
+        result.breakpoint = deepcopy(self.breakpoint, memo)
+        result.hidden = deepcopy(self.hidden, memo)
+        result.color = deepcopy(self.color, memo)
+        result.flow_inputs = deepcopy(self.flow_inputs, memo)
+        result.flow_outputs = deepcopy(self.flow_outputs, memo)
+        result.data_inputs = deepcopy(self.data_inputs, memo)
+        result.data_outputs = deepcopy(self.data_outputs, memo)
+        result.tags = deepcopy(self.tags, memo)
+        result.head_height = deepcopy(self.head_height, memo)
+        result.flow_height = deepcopy(self.flow_height, memo)
+        result.data_height = deepcopy(self.data_height, memo)
+        result.icon_pos = deepcopy(self.icon_pos, memo)
+        result.icon_size = deepcopy(self.icon_size, memo)
+        result.name_pos = deepcopy(self.name_pos, memo)
+        result.name_size = deepcopy(self.name_size, memo)
+        result.node_pos = deepcopy(self.node_pos, memo)
+        result.node_size = deepcopy(self.node_size, memo)
+        result._template = deepcopy(self._template, memo)
+        result._selected = deepcopy(self._selected, memo)
+        result._hovering = deepcopy(self._hovering, memo)
+        memo[id(self)] = result
+        return result
+
+    @override
+    def __serialize__(self) -> Any:
+        result = {
+            self.Keys.uuid: self.uuid,
+            self.Keys.name_: self.name,
+            self.Keys.path: self.path,
+            self.Keys.docs: self.docs,
+            self.Keys.icon: self.icon,
+            self.Keys.lock: self.lock,
+            self.Keys.breakpoint: self.breakpoint,
+            self.Keys.hidden: self.hidden,
+            self.Keys.color: self.color,
+            self.Keys.flow_inputs: serialize(self.flow_inputs),
+            self.Keys.flow_outputs: serialize(self.flow_outputs),
+            self.Keys.data_inputs: serialize(self.data_inputs),
+            self.Keys.data_outputs: serialize(self.data_outputs),
+            self.Keys.tags: self.tags,
+            self.Keys.head_height: self.head_height,
+            self.Keys.flow_height: self.flow_height,
+            self.Keys.data_height: self.data_height,
+            self.Keys.icon_pos: self.icon_pos,
+            self.Keys.icon_size: self.icon_size,
+            self.Keys.name_pos: self.name_pos,
+            self.Keys.name_size: self.name_size,
+            self.Keys.node_pos: self.node_pos,
+            self.Keys.node_size: self.node_size,
+        }
+        return {str(key): val for key, val in result.items()}
+
+    @override
+    def __deserialize__(self, data: Any) -> None:
+        if not isinstance(data, dict):
+            raise TypeError(f"Unexpected data type: {type(data).__name__}")
+
+        self.uuid = data.get(self.Keys.uuid, str())
+        self.name = data.get(self.Keys.name_, str())
+        self.path = data.get(self.Keys.path, str())
+        self.docs = data.get(self.Keys.docs, str())
+        self.icon = data.get(self.Keys.icon, str())
+        self.lock = data.get(self.Keys.lock, False)
+        self.breakpoint = data.get(self.Keys.breakpoint, False)
+        self.hidden = data.get(self.Keys.hidden, False)
+        self.color = data.get(self.Keys.color, WHITE_RGBA)
+
+        self.flow_inputs = list()
+        self.flow_outputs = list()
+        self.data_inputs = list()
+        self.data_outputs = list()
+
+        if flow_inputs := data.get(self.Keys.flow_inputs):
+            for pin in flow_inputs:
+                self.flow_inputs.append(deserialize(pin, FlowPin))
+        if flow_outputs := data.get(self.Keys.flow_outputs):
+            for pin in flow_outputs:
+                self.flow_outputs.append(deserialize(pin, FlowPin))
+        if data_inputs := data.get(self.Keys.data_inputs):
+            for pin in data_inputs:
+                self.data_inputs.append(deserialize(pin, FlowPin))
+        if data_outputs := data.get(self.Keys.data_outputs):
+            for pin in data_outputs:
+                self.data_outputs.append(deserialize(pin, FlowPin))
+
+        self.tags = data.get(self.Keys.tags, list())
+
+        self.head_height = data.get(self.Keys.head_height, 0.0)
+        self.flow_height = data.get(self.Keys.flow_height, 0.0)
+        self.data_height = data.get(self.Keys.data_height, 0.0)
+
+        self.icon_pos = data.get(self.Keys.icon_pos, EMPTY_POINT)
+        self.icon_size = data.get(self.Keys.icon_size, EMPTY_SIZE)
+        self.name_pos = data.get(self.Keys.name_pos, EMPTY_POINT)
+        self.name_size = data.get(self.Keys.name_size, EMPTY_SIZE)
+        self.node_pos = data.get(self.Keys.node_pos, EMPTY_POINT)
+        self.node_size = data.get(self.Keys.node_size, EMPTY_SIZE)
+
+        self._template = None
+        self._selected = False
+        self._hovering = False
 
     @property
     def template(self):
