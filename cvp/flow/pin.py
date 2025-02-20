@@ -59,7 +59,7 @@ class FlowPin(Serializable):
         self.stream = stream
         self.required = required
         self.hidden = hidden
-        self.arcs = list(arcs if arcs else list())
+        self.arcs = list(arcs if arcs else ())
 
         self.icon_pos = icon_pos
         self.icon_size = icon_size

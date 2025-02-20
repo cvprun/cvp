@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 from uuid import uuid4
 
 from type_serialize import Serializable, deserialize, serialize
@@ -42,7 +42,7 @@ class FlowArc(Serializable):
         input: Optional[FlowNodePin] = None,
         selected=False,
         hovering=False,
-        polyline: Optional[List[Point]] = None,
+        polyline: Optional[Sequence[Point]] = None,
     ):
         self.uuid = uuid if uuid else str(uuid4())
         self.name = name if name else str()
@@ -58,7 +58,7 @@ class FlowArc(Serializable):
         self._selected = selected
         self._hovering = hovering
 
-        self._polyline = list(polyline if polyline else list())
+        self._polyline = list(polyline if polyline else ())
 
     @classmethod
     def from_connect_pair(
