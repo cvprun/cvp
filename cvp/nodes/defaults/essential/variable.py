@@ -21,6 +21,7 @@ class VariableSetterNode(Node):
             dtype=dtype_registry.get(str),
             docs="The key of the variable",
             required=True,
+            hidden=True,
         )
         self._value = DataInputPin(
             name="value",
@@ -56,6 +57,7 @@ class VariableGetterNode(Node):
             dtype=dtype_registry.get(str),
             docs="The key of the variable",
             required=True,
+            hidden=True,
         )
         self._value = DataOutputPin(
             name="value",

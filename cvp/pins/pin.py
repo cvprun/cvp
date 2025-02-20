@@ -13,6 +13,7 @@ from cvp.pins.annotated import (
     get_arcs,
     get_default,
     get_docs,
+    get_hidden,
     get_name,
     get_required,
     get_stream,
@@ -30,6 +31,7 @@ class Pin:
         action: Optional[Action] = None,
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
+        hidden: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
@@ -40,6 +42,7 @@ class Pin:
         self.action = action if action is not None else Action.data
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
+        self.hidden = bool(hidden)
         self.arcs = list(arcs if arcs else [])
         self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
@@ -73,6 +76,7 @@ class Pin:
             param_arcs = get_arcs(*param_args)
             param_default = get_default(*param_args, default=parameter.default)
             param_required = get_required(*param_args, default=param_required)
+            param_hidden = get_hidden(*param_args, default=False)
         else:
             param_dtype = dtype_registry.get(parameter.annotation)
             param_name = parameter.name
@@ -81,6 +85,7 @@ class Pin:
             param_stream = Stream.input
             param_arcs = list()
             param_default = parameter.default
+            param_hidden = False
 
         return cls(
             name=param_name,
@@ -89,6 +94,7 @@ class Pin:
             action=param_action,
             stream=param_stream,
             required=param_required,
+            hidden=param_hidden,
             arcs=param_arcs,
             kind=param_kind,
             default=param_default,

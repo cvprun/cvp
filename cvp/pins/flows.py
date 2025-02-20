@@ -22,6 +22,7 @@ class FlowInputPin(Pin):
             action=Action.flow,
             stream=Stream.input,
             required=False,
+            hidden=False,
             arcs=arcs,
             kind=PinKind.flow_only,
         )
@@ -41,6 +42,7 @@ class FlowOutputPin(Pin):
             action=Action.flow,
             stream=Stream.output,
             required=False,
+            hidden=False,
             arcs=arcs,
             kind=PinKind.flow_only,
         )

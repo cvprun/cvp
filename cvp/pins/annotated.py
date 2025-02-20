@@ -61,6 +61,16 @@ class PinOptional(PinRequired):
         super().__init__(not optional)
 
 
+class PinHidden(PinAnnotated):
+    def __init__(self, hidden=True):
+        self.hidden = hidden
+
+
+class PinVisible(PinHidden):
+    def __init__(self, visible=True):
+        super().__init__(not visible)
+
+
 class PinArcs(PinAnnotated):
     def __init__(self, arcs: Sequence[str]):
         self.arcs = list(arcs)
@@ -117,6 +127,13 @@ def get_required(*args, default: Optional[bool] = None) -> bool:
     for arg in args:
         if isinstance(arg, PinRequired):
             return arg.required
+    return bool(default)
+
+
+def get_hidden(*args, default: Optional[bool] = None) -> bool:
+    for arg in args:
+        if isinstance(arg, PinHidden):
+            return arg.hidden
     return bool(default)
 
 
