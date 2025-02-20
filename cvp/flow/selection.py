@@ -19,11 +19,11 @@ from cvp.flow.arc import FlowArc
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
-from cvp.flow.variable import Variable
+from cvp.flow.variable import FlowVariable
 from cvp.types.shapes import Point
 
 FlowSelectableKey: TypeAlias = int
-FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc, Variable]
+FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc, FlowVariable]
 FlowSelectableDict = OrderedDict[FlowSelectableKey, FlowSelectableAny]
 
 
@@ -89,8 +89,8 @@ class FlowSelection:
         return isinstance(item, FlowArc)
 
     @staticmethod
-    def _is_variable(item: FlowSelectableAny) -> TypeGuard[Variable]:
-        return isinstance(item, Variable)
+    def _is_variable(item: FlowSelectableAny) -> TypeGuard[FlowVariable]:
+        return isinstance(item, FlowVariable)
 
     @property
     def nodes(self) -> List[FlowNode]:
@@ -105,7 +105,7 @@ class FlowSelection:
         return list(filter(self._is_arc, self._items.values()))
 
     @property
-    def variables(self) -> List[Variable]:
+    def variables(self) -> List[FlowVariable]:
         return list(filter(self._is_variable, self._items.values()))
 
     @property
@@ -138,11 +138,11 @@ class FlowSelection:
         return first if isinstance(first, FlowArc) else None
 
     @property
-    def selected_variable_only(self) -> Optional[Variable]:
+    def selected_variable_only(self) -> Optional[FlowVariable]:
         if 1 != len(self._items):
             return None
         first = self.first
-        return first if isinstance(first, Variable) else None
+        return first if isinstance(first, FlowVariable) else None
 
     def clear(self) -> None:
         self._items.clear()
@@ -178,7 +178,7 @@ class FlowSelection:
     def copy_validated_items(
         self,
         point: Point,
-    ) -> Tuple[List[FlowNode], List[FlowArc], List[Variable]]:
+    ) -> Tuple[List[FlowNode], List[FlowArc], List[FlowVariable]]:
         nodes = self.nodes
         arcs = self.arcs
         variables = self.variables

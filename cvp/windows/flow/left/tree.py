@@ -5,7 +5,7 @@ import imgui
 from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
-from cvp.flow.variable import Variable
+from cvp.flow.variable import FlowVariable
 from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
@@ -144,7 +144,7 @@ class TreeTab(TabItem[Canvases]):
             finally:
                 imgui.tree_pop()
 
-    def tree_variable(self, graph: FlowGraph, variable: Variable) -> None:
+    def tree_variable(self, graph: FlowGraph, variable: FlowVariable) -> None:
         variable_icon = self.context.config.flow_aui.pins.variable_icon
         key_ctrl = imgui.get_io().key_ctrl
 

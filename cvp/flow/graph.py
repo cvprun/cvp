@@ -17,7 +17,7 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
-from cvp.flow.variable import Variable
+from cvp.flow.variable import FlowVariable
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.shapes import Point, Size
 
@@ -32,7 +32,7 @@ class FlowGraph:
     color: RGBA = WHITE_RGBA
     nodes: List[FlowNode] = field(default_factory=list)
     arcs: List[FlowArc] = field(default_factory=list)
-    variables: List[Variable] = field(default_factory=list)
+    variables: List[FlowVariable] = field(default_factory=list)
     control: FlowControl = field(default_factory=FlowControl)
     tags: List[str] = field(default_factory=list)
 
@@ -221,13 +221,13 @@ class FlowGraph:
                 return arc
         return None
 
-    def find_variable(self, key: str) -> Optional[Variable]:
+    def find_variable(self, key: str) -> Optional[FlowVariable]:
         for variable in self.variables:
             if variable.name == key:
                 return variable
         return None
 
-    def find_hovering_variable(self) -> Optional[Variable]:
+    def find_hovering_variable(self) -> Optional[FlowVariable]:
         for variable in self.variables:
             if variable.hovering:
                 return variable
@@ -324,7 +324,7 @@ class FlowGraph:
                 result.append(node)
         return result
 
-    def find_selected_variables(self) -> List[Variable]:
+    def find_selected_variables(self) -> List[FlowVariable]:
         result = list()
         for variable in self.variables:
             if variable.selected:
@@ -500,7 +500,7 @@ class FlowGraph:
             if anchor := self.find_hovering_anchor_with_mouse(selected_arc_only, mouse):
                 anchor.hovering = True
 
-    def remove_variable(self, variable: Variable) -> None:
+    def remove_variable(self, variable: FlowVariable) -> None:
         self.variables.remove(variable)
         self._selection.remove_noraise(variable)
 
@@ -547,7 +547,7 @@ class FlowGraph:
             self.node_to_front(item)
         elif isinstance(item, FlowArc):
             self.arc_to_front(item)
-        elif isinstance(item, (FlowPin, Variable)):
+        elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
@@ -573,7 +573,7 @@ class FlowGraph:
             self.node_to_back(item)
         elif isinstance(item, FlowArc):
             self.arc_to_back(item)
-        elif isinstance(item, (FlowPin, Variable)):
+        elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
@@ -595,7 +595,7 @@ class FlowGraph:
             self.node_bring_forward(item)
         elif isinstance(item, FlowArc):
             self.arc_bring_forward(item)
-        elif isinstance(item, (FlowPin, Variable)):
+        elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
@@ -617,7 +617,7 @@ class FlowGraph:
             self.node_send_backward(item)
         elif isinstance(item, FlowArc):
             self.arc_send_backward(item)
-        elif isinstance(item, (FlowPin, Variable)):
+        elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
             raise TypeError(f"Unsupported item type: {type(item).__name__}")
@@ -718,8 +718,8 @@ class FlowGraph:
             self.move_node(node, next_pos)
             cursor += node.height + space
 
-    def add_variable(self, name: str, dtype: Dtype) -> Variable:
-        result = Variable(
+    def add_variable(self, name: str, dtype: Dtype) -> FlowVariable:
+        result = FlowVariable(
             name=name,
             dtype=dtype.path,
             docs=None,
