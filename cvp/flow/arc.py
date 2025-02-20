@@ -1,33 +1,64 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
-from typing import List, Optional, Tuple
+from copy import copy, deepcopy
+from enum import StrEnum, auto, unique
+from typing import Any, Dict, List, Optional, Tuple
 from uuid import uuid4
+
+from type_serialize import Serializable, deserialize, serialize
 
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.line_type import FlowLineType
 from cvp.flow.node_pin import FlowNodePin
 from cvp.maths.bezier.casteljau.cubic import bezier_cubic_casteljau_points
+from cvp.types.override import override
 from cvp.types.shapes import Point, Rect
 
 
-@dataclass
-class FlowArc:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
-    name: str = str()
-    docs: str = str()
+@unique
+class FlowArcKeys(StrEnum):
+    uuid = auto()
+    name_ = auto()
+    docs = auto()
+    line_type = auto()
+    start_anchor = auto()
+    end_anchor = auto()
 
-    line_type: FlowLineType = FlowLineType.bezier_cubic
-    start_anchor: FlowAnchor = field(default_factory=FlowAnchor)
-    end_anchor: FlowAnchor = field(default_factory=FlowAnchor)
 
-    _output: Optional[FlowNodePin] = None
-    _input: Optional[FlowNodePin] = None
+class FlowArc(Serializable):
+    Keys = FlowArcKeys
 
-    _selected: bool = False
-    _hovering: bool = False
+    # noinspection PyShadowingBuiltins
+    def __init__(
+        self,
+        uuid: Optional[str] = None,
+        name: Optional[str] = None,
+        docs: Optional[str] = None,
+        line_type=FlowLineType.bezier_cubic,
+        start_anchor: Optional[FlowAnchor] = None,
+        end_anchor: Optional[FlowAnchor] = None,
+        *,
+        output: Optional[FlowNodePin] = None,
+        input: Optional[FlowNodePin] = None,
+        selected=False,
+        hovering=False,
+        polyline: Optional[List[Point]] = None,
+    ):
+        self.uuid = uuid if uuid else str(uuid4())
+        self.name = name if name else str()
+        self.docs = docs if docs else str()
 
-    _polyline: List[Point] = field(default_factory=list)
+        self.line_type = line_type
+        self.start_anchor = start_anchor if start_anchor else FlowAnchor()
+        self.end_anchor = end_anchor if end_anchor else FlowAnchor()
+
+        self._output = output
+        self._input = input
+
+        self._selected = selected
+        self._hovering = hovering
+
+        self._polyline = list(polyline if polyline else list())
 
     @classmethod
     def from_connect_pair(
@@ -48,6 +79,79 @@ class FlowArc:
         result.end_anchor.point = -1 * delta, 0.0
         result.update_polyline(tess_tol)
         return result
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = copy(self.uuid)
+        result.name = copy(self.name)
+        result.docs = copy(self.docs)
+        result.line_type = copy(self.line_type)
+        result.start_anchor = copy(self.start_anchor)
+        result.end_anchor = copy(self.end_anchor)
+        result._output = copy(self._output)
+        result._input = copy(self._input)
+        result._selected = copy(self._selected)
+        result._hovering = copy(self._hovering)
+        result._polyline = copy(self._polyline)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = deepcopy(self.uuid, memo)
+        result.name = deepcopy(self.name, memo)
+        result.docs = deepcopy(self.docs, memo)
+        result.line_type = deepcopy(self.line_type, memo)
+        result.start_anchor = deepcopy(self.start_anchor, memo)
+        result.end_anchor = deepcopy(self.end_anchor, memo)
+        result._output = deepcopy(self._output, memo)
+        result._input = deepcopy(self._input, memo)
+        result._selected = deepcopy(self._selected, memo)
+        result._hovering = deepcopy(self._hovering, memo)
+        result._polyline = deepcopy(self._polyline, memo)
+        memo[id(self)] = result
+        return result
+
+    @override
+    def __serialize__(self) -> Any:
+        result = {
+            self.Keys.uuid: self.uuid,
+            self.Keys.name_: self.name,
+            self.Keys.docs: self.docs,
+            self.Keys.line_type: self.line_type,
+            self.Keys.start_anchor: serialize(self.start_anchor),
+            self.Keys.end_anchor: serialize(self.end_anchor),
+        }
+        return {str(key): val for key, val in result.items()}
+
+    @override
+    def __deserialize__(self, data: Any) -> None:
+        if not isinstance(data, dict):
+            raise TypeError(f"Unexpected data type: {type(data).__name__}")
+
+        self.uuid = data.get(self.Keys.uuid, str())
+        self.name = data.get(self.Keys.name_, str())
+        self.docs = data.get(self.Keys.docs, str())
+        self.line_type = data.get(self.Keys.line_type, FlowLineType.bezier_cubic)
+
+        if start_anchor := data.get(self.Keys.start_anchor):
+            self.start_anchor = deserialize(start_anchor, FlowAnchor)
+        else:
+            self.start_anchor = FlowAnchor()
+
+        if end_anchor := data.get(self.Keys.end_anchor):
+            self.end_anchor = deserialize(end_anchor, FlowAnchor)
+        else:
+            self.end_anchor = FlowAnchor()
+
+        self._output = None
+        self._input = None
+        self._selected = False
+        self._hovering = False
+        self._polyline = list()
 
     @property
     def is_linear_line_type(self) -> bool:
