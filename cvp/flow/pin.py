@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional, Sequence
 
 from type_serialize import Serializable
 
@@ -41,7 +41,7 @@ class FlowPin(Serializable):
         stream=Stream.input,
         required=False,
         hidden=False,
-        arcs: Optional[List[str]] = None,
+        arcs: Optional[Sequence[str]] = None,
         icon_pos: Point = EMPTY_POINT,
         icon_size: Size = EMPTY_SIZE,
         name_pos: Point = EMPTY_POINT,
