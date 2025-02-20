@@ -73,6 +73,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         )
 
         self._drag_dtype = context.fm.dtype_registry.any_dtype
+        self._variable_key = str()
 
         self._menus = (
             ("File", self.on_file_menu),
@@ -168,46 +169,49 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.on_menu()
         super().on_process()
 
-    def _process_edit_menu(
-        self,
-        canvas: Optional[CanvasGraph] = None,
-    ) -> None:
-        if canvas is not None and canvas.opened:
-            opened = True
-            undoable = canvas.history.undoable
-            redoable = canvas.history.redoable
-            selected_any = bool(canvas.graph.selection)
-            has_clipboard = self.context.fm.has_clipboard
-        else:
-            opened = False
-            undoable = False
-            redoable = False
-            selected_any = False
-            has_clipboard = False
+    @staticmethod
+    def _process_disabled_edit_menu() -> None:
+        menu_item("Undo", shortcut="Ctrl+Z", enabled=False)
+        menu_item("Redo", shortcut="Ctrl+Y", enabled=False)
+        imgui.separator()
+        menu_item("Cut", shortcut="Ctrl+X", enabled=False)
+        menu_item("Copy", shortcut="Ctrl+C", enabled=False)
+        menu_item("Paste", shortcut="Ctrl+V", enabled=False)
+        imgui.separator()
+        menu_item("Delete", shortcut="Del", enabled=False)
+        imgui.separator()
+        menu_item("Reset control", enabled=False)
+        imgui.separator()
+        menu_item("Select all", enabled=False)
+        menu_item("Select nodes", enabled=False)
+        menu_item("Select arcs", enabled=False)
+        menu_item("Select pins", enabled=False)
+
+    def _process_enabled_edit_menu(self, canvas: CanvasGraph) -> None:
+        assert canvas.opened
+        undoable = canvas.history.undoable
+        redoable = canvas.history.redoable
+        selected_any = bool(canvas.graph.selection)
+        has_clipboard = self.context.fm.has_clipboard
 
         if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
-            assert canvas is not None
             canvas.undo_history()
         if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
-            assert canvas is not None
             canvas.redo_history()
 
         imgui.separator()
         if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
-            assert canvas is not None
             self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
             self.context.fm.clipboard_pivot = canvas.graph.selection.group_pos
             canvas.graph.remove_selected_items()
             canvas.save_history("Cut selected items")
         if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
-            assert canvas is not None
             self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
             px, py = canvas.graph.selection.group_pos
             px += self.window_config.paste_margin
             py += self.window_config.paste_margin
             self.context.fm.clipboard_pivot = px, py
         if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
-            assert canvas is not None
             canvas.graph.unselect_all_items()
             canvas.graph.paste_selection(
                 self.context.fm.clipboard_items,
@@ -222,32 +226,32 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         imgui.separator()
         if menu_item("Delete", shortcut="Del", enabled=selected_any):
-            assert canvas is not None
             canvas.graph.remove_selected_items()
             canvas.save_history("Remove selected items")
 
         imgui.separator()
-        if menu_item("Reset control", enabled=opened):
-            assert canvas is not None
+        if menu_item("Reset control"):
             canvas.reset_controllers()
 
         imgui.separator()
-        if menu_item("Select all", enabled=opened):
-            assert canvas is not None
+        if menu_item("Select all"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_items()
-        if menu_item("Select nodes", enabled=opened):
-            assert canvas is not None
+        if menu_item("Select nodes"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_nodes()
-        if menu_item("Select arcs", enabled=opened):
-            assert canvas is not None
+        if menu_item("Select arcs"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_arcs()
-        if menu_item("Select pins", enabled=opened):
-            assert canvas is not None
+        if menu_item("Select pins"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_pins()
+
+    def _process_edit_menu(self, canvas: Optional[CanvasGraph] = None) -> None:
+        if canvas is not None and canvas.opened:
+            self._process_enabled_edit_menu(canvas)
+        else:
+            self._process_disabled_edit_menu()
 
     @staticmethod
     def _process_layout_menu(canvas: Optional[CanvasGraph] = None) -> None:
@@ -647,21 +651,37 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                     canvas.update_node_roi(node)
                     canvas.save_history("Add a new node", node_path)
                 elif payload := imgui.accept_drag_drop_payload(DRAG_FLOW_VARIABLE):
-                    variable_name = str(payload, encoding="utf-8")
-                    print(variable_name)
-                    # node = self.context.fm.add_node(canvas.graph, node_path)
-                    # canvas.update_node_roi(node)
-                    # canvas.save_history("Add a new node", node_path)
+                    self._variable_key = str(payload, encoding="utf-8")
+                    imgui.open_popup("AddVariableNodeMenus")
 
-        if imgui.begin_popup_context_window().opened:
-            try:
+        with imgui.begin_popup_context_window("AddVariableNodeMenus") as context_window:
+            if context_window.opened:
+                assert self._variable_key
+                menu_item(f"Add {self._variable_key} variable node", enabled=False)
+                imgui.separator()
+
+                if menu_item("Setter"):
+                    variable = canvas.graph.find_variable(self._variable_key)
+                    assert variable is not None
+                    node = self.context.fm.add_setter_node(canvas.graph, variable)
+                    canvas.update_node_roi(node)
+                    canvas.save_history("Add setter variable node", variable.name)
+
+                if menu_item("Getter"):
+                    variable = canvas.graph.find_variable(self._variable_key)
+                    assert variable is not None
+                    node = self.context.fm.add_getter_node(canvas.graph, variable)
+                    canvas.update_node_roi(node)
+                    canvas.save_history("Add getter variable node", variable.name)
+
+        with imgui.begin_popup_context_window("Menus") as context_window:
+            if context_window.opened:
                 self._process_edit_menu(canvas)
                 imgui.separator()
                 self._process_layout_menu(canvas)
                 imgui.separator()
                 self._process_align_menu(canvas)
                 self._process_distribute_menu(canvas)
-            finally:
                 imgui.end_popup()
 
         canvas.draw()

@@ -221,6 +221,12 @@ class FlowGraph:
                 return arc
         return None
 
+    def find_variable(self, key: str) -> Optional[Variable]:
+        for variable in self.variables:
+            if variable.name == key:
+                return variable
+        return None
+
     def find_hovering_variable(self) -> Optional[Variable]:
         for variable in self.variables:
             if variable.hovering:
@@ -719,6 +725,6 @@ class FlowGraph:
             docs=None,
             value=dtype.base(),
             initial=dtype.base(),
-        )
+        )  # type: ignore[var-annotated]
         self.variables.append(result)
         return result

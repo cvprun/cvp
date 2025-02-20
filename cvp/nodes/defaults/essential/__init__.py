@@ -6,6 +6,7 @@ from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.essential.entrypoint import EntrypointNode
 from cvp.nodes.defaults.essential.logging import LoggingNode
+from cvp.nodes.defaults.essential.variable import VariableGetterNode, VariableSetterNode
 from cvp.nodes.node import Node
 
 
@@ -19,4 +20,6 @@ def get_essential_nodes(
     return (
         EntrypointNode(),
         LoggingNode(dtype_registry),
+        VariableGetterNode(dtype_registry),
+        VariableSetterNode(dtype_registry),
     )

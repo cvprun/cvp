@@ -8,6 +8,7 @@ from typing import Any, Dict, Optional
 from type_serialize import Serializable
 
 from cvp.memory.copy import copy_flexible
+from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
 
 
@@ -25,7 +26,7 @@ class VariableKeys(StrEnum):
     use_deepcopy = auto()
 
 
-class Variable(Serializable):
+class Variable(ValueProxy[ValueT], Serializable):
     Keys = VariableKeys
 
     _value: Any
@@ -139,6 +140,14 @@ class Variable(Serializable):
 
         if self.use_copy and self.use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
+
+    @override
+    def get(self) -> ValueT:
+        return self._value
+
+    @override
+    def set(self, value: ValueT) -> None:
+        self._value = value
 
     @property
     def value(self):

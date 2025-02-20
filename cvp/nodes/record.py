@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from types import TracebackType
 from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
 
+from cvp.patterns.proxy import ValueProxy
 from cvp.pins.pin import Pin
 
 ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
@@ -21,6 +22,7 @@ class NodeExecutionRecord:
         result_key: Optional[str] = None,
         result: Any = None,
         exception: Optional[ExceptionInfo] = None,
+        shared_variables: Optional[Dict[str, ValueProxy]] = None,
     ):
         self._index = index
         self._node_uuid = node_uuid
@@ -32,6 +34,7 @@ class NodeExecutionRecord:
         self._result_key = result_key if result_key else str()
         self._result = result
         self._exception = exception
+        self._shared_variables = dict(shared_variables if shared_variables else dict())
 
     @property
     def index(self):
@@ -119,8 +122,24 @@ class NodeExecutionRecord:
         self._result = None
         self._exception = None
 
-    def get(self, key: Pin) -> Any:
-        return self._variables[key.name]
+    def get(self, key: Union[Pin, str]) -> Any:
+        if isinstance(key, Pin):
+            return self._variables[key.name]
+        elif isinstance(key, str):
+            return self._variables[key]
+        else:
+            raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
-    def set(self, key: Pin, value: Any) -> None:
-        self._variables[key.name] = value
+    def set(self, key: Union[Pin, str], value: Any) -> None:
+        if isinstance(key, Pin):
+            self._variables[key.name] = value
+        elif isinstance(key, str):
+            self._variables[key] = value
+        else:
+            raise TypeError(f"Unsupported key type: {type(key).__name__}")
+
+    def get_shared(self, key: str) -> Any:
+        return self._shared_variables[key].get()
+
+    def set_shared(self, key: str, value: Any) -> None:
+        self._shared_variables[key].set(value)
