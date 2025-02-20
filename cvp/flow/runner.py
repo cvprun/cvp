@@ -39,7 +39,9 @@ class FlowRunnerState(NamedTuple):
 
 @dataclass
 class FlowRunnerArguments:
-    """Do not use locks."""
+    """
+    Do not use locks. <- Why ?? - TODO: Comment this section
+    """
 
     graph: FlowGraph
     start_node: FlowNode
