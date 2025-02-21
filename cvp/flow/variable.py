@@ -62,6 +62,14 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         self._selected = False
         self._hovering = False
 
+    def __str__(self) -> str:
+        """In `cvp.flow` module, this return value is used as a key value."""
+        return self.name
+
+    def __eq__(self, other) -> bool:
+        """It is not implemented because the comparison scope is unclear."""
+        raise NotImplementedError
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)

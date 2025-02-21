@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from copy import copy, deepcopy
+from enum import StrEnum, auto, unique
 from functools import reduce
 from math import sqrt
-from typing import List, Optional, Sequence, Set, Union
+from typing import Any, Dict, List, Optional, Sequence, Set, Union
 from uuid import uuid4
 
 import shapely
+from type_serialize import Serializable, deserialize, serialize
 
+from cvp.containers.mapping_deque import MappingDeque
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.arc import FlowArc
@@ -19,24 +22,177 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.types.override import override
 from cvp.types.shapes import Point, Size
 
 
-@dataclass
-class FlowGraph:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
-    name: str = str()
-    docs: str = str()
-    icon: str = str()
-    lock: bool = False
-    color: RGBA = WHITE_RGBA
-    nodes: List[FlowNode] = field(default_factory=list)
-    arcs: List[FlowArc] = field(default_factory=list)
-    variables: List[FlowVariable] = field(default_factory=list)
-    control: FlowControl = field(default_factory=FlowControl)
-    tags: List[str] = field(default_factory=list)
+@unique
+class FlowGraphKeys(StrEnum):
+    uuid = auto()
+    name_ = "name"
+    docs = auto()
+    icon = auto()
+    lock = auto()
+    color = auto()
+    nodes = auto()
+    arcs = auto()
+    variables = auto()
+    control = auto()
+    tags = auto()
 
-    _selection: FlowSelection = field(default_factory=FlowSelection)
+
+class FlowGraph(Serializable):
+    Keys = FlowGraphKeys
+
+    def __init__(
+        self,
+        uuid: Optional[str] = None,
+        name: Optional[str] = None,
+        docs: Optional[str] = None,
+        icon: Optional[str] = None,
+        lock=False,
+        color: RGBA = WHITE_RGBA,
+        nodes: Optional[Sequence[FlowNode]] = None,
+        arcs: Optional[Sequence[FlowArc]] = None,
+        variables: Optional[Sequence[FlowVariable]] = None,
+        control: Optional[FlowControl] = None,
+        tags: Optional[Sequence[str]] = None,
+        *,
+        selection: Optional[FlowSelection] = None,
+    ):
+        self.uuid = uuid if uuid else str(uuid4())
+        self.name = name if name else str()
+        self.docs = docs if docs else str()
+        self.icon = icon if icon else str()
+        self.lock = lock
+        self.color = color
+
+        self.nodes = MappingDeque[str, FlowNode](nodes, keyable=self._node_keyable)
+        self.arcs = MappingDeque[str, FlowArc](arcs, keyable=self._arc_keyable)
+        self.variables = MappingDeque[str, FlowVariable](
+            variables,
+            keyable=self._variable_keyable,
+        )
+
+        self.control = control if control else FlowControl()
+        self.tags = list(tags if tags else ())
+        self._selection = selection if selection else FlowSelection()
+
+    @staticmethod
+    def _node_keyable(node: FlowNode) -> str:
+        return node.uuid
+
+    @staticmethod
+    def _arc_keyable(arc: FlowArc) -> str:
+        return arc.uuid
+
+    @staticmethod
+    def _variable_keyable(variable: FlowVariable) -> str:
+        return variable.name
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uuid == other.uuid
+            and self.name == other.name
+            and self.docs == other.docs
+            and self.icon == other.icon
+            and self.lock == other.lock
+            and self.color == other.color
+            and self.nodes == other.nodes
+            and self.arcs == other.arcs
+            and self.variables == other.variables
+            and self.control == other.control
+            and self.tags == other.tags
+        )
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = copy(self.uuid)
+        result.name = copy(self.name)
+        result.docs = copy(self.docs)
+        result.icon = copy(self.icon)
+        result.lock = copy(self.lock)
+        result.color = copy(self.color)
+        result.nodes = copy(self.nodes)
+        result.arcs = copy(self.arcs)
+        result.variables = copy(self.variables)
+        result.control = copy(self.control)
+        result.tags = copy(self.tags)
+        result._selection = copy(self._selection)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.uuid = deepcopy(self.uuid, memo)
+        result.name = deepcopy(self.name, memo)
+        result.docs = deepcopy(self.docs, memo)
+        result.icon = deepcopy(self.icon, memo)
+        result.lock = deepcopy(self.lock, memo)
+        result.color = deepcopy(self.color, memo)
+        result.nodes = deepcopy(self.nodes, memo)
+        result.arcs = deepcopy(self.arcs, memo)
+        result.variables = deepcopy(self.variables, memo)
+        result.control = deepcopy(self.control, memo)
+        result.tags = deepcopy(self.tags, memo)
+        result._selection = deepcopy(self._selection, memo)
+        memo[id(self)] = result
+        return result
+
+    @override
+    def __serialize__(self) -> Any:
+        result = {
+            self.Keys.uuid: self.uuid,
+            self.Keys.name_: self.name,
+            self.Keys.docs: self.docs,
+            self.Keys.icon: self.icon,
+            self.Keys.lock: self.lock,
+            self.Keys.color: self.color,
+            self.Keys.nodes: serialize(self.nodes.as_list()),
+            self.Keys.arcs: serialize(self.arcs.as_list()),
+            self.Keys.variables: serialize(self.variables.as_list()),
+            self.Keys.control: serialize(self.control),
+            self.Keys.tags: self.tags,
+        }
+        return {str(key): val for key, val in result.items()}
+
+    @override
+    def __deserialize__(self, data: Any) -> None:
+        if not isinstance(data, dict):
+            raise TypeError(f"Unexpected data type: {type(data).__name__}")
+
+        self.uuid = data.get(self.Keys.uuid, str())
+        self.name = data.get(self.Keys.name_, str())
+        self.docs = data.get(self.Keys.docs, str())
+        self.icon = data.get(self.Keys.icon, str())
+        self.lock = data.get(self.Keys.lock, False)
+        self.color = data.get(self.Keys.color, WHITE_RGBA)
+
+        self.nodes = MappingDeque(keyable=self._node_keyable)
+        self.arcs = MappingDeque(keyable=self._arc_keyable)
+        self.variables = MappingDeque(keyable=self._variable_keyable)
+
+        if nodes := data.get(self.Keys.nodes):
+            for node in nodes:
+                self.nodes.append(deserialize(node, FlowNode))
+        if arcs := data.get(self.Keys.arcs):
+            for arc in arcs:
+                self.arcs.append(deserialize(arc, FlowArc))
+        if variables := data.get(self.Keys.variables):
+            for variable in variables:
+                self.variables.append(deserialize(variable, FlowVariable))
+
+        if control := data.get(self.Keys.control):
+            self.control = deserialize(control, FlowControl)
+        else:
+            self.control = FlowControl()
+
+        self.tags = data.get(self.Keys.tags, list())
 
     @property
     def selection(self):

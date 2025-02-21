@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
+from copy import deepcopy
 from inspect import signature
 from typing import (
     Any,
@@ -9,6 +10,7 @@ from typing import (
     Dict,
     Generic,
     Iterable,
+    List,
     Optional,
     SupportsIndex,
     TypeVar,
@@ -65,6 +67,9 @@ class MappingDeque(Generic[_KT, _VT]):
     def mapping_key(self, value: _VT) -> _KT:
         return self._keyable(value)
 
+    def as_list(self) -> List[_VT]:
+        return list(self._deque)
+
     def append(self, item: _VT) -> None:
         _k = self.mapping_key(item)
         if _k in self._mapping:
@@ -90,6 +95,9 @@ class MappingDeque(Generic[_KT, _VT]):
         self._mapping[_k] = item
         assert len(self._deque) == len(self._mapping)
 
+    def remove(self, value: _VT) -> None:
+        self.remove_with_index(self._deque.index(value))
+
     def remove_with_index(self, index: SupportsIndex) -> _VT:
         _i = self.deque_index(index)
         item = self._deque[_i]
@@ -106,7 +114,16 @@ class MappingDeque(Generic[_KT, _VT]):
         assert len(self._deque) == len(self._mapping)
         return item
 
-    def pop(self) -> _VT:
+    def pop(self, index: Optional[SupportsIndex] = None) -> _VT:
+        if index is None:
+            return self.popright()
+        else:
+            return self.popindex(index)
+
+    def popindex(self, index: SupportsIndex) -> _VT:
+        return self.remove_with_index(index)
+
+    def popright(self) -> _VT:
         item = self._deque.pop()
         _k = self.mapping_key(item)
         del self._mapping[_k]
@@ -148,10 +165,23 @@ class MappingDeque(Generic[_KT, _VT]):
         self._mapping.clear()
 
     def copy(self):
-        return type(self)(self._deque.copy(), keyable=self._keyable)
+        return type(self)(
+            items=self._deque.copy(),
+            keyable=self._keyable,
+        )
 
     def __copy__(self):
         return self.copy()
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        result = type(self)(
+            items=deepcopy(self._deque, memo),
+            keyable=deepcopy(self._keyable, memo),
+        )
+        memo[id(self)] = result
+        return result
 
     def get(self, key: _KT, default=None) -> Optional[_VT]:
         if default is not None:
@@ -202,6 +232,11 @@ class MappingDeque(Generic[_KT, _VT]):
 
     def update_with_value(self, value: _VT) -> _VT:
         return self.update_with_key_value(self.mapping_key(value), value)
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self._deque.__eq__(other._deque)
 
     def __len__(self):
         return self._deque.__len__()

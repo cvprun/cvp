@@ -80,6 +80,10 @@ class FlowArc(Serializable):
         result.update_polyline(tess_tol)
         return result
 
+    def __str__(self) -> str:
+        """In `cvp.flow` module, this return value is used as a key value."""
+        return self.uuid
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
             return False

@@ -86,6 +86,10 @@ class FlowPin(Serializable):
             template=template,
         )
 
+    def __str__(self) -> str:
+        """In `cvp.flow` module, this return value is used as a key value."""
+        return self.name
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
             return False

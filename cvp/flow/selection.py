@@ -33,6 +33,11 @@ class FlowSelection:
     def __init__(self, items: Optional[FlowSelectableDict] = None):
         self._items = items if items else FlowSelectableDict()
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self._items == other._items
+
     def __len__(self) -> int:
         return self._items.__len__()
 
