@@ -32,6 +32,11 @@ class FlowAnchor(Serializable):
         self._selected = selected
         self._hovering = hovering
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.x == other.x and self.y == other.y
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)

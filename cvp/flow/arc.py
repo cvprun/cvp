@@ -80,6 +80,18 @@ class FlowArc(Serializable):
         result.update_polyline(tess_tol)
         return result
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.uuid == other.uuid
+            and self.name == other.name
+            and self.docs == other.docs
+            and self.line_type == other.line_type
+            and self.start_anchor == other.start_anchor
+            and self.end_anchor == other.end_anchor
+        )
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)

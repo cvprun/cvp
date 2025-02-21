@@ -86,6 +86,24 @@ class FlowPin(Serializable):
             template=template,
         )
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.name == other.name
+            and self.docs == other.docs
+            and self.dtype == other.dtype
+            and self.action == other.action
+            and self.stream == other.stream
+            and self.required == other.required
+            and self.hidden == other.hidden
+            and self.arcs == other.arcs
+            and self.icon_pos == other.icon_pos
+            and self.icon_size == other.icon_size
+            and self.name_pos == other.name_pos
+            and self.name_size == other.name_size
+        )
+
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)

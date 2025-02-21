@@ -4,7 +4,7 @@ from unittest import TestCase, main
 
 from type_serialize import deserialize, serialize
 
-from cvp.flow.pin import FlowPin, FlowPinKeys
+from cvp.flow.pin import FlowPin
 from cvp.pins.action import Action
 from cvp.pins.stream import Stream
 
@@ -36,10 +36,7 @@ class PinTestCase(TestCase):
         pin2 = deserialize(serialized, FlowPin)
         self.assertIsInstance(pin2, FlowPin)
 
-        for key in FlowPinKeys:
-            val1 = getattr(pin1, key)
-            val2 = getattr(pin2, key)
-            self.assertEqual(val1, val2)
+        self.assertEqual(pin2, pin1)
 
         self.assertIsNone(pin2.template)
         self.assertFalse(pin2.selected)

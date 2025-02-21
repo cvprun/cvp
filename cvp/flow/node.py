@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
 from uuid import uuid4
 
 from type_serialize import Serializable, deserialize, serialize
@@ -56,11 +56,11 @@ class FlowNode(Serializable):
         breakpoint=False,
         hidden=False,
         color: RGBA = WHITE_RGBA,
-        flow_inputs: Optional[List[FlowPin]] = None,
-        flow_outputs: Optional[List[FlowPin]] = None,
-        data_inputs: Optional[List[FlowPin]] = None,
-        data_outputs: Optional[List[FlowPin]] = None,
-        tags: Optional[List[str]] = None,
+        flow_inputs: Optional[Sequence[FlowPin]] = None,
+        flow_outputs: Optional[Sequence[FlowPin]] = None,
+        data_inputs: Optional[Sequence[FlowPin]] = None,
+        data_outputs: Optional[Sequence[FlowPin]] = None,
+        tags: Optional[Sequence[str]] = None,
         head_height=0.0,
         flow_height=0.0,
         data_height=0.0,
@@ -85,11 +85,11 @@ class FlowNode(Serializable):
         self.hidden = hidden
         self.color = color
 
-        self.flow_inputs = list(flow_inputs if flow_inputs else list())
-        self.flow_outputs = list(flow_outputs if flow_outputs else list())
-        self.data_inputs = list(data_inputs if data_inputs else list())
-        self.data_outputs = list(data_outputs if data_outputs else list())
-        self.tags = list(tags if tags else list())
+        self.flow_inputs = list(flow_inputs if flow_inputs else ())
+        self.flow_outputs = list(flow_outputs if flow_outputs else ())
+        self.data_inputs = list(data_inputs if data_inputs else ())
+        self.data_outputs = list(data_outputs if data_outputs else ())
+        self.tags = list(tags if tags else ())
 
         self.head_height = head_height
         self.flow_height = flow_height
@@ -124,6 +124,36 @@ class FlowNode(Serializable):
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
             template=template,
+        )
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        return (
+            self.uuid == other.uuid
+            and self.name == other.name
+            and self.path == other.path
+            and self.docs == other.docs
+            and self.icon == other.icon
+            and self.lock == other.lock
+            and self.breakpoint == other.breakpoint
+            and self.hidden == other.hidden
+            and self.color == other.color
+            and self.flow_inputs == other.flow_inputs
+            and self.flow_outputs == other.flow_outputs
+            and self.data_inputs == other.data_inputs
+            and self.data_outputs == other.data_outputs
+            and self.tags == other.tags
+            and self.head_height == other.head_height
+            and self.flow_height == other.flow_height
+            and self.data_height == other.data_height
+            and self.icon_pos == other.icon_pos
+            and self.icon_size == other.icon_size
+            and self.name_pos == other.name_pos
+            and self.name_size == other.name_size
+            and self.node_pos == other.node_pos
+            and self.node_size == other.node_size
         )
 
     def __copy__(self):
