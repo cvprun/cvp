@@ -6,6 +6,7 @@ from weakref import ReferenceType, ref
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults import get_default_path2nodes
+from cvp.nodes.defaults.essential.variable import VariableGetterNode, VariableSetterNode
 from cvp.nodes.node import Node
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
@@ -26,6 +27,8 @@ class NodeRegistry:
         assert dtype_registry is not None
         self._dtype_registry = ref(dtype_registry)
         self._nodes = dict()
+        self._getter_node = VariableGetterNode(dtype_registry)
+        self._setter_node = VariableSetterNode(dtype_registry)
 
         if not no_defaults:
             self._nodes.update(get_default_path2nodes(dtype_registry))
@@ -37,6 +40,14 @@ class NodeRegistry:
     @property
     def dtype_registry(self) -> Optional[DtypeRegistry]:
         return self._dtype_registry()
+
+    @property
+    def getter_node(self) -> VariableGetterNode:
+        return self._getter_node
+
+    @property
+    def setter_node(self) -> VariableSetterNode:
+        return self._setter_node
 
     def keys(self):
         return self._nodes.keys()

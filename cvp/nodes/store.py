@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Dict, Optional, Sequence, TypeAlias
+from typing import Any, Dict, Mapping, Optional, Sequence, TypeAlias
 
+from cvp.flow.pin import FlowPin
 from cvp.nodes.record import NodeExecutionRecord
+from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
-from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -40,21 +41,15 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
     def gen_pin_key(node_uuid: str, pin_name: str) -> VariableKey:
         return node_uuid + FLOW_PATH_SEPARATOR + pin_name
 
-    def get_pin_value(self, node_uuid: str, pin: Pin) -> Any:
+    def get_pin_value(self, node_uuid: str, pin: FlowPin) -> Any:
         key = self.gen_pin_key(node_uuid, pin.name)
         if self.__contains__(key):
             return self.__getitem__(key)
 
-        if pin.dtype is not None:
-            if pin.has_default:
-                value = pin.dtype.base(pin.default)
-            else:
-                value = pin.dtype.base()
+        if pin.default is not None:
+            value = deepcopy(pin.default)  # It should not affect the original value
         else:
-            if pin.has_default:
-                value = deepcopy(pin.default)  # It should not affect the original value
-            else:
-                value = None
+            value = None
 
         self.__setitem__(key, value)
         return value
@@ -63,7 +58,8 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
         self,
         index: int,
         node_uuid: str,
-        data_pins: Sequence[Pin],
+        data_pins: Sequence[FlowPin],
+        shared_variables: Optional[Mapping[str, ValueProxy]] = None,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -122,6 +118,7 @@ class NodeVariableStore(Dict[VariableKey, VariableVal]):
             args=bind_args,
             kwargs=bind_kwargs,
             result_key=result_key,
+            shared_variables=shared_variables,
         )
 
     def update_with_node_execution_record(

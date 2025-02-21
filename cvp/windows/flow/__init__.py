@@ -657,22 +657,20 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         with imgui.begin_popup_context_window("AddVariableNodeMenus") as context_window:
             if context_window.opened:
                 assert self._variable_key
-                menu_item(f"Add {self._variable_key} variable node", enabled=False)
+                key = self._variable_key
+
+                menu_item(f"Add {key} variable node", enabled=False)
                 imgui.separator()
 
                 if menu_item("Setter"):
-                    variable = canvas.graph.find_variable(self._variable_key)
-                    assert variable is not None
-                    node = self.context.fm.add_setter_node(canvas.graph, variable)
+                    node = self.context.fm.add_setter_node(canvas.graph, key)
                     canvas.update_node_roi(node)
-                    canvas.save_history("Add setter variable node", variable.name)
+                    canvas.save_history("Add setter variable node", key)
 
                 if menu_item("Getter"):
-                    variable = canvas.graph.find_variable(self._variable_key)
-                    assert variable is not None
-                    node = self.context.fm.add_getter_node(canvas.graph, variable)
+                    node = self.context.fm.add_getter_node(canvas.graph, key)
                     canvas.update_node_roi(node)
-                    canvas.save_history("Add getter variable node", variable.name)
+                    canvas.save_history("Add getter variable node", key)
 
         with imgui.begin_popup_context_window("Menus") as context_window:
             if context_window.opened:

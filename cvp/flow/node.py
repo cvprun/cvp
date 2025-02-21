@@ -236,7 +236,7 @@ class FlowNode(Serializable):
             self.Keys.lock: self.lock,
             self.Keys.breakpoint: self.breakpoint,
             self.Keys.hidden: self.hidden,
-            self.Keys.color: self.color,
+            self.Keys.color: list(self.color),
             self.Keys.flow_inputs: serialize(self.flow_inputs),
             self.Keys.flow_outputs: serialize(self.flow_outputs),
             self.Keys.data_inputs: serialize(self.data_inputs),
@@ -245,12 +245,12 @@ class FlowNode(Serializable):
             self.Keys.head_height: self.head_height,
             self.Keys.flow_height: self.flow_height,
             self.Keys.data_height: self.data_height,
-            self.Keys.icon_pos: self.icon_pos,
-            self.Keys.icon_size: self.icon_size,
-            self.Keys.name_pos: self.name_pos,
-            self.Keys.name_size: self.name_size,
-            self.Keys.node_pos: self.node_pos,
-            self.Keys.node_size: self.node_size,
+            self.Keys.icon_pos: list(self.icon_pos),
+            self.Keys.icon_size: list(self.icon_size),
+            self.Keys.name_pos: list(self.name_pos),
+            self.Keys.name_size: list(self.name_size),
+            self.Keys.node_pos: list(self.node_pos),
+            self.Keys.node_size: list(self.node_size),
         }
         return {str(key): val for key, val in result.items()}
 
@@ -267,7 +267,9 @@ class FlowNode(Serializable):
         self.lock = data.get(self.Keys.lock, False)
         self.breakpoint = data.get(self.Keys.breakpoint, False)
         self.hidden = data.get(self.Keys.hidden, False)
-        self.color = data.get(self.Keys.color, WHITE_RGBA)
+
+        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
+        assert len(self.color) == 4
 
         self.flow_inputs = list()
         self.flow_outputs = list()
@@ -293,12 +295,19 @@ class FlowNode(Serializable):
         self.flow_height = data.get(self.Keys.flow_height, 0.0)
         self.data_height = data.get(self.Keys.data_height, 0.0)
 
-        self.icon_pos = data.get(self.Keys.icon_pos, EMPTY_POINT)
-        self.icon_size = data.get(self.Keys.icon_size, EMPTY_SIZE)
-        self.name_pos = data.get(self.Keys.name_pos, EMPTY_POINT)
-        self.name_size = data.get(self.Keys.name_size, EMPTY_SIZE)
-        self.node_pos = data.get(self.Keys.node_pos, EMPTY_POINT)
-        self.node_size = data.get(self.Keys.node_size, EMPTY_SIZE)
+        self.icon_pos = tuple(data.get(self.Keys.icon_pos, EMPTY_POINT))
+        self.icon_size = tuple(data.get(self.Keys.icon_size, EMPTY_SIZE))
+        self.name_pos = tuple(data.get(self.Keys.name_pos, EMPTY_POINT))
+        self.name_size = tuple(data.get(self.Keys.name_size, EMPTY_SIZE))
+        self.node_pos = tuple(data.get(self.Keys.node_pos, EMPTY_POINT))
+        self.node_size = tuple(data.get(self.Keys.node_size, EMPTY_SIZE))
+
+        assert len(self.icon_pos) == 2
+        assert len(self.icon_size) == 2
+        assert len(self.name_pos) == 2
+        assert len(self.name_size) == 2
+        assert len(self.node_pos) == 2
+        assert len(self.node_size) == 2
 
         self._template = None
         self._selected = False
@@ -513,3 +522,15 @@ class FlowNode(Serializable):
                 pin.arcs.remove(arc_uuid)
             except ValueError:
                 pass
+
+    def get_default(self, pin_name: str) -> Any:
+        pin = self.find_pin(pin_name)
+        if pin is None:
+            raise KeyError(f"Not found pin: '{pin_name}'")
+        return pin.default
+
+    def set_default(self, pin_name: str, default: Any) -> None:
+        pin = self.find_pin(pin_name)
+        if pin is None:
+            raise KeyError(f"Not found pin: '{pin_name}'")
+        pin.default = default

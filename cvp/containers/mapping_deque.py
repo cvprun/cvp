@@ -70,6 +70,9 @@ class MappingDeque(Generic[_KT, _VT]):
     def as_list(self) -> List[_VT]:
         return list(self._deque)
 
+    def as_dict(self) -> Dict[_KT, _VT]:
+        return self._mapping.copy()
+
     def append(self, item: _VT) -> None:
         _k = self.mapping_key(item)
         if _k in self._mapping:

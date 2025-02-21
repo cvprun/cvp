@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from types import TracebackType
-from typing import Any, Dict, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union
 
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.pin import Pin
@@ -16,19 +16,19 @@ class NodeExecutionRecord:
         self,
         index: int,
         node_uuid: str,
-        variables: Dict[str, Any],
+        variables: Mapping[str, Any],
         args: Sequence[Any],
-        kwargs: Dict[str, Any],
+        kwargs: Mapping[str, Any],
         result_key: Optional[str] = None,
         result: Any = None,
         exception: Optional[ExceptionInfo] = None,
-        shared_variables: Optional[Dict[str, ValueProxy]] = None,
+        shared_variables: Optional[Mapping[str, ValueProxy]] = None,
     ):
         self._index = index
         self._node_uuid = node_uuid
-        self._variables = variables
+        self._variables = dict(variables)
         self._args = tuple(args)
-        self._kwargs = kwargs
+        self._kwargs = dict(kwargs)
         self._begin = datetime.now()
         self._end = datetime.now()
         self._result_key = result_key if result_key else str()

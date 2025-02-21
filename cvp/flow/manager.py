@@ -156,3 +156,35 @@ class FlowManager:
         node = FlowNode.from_template(node_template)
         graph.nodes.insert(0, node)
         return node
+
+    def add_setter_node(self, graph: FlowGraph, key: str) -> FlowNode:
+        variable = graph.find_variable(key)
+        if variable is None:
+            raise KeyError(f"Not found variable: '{key}'")
+
+        node_template = self._node_registry.setter_node
+        key_name = self._node_registry.setter_node.key_name
+        value_name = self._node_registry.getter_node.value_name
+
+        node = FlowNode.from_template(node_template)
+        node.set_default(key_name, key)
+        node.find_pin(value_name).dtype = variable.dtype
+
+        graph.nodes.insert(0, node)
+        return node
+
+    def add_getter_node(self, graph: FlowGraph, key: str) -> FlowNode:
+        variable = graph.find_variable(key)
+        if variable is None:
+            raise KeyError(f"Not found variable: '{key}'")
+
+        node_template = self._node_registry.getter_node
+        key_name = self._node_registry.getter_node.key_name
+        value_name = self._node_registry.getter_node.value_name
+
+        node = FlowNode.from_template(node_template)
+        node.set_default(key_name, key)
+        node.find_pin(value_name).dtype = variable.dtype
+
+        graph.nodes.insert(0, node)
+        return node

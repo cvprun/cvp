@@ -152,7 +152,7 @@ class FlowGraph(Serializable):
             self.Keys.docs: self.docs,
             self.Keys.icon: self.icon,
             self.Keys.lock: self.lock,
-            self.Keys.color: self.color,
+            self.Keys.color: list(self.color),
             self.Keys.nodes: serialize(self.nodes.as_list()),
             self.Keys.arcs: serialize(self.arcs.as_list()),
             self.Keys.variables: serialize(self.variables.as_list()),
@@ -171,7 +171,8 @@ class FlowGraph(Serializable):
         self.docs = data.get(self.Keys.docs, str())
         self.icon = data.get(self.Keys.icon, str())
         self.lock = data.get(self.Keys.lock, False)
-        self.color = data.get(self.Keys.color, WHITE_RGBA)
+        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
+        assert len(self.color) == 4
 
         self.nodes = MappingDeque(keyable=self._node_keyable)
         self.arcs = MappingDeque(keyable=self._arc_keyable)
@@ -378,10 +379,7 @@ class FlowGraph(Serializable):
         return None
 
     def find_variable(self, key: str) -> Optional[FlowVariable]:
-        for variable in self.variables:
-            if variable.name == key:
-                return variable
-        return None
+        return self.variables.get(key)
 
     def find_hovering_variable(self) -> Optional[FlowVariable]:
         for variable in self.variables:

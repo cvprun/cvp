@@ -171,6 +171,8 @@ class Context:
             start_node=start_node,
             use_copy=False,
             use_deepcopy=False,
+            debug=self.debug,
+            verbose=self.verbose,
         )
         self._flow_manager.runners[graph.uuid] = runner
         return runner

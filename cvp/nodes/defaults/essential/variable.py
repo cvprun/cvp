@@ -35,6 +35,14 @@ class VariableSetterNode(Node):
             tags=("value", "variable", "setter", "mutator"),
         )
 
+    @property
+    def key_name(self):
+        return self._key.name
+
+    @property
+    def value_name(self):
+        return self._value.name
+
     @override
     def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
         assert pin == self._prev
@@ -70,6 +78,14 @@ class VariableGetterNode(Node):
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "getter", "accessor"),
         )
+
+    @property
+    def key_name(self):
+        return self._key.name
+
+    @property
+    def value_name(self):
+        return self._value.name
 
     @override
     def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:

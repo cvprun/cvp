@@ -2,11 +2,11 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from pickle import dumps, loads
 from typing import Any, Dict, Optional
 
 from type_serialize import Serializable
 
+from cvp.flow.raw_value import dumps, loads
 from cvp.memory.copy import copy_flexible
 from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
@@ -66,10 +66,6 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         """In `cvp.flow` module, this return value is used as a key value."""
         return self.name
 
-    def __eq__(self, other) -> bool:
-        """It is not implemented because the comparison scope is unclear."""
-        raise NotImplementedError
-
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
@@ -122,21 +118,8 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        value = data.get(self.Keys.value_, None)
-        if value is None:
-            self._value = None
-        elif isinstance(value, bytes):
-            self._value = loads(value)
-        else:
-            raise TypeError(f"Unexpected value type: {type(value).__name__}")
-
-        initial = data.get(self.Keys.initial, None)
-        if initial is None:
-            self._initial = None
-        elif isinstance(initial, bytes):
-            self._initial = loads(initial)
-        else:
-            raise TypeError(f"Unexpected initial type: {type(initial).__name__}")
+        self._value = loads(data.get(self.Keys.value_, None))
+        self._initial = loads(data.get(self.Keys.initial, None))
 
         self.name = data.get(self.Keys.name_, str())
         self.dtype = data.get(self.Keys.dtype, str())

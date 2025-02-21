@@ -6,7 +6,9 @@ from typing import Any, Dict, Optional, Sequence
 
 from type_serialize import Serializable
 
+from cvp.flow.raw_value import dumps, loads
 from cvp.pins.action import Action
+from cvp.pins.kind import PinKind
 from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
 from cvp.types.override import override
@@ -23,6 +25,8 @@ class FlowPinKeys(StrEnum):
     required = auto()
     hidden = auto()
     arcs = auto()
+    kind = auto()
+    default = auto()
     icon_pos = auto()
     icon_size = auto()
     name_pos = auto()
@@ -42,6 +46,8 @@ class FlowPin(Serializable):
         required=False,
         hidden=False,
         arcs: Optional[Sequence[str]] = None,
+        kind: Optional[PinKind] = None,
+        default: Any = None,
         icon_pos: Point = EMPTY_POINT,
         icon_size: Size = EMPTY_SIZE,
         name_pos: Point = EMPTY_POINT,
@@ -60,6 +66,8 @@ class FlowPin(Serializable):
         self.required = required
         self.hidden = hidden
         self.arcs = list(arcs if arcs else ())
+        self.kind = kind if kind is not None else PinKind.unknown
+        self.default = default
 
         self.icon_pos = icon_pos
         self.icon_size = icon_size
@@ -83,6 +91,8 @@ class FlowPin(Serializable):
             required=template.required,
             hidden=template.hidden,
             arcs=deepcopy(template.arcs),
+            kind=template.kind,
+            default=deepcopy(template.default) if template.has_default else None,
             template=template,
         )
 
@@ -102,6 +112,8 @@ class FlowPin(Serializable):
             and self.required == other.required
             and self.hidden == other.hidden
             and self.arcs == other.arcs
+            and self.kind == other.kind
+            and self.default == other.default
             and self.icon_pos == other.icon_pos
             and self.icon_size == other.icon_size
             and self.name_pos == other.name_pos
@@ -119,6 +131,8 @@ class FlowPin(Serializable):
         result.required = copy(self.required)
         result.hidden = copy(self.hidden)
         result.arcs = copy(self.arcs)
+        result.kind = copy(self.kind)
+        result.default = copy(self.default)
         result.icon_pos = copy(self.icon_pos)
         result.icon_size = copy(self.icon_size)
         result.name_pos = copy(self.name_pos)
@@ -142,6 +156,8 @@ class FlowPin(Serializable):
         result.required = deepcopy(self.required, memo)
         result.hidden = deepcopy(self.hidden, memo)
         result.arcs = deepcopy(self.arcs, memo)
+        result.kind = deepcopy(self.kind, memo)
+        result.default = deepcopy(self.default, memo)
         result.icon_pos = deepcopy(self.icon_pos, memo)
         result.icon_size = deepcopy(self.icon_size, memo)
         result.name_pos = deepcopy(self.name_pos, memo)
@@ -164,10 +180,12 @@ class FlowPin(Serializable):
             self.Keys.required: self.required,
             self.Keys.hidden: self.hidden,
             self.Keys.arcs: self.arcs,
-            self.Keys.icon_pos: self.icon_pos,
-            self.Keys.icon_size: self.icon_size,
-            self.Keys.name_pos: self.name_pos,
-            self.Keys.name_size: self.name_size,
+            self.Keys.kind: int(self.kind),
+            self.Keys.default: dumps(self.default),
+            self.Keys.icon_pos: list(self.icon_pos),
+            self.Keys.icon_size: list(self.icon_size),
+            self.Keys.name_pos: list(self.name_pos),
+            self.Keys.name_size: list(self.name_size),
         }
         return {str(key): val for key, val in result.items()}
 
@@ -193,10 +211,23 @@ class FlowPin(Serializable):
         self.required = data.get(self.Keys.required, False)
         self.hidden = data.get(self.Keys.hidden, False)
         self.arcs = data.get(self.Keys.arcs, list())
-        self.icon_pos = data.get(self.Keys.icon_pos, EMPTY_POINT)
-        self.icon_size = data.get(self.Keys.icon_size, EMPTY_SIZE)
-        self.name_pos = data.get(self.Keys.name_pos, EMPTY_POINT)
-        self.name_size = data.get(self.Keys.name_size, EMPTY_SIZE)
+
+        if kind := data.get(self.Keys.kind):
+            self.kind = PinKind(kind)
+        else:
+            self.kind = PinKind.unknown
+
+        self.default = loads(data.get(self.Keys.default, None))
+
+        self.icon_pos = tuple(data.get(self.Keys.icon_pos, EMPTY_POINT))
+        self.icon_size = tuple(data.get(self.Keys.icon_size, EMPTY_SIZE))
+        self.name_pos = tuple(data.get(self.Keys.name_pos, EMPTY_POINT))
+        self.name_size = tuple(data.get(self.Keys.name_size, EMPTY_SIZE))
+
+        assert len(self.icon_pos) == 2
+        assert len(self.icon_size) == 2
+        assert len(self.name_pos) == 2
+        assert len(self.name_size) == 2
 
         self._template = None
         self._selected = False
@@ -305,6 +336,8 @@ class FlowPin(Serializable):
             f"Required: {self.required}\n"
             f"Hidden: {self.hidden}\n"
             f"Arcs: {len(self.arcs)}\n"
+            f"Kind: {self.kind}\n"
+            f"Default: {len(self.default)}\n"
             f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
             f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
             f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"

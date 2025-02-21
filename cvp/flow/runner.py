@@ -6,16 +6,16 @@ from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
 from threading import Condition, Lock
-from typing import Deque, Final, NamedTuple, Optional, Union
+from typing import Deque, Final, Mapping, NamedTuple, Optional, Union
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.nodes.store import NodeVariableStore
+from cvp.patterns.proxy import ValueProxy
 from cvp.pins.special import EntrypointPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -67,6 +67,9 @@ class FlowRunnerArguments:
         """The Optional return value is to automatically infer the type of 'cursor'."""
         return FlowNodePin(self.start_node, self.entrypoint)
 
+    def exception(self, e: BaseException) -> None:
+        self.logger.exception(e)
+
     def error(self, message: str) -> None:
         self.logger.error(f"{self.logger_prefix} {message}")
 
@@ -94,6 +97,8 @@ class FlowRunner:
         logger: Optional[Logger] = None,
         use_copy=False,
         use_deepcopy=False,
+        debug=False,
+        verbose=0,
     ):
         if use_copy and use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
@@ -120,6 +125,8 @@ class FlowRunner:
 
         assert isinstance(start_node, FlowNode)
 
+        self._debug = debug
+        self._verbose = verbose
         self._lock = Lock()
         self._counter = INFINITY_COUNTER
         self._condition = Condition(self._lock)
@@ -156,8 +163,8 @@ class FlowRunner:
     def create_record(
         self,
         index: int,
-        node_uuid: str,
-        node_template: Node,
+        node: FlowNode,
+        shared_variables: Optional[Mapping[str, ValueProxy]] = None,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -165,8 +172,9 @@ class FlowRunner:
         with self._lock:
             return self._memory.create_node_execution_record(
                 index=index,
-                node_uuid=node_uuid,
-                data_pins=node_template.datas,
+                node_uuid=node.uuid,
+                data_pins=node.data_pins,
+                shared_variables=shared_variables,
                 use_copy=use_copy,
                 use_deepcopy=use_deepcopy,
             )
@@ -248,7 +256,10 @@ class FlowRunner:
                 index += 1
                 args.info(f"[{str(prev_cursor)}] End")
         except BaseException as e:
-            args.error(f"An exception occurred in {str(prev_cursor)}: {e}")
+            if self._debug and 1 <= self._verbose:
+                args.exception(e)
+            else:
+                args.error(f"An exception occurred in {str(prev_cursor)}: {e}")
             raise
         finally:
             args.info("Done!")
@@ -272,8 +283,8 @@ class FlowRunner:
 
         record = self.create_record(
             index,
-            np.node.uuid,
-            node_template,
+            np.node,
+            shared_variables=graph.variables.as_dict(),
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
         )
