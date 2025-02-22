@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from copy import copy, deepcopy
+from enum import StrEnum, auto, unique
+from typing import Any, Dict, Optional
+
+from type_serialize import Serializable
 
 from cvp.dtypes.icons import DTYPE_ICON_MAPPING
+from cvp.modules.class_path import ClassPath
 from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
@@ -23,7 +29,20 @@ def default_dtype_icon_with_type(base: type, name: Optional[str] = None) -> str:
     return DTYPE_ICON_MAPPING[(name if name else base.__name__)[0]]
 
 
-class Dtype:
+@unique
+class DtypeKeys(StrEnum):
+    base = auto()
+    name_ = "name"
+    path = auto()
+    docs = auto()
+    icon = auto()
+    color = auto()
+    hidden = auto()
+
+
+class Dtype(Serializable):
+    Keys = DtypeKeys
+
     def __init__(
         self,
         base: type,
@@ -33,7 +52,7 @@ class Dtype:
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
         *,
-        visible=False,
+        hidden=False,
     ):
         if not isinstance(base, type):
             raise TypeError(f"Only types can be registered: {base}")
@@ -44,9 +63,83 @@ class Dtype:
         self.docs = docs if docs else default_dtype_docs_with_type(base)
         self.icon = icon if icon else default_dtype_icon_with_type(base, self.name)
         self.color = color if color else WHITE_RGBA
-        self.visible = visible
+        self.hidden = hidden
 
         if not self.name:
             raise ValueError("The 'name' attribute is required")
         if not self.path:
             raise ValueError("The 'path' attribute is required")
+
+    def __str__(self) -> str:
+        """In `cvp.flow` module, this return value is used as a key value."""
+        return self.name
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self.base == other.base
+            and self.name == other.name
+            and self.path == other.path
+            and self.docs == other.docs
+            and self.icon == other.icon
+            and self.color == other.color
+            and self.hidden == other.hidden
+        )
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.base = copy(self.base)
+        result.name = copy(self.name)
+        result.path = copy(self.path)
+        result.docs = copy(self.docs)
+        result.icon = copy(self.icon)
+        result.color = copy(self.color)
+        result.hidden = copy(self.hidden)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.base = deepcopy(self.base, memo)
+        result.name = deepcopy(self.name, memo)
+        result.path = deepcopy(self.path, memo)
+        result.docs = deepcopy(self.docs, memo)
+        result.icon = deepcopy(self.icon, memo)
+        result.color = deepcopy(self.color, memo)
+        result.hidden = deepcopy(self.hidden, memo)
+        memo[id(self)] = result
+        return result
+
+    @override
+    def __serialize__(self) -> Any:
+        result = {
+            self.Keys.base: ClassPath(self.base).path,
+            self.Keys.name_: self.name,
+            self.Keys.path: self.path,
+            self.Keys.docs: self.docs,
+            self.Keys.icon: self.icon,
+            self.Keys.color: list(self.color),
+            self.Keys.hidden: self.hidden,
+        }
+        return {str(key): val for key, val in result.items()}
+
+    @override
+    def __deserialize__(self, data: Any) -> None:
+        if not isinstance(data, dict):
+            raise TypeError(f"Unexpected data type: {type(data).__name__}")
+
+        base = data.get(self.Keys.base)
+        if not isinstance(base, str):
+            raise TypeError(f"The type of '{str(self.Keys.base)}' only allows str")
+
+        self.base = ClassPath(base).type
+        self.name = str(data.get(self.Keys.name_, str()))
+        self.path = str(data.get(self.Keys.path, str()))
+        self.docs = str(data.get(self.Keys.docs, str()))
+        self.icon = str(data.get(self.Keys.icon, str()))
+        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
+        self.hidden = data.get(self.Keys.hidden, False)
