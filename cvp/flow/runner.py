@@ -6,16 +6,17 @@ from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
 from threading import Condition, Lock
-from typing import Deque, Final, Mapping, NamedTuple, Optional, Union
+from typing import Deque, Final, NamedTuple, Optional, Union
 
+from cvp.dtypes.registry.globals import global_dtype_registry
+from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
+from cvp.flow.memory import FlowMemory
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
 from cvp.nodes.record import NodeExecutionRecord
-from cvp.nodes.store import NodeVariableStore
-from cvp.patterns.proxy import ValueProxy
 from cvp.pins.special import EntrypointPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -92,7 +93,7 @@ class FlowRunner:
         executor: Executor,
         graph: FlowGraph,
         start_node: Union[FlowNode, str],
-        memory: Optional[NodeVariableStore] = None,
+        dtype_registry: Optional[DtypeRegistry] = None,
         *,
         logger: Optional[Logger] = None,
         use_copy=False,
@@ -100,6 +101,9 @@ class FlowRunner:
         debug=False,
         verbose=0,
     ):
+        if dtype_registry is None:
+            dtype_registry = global_dtype_registry()
+
         if use_copy and use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
 
@@ -132,11 +136,7 @@ class FlowRunner:
         self._condition = Condition(self._lock)
         self._step = FlowRunnerStep.done
         self._records = deque()
-        self._memory = NodeVariableStore.from_other(
-            other=memory,
-            use_copy=use_copy,
-            use_deepcopy=use_deepcopy,
-        )
+        self._memory = FlowMemory.from_graph(graph, dtype_registry)
 
         arguments = FlowRunnerArguments(
             start_node=start_node,
@@ -164,7 +164,6 @@ class FlowRunner:
         self,
         index: int,
         node: FlowNode,
-        shared_variables: Optional[Mapping[str, ValueProxy]] = None,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -174,14 +173,13 @@ class FlowRunner:
                 index=index,
                 node_uuid=node.uuid,
                 data_pins=node.data_pins,
-                shared_variables=shared_variables,
                 use_copy=use_copy,
                 use_deepcopy=use_deepcopy,
             )
 
-    def update_result_record(self, node_uuid: str, record: NodeExecutionRecord) -> None:
+    def update_result_record(self, record: NodeExecutionRecord) -> None:
         with self._lock:
-            self._memory.update_with_node_execution_record(node_uuid, record)
+            self._memory.update_with_node_execution_record(record)
             self._records.append(record)
 
     def stop(self) -> None:
@@ -282,9 +280,8 @@ class FlowRunner:
         assert pin_template is not None
 
         record = self.create_record(
-            index,
-            np.node,
-            shared_variables=graph.variables.as_dict(),
+            index=index,
+            node=np.node,
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
         )
@@ -292,7 +289,7 @@ class FlowRunner:
         try:
             next_pin_template = node_template.run(pin_template, record)
         finally:
-            self.update_result_record(np.node.uuid, record)
+            self.update_result_record(record)
             if record.has_exception:
                 raise record.exc_val.with_traceback(record.exc_tb)
 

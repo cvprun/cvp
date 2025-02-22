@@ -169,6 +169,7 @@ class Context:
             executor=self._process_manager.thread_pool,
             graph=graph,
             start_node=start_node,
+            dtype_registry=self._flow_manager.dtype_registry,
             use_copy=False,
             use_deepcopy=False,
             debug=self.debug,
