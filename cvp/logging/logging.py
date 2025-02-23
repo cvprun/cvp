@@ -14,7 +14,9 @@ from logging import (
     StreamHandler,
 )
 from logging import config as logging_config
-from logging import getLogger
+from logging import (
+    getLogger,
+)
 from logging.handlers import TimedRotatingFileHandler
 from os import PathLike
 from sys import stdout

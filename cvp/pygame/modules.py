@@ -32,7 +32,7 @@ def find_pygame_library_path(library_name: str) -> str:
     if not os.path.isdir(pygame_lib_module_dir):
         raise FileNotFoundError(f"Not found module directory: {pygame_lib_module_dir}")
 
-    regex_pattern = r"^{name}-[0-9.]+\.so\.[0-9.]+$".format(name=library_name)
+    regex_pattern = r"^{name}-[0-9A-Fa-f.]+\.so\.[0-9.]+$".format(name=library_name)
     matcher = re.compile(regex_pattern)
 
     for file in os.listdir(pygame_lib_module_dir):
