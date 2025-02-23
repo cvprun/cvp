@@ -194,6 +194,7 @@ class FlowGraph(Serializable):
             self.control = FlowControl()
 
         self.tags = data.get(self.Keys.tags, list())
+        self._selection = FlowSelection()
 
     @property
     def selection(self):

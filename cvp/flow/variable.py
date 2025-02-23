@@ -132,6 +132,9 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         if self.use_copy and self.use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
 
+        self._selected = False
+        self._hovering = False
+
     @override
     def get(self) -> ValueT:
         return self._value
