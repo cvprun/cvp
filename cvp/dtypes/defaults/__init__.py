@@ -26,7 +26,7 @@ def get_default_dtypes() -> Sequence[Dtype]:
 
 @lru_cache
 def get_default_type2dtypes() -> TypeToDtypeMapping:
-    return TypeToDtypeMapping({dt.base: dt for dt in get_default_dtypes()})
+    return TypeToDtypeMapping({dt.base.type: dt for dt in get_default_dtypes()})
 
 
 @lru_cache

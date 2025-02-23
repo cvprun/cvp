@@ -26,7 +26,7 @@ def _load_with_cls(cls: type) -> Tuple[type, str]:
     return cls, path
 
 
-def _load(cls: Union[str, Type[_T]]) -> Tuple[type, str]:
+def _load(cls: Union[str, type, Type[_T]]) -> Tuple[type, str]:
     if isinstance(cls, str):
         return _load_with_path(cls)
     else:
@@ -44,11 +44,7 @@ class ClassPath(Generic[_T], Serializable):
     _type: Type[_T]
     _path: str
 
-    def __init__(self, cls: Union[None, str, type, Type[_T]] = None):
-        if cls is None:
-            # For Lazy-loading
-            return
-
+    def __init__(self, cls: Union[str, type, Type[_T]]):
         self._type, self._path = _load(cls)
         assert isinstance(self._type, type)
         assert isinstance(self._path, str)
@@ -56,6 +52,9 @@ class ClassPath(Generic[_T], Serializable):
     def __str__(self) -> str:
         """In `cvp.flow` module, this return value is used as a key value."""
         return self._path
+
+    def __hash__(self) -> int:
+        return hash((self.__class__, self._type, self._path))
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):

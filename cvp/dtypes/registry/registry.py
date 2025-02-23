@@ -20,7 +20,6 @@ class DtypeRegistry:
         if not no_defaults:
             self._path2dtypes.update(DEFAULT_PATH_TO_DTYPES)
             self._type2dtypes.update(DEFAULT_TYPE_TO_DTYPES)
-            assert Any in self._type2dtypes
 
         assert len(self._path2dtypes) == len(self._type2dtypes)
 
@@ -110,10 +109,10 @@ class DtypeRegistry:
             raise KeyError(f"Duplicate dtype path: {dtype.path}")
 
         assert dtype.path not in self._path2dtypes
-        assert dtype.base not in self._type2dtypes
+        assert dtype.type not in self._type2dtypes
 
         self._path2dtypes[dtype.path] = dtype
-        self._type2dtypes[dtype.base] = dtype
+        self._type2dtypes[dtype.type] = dtype
 
     def add_new(
         self,

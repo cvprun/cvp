@@ -36,8 +36,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.type2dtypes))
 
         none_dtype = registry.get("builtins.NoneType")
-        self.assertEqual(type(None), none_dtype.base)
-        self.assertEqual(type(None), registry.get(type(None)).base)
+        self.assertEqual(type(None), none_dtype.type)
+        self.assertEqual(type(None), registry.get(type(None)).type)
 
     def test_register_dtype_object(self):
         registry = DtypeRegistry(no_defaults=True)
@@ -46,8 +46,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 
-        self.assertEqual(object, registry.get(object).base)
-        self.assertEqual(object, registry.get("builtins.object").base)
+        self.assertEqual(object, registry.get(object).type)
+        self.assertEqual(object, registry.get("builtins.object").type)
 
     def test_register_dtype_any(self):
         registry = DtypeRegistry(no_defaults=True)
@@ -56,8 +56,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 
-        self.assertEqual(Any, registry.get(Any).base)
-        self.assertEqual(Any, registry.get("typing.Any").base)
+        self.assertEqual(Any, registry.get(Any).type)
+        self.assertEqual(Any, registry.get("typing.Any").type)
 
     def test_register_dtype_float(self):
         registry = DtypeRegistry(no_defaults=True)
@@ -65,8 +65,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 
-        self.assertEqual(float, registry.get(float).base)
-        self.assertEqual(float, registry.get("builtins.float").base)
+        self.assertEqual(float, registry.get(float).type)
+        self.assertEqual(float, registry.get("builtins.float").type)
 
     def test_register_dtype_custom(self):
         registry = DtypeRegistry(no_defaults=True)
@@ -81,8 +81,8 @@ class RegistryTestCase(TestCase):
         test_path = default_dtype_path_with_type(_Custom)
         self.assertEqual("tester.dtypes.registry.test_registry._Custom", test_path)
 
-        self.assertEqual(_Custom, registry.get(_Custom).base)
-        self.assertEqual(_Custom, registry.get(test_path).base)
+        self.assertEqual(_Custom, registry.get(_Custom).type)
+        self.assertEqual(_Custom, registry.get(test_path).type)
 
 
 if __name__ == "__main__":

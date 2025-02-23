@@ -4,7 +4,7 @@ from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from typing import Any, Dict, Optional
 
-from type_serialize import Serializable
+from type_serialize import Serializable, deserialize, serialize
 
 from cvp.dtypes.icons import DTYPE_ICON_MAPPING
 from cvp.modules.class_path import ClassPath
@@ -57,7 +57,7 @@ class Dtype(Serializable):
         if not isinstance(base, type):
             raise TypeError(f"Only types can be registered: {base}")
 
-        self.base = base
+        self.base = ClassPath(base)  # type: ignore[var-annotated]
         self.name = name if name else default_dtype_name_with_type(base)
         self.path = path if path else default_dtype_path_with_type(base, self.name)
         self.docs = docs if docs else default_dtype_docs_with_type(base)
@@ -73,6 +73,20 @@ class Dtype(Serializable):
     def __str__(self) -> str:
         """In `cvp.flow` module, this return value is used as a key value."""
         return self.name
+
+    def __hash__(self) -> int:
+        return hash(
+            (
+                self.__class__,
+                self.base,
+                self.name,
+                self.path,
+                self.docs,
+                self.icon,
+                self.color,
+                self.hidden,
+            )
+        )
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
@@ -117,7 +131,7 @@ class Dtype(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.base: ClassPath(self.base).path,
+            self.Keys.base: serialize(self.base),
             self.Keys.name_: self.name,
             self.Keys.path: self.path,
             self.Keys.docs: self.docs,
@@ -132,14 +146,18 @@ class Dtype(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        base = data.get(self.Keys.base)
-        if not isinstance(base, str):
-            raise TypeError(f"The type of '{str(self.Keys.base)}' only allows str")
-
-        self.base = ClassPath(base).type
+        self.base = deserialize(data.get(self.Keys.base), ClassPath)
         self.name = str(data.get(self.Keys.name_, str()))
         self.path = str(data.get(self.Keys.path, str()))
         self.docs = str(data.get(self.Keys.docs, str()))
         self.icon = str(data.get(self.Keys.icon, str()))
         self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
         self.hidden = data.get(self.Keys.hidden, False)
+
+    @property
+    def type(self):
+        return self.base.type
+
+    @property
+    def type_path(self):
+        return self.base.path
