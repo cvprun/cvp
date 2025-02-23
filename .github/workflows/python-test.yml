@@ -23,10 +23,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install libgl1-mesa-dev
 
-      - name: setup python 3.11
+      - name: setup python 3.12
         uses: actions/setup-python@v1
         with:
-          python-version: 3.11
+          python-version: 3.12
 
       - name: pip caching
         uses: actions/cache@v1
