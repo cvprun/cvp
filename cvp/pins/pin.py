@@ -37,13 +37,13 @@ class Pin:
         default: Any = NoDefault,
     ):
         self.name = name
-        self.dtype = dtype
+        self.dtype = dtype if dtype is not None else Dtype(type(None))
         self.docs = docs if docs else str()
         self.action = action if action is not None else Action.data
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.hidden = bool(hidden)
-        self.arcs = list(arcs if arcs else [])
+        self.arcs = list(arcs if arcs else list())
         self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
 

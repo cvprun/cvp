@@ -10,7 +10,6 @@ from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.datas import DataInputPin
-from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
@@ -51,9 +50,7 @@ class LoggingNode(Node):
         )
 
     @override
-    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
-        assert pin == self._prev
-
+    def run(self, record: NodeExecutionRecord) -> Optional[str]:
         try:
             logger_name = record.get(self._name)
             logger = getLogger(logger_name)
@@ -61,5 +58,4 @@ class LoggingNode(Node):
             record.result = None
         except:  # noqa
             record.exception = exc_info()
-
-        return self._next
+        return self._next.name

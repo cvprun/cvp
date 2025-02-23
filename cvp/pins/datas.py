@@ -14,7 +14,7 @@ class DataInputPin(Pin):
     def __init__(
         self,
         name: str,
-        dtype: Optional[Dtype] = None,
+        dtype: Dtype,
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
@@ -40,7 +40,7 @@ class DataOutputPin(Pin):
     def __init__(
         self,
         name: str,
-        dtype: Optional[Dtype] = None,
+        dtype: Dtype,
         docs: Optional[str] = None,
         hidden: Optional[bool] = None,
         arcs: Optional[Sequence[str]] = None,

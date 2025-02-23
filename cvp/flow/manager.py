@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from copy import deepcopy
 from os import PathLike
 from typing import Optional, Union
 
@@ -134,10 +135,6 @@ class FlowManager:
         for node in result.nodes:
             assert node.template is None
             node.template = self._node_registry.nodes[node.path]
-            for pin in node.pins:
-                assert pin.template is None
-                if pin_template := node.template.find_pin(pin.name):
-                    pin.template = pin_template
         result.update_arcs_io(force=True)
         return result
 
@@ -162,14 +159,9 @@ class FlowManager:
         if variable is None:
             raise KeyError(f"Not found variable: '{key}'")
 
-        node_template = self._node_registry.setter_node
-        key_name = self._node_registry.setter_node.key_name
-        value_name = self._node_registry.getter_node.value_name
-
+        dtype = deepcopy(variable.dtype)
+        node_template = self._node_registry.create_setter_node(key, dtype)
         node = FlowNode.from_template(node_template)
-        node.set_default(key_name, key)
-        node.find_pin(value_name).dtype = variable.dtype
-
         graph.nodes.insert(0, node)
         return node
 
@@ -178,13 +170,8 @@ class FlowManager:
         if variable is None:
             raise KeyError(f"Not found variable: '{key}'")
 
-        node_template = self._node_registry.getter_node
-        key_name = self._node_registry.getter_node.key_name
-        value_name = self._node_registry.getter_node.value_name
-
+        dtype = deepcopy(variable.dtype)
+        node_template = self._node_registry.create_getter_node(key, dtype)
         node = FlowNode.from_template(node_template)
-        node.set_default(key_name, key)
-        node.find_pin(value_name).dtype = variable.dtype
-
         graph.nodes.insert(0, node)
         return node

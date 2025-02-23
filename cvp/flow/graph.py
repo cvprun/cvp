@@ -876,7 +876,7 @@ class FlowGraph(Serializable):
     def add_variable(self, name: str, dtype: Dtype) -> FlowVariable:
         result = FlowVariable(
             name=name,
-            dtype=dtype.path,
+            dtype=dtype,
             docs=None,
             value=dtype.base(),
             initial=dtype.base(),

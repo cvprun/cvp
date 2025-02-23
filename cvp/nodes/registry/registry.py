@@ -3,6 +3,7 @@
 from typing import Callable, Dict, Optional, Sequence, Union
 from weakref import ReferenceType, ref
 
+from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults import get_default_path2nodes
@@ -27,8 +28,6 @@ class NodeRegistry:
         assert dtype_registry is not None
         self._dtype_registry = ref(dtype_registry)
         self._nodes = dict()
-        self._getter_node = VariableGetterNode(dtype_registry)
-        self._setter_node = VariableSetterNode(dtype_registry)
 
         if not no_defaults:
             self._nodes.update(get_default_path2nodes(dtype_registry))
@@ -38,16 +37,17 @@ class NodeRegistry:
         return self._nodes
 
     @property
-    def dtype_registry(self) -> Optional[DtypeRegistry]:
-        return self._dtype_registry()
+    def dtype_registry(self) -> DtypeRegistry:
+        if registry := self._dtype_registry():
+            return registry
+        else:
+            return global_dtype_registry()
 
-    @property
-    def getter_node(self) -> VariableGetterNode:
-        return self._getter_node
+    def create_getter_node(self, key: str, value_dtype: Dtype) -> VariableGetterNode:
+        return VariableGetterNode(self.dtype_registry, key, value_dtype)
 
-    @property
-    def setter_node(self) -> VariableSetterNode:
-        return self._setter_node
+    def create_setter_node(self, key: str, value_dtype: Dtype) -> VariableSetterNode:
+        return VariableSetterNode(self.dtype_registry, key, value_dtype)
 
     def keys(self):
         return self._nodes.keys()

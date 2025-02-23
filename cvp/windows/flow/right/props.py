@@ -154,7 +154,7 @@ class PropsTab(TabItem[Canvases]):
         input_text_disabled("Type", type(pin).__name__)
         input_text_disabled("Name", pin.name)
         input_text_disabled("Docs", pin.docs)
-        input_text_disabled("Dtype", pin.dtype)
+        input_text_disabled("Dtype", pin.dtype.path)
 
         with style_disable_input():
             same_vertical_x = 90.0

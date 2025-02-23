@@ -18,7 +18,6 @@ from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.special import EntrypointPin
-from cvp.variables import FLOW_PATH_SEPARATOR
 
 INFINITY_COUNTER: Final[int] = -1
 STOP_COUNTER: Final[int] = -2
@@ -111,11 +110,6 @@ class FlowRunner:
             if node.template is None:
                 raise ValueError(f"invalid node template: '{node.name}'")
 
-            for pin in node.pins:
-                if pin.template is None:
-                    pin_path = node.name + FLOW_PATH_SEPARATOR + pin.name
-                    raise ValueError(f"Invalid pin template: '{pin_path}'")
-
         if isinstance(start_node, FlowNode):
             if start_node != graph.find_begin_node(start_node.uuid):
                 raise KeyError(f"The graph has no starting node: '{start_node.uuid}'")
@@ -164,6 +158,7 @@ class FlowRunner:
         self,
         index: int,
         node: FlowNode,
+        pin: FlowPin,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -172,6 +167,7 @@ class FlowRunner:
             return self._memory.create_node_execution_record(
                 index=index,
                 node_uuid=node.uuid,
+                pin_name=pin.name,
                 data_pins=node.data_pins,
                 use_copy=use_copy,
                 use_deepcopy=use_deepcopy,
@@ -275,30 +271,29 @@ class FlowRunner:
         use_deepcopy=False,
     ) -> Optional[FlowNodePin]:
         node_template = np.node.template
-        pin_template = np.pin.template
         assert node_template is not None
-        assert pin_template is not None
 
         record = self.create_record(
             index=index,
             node=np.node,
+            pin=np.pin,
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
         )
 
         try:
-            next_pin_template = node_template.run(pin_template, record)
+            next_pin_name = node_template.run(record)
         finally:
             self.update_result_record(record)
             if record.has_exception:
                 raise record.exc_val.with_traceback(record.exc_tb)
 
-        if next_pin_template is None:
+        if next_pin_name is None:
             return None  # There is no next flow.
 
-        next_pin = np.node.find_pin(next_pin_template.name)
+        next_pin = np.node.find_pin(next_pin_name)
         if next_pin is None:
-            raise IndexError(f"Not found next pin: '{next_pin_template.name}'")
+            raise IndexError(f"Not found next pin: '{next_pin_name}'")
 
         if not next_pin.arcs:
             return None  # The arc is not connected.

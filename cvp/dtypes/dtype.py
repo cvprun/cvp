@@ -161,3 +161,17 @@ class Dtype(Serializable):
     @property
     def type_path(self):
         return self.base.path
+
+    def split(self):
+        return self.base.split()
+
+    @property
+    def module_path(self) -> str:
+        return self.base.module_path
+
+    @property
+    def class_name(self) -> str:
+        return self.base.class_name
+
+    def __call__(self, *args, **kwargs):
+        return self.base.__call__(*args, **kwargs)

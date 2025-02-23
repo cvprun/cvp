@@ -3,16 +3,21 @@
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from importlib import import_module
-from typing import Any, Dict, Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Dict, Final, Generic, Optional, Tuple, Type, TypeVar, Union
 
 from type_serialize import Serializable
 
 from cvp.types.override import override
 
+NONE_TYPE_PATH: Final[str] = "builtins.NoneType"
+
 _T = TypeVar("_T")
 
 
 def _load_with_path(path: str) -> Tuple[type, str]:
+    if path == NONE_TYPE_PATH:
+        return type(None), NONE_TYPE_PATH
+
     module_path, class_name = path.rsplit(".", 1)
     module = import_module(module_path)
     cls = getattr(module, class_name)

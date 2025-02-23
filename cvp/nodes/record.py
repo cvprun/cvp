@@ -16,6 +16,7 @@ class NodeExecutionRecord:
         self,
         index: int,
         node_uuid: str,
+        pin_name: str,
         variables: Mapping[str, Any],
         args: Sequence[Any],
         kwargs: Mapping[str, Any],
@@ -26,6 +27,7 @@ class NodeExecutionRecord:
     ):
         self._index = index
         self._node_uuid = node_uuid
+        self._pin_name = pin_name
         self._variables = dict(variables)
         self._args = tuple(args)
         self._kwargs = dict(kwargs)
@@ -43,6 +45,10 @@ class NodeExecutionRecord:
     @property
     def node_uuid(self):
         return self._node_uuid
+
+    @property
+    def pin_name(self):
+        return self._pin_name
 
     @property
     def variables(self):

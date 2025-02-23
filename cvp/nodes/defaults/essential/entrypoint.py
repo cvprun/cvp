@@ -6,8 +6,6 @@ from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.flows import FlowOutputPin
-from cvp.pins.pin import Pin
-from cvp.pins.special import EntrypointPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
@@ -30,7 +28,5 @@ class EntrypointNode(Node):
         )
 
     @override
-    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
-        if not isinstance(pin, EntrypointPin):
-            raise TypeError(f"The pin must be an instance of {EntrypointPin.__name__}")
-        return self._start
+    def run(self, record: NodeExecutionRecord) -> Optional[str]:
+        return self._start.name

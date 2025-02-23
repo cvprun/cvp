@@ -51,28 +51,11 @@ class FlowMemory:
         self._arcs.clear()
         self._vars.clear()
 
-    def __get_initial_value(self, pin: FlowPin) -> Any:
-        if pin.default is not None:
-            return deepcopy(pin.default)  # It should not affect the original value
-
-        if pin.template is None:
-            raise ValueError("Template is not defined")
-
-        template = pin.template
-        if template.has_default:
-            return deepcopy(template.default)  # It should not affect the original value
-
-        dtype = template.dtype
-        if dtype is None:
-            dtype = self._dtype_registry.get(pin.dtype)
-
-        return dtype.base()
-
     def __insert_output_datas(self, node_uuid: str, pins: Sequence[FlowPin]) -> None:
         for pin in pins:
             assert pin.is_data_outputs
             pin_key = PinKey(node_uuid, pin.name)
-            value = self.__get_initial_value(pin)
+            value = pin.get_initial_value()
             index = len(self._datas)
             self._datas.append(value)
             self._pins[pin_key] = index
@@ -91,7 +74,7 @@ class FlowMemory:
                 assert arc_key in self._arcs
                 self._pins[pin_key] = self._arcs[arc_key]
             else:
-                value = self.__get_initial_value(pin)
+                value = pin.get_initial_value()
                 index = len(self._datas)
                 self._datas.append(value)
                 self._pins[pin_key] = index
@@ -213,6 +196,7 @@ class FlowMemory:
         self,
         index: int,
         node_uuid: str,
+        pin_name: str,
         data_pins: Sequence[FlowPin],
         *,
         use_copy=False,
@@ -268,6 +252,7 @@ class FlowMemory:
         return NodeExecutionRecord(
             index=index,
             node_uuid=node_uuid,
+            pin_name=pin_name,
             variables=variables,
             args=bind_args,
             kwargs=bind_kwargs,

@@ -1,19 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from sys import exc_info
-from typing import Optional
+from typing import Any, Optional
 
+from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeExecutionRecord
 from cvp.pins.datas import DataInputPin, DataOutputPin
-from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.override import override
 
 
 class VariableSetterNode(Node):
-    def __init__(self, dtype_registry: DtypeRegistry):
+    def __init__(
+        self,
+        dtype_registry: DtypeRegistry,
+        key: Optional[str] = None,
+        value_dtype: Optional[Dtype] = None,
+    ):
         self._prev = PrevPin()
         self._next = NextPin()
         self._key = DataInputPin(
@@ -22,9 +27,11 @@ class VariableSetterNode(Node):
             docs="The key of the variable",
             required=True,
             hidden=True,
+            default=key,
         )
         self._value = DataInputPin(
             name="value",
+            dtype=value_dtype if value_dtype is not None else dtype_registry.get(Any),
             docs="The value of the variable",
         )
         super().__init__(
@@ -35,17 +42,8 @@ class VariableSetterNode(Node):
             tags=("value", "variable", "setter", "mutator"),
         )
 
-    @property
-    def key_name(self):
-        return self._key.name
-
-    @property
-    def value_name(self):
-        return self._value.name
-
     @override
-    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
-        assert pin == self._prev
+    def run(self, record: NodeExecutionRecord) -> Optional[str]:
         try:
             key = record.get(self._key)
             assert isinstance(key, str)
@@ -53,11 +51,16 @@ class VariableSetterNode(Node):
             record.set_shared(key, value)
         except:  # noqa
             record.exception = exc_info()
-        return self._next
+        return self._next.name
 
 
 class VariableGetterNode(Node):
-    def __init__(self, dtype_registry: DtypeRegistry):
+    def __init__(
+        self,
+        dtype_registry: DtypeRegistry,
+        key: Optional[str] = None,
+        value_dtype: Optional[Dtype] = None,
+    ):
         self._prev = PrevPin()
         self._next = NextPin()
         self._key = DataInputPin(
@@ -66,9 +69,11 @@ class VariableGetterNode(Node):
             docs="The key of the variable",
             required=True,
             hidden=True,
+            default=key,
         )
         self._value = DataOutputPin(
             name="value",
+            dtype=value_dtype if value_dtype is not None else dtype_registry.get(Any),
             docs="The value of the variable",
         )
         super().__init__(
@@ -79,17 +84,8 @@ class VariableGetterNode(Node):
             tags=("value", "variable", "getter", "accessor"),
         )
 
-    @property
-    def key_name(self):
-        return self._key.name
-
-    @property
-    def value_name(self):
-        return self._value.name
-
     @override
-    def run(self, pin: Pin, record: NodeExecutionRecord) -> Optional[Pin]:
-        assert pin == self._prev
+    def run(self, record: NodeExecutionRecord) -> Optional[str]:
         try:
             key = record.get(self._key)
             assert isinstance(key, str)
@@ -97,4 +93,4 @@ class VariableGetterNode(Node):
             record.set(self._value, value)
         except:  # noqa
             record.exception = exc_info()
-        return self._next
+        return self._next.name

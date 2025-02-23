@@ -4,6 +4,7 @@ from unittest import TestCase, main
 
 from type_serialize import deserialize, serialize
 
+from cvp.dtypes.dtype import Dtype
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
@@ -15,8 +16,8 @@ class GraphTestCase(TestCase):
     def test_serialize_deserialize(self):
         pin1 = FlowPin(
             name="name",
+            dtype=Dtype(int),
             docs="docs",
-            dtype="builtin.int",
             action=Action.flow,
             stream=Stream.output,
             required=True,
@@ -26,7 +27,6 @@ class GraphTestCase(TestCase):
             icon_size=(2.0, 2.0),
             name_pos=(3.0, 3.0),
             name_size=(4.0, 4.0),
-            template=None,
             selected=True,
             hovering=True,
             connectable=True,

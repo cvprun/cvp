@@ -4,8 +4,9 @@ from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from typing import Any, Dict, Optional, Sequence
 
-from type_serialize import Serializable
+from type_serialize import Serializable, deserialize, serialize
 
+from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
@@ -38,9 +39,9 @@ class FlowPin(Serializable):
 
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str,
+        dtype: Dtype,
         docs: Optional[str] = None,
-        dtype: Optional[str] = None,
         action=Action.data,
         stream=Stream.input,
         required=False,
@@ -53,14 +54,13 @@ class FlowPin(Serializable):
         name_pos: Point = EMPTY_POINT,
         name_size: Size = EMPTY_SIZE,
         *,
-        template: Optional[Pin] = None,
         selected=False,
         hovering=False,
         connectable=False,
     ):
-        self.name = name if name else str()
+        self.name = name
+        self.dtype = dtype
         self.docs = docs if docs else str()
-        self.dtype = dtype if dtype else str()
         self.action = action
         self.stream = stream
         self.required = required
@@ -75,7 +75,6 @@ class FlowPin(Serializable):
         self.name_pos = name_pos
         self.name_size = name_size
 
-        self._template = template
         self._selected = selected
         self._hovering = hovering
         self._connectable = connectable
@@ -84,8 +83,8 @@ class FlowPin(Serializable):
     def from_template(cls, template: Pin):
         return cls(
             name=template.name,
+            dtype=template.dtype,
             docs=template.docs,
-            dtype=template.path,
             action=template.action,
             stream=template.stream,
             required=template.required,
@@ -93,7 +92,6 @@ class FlowPin(Serializable):
             arcs=deepcopy(template.arcs),
             kind=template.kind,
             default=deepcopy(template.default) if template.has_default else None,
-            template=template,
         )
 
     def __str__(self) -> str:
@@ -105,8 +103,8 @@ class FlowPin(Serializable):
             return False
         return (
             self.name == other.name
-            and self.docs == other.docs
             and self.dtype == other.dtype
+            and self.docs == other.docs
             and self.action == other.action
             and self.stream == other.stream
             and self.required == other.required
@@ -124,8 +122,8 @@ class FlowPin(Serializable):
         cls = self.__class__
         result = cls.__new__(cls)
         result.name = copy(self.name)
-        result.docs = copy(self.docs)
         result.dtype = copy(self.dtype)
+        result.docs = copy(self.docs)
         result.action = copy(self.action)
         result.stream = copy(self.stream)
         result.required = copy(self.required)
@@ -137,7 +135,6 @@ class FlowPin(Serializable):
         result.icon_size = copy(self.icon_size)
         result.name_pos = copy(self.name_pos)
         result.name_size = copy(self.name_size)
-        result._template = copy(self._template)
         result._selected = copy(self._selected)
         result._hovering = copy(self._hovering)
         result._connectable = copy(self._connectable)
@@ -149,8 +146,8 @@ class FlowPin(Serializable):
         cls = self.__class__
         result = cls.__new__(cls)
         result.name = deepcopy(self.name, memo)
-        result.docs = deepcopy(self.docs, memo)
         result.dtype = deepcopy(self.dtype, memo)
+        result.docs = deepcopy(self.docs, memo)
         result.action = deepcopy(self.action, memo)
         result.stream = deepcopy(self.stream, memo)
         result.required = deepcopy(self.required, memo)
@@ -162,7 +159,6 @@ class FlowPin(Serializable):
         result.icon_size = deepcopy(self.icon_size, memo)
         result.name_pos = deepcopy(self.name_pos, memo)
         result.name_size = deepcopy(self.name_size, memo)
-        result._template = deepcopy(self._template, memo)
         result._selected = deepcopy(self._selected, memo)
         result._hovering = deepcopy(self._hovering, memo)
         result._connectable = deepcopy(self._connectable, memo)
@@ -173,8 +169,8 @@ class FlowPin(Serializable):
     def __serialize__(self) -> Any:
         result = {
             self.Keys.name_: self.name,
+            self.Keys.dtype: serialize(self.dtype),
             self.Keys.docs: self.docs,
-            self.Keys.dtype: self.dtype,
             self.Keys.action: str(self.action),
             self.Keys.stream: str(self.stream),
             self.Keys.required: self.required,
@@ -194,9 +190,19 @@ class FlowPin(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.name = data.get(self.Keys.name_, str())
+        name = data.get(self.Keys.name_)
+        if not name:
+            raise ValueError(f"The '{self.Keys.name_}' attribute is required")
+        if not isinstance(name, str):
+            raise TypeError(f"The '{self.Keys.name_}' attribute only allows str type")
+
+        dtype = data.get(self.Keys.dtype)
+        if not dtype:
+            raise ValueError(f"The '{self.Keys.dtype}' attribute is required")
+
+        self.name = name
+        self.dtype = deserialize(dtype, Dtype)
         self.docs = data.get(self.Keys.docs, str())
-        self.dtype = data.get(self.Keys.dtype, str())
 
         if action := data.get(self.Keys.action):
             self.action = Action(action)
@@ -229,18 +235,9 @@ class FlowPin(Serializable):
         assert len(self.name_pos) == 2
         assert len(self.name_size) == 2
 
-        self._template = None
         self._selected = False
         self._hovering = False
         self._connectable = False
-
-    @property
-    def template(self):
-        return self._template
-
-    @template.setter
-    def template(self, value: Pin) -> None:
-        self._template = value
 
     @property
     def is_data_action(self):
@@ -346,3 +343,9 @@ class FlowPin(Serializable):
             f"Hovering: {self._hovering}\n"
             f"Connectable: {self._connectable}\n"
         )
+
+    def get_initial_value(self) -> Any:
+        if self.default is not None:
+            return deepcopy(self.default)  # It should not affect the original value
+        else:
+            return self.dtype.type()

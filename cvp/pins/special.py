@@ -1,6 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from typing import Annotated, Any, Optional, Sequence, Union, get_args, get_origin
+from typing import (
+    Annotated,
+    Any,
+    Final,
+    Optional,
+    Sequence,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.globals import global_dtype_registry
@@ -53,18 +62,22 @@ class NextPin(FlowOutputPin):
         )
 
 
+DEFAULT_PIN_NAME: Final[str] = "return"
+DEFAULT_PIN_DOCS: Final[str] = "The return value of a function"
+
+
 class ReturnPin(DataOutputPin):
     def __init__(
         self,
-        name: Optional[str] = None,
+        name: str,
+        dtype: Dtype,
         docs: Optional[str] = None,
-        dtype: Optional[Dtype] = None,
         arcs: Optional[Sequence[str]] = None,
     ):
         super().__init__(
-            name=name if name else "return",
+            name=name,
             dtype=dtype,
-            docs=docs if docs else "The return value of a function",
+            docs=docs,
             arcs=arcs,
             kind=PinKind.return_only,
         )
@@ -84,26 +97,22 @@ class ReturnPin(DataOutputPin):
         if return_origin == Union:
             raise TypeError("Union return is not supported")
 
-        default_return_pin = cls()
-        default_name = default_return_pin.name
-        default_docs = default_return_pin.docs
-
         if return_origin == Annotated:
             return_args = get_args(return_annotation)
             assert 2 <= len(return_args)
             return_dtype = dtype_registry.get(return_args[0])
-            return_name = get_name(*return_args, default=default_name)
-            return_docs = get_docs(*return_args, default=default_docs)
+            return_name = get_name(*return_args, default=DEFAULT_PIN_NAME)
+            return_docs = get_docs(*return_args, default=DEFAULT_PIN_DOCS)
             return_arcs = get_arcs(*return_args)
         else:
             return_dtype = dtype_registry.get(return_annotation)
-            return_name = default_name
-            return_docs = default_docs
+            return_name = DEFAULT_PIN_NAME
+            return_docs = DEFAULT_PIN_DOCS
             return_arcs = list()
 
         return cls(
             name=return_name,
-            docs=return_docs,
             dtype=return_dtype,
+            docs=return_docs,
             arcs=return_arcs,
         )
