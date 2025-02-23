@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
+from typing import Any
 from unittest import TestCase, main
+
+from type_serialize import deserialize, serialize
 
 from cvp.modules.class_path import ClassPath
 
@@ -30,6 +33,31 @@ class ClassPathTestCase(TestCase):
         path1 = cpath1("./aaa")
         self.assertIsInstance(path0, Path)
         self.assertIsInstance(path1, Path)
+
+    def test_serialize_deserialize_path(self):
+        cpath0 = ClassPath(Path)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_int(self):
+        cpath0 = ClassPath(int)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_any(self):
+        cpath0 = ClassPath(Any)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_object(self):
+        cpath0 = ClassPath(object)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_complex(self):
+        cpath0 = ClassPath(complex)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
 
 
 if __name__ == "__main__":
