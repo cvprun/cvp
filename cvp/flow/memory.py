@@ -4,8 +4,6 @@ from collections import deque
 from copy import copy, deepcopy
 from typing import Any, Deque, Dict, Mapping, NamedTuple, NewType, Optional, Sequence
 
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
 from cvp.flow.variable import FlowVariable
@@ -28,18 +26,12 @@ class PinKey(NamedTuple):
 
 
 class FlowMemory:
-    _dtype_registry: DtypeRegistry
-
     _datas: Deque[Any]
     _pins: Dict[PinKey, int]
     _arcs: Dict[ArcKey, int]
     _vars: Dict[str, ValueProxy]
 
-    def __init__(self, dtype_registry: Optional[DtypeRegistry] = None):
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
-
-        self._dtype_registry = dtype_registry
+    def __init__(self):
         self._datas = deque()
         self._pins = dict()
         self._arcs = dict()
@@ -84,12 +76,8 @@ class FlowMemory:
             self._vars[key] = val
 
     @classmethod
-    def from_graph(
-        cls,
-        graph: FlowGraph,
-        dtype_registry: Optional[DtypeRegistry] = None,
-    ):
-        result = cls(dtype_registry)
+    def from_graph(cls, graph: FlowGraph):
+        result = cls()
 
         # ------------------------------------------------------------------------------
         # [IMPORTANT] The order of method calls must not change.
@@ -104,14 +92,7 @@ class FlowMemory:
         return result
 
     @classmethod
-    def from_other(
-        cls,
-        other,
-        dtype_registry: Optional[DtypeRegistry] = None,
-        *,
-        use_copy=False,
-        use_deepcopy=False,
-    ):
+    def from_other(cls, other, *, use_copy=False, use_deepcopy=False):
         if not isinstance(other, cls):
             raise TypeError(f"Unsupported type: {type(other).__name__}")
         if use_copy and use_deepcopy:
@@ -124,7 +105,7 @@ class FlowMemory:
             else:
                 return other
         else:
-            return cls(dtype_registry)
+            return cls()
 
     def __copy__(self):
         cls = self.__class__

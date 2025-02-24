@@ -8,8 +8,6 @@ from logging import Logger
 from threading import Condition, Lock
 from typing import Deque, Final, NamedTuple, Optional, Union
 
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.memory import FlowMemory
 from cvp.flow.node import FlowNode
@@ -92,7 +90,6 @@ class FlowRunner:
         executor: Executor,
         graph: FlowGraph,
         start_node: Union[FlowNode, str],
-        dtype_registry: Optional[DtypeRegistry] = None,
         *,
         logger: Optional[Logger] = None,
         use_copy=False,
@@ -100,9 +97,6 @@ class FlowRunner:
         debug=False,
         verbose=0,
     ):
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
-
         if use_copy and use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
 
@@ -130,7 +124,7 @@ class FlowRunner:
         self._condition = Condition(self._lock)
         self._step = FlowRunnerStep.done
         self._records = deque()
-        self._memory = FlowMemory.from_graph(graph, dtype_registry)
+        self._memory = FlowMemory.from_graph(graph)
 
         arguments = FlowRunnerArguments(
             start_node=start_node,
