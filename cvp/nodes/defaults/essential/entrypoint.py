@@ -4,7 +4,7 @@ from typing import Optional
 
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node
-from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.record import NodeRecord
 from cvp.pins.flows import FlowOutputPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
@@ -28,5 +28,5 @@ class EntrypointNode(Node):
         )
 
     @override
-    def run(self, record: NodeExecutionRecord) -> Optional[str]:
+    def run(self, record: NodeRecord) -> Optional[str]:
         return self._start.name

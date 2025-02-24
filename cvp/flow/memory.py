@@ -7,7 +7,7 @@ from typing import Any, Deque, Dict, Mapping, NamedTuple, NewType, Optional, Seq
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
 from cvp.flow.variable import FlowVariable
-from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.record import NodeRecord
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
@@ -182,7 +182,7 @@ class FlowMemory:
         *,
         use_copy=False,
         use_deepcopy=False,
-    ) -> NodeExecutionRecord:
+    ) -> NodeRecord:
         if use_copy and use_deepcopy:
             raise ValueError("'use_copy' and 'use_deepcopy' cannot coexist")
 
@@ -230,7 +230,7 @@ class FlowMemory:
                     case _:
                         assert False, "Inaccessible section"
 
-        return NodeExecutionRecord(
+        return NodeRecord(
             index=index,
             node_uuid=node_uuid,
             pin_name=pin_name,
@@ -241,7 +241,7 @@ class FlowMemory:
             shared_variables=self._vars,
         )
 
-    def update_with_node_execution_record(self, record: NodeExecutionRecord) -> None:
+    def update_with_node_execution_record(self, record: NodeRecord) -> None:
         for pin_name, pin_variable in record.variables.items():
             self.set_pin_value(record.node_uuid, pin_name, pin_variable)
 

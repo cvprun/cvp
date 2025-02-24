@@ -8,7 +8,7 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import Node
-from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import GREEN_RGBA
@@ -50,7 +50,7 @@ class LoggingNode(Node):
         )
 
     @override
-    def run(self, record: NodeExecutionRecord) -> Optional[str]:
+    def run(self, record: NodeRecord) -> Optional[str]:
         try:
             logger_name = record.get(self._name)
             logger = getLogger(logger_name)

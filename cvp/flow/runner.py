@@ -14,7 +14,7 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
-from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.record import NodeRecord
 from cvp.pins.special import EntrypointPin
 
 INFINITY_COUNTER: Final[int] = -1
@@ -82,8 +82,8 @@ class FlowRunnerArguments:
 
 
 class FlowRunner:
-    _records: Deque[NodeExecutionRecord]
-    _future: Future[Deque[NodeExecutionRecord]]
+    _records: Deque[NodeRecord]
+    _future: Future[Deque[NodeRecord]]
 
     def __init__(
         self,
@@ -167,7 +167,7 @@ class FlowRunner:
                 use_deepcopy=use_deepcopy,
             )
 
-    def update_result_record(self, record: NodeExecutionRecord) -> None:
+    def update_result_record(self, record: NodeRecord) -> None:
         with self._lock:
             self._memory.update_with_node_execution_record(record)
             self._records.append(record)

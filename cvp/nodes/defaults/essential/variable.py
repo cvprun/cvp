@@ -6,7 +6,7 @@ from typing import Any, Optional
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.node import Node
-from cvp.nodes.record import NodeExecutionRecord
+from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin, DataOutputPin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.override import override
@@ -43,7 +43,7 @@ class VariableSetterNode(Node):
         )
 
     @override
-    def run(self, record: NodeExecutionRecord) -> Optional[str]:
+    def run(self, record: NodeRecord) -> Optional[str]:
         try:
             key = record.get(self._key)
             assert isinstance(key, str)
@@ -85,7 +85,7 @@ class VariableGetterNode(Node):
         )
 
     @override
-    def run(self, record: NodeExecutionRecord) -> Optional[str]:
+    def run(self, record: NodeRecord) -> Optional[str]:
         try:
             key = record.get(self._key)
             assert isinstance(key, str)
