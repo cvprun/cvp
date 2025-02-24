@@ -3,7 +3,6 @@
 from sys import exc_info
 from typing import Any, Optional
 
-from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
@@ -13,12 +12,7 @@ from cvp.types.override import override
 
 
 class VariableSetterNode(Node):
-    def __init__(
-        self,
-        dtype_registry: DtypeRegistry,
-        key: Optional[str] = None,
-        value_dtype: Optional[Dtype] = None,
-    ):
+    def __init__(self, dtype_registry: DtypeRegistry):
         self._prev = PrevPin()
         self._next = NextPin()
         self._key = DataInputPin(
@@ -27,11 +21,11 @@ class VariableSetterNode(Node):
             docs="The key of the variable",
             required=True,
             hidden=True,
-            default=key,
+            default=None,
         )
         self._value = DataInputPin(
             name="value",
-            dtype=value_dtype if value_dtype is not None else dtype_registry.get(Any),
+            dtype=dtype_registry.get(Any),
             docs="The value of the variable",
         )
         super().__init__(
@@ -41,6 +35,14 @@ class VariableSetterNode(Node):
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
         )
+
+    @property
+    def key_name(self):
+        return self._key.name
+
+    @property
+    def value_name(self):
+        return self._value.name
 
     @override
     def run(self, record: NodeRecord) -> Optional[str]:
@@ -55,12 +57,7 @@ class VariableSetterNode(Node):
 
 
 class VariableGetterNode(Node):
-    def __init__(
-        self,
-        dtype_registry: DtypeRegistry,
-        key: Optional[str] = None,
-        value_dtype: Optional[Dtype] = None,
-    ):
+    def __init__(self, dtype_registry: DtypeRegistry):
         self._prev = PrevPin()
         self._next = NextPin()
         self._key = DataInputPin(
@@ -69,11 +66,11 @@ class VariableGetterNode(Node):
             docs="The key of the variable",
             required=True,
             hidden=True,
-            default=key,
+            default=None,
         )
         self._value = DataOutputPin(
             name="value",
-            dtype=value_dtype if value_dtype is not None else dtype_registry.get(Any),
+            dtype=dtype_registry.get(Any),
             docs="The value of the variable",
         )
         super().__init__(
@@ -83,6 +80,14 @@ class VariableGetterNode(Node):
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "getter", "accessor"),
         )
+
+    @property
+    def key_name(self):
+        return self._key.name
+
+    @property
+    def value_name(self):
+        return self._value.name
 
     @override
     def run(self, record: NodeRecord) -> Optional[str]:

@@ -171,6 +171,37 @@ class PropsTab(TabItem[Canvases]):
             imgui.same_line(same_vertical_x)
             imgui.radio_button("Optional", not pin.required)
 
+            imgui.radio_button("Hidden", pin.hidden)
+            imgui.same_line(same_vertical_x)
+            imgui.radio_button("Visible", not pin.hidden)
+
+        if pin.dtype.type == int:
+            if not isinstance(pin.default, int):
+                pin.default = pin.get_initial_value()
+            assert isinstance(pin.default, int)
+            changed, value = imgui.input_int("Default", pin.default)
+            if changed:
+                assert isinstance(value, int)
+                pin.default = value
+        elif pin.dtype.type == float:
+            if not isinstance(pin.default, float):
+                pin.default = pin.get_initial_value()
+            assert isinstance(pin.default, float)
+            changed, value = imgui.input_float("Default", pin.default)
+            if changed:
+                assert isinstance(value, float)
+                pin.default = value
+        elif pin.dtype.type == str:
+            if not isinstance(pin.default, str):
+                pin.default = pin.get_initial_value()
+            assert isinstance(pin.default, str)
+            changed, value = imgui.input_text("Default", pin.default)
+            if changed:
+                assert isinstance(value, str)
+                pin.default = value
+        else:
+            input_text_disabled("Default", str(pin.default))
+
         if self.context.debug:
             self.tree_pin_debugging("Debugging", pin)
 

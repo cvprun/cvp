@@ -157,8 +157,10 @@ class FlowManager:
             raise KeyError(f"Not found variable: '{key}'")
 
         dtype = deepcopy(variable.dtype)
-        node_template = self._node_registry.create_setter_node(key, dtype)
-        node = FlowNode.from_template(node_template)
+        setter_node = self._node_registry.setter_node
+        node = FlowNode.from_template(setter_node)
+        node.set_default(setter_node.key_name, key)
+        node.set_dtype(setter_node.value_name, dtype)
         graph.nodes.insert(0, node)
         return node
 
@@ -168,7 +170,9 @@ class FlowManager:
             raise KeyError(f"Not found variable: '{key}'")
 
         dtype = deepcopy(variable.dtype)
-        node_template = self._node_registry.create_getter_node(key, dtype)
-        node = FlowNode.from_template(node_template)
+        getter_node = self._node_registry.getter_node
+        node = FlowNode.from_template(getter_node)
+        node.set_default(getter_node.key_name, key)
+        node.set_dtype(getter_node.value_name, dtype)
         graph.nodes.insert(0, node)
         return node

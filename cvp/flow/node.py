@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from type_serialize import Serializable, deserialize, serialize
 
+from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.nodes.node import Node
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -520,3 +521,15 @@ class FlowNode(Serializable):
         if pin is None:
             raise KeyError(f"Not found pin: '{pin_name}'")
         pin.default = default
+
+    def get_dtype(self, pin_name: str) -> Dtype:
+        pin = self.find_pin(pin_name)
+        if pin is None:
+            raise KeyError(f"Not found pin: '{pin_name}'")
+        return pin.dtype
+
+    def set_dtype(self, pin_name: str, dtype: Dtype) -> None:
+        pin = self.find_pin(pin_name)
+        if pin is None:
+            raise KeyError(f"Not found pin: '{pin_name}'")
+        pin.dtype = dtype
