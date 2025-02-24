@@ -5,9 +5,10 @@ from typing import Sequence
 
 from pygame import gfxdraw as pg_gfx
 from pygame.surface import Surface
+from pygame.typing import RectLike
 
 from cvp.pygame.surface._property import SurfacePropertyInterface
-from cvp.pygame.types import ColorValue, RectValue, SequenceProtocol
+from cvp.pygame.types import ColorValue, SequenceProtocol
 
 
 class GfxDrawable(SurfacePropertyInterface, ABC):
@@ -23,10 +24,10 @@ class GfxDrawable(SurfacePropertyInterface, ABC):
     def gfx_line(self, x1: int, x2: int, y1: int, y2: int, color: ColorValue):
         return pg_gfx.line(self.surface, x1, y1, x2, y2, color)
 
-    def gfx_rectangle(self, rect: RectValue, color: ColorValue):
+    def gfx_rectangle(self, rect: RectLike, color: ColorValue):
         return pg_gfx.rectangle(self.surface, rect, color)
 
-    def gfx_box(self, rect: RectValue, color: ColorValue):
+    def gfx_box(self, rect: RectLike, color: ColorValue):
         return pg_gfx.box(self.surface, rect, color)
 
     def gfx_circle(self, x: int, y: int, r: int, color: ColorValue):

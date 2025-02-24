@@ -5,11 +5,12 @@ from typing import Literal, Optional, Sequence, Union
 
 from pygame import transform as pg_transform
 from pygame.surface import Surface
+from pygame.typing import RectLike
 
 from cvp.pygame.surface._property import SurfacePropertyInterface
-from cvp.pygame.types import ColorValue, RectValue, SequenceProtocol
+from cvp.pygame.types import ColorValue, SequenceProtocol
 
-SmoothscaleBackendLiteral = Literal["GENERIC", "MMX", "SSE", "SSE2", "NEON"]
+SmoothscaleBackendLiteral = Literal["GENERIC", "SSE2", "NEON"]
 
 
 class Transformable(SurfacePropertyInterface, ABC):
@@ -65,7 +66,7 @@ class Transformable(SurfacePropertyInterface, ABC):
     def transform_set_smoothscale_backend(backend: SmoothscaleBackendLiteral):
         return pg_transform.set_smoothscale_backend(backend)
 
-    def transform_chop(self, rect: RectValue):
+    def transform_chop(self, rect: RectLike):
         return pg_transform.chop(self.surface, rect)
 
     def transform_laplacian(self, dest_surface: Optional[Surface] = None):
@@ -110,7 +111,7 @@ class Transformable(SurfacePropertyInterface, ABC):
             palette_colors,
         )
 
-    def transform_average_color(self, rect: RectValue, consider_alpha=False):
+    def transform_average_color(self, rect: RectLike, consider_alpha=False):
         return pg_transform.average_color(self.surface, rect, consider_alpha)
 
     def transform_invert(self, dest_surface: Optional[Surface] = None):

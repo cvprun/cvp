@@ -4,16 +4,17 @@ from abc import ABC
 from typing import Sequence
 
 from pygame import draw as pg_draw
+from pygame.typing import RectLike
 
 from cvp.pygame.surface._property import SurfacePropertyInterface
-from cvp.pygame.types import ColorValue, Coordinate, RectValue, SequenceProtocol
+from cvp.pygame.types import ColorValue, Coordinate, SequenceProtocol
 
 
 class Drawable(SurfacePropertyInterface, ABC):
     def draw_rect(
         self,
         color: ColorValue,
-        rect: RectValue,
+        rect: RectLike,
         width=0,
         border_radius=-1,
         border_top_left_radius=-1,
@@ -60,13 +61,13 @@ class Drawable(SurfacePropertyInterface, ABC):
             draw_bottom_right,
         )
 
-    def draw_ellipse(self, color: ColorValue, rect: RectValue, width=0):
+    def draw_ellipse(self, color: ColorValue, rect: RectLike, width=0):
         return pg_draw.ellipse(self.surface, color, rect, width)
 
     def draw_arc(
         self,
         color: ColorValue,
-        rect: RectValue,
+        rect: RectLike,
         start_angle: float,
         stop_angle: float,
         width=1,

@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pygame import key as pg_key
-
-from cvp.pygame.types import RectValue
+from pygame.typing import RectLike
 
 
 class Keyboardable:
@@ -55,5 +54,5 @@ class Keyboardable:
         return pg_key.stop_text_input()
 
     @staticmethod
-    def key_set_text_input_rect(rect: RectValue):
+    def key_set_text_input_rect(rect: RectLike):
         return pg_key.set_text_input_rect(rect)

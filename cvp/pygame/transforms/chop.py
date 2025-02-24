@@ -2,14 +2,14 @@
 
 from pygame.surface import Surface
 from pygame.transform import chop
+from pygame.typing import RectLike
 
 from cvp.pygame.transforms._base import TransformBase
-from cvp.pygame.types import RectValue
 from cvp.types.override import override
 
 
 class ChopTransform(TransformBase):
-    def __init__(self, rect: RectValue):
+    def __init__(self, rect: RectLike):
         self.rect = rect
 
     @override

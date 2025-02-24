@@ -5,9 +5,10 @@ from typing import Literal, Optional, Sequence, Tuple, Union
 from pygame import display as pg_display
 from pygame.constants import FULLSCREEN
 from pygame.surface import Surface
+from pygame.typing import RectLike
 from pygame.window import Window
 
-from cvp.pygame.types import Coordinate, RectValue, SequenceProtocol
+from cvp.pygame.types import Coordinate, SequenceProtocol
 
 
 class Displayable:
@@ -47,7 +48,7 @@ class Displayable:
         return pg_display.update()
 
     @staticmethod
-    def display_update_with_rectangle(rectangle: RectValue):
+    def display_update_with_rectangle(rectangle: RectLike):
         return pg_display.update(rectangle)
 
     @staticmethod

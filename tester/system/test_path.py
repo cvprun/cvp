@@ -25,10 +25,12 @@ class PathTestCase(TestCase):
             self.assertEqual(os.path.abspath(tmpdir), str(_TestPath(tmpdir).resolve()))
 
     def test_truediv(self):
-        down_dir0 = _TestPath.home() / "Downloads"
+        download_dirname = "Downloads"
+
+        down_dir0 = _TestPath.home() / download_dirname
         self.assertIsInstance(down_dir0, _TestPath)
 
-        down_dir1 = os.path.join(os.path.expanduser("~"), "Downloads")
+        down_dir1 = os.path.join(os.path.expanduser("~"), download_dirname)
         self.assertEqual(down_dir1, str(down_dir0))
 
 

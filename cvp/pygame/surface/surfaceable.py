@@ -5,16 +5,17 @@ from typing import Iterable, Optional, Sequence, Tuple, Union
 
 from pygame.display import Info
 from pygame.surface import Surface
+from pygame.typing import RectLike
 
 from cvp.pygame.literals import ViewKind
 from cvp.pygame.surface._property import SurfacePropertyInterface
-from cvp.pygame.types import ColorValue, Coordinate, RectValue, SequenceProtocol
+from cvp.pygame.types import ColorValue, Coordinate, SequenceProtocol
 
 BlitSequence = Iterable[
     Union[
-        Tuple[Surface, Union[Coordinate, RectValue]],
-        Tuple[Surface, Union[Coordinate, RectValue], Union[RectValue, int]],
-        Tuple[Surface, Union[Coordinate, RectValue], RectValue, int],
+        Tuple[Surface, Union[Coordinate, RectLike]],
+        Tuple[Surface, Union[Coordinate, RectLike], Union[RectLike, int]],
+        Tuple[Surface, Union[Coordinate, RectLike], RectLike, int],
     ]
 ]
 
@@ -49,8 +50,8 @@ class Surfaceable(SurfacePropertyInterface, ABC):
     def surface_blit(
         self,
         source: Surface,
-        dest: Union[Coordinate, RectValue],
-        area: Optional[RectValue] = None,
+        dest: RectLike,
+        area: Optional[RectLike] = None,
         special_flags=0,
     ):
         return self.surface.blit(source, dest, area, special_flags)
@@ -64,7 +65,7 @@ class Surfaceable(SurfacePropertyInterface, ABC):
 
     def surface_fblits(
         self,
-        blit_sequence: Iterable[Tuple[Surface, Union[Coordinate, RectValue]]],
+        blit_sequence: Iterable[Tuple[Surface, Union[Coordinate, RectLike]]],
         special_flags=0,
     ):
         return self.surface.fblits(blit_sequence, special_flags)
@@ -90,7 +91,7 @@ class Surfaceable(SurfacePropertyInterface, ABC):
     def surface_fill(
         self,
         color: ColorValue,
-        rect: Optional[RectValue] = None,
+        rect: Optional[RectLike] = None,
         special_flags=0,
     ):
         return self.surface.fill(color, rect, special_flags)
@@ -159,13 +160,13 @@ class Surfaceable(SurfacePropertyInterface, ABC):
     def surface_unmap_rgb(self, mapped_int: int):
         return self.surface.unmap_rgb(mapped_int)
 
-    def surface_set_clip(self, rect: Optional[RectValue]):
+    def surface_set_clip(self, rect: Optional[RectLike]):
         return self.surface.set_clip(rect)
 
     def surface_get_clip(self):
         return self.surface.get_clip()
 
-    def surface_subsurface(self, rect: RectValue):
+    def surface_subsurface(self, rect: RectLike):
         return self.surface.subsurface(rect)
 
     def surface_subsurface_with_coords(

@@ -3,7 +3,6 @@
 from os import PathLike
 from typing import (
     IO,
-    Callable,
     Protocol,
     SupportsIndex,
     Tuple,
@@ -29,12 +28,3 @@ IntCoordinate = SequenceProtocol[int]
 
 RGBAOutput = Tuple[int, int, int, int]
 ColorValue = Union[int, str, SequenceProtocol[int]]
-
-_CanBeRect = SequenceProtocol[Union[float, Coordinate]]
-
-
-class _HasRectAttribute(Protocol):
-    rect: Union["RectValue", Callable[[], "RectValue"]]
-
-
-RectValue = Union[_CanBeRect, _HasRectAttribute]
