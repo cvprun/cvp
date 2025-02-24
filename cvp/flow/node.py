@@ -71,7 +71,6 @@ class FlowNode(Serializable):
         node_pos: Point = EMPTY_POINT,
         node_size: Size = EMPTY_SIZE,
         *,
-        template: Optional[Node] = None,
         selected: bool = False,
         hovering: bool = False,
     ):
@@ -102,7 +101,6 @@ class FlowNode(Serializable):
         self.node_pos = node_pos
         self.node_size = node_size
 
-        self._template = template
         self._selected = selected
         self._hovering = hovering
 
@@ -123,7 +121,6 @@ class FlowNode(Serializable):
             data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
-            template=template,
         )
 
     def __str__(self) -> str:
@@ -186,7 +183,6 @@ class FlowNode(Serializable):
         result.name_size = copy(self.name_size)
         result.node_pos = copy(self.node_pos)
         result.node_size = copy(self.node_size)
-        result._template = copy(self._template)
         result._selected = copy(self._selected)
         result._hovering = copy(self._hovering)
         return result
@@ -219,7 +215,6 @@ class FlowNode(Serializable):
         result.name_size = deepcopy(self.name_size, memo)
         result.node_pos = deepcopy(self.node_pos, memo)
         result.node_size = deepcopy(self.node_size, memo)
-        result._template = deepcopy(self._template, memo)
         result._selected = deepcopy(self._selected, memo)
         result._hovering = deepcopy(self._hovering, memo)
         memo[id(self)] = result
@@ -309,17 +304,8 @@ class FlowNode(Serializable):
         assert len(self.node_pos) == 2
         assert len(self.node_size) == 2
 
-        self._template = None
         self._selected = False
         self._hovering = False
-
-    @property
-    def template(self):
-        return self._template
-
-    @template.setter
-    def template(self, value: Node) -> None:
-        self._template = value
 
     @property
     def as_flow_input_names(self):

@@ -55,7 +55,6 @@ class NodeTestCase(TestCase):
             name_size=(14.0, 14.0),
             node_pos=(15.0, 15.0),
             node_size=(16.0, 16.0),
-            template=None,
             selected=True,
             hovering=True,
         )
@@ -68,7 +67,6 @@ class NodeTestCase(TestCase):
 
         self.assertEqual(node2, node1)
 
-        self.assertIsNone(node2.template)
         self.assertFalse(node2.selected)
         self.assertFalse(node2.hovering)
 

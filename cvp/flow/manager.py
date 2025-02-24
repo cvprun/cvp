@@ -129,12 +129,9 @@ class FlowManager:
         with open(filepath, "wb") as f:
             f.write(FlowManager.dumps_graph_yaml(graph, encoding=encoding))
 
-    def loads_graph_yaml(self, data: bytes) -> FlowGraph:
+    @staticmethod
+    def loads_graph_yaml(data: bytes) -> FlowGraph:
         result = deserialize(full_load(data), FlowGraph)
-        assert isinstance(result, FlowGraph)
-        for node in result.nodes:
-            assert node.template is None
-            node.template = self._node_registry.nodes[node.path]
         result.update_arcs_io(force=True)
         return result
 

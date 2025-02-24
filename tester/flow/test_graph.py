@@ -56,7 +56,6 @@ class GraphTestCase(TestCase):
             name_size=(14.0, 14.0),
             node_pos=(15.0, 15.0),
             node_size=(16.0, 16.0),
-            template=None,
             selected=True,
             hovering=True,
         )

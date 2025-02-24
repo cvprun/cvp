@@ -250,6 +250,7 @@ class FlowRunner:
                     index=index,
                     graph=args.graph,
                     np=prev_cursor,
+                    node=args.nodes[prev_cursor.node.path],
                     use_copy=args.use_copy,
                     use_deepcopy=args.use_deepcopy,
                 )
@@ -272,13 +273,11 @@ class FlowRunner:
         index: int,
         graph: FlowGraph,
         np: FlowNodePin,
+        node: Node,
         *,
         use_copy=False,
         use_deepcopy=False,
     ) -> Optional[FlowNodePin]:
-        node_template = np.node.template
-        assert node_template is not None
-
         record = self.create_record(
             index=index,
             node=np.node,
@@ -288,7 +287,7 @@ class FlowRunner:
         )
 
         try:
-            next_pin_name = node_template.run(record)
+            next_pin_name = node.run(record)
         finally:
             self.update_result_record(record)
             if record.has_exception:
