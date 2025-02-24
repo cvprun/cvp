@@ -8,6 +8,7 @@ VIRTUALENV_NAME=$VIRTUALENV_PREFIX-$USER-$BASE_PYTHON_VERSION-${VIRTUALENV_SUFFI
 VENV_HOME=$ROOT_DIR/.venv
 VENV_PYTHON=$VENV_HOME/bin/python3
 REQUIREMENTS=$ROOT_DIR/requirements.txt
+FREEZE_REQUIREMENTS=$ROOT_DIR/requirements.freeze.txt
 
 function print_error
 {
@@ -336,8 +337,13 @@ if [[ ! -x "$PYTHON_EXE" ]]; then
     run_base_python -m venv "$VENV_HOME"
     if [[ -x "$VENV_PYTHON" ]]; then
         "$VENV_PYTHON" -m pip install -U pip
-        if [[ -f "$REQUIREMENTS" ]]; then
-            "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS"
+
+        if [[ -f "$FREEZE_REQUIREMENTS" ]]; then
+            "$VENV_PYTHON" -m pip install -r "$FREEZE_REQUIREMENTS"
+        elif [[ -f "$REQUIREMENTS" ]]; then
+            if "$VENV_PYTHON" -m pip install -r "$REQUIREMENTS"; then
+                "$VENV_PYTHON" -m pip freeze > "$FREEZE_REQUIREMENTS"
+            fi
         fi
     fi
     PYTHON_EXE=$VENV_PYTHON
