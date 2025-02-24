@@ -33,8 +33,12 @@ class ArcTestCase(TestCase):
 
         self.assertEqual(arc2, arc1)
 
+        self.assertIsNone(arc2.input)
+        self.assertIsNone(arc2.output)
         self.assertFalse(arc2.selected)
         self.assertFalse(arc2.hovering)
+        self.assertIsInstance(arc2.polyline, list)
+        self.assertFalse(arc2.polyline)
 
 
 if __name__ == "__main__":

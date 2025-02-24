@@ -44,6 +44,8 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         persistent: bool = False,
         use_copy: bool = False,
         use_deepcopy: bool = False,
+        selected=False,
+        hovering=False,
     ):
         self.name = name
         self.dtype = dtype
@@ -60,8 +62,8 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         self.use_copy = use_copy
         self.use_deepcopy = use_deepcopy
 
-        self._selected = False
-        self._hovering = False
+        self._selected = selected
+        self._hovering = hovering
 
     def __str__(self) -> str:
         """In `cvp.flow` module, this return value is used as a key value."""

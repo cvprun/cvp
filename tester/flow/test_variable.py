@@ -28,7 +28,7 @@ class VariableTestCase(TestCase):
         value = TestValue()
         initial = TestValue(200, "test2")
 
-        var0 = FlowVariable(
+        var1 = FlowVariable(
             name=name,
             dtype=dtype,
             docs=docs,
@@ -37,11 +37,20 @@ class VariableTestCase(TestCase):
             persistent=persistent,
             use_copy=False,
             use_deepcopy=True,
+            selected=True,
+            hovering=True,
         )
 
-        var1 = deserialize(serialize(var0), FlowVariable)
-        self.assertIsInstance(var1, FlowVariable)
-        self.assertEqual(var0, var1)
+        serialized = serialize(var1)
+        self.assertIsInstance(serialized, dict)
+
+        var2 = deserialize(serialized, FlowVariable)
+        self.assertIsInstance(var2, FlowVariable)
+
+        self.assertEqual(var1, var2)
+
+        self.assertFalse(var2.selected)
+        self.assertFalse(var2.hovering)
 
 
 if __name__ == "__main__":
