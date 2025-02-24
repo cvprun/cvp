@@ -25,5 +25,5 @@ class PathFlavour(Path):
 
     if sys.version_info >= (3, 12):
 
-        def __truediv__(self, other) -> Path:
-            return Path(self) / other
+        def __truediv__(self, other):
+            return self.__class__(self.as_path() / other)
