@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
 from threading import Condition, Lock
-from typing import Deque, Final, NamedTuple, Optional, Union
+from typing import Deque, Dict, Final, NamedTuple, Optional, Union
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.memory import FlowMemory
@@ -14,7 +14,10 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
+from cvp.memory.copy import copy_flexible
+from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
+from cvp.nodes.registry.registry import NodeRegistry
 from cvp.pins.special import EntrypointPin
 
 INFINITY_COUNTER: Final[int] = -1
@@ -36,11 +39,12 @@ class FlowRunnerState(NamedTuple):
 
 
 @dataclass
-class FlowRunnerArguments:
+class _FlowRunnerArguments:
     """
     Do not use locks. <- Why ?? - TODO: Comment this section
     """
 
+    nodes: Dict[str, Node]
     graph: FlowGraph
     start_node: FlowNode
     entrypoint: FlowPin
@@ -88,6 +92,7 @@ class FlowRunner:
     def __init__(
         self,
         executor: Executor,
+        node_registry: NodeRegistry,
         graph: FlowGraph,
         start_node: Union[FlowNode, str],
         *,
@@ -99,10 +104,6 @@ class FlowRunner:
     ):
         if use_copy and use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")
-
-        for node in graph.nodes:
-            if node.template is None:
-                raise ValueError(f"invalid node template: '{node.name}'")
 
         if isinstance(start_node, FlowNode):
             if start_node != graph.find_begin_node(start_node.uuid):
@@ -117,6 +118,16 @@ class FlowRunner:
 
         assert isinstance(start_node, FlowNode)
 
+        registered_nodes = dict()
+        for node in graph.nodes:
+            if node.path in registered_nodes:
+                continue
+            registered_nodes[node.path] = copy_flexible(
+                node_registry.get(node.path),
+                use_copy=use_copy,
+                use_deepcopy=use_deepcopy,
+            )
+
         self._debug = debug
         self._verbose = verbose
         self._lock = Lock()
@@ -126,7 +137,8 @@ class FlowRunner:
         self._records = deque()
         self._memory = FlowMemory.from_graph(graph)
 
-        arguments = FlowRunnerArguments(
+        arguments = _FlowRunnerArguments(
+            nodes=registered_nodes,
             start_node=start_node,
             entrypoint=FlowPin.from_template(EntrypointPin()),
             graph=graph,
@@ -216,7 +228,7 @@ class FlowRunner:
                 finally:
                     self._step = FlowRunnerStep.running
 
-    def _runner(self, args: FlowRunnerArguments):
+    def _runner(self, args: _FlowRunnerArguments):
         args.info("Running ...")
         with self._lock:
             self._step = FlowRunnerStep.running
