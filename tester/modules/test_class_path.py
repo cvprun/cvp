@@ -39,8 +39,23 @@ class ClassPathTestCase(TestCase):
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
+    def test_serialize_deserialize_bytes(self):
+        cpath0 = ClassPath(bytes)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_bool(self):
+        cpath0 = ClassPath(bool)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
     def test_serialize_deserialize_int(self):
         cpath0 = ClassPath(int)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_float(self):
+        cpath0 = ClassPath(float)
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
@@ -56,6 +71,11 @@ class ClassPathTestCase(TestCase):
 
     def test_serialize_deserialize_complex(self):
         cpath0 = ClassPath(complex)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_none(self):
+        cpath0 = ClassPath(type(None))
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
