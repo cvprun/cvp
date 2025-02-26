@@ -32,7 +32,7 @@ class VariableSetterNode(Node):
             name="setter",
             path="cvp.setter",
             docs="Set a variable to a specific value",
-            pins=(self._prev, self._next, self._key, self._value),
+            pins=(self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
         )
 
@@ -53,13 +53,11 @@ class VariableSetterNode(Node):
             record.set_shared(key, value)
         except:  # noqa
             record.exception = exc_info()
-        return self._next.name
+        return None
 
 
 class VariableGetterNode(Node):
     def __init__(self, dtype_registry: DtypeRegistry):
-        self._prev = PrevPin()
-        self._next = NextPin()
         self._key = DataInputPin(
             name="key",
             dtype=dtype_registry.get(str),
@@ -77,7 +75,7 @@ class VariableGetterNode(Node):
             name="getter",
             path="cvp.getter",
             docs="Get a variable to a specific value",
-            pins=(self._prev, self._next, self._key, self._value),
+            pins=(self._key, self._value),
             tags=("value", "variable", "getter", "accessor"),
         )
 
@@ -98,4 +96,4 @@ class VariableGetterNode(Node):
             record.set(self._value, value)
         except:  # noqa
             record.exception = exc_info()
-        return self._next.name
+        return None

@@ -79,6 +79,10 @@ class FlowMemory:
     def from_graph(cls, graph: FlowGraph):
         result = cls()
 
+        for key, var in graph.variables.items():
+            if not var.persistent:
+                var.update_value_with_initial()
+
         # ------------------------------------------------------------------------------
         # [IMPORTANT] The order of method calls must not change.
         for node in graph.nodes:

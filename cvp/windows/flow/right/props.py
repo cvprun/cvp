@@ -21,6 +21,7 @@ from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
 from cvp.imgui.drag_float2 import drag_float2
+from cvp.imgui.input_dtype import input_dtype
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
@@ -175,32 +176,9 @@ class PropsTab(TabItem[Canvases]):
             imgui.same_line(same_vertical_x)
             imgui.radio_button("Visible", not pin.hidden)
 
-        if pin.dtype.type == int:
-            if not isinstance(pin.default, int):
-                pin.default = pin.get_initial_value()
-            assert isinstance(pin.default, int)
-            changed, value = imgui.input_int("Default", pin.default)
-            if changed:
-                assert isinstance(value, int)
-                pin.default = value
-        elif pin.dtype.type == float:
-            if not isinstance(pin.default, float):
-                pin.default = pin.get_initial_value()
-            assert isinstance(pin.default, float)
-            changed, value = imgui.input_float("Default", pin.default)
-            if changed:
-                assert isinstance(value, float)
-                pin.default = value
-        elif pin.dtype.type == str:
-            if not isinstance(pin.default, str):
-                pin.default = pin.get_initial_value()
-            assert isinstance(pin.default, str)
-            changed, value = imgui.input_text("Default", pin.default)
-            if changed:
-                assert isinstance(value, str)
-                pin.default = value
-        else:
-            input_text_disabled("Default", str(pin.default))
+        if pin.is_data_inputs:
+            if default := input_dtype("Default", pin.default, pin.dtype):
+                pin.default = default.value
 
         if self.context.debug:
             self.tree_pin_debugging("Debugging", pin)
@@ -253,7 +231,34 @@ class PropsTab(TabItem[Canvases]):
 
     def on_variable_item(self, variable: FlowVariable) -> None:
         input_text_disabled("Type", type(variable).__name__)
-        input_text_disabled("Name", variable.name)
+        input_text_disabled("Dtype", variable.dtype.path)
+
+        variable.name = input_text_value("Name", variable.name)
+        variable.docs = input_text_value("Docs", variable.docs)
+
+        if imgui.radio_button("Persistent", variable.persistent):
+            variable.persistent = True
+        imgui.same_line()
+        if imgui.radio_button("Temporary", not variable.persistent):
+            variable.persistent = False
+
+        if imgui.radio_button("Assign", variable.is_assign_method):
+            variable.use_copy = False
+            variable.use_deepcopy = False
+        imgui.same_line()
+        if imgui.radio_button("Copy", variable.use_copy):
+            variable.use_copy = True
+            variable.use_deepcopy = False
+        imgui.same_line()
+        if imgui.radio_button("Deepcopy", variable.use_deepcopy):
+            variable.use_copy = False
+            variable.use_deepcopy = True
+
+        if initial := input_dtype("Initial", variable.initial, variable.dtype):
+            variable.initial = initial.value
+
+        if value := input_dtype("Value", variable.value, variable.dtype):
+            variable.value = value.value
 
         if self.context.debug:
             self.tree_variable_debugging("Debugging", variable)

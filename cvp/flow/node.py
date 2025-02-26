@@ -397,6 +397,30 @@ class FlowNode(Serializable):
         return bool(self.flow_outputs)
 
     @property
+    def any_flow(self) -> bool:
+        return self.has_flow_input or self.has_flow_output
+
+    @property
+    def has_data_input(self) -> bool:
+        return bool(self.data_inputs)
+
+    @property
+    def has_data_output(self) -> bool:
+        return bool(self.data_outputs)
+
+    @property
+    def any_data(self) -> bool:
+        return self.has_data_input or self.has_data_output
+
+    @property
+    def is_flow_only(self) -> bool:
+        return self.any_flow and not self.any_data
+
+    @property
+    def is_data_only(self) -> bool:
+        return not self.any_flow and self.any_data
+
+    @property
     def is_begin(self) -> bool:
         return not self.has_flow_input and self.has_flow_output
 

@@ -8,7 +8,7 @@ from type_serialize import Serializable, deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
-from cvp.memory.copy import copy_flexible
+from cvp.memory.copy import CopyMethod, copy_flexible
 from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
 
@@ -162,6 +162,22 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         self._selected = False
         self._hovering = False
 
+    @property
+    def copy_method(self):
+        if self.use_copy and self.use_deepcopy:
+            raise ValueError("use_copy and use_deepcopy cannot coexist")
+
+        if self.use_deepcopy:
+            return CopyMethod.deepcopy  # noqa
+        elif self.use_copy:
+            return CopyMethod.copy  # noqa
+        else:
+            return CopyMethod.assign
+
+    @property
+    def is_assign_method(self) -> bool:
+        return not self.use_copy and not self.use_deepcopy
+
     @override
     def get(self) -> ValueT:
         return self._value
@@ -177,6 +193,14 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
     @value.setter
     def value(self, value: Any) -> None:
         self._value = value
+
+    @property
+    def initial(self):
+        return self._initial
+
+    @initial.setter
+    def initial(self, initial: Any) -> None:
+        self._initial = initial
 
     def update_value_with_initial(self) -> None:
         self._value = copy_flexible(

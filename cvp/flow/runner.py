@@ -51,6 +51,8 @@ class _FlowRunnerArguments:
     logger: Logger
     use_copy: bool
     use_deepcopy: bool
+    debug: bool
+    verbose: int
 
     @property
     def graph_name(self):
@@ -69,19 +71,19 @@ class _FlowRunnerArguments:
         """The Optional return value is to automatically infer the type of 'cursor'."""
         return FlowNodePin(self.start_node, self.entrypoint)
 
-    def exception(self, e: BaseException) -> None:
+    def exception_logging(self, e: BaseException) -> None:
         self.logger.exception(e)
 
-    def error(self, message: str) -> None:
+    def error_logging(self, message: str) -> None:
         self.logger.error(f"{self.logger_prefix} {message}")
 
-    def warning(self, message: str) -> None:
+    def warning_logging(self, message: str) -> None:
         self.logger.warning(f"{self.logger_prefix} {message}")
 
-    def info(self, message: str) -> None:
+    def info_logging(self, message: str) -> None:
         self.logger.info(f"{self.logger_prefix} {message}")
 
-    def debug(self, message: str) -> None:
+    def debug_logging(self, message: str) -> None:
         self.logger.debug(f"{self.logger_prefix} {message}")
 
 
@@ -128,8 +130,6 @@ class FlowRunner:
                 use_deepcopy=use_deepcopy,
             )
 
-        self._debug = debug
-        self._verbose = verbose
         self._lock = Lock()
         self._counter = INFINITY_COUNTER
         self._condition = Condition(self._lock)
@@ -145,6 +145,8 @@ class FlowRunner:
             logger=logger if logger else flow_logger,
             use_copy=use_copy,
             use_deepcopy=use_deepcopy,
+            debug=debug,
+            verbose=verbose,
         )
 
         # [IMPORTANT]
@@ -193,11 +195,6 @@ class FlowRunner:
         with self._condition:
             self._counter = 0
 
-    def pause_if_running(self) -> None:
-        with self._condition:
-            if self._counter == INFINITY_COUNTER:
-                self._counter = 0
-
     def resume(self) -> None:
         with self._condition:
             self._counter = INFINITY_COUNTER
@@ -210,6 +207,11 @@ class FlowRunner:
             elif 0 <= self._counter:
                 self._counter += count
             self._condition.notify_all()
+
+    def _pause_if_running(self) -> None:
+        with self._condition:
+            if self._counter == INFINITY_COUNTER:
+                self._counter = 0
 
     def _wait_for_next_step(self) -> None:
         with self._condition:
@@ -229,7 +231,7 @@ class FlowRunner:
                     self._step = FlowRunnerStep.running
 
     def _runner(self, args: _FlowRunnerArguments):
-        args.info("Running ...")
+        args.info_logging("Running ...")
         with self._lock:
             self._step = FlowRunnerStep.running
 
@@ -239,14 +241,15 @@ class FlowRunner:
 
         try:
             while next_cursor is not None:
-                if next_cursor.node.breakpoint:
-                    self.pause_if_running()
+                prev_cursor = next_cursor
+                args.info_logging(f"[{str(prev_cursor)}] Begin")
+
+                if prev_cursor.node.breakpoint:
+                    self._pause_if_running()
 
                 self._wait_for_next_step()
 
-                prev_cursor = next_cursor
-                args.info(f"[{str(prev_cursor)}] Begin")
-                next_cursor = self._execute_node(
+                next_cursor = self._execute_flow_node(
                     index=index,
                     graph=args.graph,
                     np=prev_cursor,
@@ -254,21 +257,46 @@ class FlowRunner:
                     use_copy=args.use_copy,
                     use_deepcopy=args.use_deepcopy,
                 )
+
                 index += 1
-                args.info(f"[{str(prev_cursor)}] End")
+                args.info_logging(f"[{str(prev_cursor)}] End")
         except BaseException as e:
-            if self._debug and 1 <= self._verbose:
-                args.exception(e)
+            if args.debug and 1 <= args.verbose:
+                args.exception_logging(e)
             else:
-                args.error(f"An exception occurred in {str(prev_cursor)}: {e}")
+                args.error_logging(f"An exception occurred in {str(prev_cursor)}: {e}")
             raise
         finally:
-            args.info("Done!")
+            args.info_logging("Done!")
             with self._lock:
                 self._step = FlowRunnerStep.done
                 return self._records.copy()
 
-    def _execute_node(
+    # def _execute_data_node(
+    #     self,
+    #     index: int,
+    #     graph: FlowGraph,
+    #     np: FlowNodePin,
+    #     node: Node,
+    #     *,
+    #     use_copy=False,
+    #     use_deepcopy=False,
+    # ) -> Optional[FlowNodePin]:
+    #     assert np.node.any_flow
+    #     assert np.pin.is_flow_inputs
+    #
+    #     for data_input in np.node.data_inputs:
+    #         for arc_uuid in data_input.arcs:
+    #             if arc := graph.find_arc(arc_uuid):
+    #                 assert arc.output is not None
+    #                 assert arc.output.node.uuid == np.node.uuid
+    #                 assert arc.output.pin.name == data_input.name
+    #
+    #                 assert arc.input is not None
+    #                 input_node = arc.input.node
+    #                 input_pin = arc.input.pin
+
+    def _execute_flow_node(
         self,
         index: int,
         graph: FlowGraph,
@@ -278,6 +306,9 @@ class FlowRunner:
         use_copy=False,
         use_deepcopy=False,
     ) -> Optional[FlowNodePin]:
+        assert np.node.any_flow
+        assert np.pin.is_flow_inputs
+
         record = self.create_record(
             index=index,
             node=np.node,
