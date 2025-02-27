@@ -397,6 +397,20 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Upload to ...", enabled=opened):
             pass
 
+    def _process_add_variable_menu(self, canvas: CanvasGraph) -> None:
+        menu_item(f"Add {self._variable_key} variable node", enabled=False)
+        imgui.separator()
+
+        if menu_item("Setter"):
+            node = self.context.fm.add_setter_node(canvas.graph, self._variable_key)
+            canvas.update_node_roi(node)
+            canvas.save_history("Add setter variable node", self._variable_key)
+
+        if menu_item("Getter"):
+            node = self.context.fm.add_getter_node(canvas.graph, self._variable_key)
+            canvas.update_node_roi(node)
+            canvas.save_history("Add getter variable node", self._variable_key)
+
     def on_menu(self) -> None:
         with imgui.begin_menu_bar() as menu_bar:
             if not menu_bar.opened:
@@ -656,23 +670,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with imgui.begin_popup_context_window("AddVariableNodeMenus") as context_window:
             if context_window.opened:
-                assert self._variable_key
-                key = self._variable_key
+                self._process_add_variable_menu(canvas)
 
-                menu_item(f"Add {key} variable node", enabled=False)
-                imgui.separator()
-
-                if menu_item("Setter"):
-                    node = self.context.fm.add_setter_node(canvas.graph, key)
-                    canvas.update_node_roi(node)
-                    canvas.save_history("Add setter variable node", key)
-
-                if menu_item("Getter"):
-                    node = self.context.fm.add_getter_node(canvas.graph, key)
-                    canvas.update_node_roi(node)
-                    canvas.save_history("Add getter variable node", key)
-
-        with imgui.begin_popup_context_window("Menus") as context_window:
+        with imgui.begin_popup_context_window("CommonMenus") as context_window:
             if context_window.opened:
                 self._process_edit_menu(canvas)
                 imgui.separator()
@@ -680,6 +680,5 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 imgui.separator()
                 self._process_align_menu(canvas)
                 self._process_distribute_menu(canvas)
-                imgui.end_popup()
 
         canvas.draw()

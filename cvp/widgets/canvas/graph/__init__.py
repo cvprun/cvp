@@ -70,8 +70,8 @@ class CanvasGraph(CanvasController):
 
     @property
     def is_multi_select_mode(self) -> bool:
-        # Pressing the CTRL button switches to 'Multi-node selection mode'
-        return self.ctrl_down
+        # Pressing the SHIFT button switches to 'Multi-node selection mode'
+        return self.shift_down
 
     @property
     def is_pan_mode(self) -> bool:
