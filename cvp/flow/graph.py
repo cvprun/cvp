@@ -889,9 +889,10 @@ class FlowGraph(Serializable):
                 if prev_np is None:
                     raise ValueError("Output node-pin is not cached")
 
-                if not prev_np.node.is_data_only:
+                prev_node = prev_np.node
+                if not prev_node.is_data_only:
                     continue
 
-                result.extend(self.retrieve_data_node_execution_order(prev_np))
-                result.append(prev_np.node)
+                result.extend(self.retrieve_data_node_execution_order(prev_node))
+                result.append(prev_np)
         return result

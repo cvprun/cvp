@@ -237,6 +237,7 @@ class FlowRunner:
                     node=args.nodes[next_np.node.path],
                     use_copy=args.use_copy,
                     use_deepcopy=args.use_deepcopy,
+                    logger=args.logger,
                 )
                 index += 1
         except BaseException as e:
