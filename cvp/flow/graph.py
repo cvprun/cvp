@@ -439,12 +439,6 @@ class FlowGraph(Serializable):
 
         return None
 
-    def find_arc(self, arc_uuid: str) -> Optional[FlowArc]:
-        for arc in self.arcs:
-            if arc.uuid == arc_uuid:
-                return arc
-        return None
-
     def pop_arcs(self, uuids: Union[Set[str], Sequence[str]]) -> List[FlowArc]:
         if not isinstance(uuids, set):
             uuids = set(uuids)
@@ -535,7 +529,7 @@ class FlowGraph(Serializable):
         node.node_pos = pos
         for pin in node.pins:
             for arc_uuid in pin.arcs:
-                if arc := self.find_arc(arc_uuid):
+                if arc := self.arcs.get(arc_uuid):
                     self.update_arc_polyline(arc, force=True)
 
     def move_on_selected_nodes(self, delta: Size) -> None:
@@ -678,7 +672,7 @@ class FlowGraph(Serializable):
     def remove_node(self, node: FlowNode):
         for pin in node.pins:
             for arc_uuid in pin.arcs:
-                if arc := self.find_arc(arc_uuid):
+                if arc := self.arcs.get(arc_uuid):
                     self.remove_arc(arc)
             self._selection.remove_noraise(pin)
         self.nodes.remove(node)
@@ -882,4 +876,22 @@ class FlowGraph(Serializable):
             initial=dtype.base(),
         )  # type: ignore[var-annotated]
         self.variables.append(result)
+        return result
+
+    def retrieve_data_node_execution_order(self, node: FlowNode) -> List[FlowNodePin]:
+        result = list()
+        for data_input in node.data_inputs:
+            for arc_uuid in data_input.arcs:
+                arc = self.arcs.get(arc_uuid)
+                assert arc is not None
+
+                prev_np = arc.output
+                if prev_np is None:
+                    raise ValueError("Output node-pin is not cached")
+
+                if not prev_np.node.is_data_only:
+                    continue
+
+                result.extend(self.retrieve_data_node_execution_order(prev_np))
+                result.append(prev_np.node)
         return result

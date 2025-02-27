@@ -93,6 +93,8 @@ class FlowMemory:
 
         result.__insert_shared_variables(graph.variables.as_dict())
 
+        assert all(arc.uuid in result._arcs for arc in graph.arcs)
+
         return result
 
     @classmethod

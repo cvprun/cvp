@@ -40,10 +40,6 @@ class FlowRunnerState(NamedTuple):
 
 @dataclass
 class _FlowRunnerArguments:
-    """
-    Do not use locks. <- Why ?? - TODO: Comment this section
-    """
-
     nodes: Dict[str, Node]
     graph: FlowGraph
     start_node: FlowNode
@@ -63,28 +59,9 @@ class _FlowRunnerArguments:
         return self.graph.uuid
 
     @property
-    def logger_prefix(self) -> str:
-        return f"<{FlowRunner.__name__} {self.graph_name}({self.graph_uuid})>"
-
-    @property
     def start_cursor(self) -> Optional[FlowNodePin]:
         """The Optional return value is to automatically infer the type of 'cursor'."""
         return FlowNodePin(self.start_node, self.entrypoint)
-
-    def exception_logging(self, e: BaseException) -> None:
-        self.logger.exception(e)
-
-    def error_logging(self, message: str) -> None:
-        self.logger.error(f"{self.logger_prefix} {message}")
-
-    def warning_logging(self, message: str) -> None:
-        self.logger.warning(f"{self.logger_prefix} {message}")
-
-    def info_logging(self, message: str) -> None:
-        self.logger.info(f"{self.logger_prefix} {message}")
-
-    def debug_logging(self, message: str) -> None:
-        self.logger.debug(f"{self.logger_prefix} {message}")
 
 
 class FlowRunner:
@@ -231,72 +208,91 @@ class FlowRunner:
                     self._step = FlowRunnerStep.running
 
     def _runner(self, args: _FlowRunnerArguments):
-        args.info_logging("Running ...")
+        args.logger.info("Running ...")
+
         with self._lock:
             self._step = FlowRunnerStep.running
 
-        index = 0
-        prev_cursor = args.start_cursor
-        next_cursor = prev_cursor
-
         try:
-            while next_cursor is not None:
-                prev_cursor = next_cursor
-                args.info_logging(f"[{str(prev_cursor)}] Begin")
+            index = 0
+            next_np = args.start_cursor
+            while next_np is not None:
+                data_nps = args.graph.retrieve_data_node_execution_order(next_np.node)
+                for data_np in data_nps:
+                    self._execute_node(
+                        index=index,
+                        graph=args.graph,
+                        np=data_np,
+                        node=args.nodes[data_np.node.path],
+                        use_copy=args.use_copy,
+                        use_deepcopy=args.use_deepcopy,
+                        logger=args.logger,
+                    )
+                    index += 1
 
-                if prev_cursor.node.breakpoint:
-                    self._pause_if_running()
-
-                self._wait_for_next_step()
-
-                next_cursor = self._execute_flow_node(
+                next_np = self._execute_node(
                     index=index,
                     graph=args.graph,
-                    np=prev_cursor,
-                    node=args.nodes[prev_cursor.node.path],
+                    np=next_np,
+                    node=args.nodes[next_np.node.path],
                     use_copy=args.use_copy,
                     use_deepcopy=args.use_deepcopy,
                 )
-
                 index += 1
-                args.info_logging(f"[{str(prev_cursor)}] End")
         except BaseException as e:
             if args.debug and 1 <= args.verbose:
-                args.exception_logging(e)
+                args.logger.exception(e)
             else:
-                args.error_logging(f"An exception occurred in {str(prev_cursor)}: {e}")
+                args.logger.error(e)
             raise
         finally:
-            args.info_logging("Done!")
+            args.logger.info("Done!")
             with self._lock:
                 self._step = FlowRunnerStep.done
                 return self._records.copy()
 
-    # def _execute_data_node(
-    #     self,
-    #     index: int,
-    #     graph: FlowGraph,
-    #     np: FlowNodePin,
-    #     node: Node,
-    #     *,
-    #     use_copy=False,
-    #     use_deepcopy=False,
-    # ) -> Optional[FlowNodePin]:
-    #     assert np.node.any_flow
-    #     assert np.pin.is_flow_inputs
-    #
-    #     for data_input in np.node.data_inputs:
-    #         for arc_uuid in data_input.arcs:
-    #             if arc := graph.find_arc(arc_uuid):
-    #                 assert arc.output is not None
-    #                 assert arc.output.node.uuid == np.node.uuid
-    #                 assert arc.output.pin.name == data_input.name
-    #
-    #                 assert arc.input is not None
-    #                 input_node = arc.input.node
-    #                 input_pin = arc.input.pin
+    def _execute_node(
+        self,
+        index: int,
+        graph: FlowGraph,
+        np: FlowNodePin,
+        node: Node,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+        logger: Optional[Logger] = None,
+    ) -> Optional[FlowNodePin]:
+        prefix = f"{index}. [{str(np)}]" if logger is not None else str()
 
-    def _execute_flow_node(
+        if np.node.breakpoint:
+            if logger is not None:
+                logger.debug(f"{prefix} Pause if running ...")
+            self._pause_if_running()
+            if logger is not None:
+                logger.debug(f"{prefix} Pause if running done")
+
+        if logger is not None:
+            logger.debug(f"{prefix} Wait for next step ...")
+        self._wait_for_next_step()
+        if logger is not None:
+            logger.debug(f"{prefix} Wait for next step done")
+
+        try:
+            if logger is not None:
+                logger.debug(f"{prefix} Start")
+            return self.__execute_node_main(
+                index=index,
+                graph=graph,
+                np=np,
+                node=node,
+                use_copy=use_copy,
+                use_deepcopy=use_deepcopy,
+            )
+        finally:
+            if logger is not None:
+                logger.debug(f"{prefix} End")
+
+    def __execute_node_main(
         self,
         index: int,
         graph: FlowGraph,
@@ -306,9 +302,6 @@ class FlowRunner:
         use_copy=False,
         use_deepcopy=False,
     ) -> Optional[FlowNodePin]:
-        assert np.node.any_flow
-        assert np.pin.is_flow_inputs
-
         record = self.create_record(
             index=index,
             node=np.node,
@@ -338,7 +331,7 @@ class FlowRunner:
             raise ValueError("Only one output arc is allowed")
 
         arc_uuid = next_pin.arcs[0]
-        arc = graph.find_arc(arc_uuid)
+        arc = graph.arcs.get(arc_uuid)
         if arc is None:
             raise IndexError(f"Not found arc: '{arc_uuid}'")
 
