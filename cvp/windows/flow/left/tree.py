@@ -18,11 +18,14 @@ _NO_TREE_PUSH_ON_OPEN = imgui.TREE_NODE_NO_TREE_PUSH_ON_OPEN
 _OPEN_ON_ARROW = imgui.TREE_NODE_OPEN_ON_ARROW
 _OPEN_ON_DOUBLE_CLICK = imgui.TREE_NODE_OPEN_ON_DOUBLE_CLICK
 _SPAN_AVAILABLE_WIDTH = imgui.TREE_NODE_SPAN_AVAILABLE_WIDTH
+_DEFAULT_OPEN = imgui.TREE_NODE_DEFAULT_OPEN
 
-NODE_FLAGS = _OPEN_ON_ARROW | _OPEN_ON_DOUBLE_CLICK | _SPAN_AVAILABLE_WIDTH
-PIN_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
-ARC_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
-VARIABLE_FLAGS = NODE_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
+_COMMON_FLAGS = _OPEN_ON_ARROW | _OPEN_ON_DOUBLE_CLICK | _SPAN_AVAILABLE_WIDTH
+
+NODE_FLAGS = _COMMON_FLAGS
+PIN_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
+ARC_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
+VARIABLE_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
 class TreeTab(TabItem[Canvases]):
@@ -54,7 +57,7 @@ class TreeTab(TabItem[Canvases]):
                 imgui.tree_pop()
 
     def tree_nodes(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Nodes"):
+        if imgui.tree_node("Nodes", imgui.TREE_NODE_DEFAULT_OPEN):
             try:
                 for node in graph.nodes:
                     self.tree_node(graph, node)
@@ -108,7 +111,7 @@ class TreeTab(TabItem[Canvases]):
             imgui.tree_pop()
 
     def tree_arcs(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Arcs"):
+        if imgui.tree_node("Arcs", imgui.TREE_NODE_DEFAULT_OPEN):
             try:
                 for arc in graph.arcs:
                     self.tree_arc(graph, arc)
@@ -137,7 +140,7 @@ class TreeTab(TabItem[Canvases]):
             imgui.text(arc_icon)
 
     def tree_variables(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Variables"):
+        if imgui.tree_node("Variables", imgui.TREE_NODE_DEFAULT_OPEN):
             try:
                 for variable in graph.variables:
                     self.tree_variable(graph, variable)
