@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from typing import List, NamedTuple
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
 from cvp.config.sections.canvas.anchors import Anchors
@@ -20,8 +21,15 @@ from cvp.variables import (
 )
 
 
+class RecentItem(NamedTuple):
+    uuid: str
+    name: str
+
+
 @dataclass
 class FlowAuiConfig(AuiWindowConfig):
+    recent: List[RecentItem] = field(default_factory=list)
+
     split_tree: float = MIN_SIDEBAR_HEIGHT
     min_split_tree: float = MIN_SIDEBAR_HEIGHT
 

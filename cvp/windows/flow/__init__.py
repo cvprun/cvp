@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, Optional, Sequence, Tuple
+from typing import Callable, Final, Sequence, Tuple
 
 import imgui
 
@@ -17,7 +17,6 @@ from cvp.fonts.glyphs.mdi import (
 )
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_item_spacing
 from cvp.imgui.text_centered import text_centered
@@ -91,9 +90,13 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             cancel="Cancel",
             target=self.on_new_graph_popup,
         )
-        self._open_graph_popup = OpenFilePopup(
-            title="Open graph file",
-            target=self.on_open_file_popup,
+        self._import_graph_popup = OpenFilePopup(
+            title="Import graph",
+            target=self.on_import_file_popup,
+        )
+        self._export_graph_popup = OpenFilePopup(
+            title="Export graph",
+            target=self.on_export_file_popup,
         )
         self._confirm_remove = ConfirmPopup(
             title="Remove",
@@ -111,7 +114,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         )
 
         self.register_popup(self._new_graph_popup)
-        self.register_popup(self._open_graph_popup)
+        self.register_popup(self._import_graph_popup)
+        self.register_popup(self._export_graph_popup)
         self.register_popup(self._confirm_remove)
         self.register_popup(self._add_variable_popup)
 
@@ -147,7 +151,10 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.context.fm.write_graph_yaml(filepath, graph)
         self._canvases.open(graph)
 
-    def on_open_file_popup(self, file: str) -> None:
+    def on_import_file_popup(self, file: str) -> None:
+        pass
+
+    def on_export_file_popup(self, file: str) -> None:
         pass
 
     def on_confirm_remove(self, value: bool) -> None:
@@ -189,6 +196,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     def _process_enabled_edit_menu(self, canvas: CanvasGraph) -> None:
         assert canvas.opened
+
         undoable = canvas.history.undoable
         redoable = canvas.history.redoable
         selected_any = bool(canvas.graph.selection)
@@ -247,54 +255,45 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_pins()
 
-    def _process_edit_menu(self, canvas: Optional[CanvasGraph] = None) -> None:
-        if canvas is not None and canvas.opened:
-            self._process_enabled_edit_menu(canvas)
-        else:
-            self._process_disabled_edit_menu()
-
     @staticmethod
-    def _process_layout_menu(canvas: Optional[CanvasGraph] = None) -> None:
-        if canvas is not None and canvas.opened:
-            selected_items = canvas.graph.selection
-            selected_any = bool(selected_items)
-            single_item = 1 == len(selected_items)
-        else:
-            selected_items = list()
-            selected_any = False
-            single_item = False
+    def _process_enabled_layout_menu(canvas: CanvasGraph) -> None:
+        assert canvas.opened
+
+        selected_items = canvas.graph.selection
+        selected_any = bool(selected_items)
+        single_item = 1 == len(selected_items)
 
         if menu_item("To Front", enabled=selected_any):
-            assert canvas is not None
             canvas.graph.items_to_front(list(selected_items.values()))
             canvas.save_history("To front items")
         if menu_item("To Back", enabled=selected_any):
-            assert canvas is not None
             canvas.graph.items_to_back(list(selected_items.values()))
             canvas.save_history("To back items")
 
         if menu_item("Bring Forward", enabled=single_item):
-            assert canvas is not None
             assert 1 == len(selected_items)
             canvas.graph.item_bring_forward(selected_items.first)
             canvas.save_history("Bring forward items")
         if menu_item("Send Backward", enabled=single_item):
-            assert canvas is not None
             assert 1 == len(selected_items)
             canvas.graph.item_send_backward(selected_items.first)
             canvas.save_history("Send backward items")
 
     @staticmethod
-    def _process_align_menu(canvas: Optional[CanvasGraph] = None) -> None:
-        if canvas is not None and canvas.opened:
-            nodes = canvas.graph.selection.nodes
-            multiple_item = 2 <= len(nodes)
-        else:
-            nodes = list()
-            multiple_item = False
+    def _process_disabled_layout_menu() -> None:
+        menu_item("To Front", enabled=False)
+        menu_item("To Back", enabled=False)
+        menu_item("Bring Forward", enabled=False)
+        menu_item("Send Backward", enabled=False)
+
+    @staticmethod
+    def _process_enabled_align_menu(canvas: CanvasGraph) -> None:
+        assert canvas.opened
+
+        nodes = canvas.graph.selection.nodes
+        multiple_item = 2 <= len(nodes)
 
         if imgui.begin_menu("Align", enabled=multiple_item).opened:
-            assert canvas is not None
             pivot = nodes[-1]
             try:
                 if menu_item("Left"):
@@ -321,13 +320,15 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 imgui.end_menu()
 
     @staticmethod
-    def _process_distribute_menu(canvas: Optional[CanvasGraph] = None) -> None:
-        if canvas is not None and canvas.opened:
-            nodes = canvas.graph.selection.nodes
-            multiple_item = 2 <= len(nodes)
-        else:
-            nodes = list()
-            multiple_item = False
+    def _process_disabled_align_menu() -> None:
+        imgui.begin_menu("Align", enabled=False)
+
+    @staticmethod
+    def _process_enabled_distribute_menu(canvas: CanvasGraph) -> None:
+        assert canvas.opened
+
+        nodes = canvas.graph.selection.nodes
+        multiple_item = 2 <= len(nodes)
 
         if imgui.begin_menu("Distribute", enabled=multiple_item).opened:
             assert canvas is not None
@@ -339,15 +340,15 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 canvas.save_history("Distribute vertical nodes")
             imgui.end_menu()
 
-    def _process_run_menu(self, canvas: Optional[CanvasGraph] = None) -> None:
-        if canvas is not None and canvas.opened:
-            opened = True
-        else:
-            opened = False
+    @staticmethod
+    def _process_disabled_distribute_menu() -> None:
+        imgui.begin_menu("Distribute", enabled=False)
 
-        with imgui.begin_menu(f"{PLAY} Run", enabled=opened) as run_menu:
+    def _process_enabled_run_menu(self, canvas: CanvasGraph) -> None:
+        assert canvas.opened
+
+        with imgui.begin_menu(f"{PLAY} Run") as run_menu:
             if run_menu.opened:
-                assert canvas is not None
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
                     for node in begin_nodes:
@@ -356,11 +357,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 else:
                     menu_item("[Empty]", enabled=False)
 
-        opened = False  # TODO: Remove
-
-        with imgui.begin_menu(f"{BUG} Debug", enabled=opened) as debug_menu:
+        with imgui.begin_menu(f"{BUG} Debug") as debug_menu:
             if debug_menu.opened:
-                assert canvas is not None
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
                     for node in begin_nodes:
@@ -371,31 +369,38 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         imgui.separator()
 
-        if menu_item(f"{PAUSE} Pause", enabled=opened):
+        if menu_item(f"{PAUSE} Pause"):
             pass
-        if menu_item(f"{STOP} Stop", enabled=opened):
+        if menu_item(f"{STOP} Stop"):
             pass
-        if menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=opened):
+        if menu_item(f"{DEBUG_STEP_OVER} Step Over"):
             pass
-        if menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=opened):
+        if menu_item(f"{DEBUG_STEP_INTO} Step Into"):
             pass
-        if menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=opened):
+        if menu_item(f"{DEBUG_STEP_OUT} Step Out"):
             pass
 
     @staticmethod
-    def _process_deploy_menu(
-        fonts: FontMapper,
-        canvas: Optional[CanvasGraph] = None,
-    ) -> None:
-        if canvas is not None and canvas.opened:
-            opened = True
-        else:
-            opened = False
+    def _process_disabled_run_menu() -> None:
+        imgui.begin_menu(f"{PLAY} Run", enabled=False)
+        imgui.begin_menu(f"{BUG} Debug", enabled=False)
+        imgui.separator()
+        menu_item(f"{PAUSE} Pause", enabled=False)
+        menu_item(f"{STOP} Stop", enabled=False)
+        menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=False)
+        menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=False)
+        menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=False)
 
-        opened = False  # TODO: Remove
+    @staticmethod
+    def _process_enabled_deploy_menu(canvas: CanvasGraph) -> None:
+        assert canvas.opened
 
-        if menu_item("Upload to ...", enabled=opened):
+        if menu_item("Upload to ...", enabled=False):
             pass
+
+    @staticmethod
+    def _process_disabled_deploy_menu() -> None:
+        menu_item("Upload to ...", enabled=False)
 
     def _process_add_variable_menu(self, canvas: CanvasGraph) -> None:
         menu_item(f"Add {self._variable_key} variable node", enabled=False)
@@ -425,6 +430,24 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("New graph"):
             self._new_graph_popup.show()
 
+        with imgui.begin_menu("Open graph") as open_menu:
+            if open_menu.opened:
+                if self.context.fm.graphs:
+                    for uuid, graph in self.context.fm.graphs.items():
+                        if menu_item(graph.name):
+                            self._canvases.open(graph)
+                else:
+                    menu_item("[Empty]", enabled=False)
+
+        with imgui.begin_menu("Recent graphs") as recent_menu:
+            if recent_menu.opened:
+                if self.window_config.recent:
+                    for recent in self.window_config.recent:
+                        if menu_item(recent):
+                            pass
+                else:
+                    menu_item("[Empty]", enabled=False)
+
         imgui.separator()
         has_opened_graph = self._canvases.opened
         if menu_item("Save graph", enabled=has_opened_graph):
@@ -435,11 +458,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Close graph", enabled=has_opened_graph):
             self.close_current_graph()
 
-        # imgui.separator()
-        # if menu_item("Import graph"):
-        #     self._open_graph_popup.show()
-        # if menu_item("Export graph"):
-        #     self._open_graph_popup.show()
+        imgui.separator()
+        if menu_item("Import graph"):
+            self._import_graph_popup.show()
+        if menu_item("Export graph"):
+            self._export_graph_popup.show()
 
         imgui.separator()
         if menu_item("Refresh graphs"):
@@ -453,36 +476,41 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_edit_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_edit_menu(canvas)
-        else:
-            self._process_edit_menu()
+                if canvas.opened:
+                    self._process_enabled_edit_menu(canvas)
+                    return
+        self._process_disabled_edit_menu()
 
     def on_layout_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_layout_menu(canvas)
-                imgui.separator()
-                self._process_align_menu(canvas)
-                self._process_distribute_menu(canvas)
-        else:
-            self._process_layout_menu()
-            imgui.separator()
-            self._process_align_menu()
-            self._process_distribute_menu()
+                if canvas.opened:
+                    self._process_enabled_layout_menu(canvas)
+                    imgui.separator()
+                    self._process_enabled_align_menu(canvas)
+                    self._process_enabled_distribute_menu(canvas)
+                    return
+
+        self._process_disabled_layout_menu()
+        imgui.separator()
+        self._process_disabled_align_menu()
+        self._process_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_run_menu(canvas)
-        else:
-            self._process_run_menu()
+                if canvas.opened:
+                    self._process_enabled_run_menu(canvas)
+                    return
+        self._process_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
-                self._process_deploy_menu(self.context.fonts, canvas)
-        else:
-            self._process_deploy_menu(self.context.fonts)
+                if canvas.opened:
+                    self._process_enabled_deploy_menu(canvas)
+                    return
+        self._process_disabled_deploy_menu()
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
@@ -674,11 +702,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with imgui.begin_popup_context_window("CommonMenus") as context_window:
             if context_window.opened:
-                self._process_edit_menu(canvas)
+                self._process_enabled_edit_menu(canvas)
                 imgui.separator()
-                self._process_layout_menu(canvas)
+                self._process_enabled_layout_menu(canvas)
                 imgui.separator()
-                self._process_align_menu(canvas)
-                self._process_distribute_menu(canvas)
+                self._process_enabled_align_menu(canvas)
+                self._process_enabled_distribute_menu(canvas)
 
         canvas.draw()
