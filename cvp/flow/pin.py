@@ -334,7 +334,7 @@ class FlowPin(Serializable):
             f"Hidden: {self.hidden}\n"
             f"Arcs: {len(self.arcs)}\n"
             f"Kind: {self.kind}\n"
-            f"Default: {len(self.default)}\n"
+            f"Default: {self.default}\n"
             f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
             f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"
             f"Name pos: {self.name_pos[0]:.02f}, {self.name_pos[1]:.02f}\n"

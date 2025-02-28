@@ -32,7 +32,7 @@ class VariableSetterNode(Node):
             name="setter",
             path="cvp.setter",
             docs="Set a variable to a specific value",
-            pins=(self._key, self._value),
+            pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
         )
 

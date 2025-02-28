@@ -17,7 +17,7 @@ class EntrypointNode(Node):
             docs="Entrypoint flow signal",
         )
         super().__init__(
-            name="entrypoint",
+            name="Entrypoint",
             path="cvp.entrypoint",
             func=None,
             docs="Indicates the starting point of the graph",

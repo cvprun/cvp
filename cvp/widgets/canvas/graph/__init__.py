@@ -637,12 +637,20 @@ class CanvasGraph(CanvasController):
         iw = max(flow_y_w, flow_n_w, data_y_w, data_n_w)
         ih = max(flow_y_h, flow_n_h, data_y_h, data_n_h)
 
+        visible_flow_inputs = [p for p in node.flow_inputs if not p.hidden]
+        visible_flow_outputs = [p for p in node.flow_outputs if not p.hidden]
+        visible_data_inputs = [p for p in node.data_inputs if not p.hidden]
+        visible_data_outputs = [p for p in node.data_outputs if not p.hidden]
+
+        visible_inputs = visible_flow_inputs + visible_data_inputs
+        visible_outputs = visible_flow_outputs + visible_data_outputs
+
         with self.text_font:
             for pin in node.pins:
                 pin.icon_size = iw, ih
                 pin.name_size = imgui.calc_text_size(pin.name)
-            input_name_sizes = [p.name_size for p in node.input_pins]
-            output_name_sizes = [p.name_size for p in node.output_pins]
+            input_name_sizes = [p.name_size for p in visible_inputs if not p.hidden]
+            output_name_sizes = [p.name_size for p in visible_outputs if not p.hidden]
 
         inw = max(s[0] for s in input_name_sizes) if input_name_sizes else 0.0
         inh = max(s[1] for s in input_name_sizes) if input_name_sizes else 0.0
@@ -662,9 +670,12 @@ class CanvasGraph(CanvasController):
         wd = isw + iw + isw + inw + center_padding + onw + isw + iw + isw
         node_w = max((wt, wf, wd))
 
+        flow_line_count = max(len(visible_flow_inputs), len(visible_flow_outputs))
+        data_line_count = max(len(visible_data_inputs), len(visible_data_outputs))
+
         head_h = ish + title_h + ish
-        flow_h = ish + (ih + ish) * node.flow_lines
-        data_h = ish + (ih + ish) * node.data_lines
+        flow_h = ish + (ih + ish) * flow_line_count
+        data_h = ish + (ih + ish) * data_line_count
         node_h = head_h + flow_h + data_h
 
         node.head_height = head_h
@@ -684,7 +695,7 @@ class CanvasGraph(CanvasController):
         node.node_pos = self.mouse_to_canvas_coords()
         node.node_size = node_w, node_h
 
-        for i, pin in enumerate(node.flow_inputs):
+        for i, pin in enumerate(visible_flow_inputs):
             icon_x = isw
             icon_y = head_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -693,7 +704,7 @@ class CanvasGraph(CanvasController):
             name_y = icon_y + pin_name_y_diff
             pin.name_pos = name_x, name_y
 
-        for i, pin in enumerate(node.data_inputs):
+        for i, pin in enumerate(visible_data_inputs):
             icon_x = isw
             icon_y = head_h + flow_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -702,7 +713,7 @@ class CanvasGraph(CanvasController):
             name_y = icon_y + pin_name_y_diff
             pin.name_pos = name_x, name_y
 
-        for i, pin in enumerate(node.flow_outputs):
+        for i, pin in enumerate(visible_flow_outputs):
             icon_x = node_w - isw - iw
             icon_y = head_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -711,7 +722,7 @@ class CanvasGraph(CanvasController):
             name_y = icon_y + pin_name_y_diff
             pin.name_pos = name_x, name_y
 
-        for i, pin in enumerate(node.data_outputs):
+        for i, pin in enumerate(visible_data_outputs):
             icon_x = node_w - isw - iw
             icon_y = head_h + flow_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -760,11 +771,24 @@ class CanvasGraph(CanvasController):
                 y2 = y1 + node.name_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
+        visible_flow_inputs = [p for p in node.flow_inputs if not p.hidden]
+        visible_flow_outputs = [p for p in node.flow_outputs if not p.hidden]
+        visible_data_inputs = [p for p in node.data_inputs if not p.hidden]
+        visible_data_outputs = [p for p in node.data_outputs if not p.hidden]
+
+        visible_flows = visible_flow_inputs + visible_flow_outputs
+        visible_datas = visible_data_inputs + visible_data_outputs
+
+        visible_pins = visible_flows + visible_datas
+
+        # visible_inputs = visible_flow_inputs + visible_data_inputs
+        # visible_outputs = visible_flow_outputs + visible_data_outputs
+
         with self.pin_font:
             flow_pin_n_icon = self.config.pins.flow_n_icon
             flow_pin_y_icon = self.config.pins.flow_y_icon
 
-            for pin in node.flow_pins:
+            for pin in visible_flows:
                 x1 = nx1 + pin.icon_pos[0] * zoom
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = flow_pin_y_icon if pin.connected else flow_pin_n_icon
@@ -779,7 +803,7 @@ class CanvasGraph(CanvasController):
             data_pin_n_icon = self.config.pins.data_n_icon
             data_pin_y_icon = self.config.pins.data_y_icon
 
-            for pin in node.data_pins:
+            for pin in visible_datas:
                 x1 = nx1 + pin.icon_pos[0] * zoom
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = data_pin_y_icon if pin.connected else data_pin_n_icon
@@ -792,7 +816,7 @@ class CanvasGraph(CanvasController):
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
         with self.text_font:
-            for pin in node.pins:
+            for pin in visible_pins:
                 x1 = nx1 + pin.name_pos[0] * zoom
                 y1 = ny1 + pin.name_pos[1] * zoom
                 self._draw_list.add_text(x1, y1, label_color, pin.name)

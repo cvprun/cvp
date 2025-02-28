@@ -39,7 +39,7 @@ class LoggingNode(Node):
         )
 
         super().__init__(
-            name="logging",
+            name="Logging",
             path="cvp.logging",
             func=None,
             docs="Logs a message with integer level level on this logger",
