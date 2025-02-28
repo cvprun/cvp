@@ -60,4 +60,4 @@ def get_standard_types() -> Sequence[Type]:
 
 @lru_cache
 def get_standard_dtypes() -> Sequence[Dtype]:
-    return tuple(Dtype(cls) for cls in get_standard_types())
+    return tuple(Dtype(cls, hidden=True) for cls in get_standard_types())

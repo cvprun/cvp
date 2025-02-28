@@ -623,7 +623,6 @@ class FlowGraph(Serializable):
             connection_pair = FlowConnection.reorder_connectable_pins(out_conn, in_conn)
             out_conn, in_conn = connection_pair
 
-
         arc = FlowArc.from_connect_pair(
             out_conn,
             in_conn,

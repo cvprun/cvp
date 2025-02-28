@@ -34,6 +34,7 @@ class VariableSetterNode(Node):
             docs="Set a variable to a specific value",
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
+            hidden=True,
         )
 
     @property
@@ -77,6 +78,7 @@ class VariableGetterNode(Node):
             docs="Get a variable to a specific value",
             pins=(self._key, self._value),
             tags=("value", "variable", "getter", "accessor"),
+            hidden=True,
         )
 
     @property
