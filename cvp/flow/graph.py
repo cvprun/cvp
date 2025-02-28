@@ -623,10 +623,13 @@ class FlowGraph(Serializable):
             connection_pair = FlowConnection.reorder_connectable_pins(out_conn, in_conn)
             out_conn, in_conn = connection_pair
 
+
         arc = FlowArc.from_connect_pair(
             out_conn,
             in_conn,
             self.control.bezier_curve_tessellation_tolerance,
+            name=f"{out_conn.pin.name}-{out_conn.pin.name}",
+            docs=f"{str(out_conn)}-{str(out_conn)}",
         )
         self.arcs.append(arc)
         out_conn.pin.arcs.append(arc.uuid)

@@ -66,8 +66,13 @@ class FlowArc(Serializable):
         output_np: FlowNodePin,
         input_np: FlowNodePin,
         tess_tol: float,
+        *,
+        uuid: Optional[str] = None,
+        name: Optional[str] = None,
+        docs: Optional[str] = None,
+        line_type=FlowLineType.bezier_cubic,
     ):
-        result = cls()
+        result = cls(uuid=uuid, name=name, docs=docs, line_type=line_type)
         result.output = output_np
         result.input = input_np
         points = result.calc_linear_polyline()
