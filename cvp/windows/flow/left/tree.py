@@ -121,7 +121,7 @@ class TreeTab(TabItem[Canvases]):
     def tree_arc(self, graph: FlowGraph, arc: FlowArc) -> None:
         arc_n_icon = self.context.config.flow_aui.pins.arc_n_icon
         arc_y_icon = self.context.config.flow_aui.pins.arc_y_icon
-        arc_icon = arc_y_icon if arc.selected else arc_n_icon
+        arc_icon = arc_y_icon if arc.connected else arc_n_icon
         key_ctrl = imgui.get_io().key_ctrl
 
         flags = ARC_FLAGS
@@ -155,7 +155,9 @@ class TreeTab(TabItem[Canvases]):
         if variable.selected:
             flags |= imgui.TREE_NODE_SELECTED
 
-        imgui.tree_node(variable.name, flags)
+        label = f"({variable.dtype.name}) {variable.name}"
+        imgui.tree_node(label, flags)
+
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
                 graph.unselect_all_items()

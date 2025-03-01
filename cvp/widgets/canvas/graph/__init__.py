@@ -442,7 +442,7 @@ class CanvasGraph(CanvasController):
                 try:
                     pair = FlowConnection.reorder_connectable_pins(conn, hovering_np)
                     connect_pairs.append(pair)
-                except ValueError:
+                except (ValueError, TypeError):
                     connect_pairs.clear()
                     break
             hovering_np.pin.connectable = bool(connect_pairs)

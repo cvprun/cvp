@@ -62,22 +62,23 @@ class NextPin(FlowOutputPin):
         )
 
 
-DEFAULT_PIN_NAME: Final[str] = "return"
-DEFAULT_PIN_DOCS: Final[str] = "The return value of a function"
+DEFAULT_RETURN_PIN_NAME: Final[str] = "return"
+DEFAULT_RETURN_PIN_DOCS: Final[str] = "The return value of a function"
 
 
 class ReturnPin(DataOutputPin):
     def __init__(
         self,
-        name: str,
         dtype: Dtype,
         docs: Optional[str] = None,
         arcs: Optional[Sequence[str]] = None,
+        *,
+        name: Optional[str] = None,
     ):
         super().__init__(
-            name=name,
+            name=name if name else DEFAULT_RETURN_PIN_NAME,
             dtype=dtype,
-            docs=docs,
+            docs=docs if docs else DEFAULT_RETURN_PIN_DOCS,
             arcs=arcs,
             kind=PinKind.return_only,
         )
@@ -101,18 +102,18 @@ class ReturnPin(DataOutputPin):
             return_args = get_args(return_annotation)
             assert 2 <= len(return_args)
             return_dtype = dtype_registry.get(return_args[0])
-            return_name = get_name(*return_args, default=DEFAULT_PIN_NAME)
-            return_docs = get_docs(*return_args, default=DEFAULT_PIN_DOCS)
+            return_name = get_name(*return_args, default=DEFAULT_RETURN_PIN_NAME)
+            return_docs = get_docs(*return_args, default=DEFAULT_RETURN_PIN_DOCS)
             return_arcs = get_arcs(*return_args)
         else:
             return_dtype = dtype_registry.get(return_annotation)
-            return_name = DEFAULT_PIN_NAME
-            return_docs = DEFAULT_PIN_DOCS
+            return_name = DEFAULT_RETURN_PIN_NAME
+            return_docs = DEFAULT_RETURN_PIN_DOCS
             return_arcs = list()
 
         return cls(
-            name=return_name,
             dtype=return_dtype,
             docs=return_docs,
             arcs=return_arcs,
+            name=return_name,
         )

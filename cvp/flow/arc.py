@@ -203,6 +203,10 @@ class FlowArc(Serializable):
         self._input = value
 
     @property
+    def connected(self):
+        return self._input is not None and self._output is not None
+
+    @property
     def selected(self):
         return self._selected
 

@@ -46,4 +46,4 @@ def get_builtin_dtypes() -> Sequence[Dtype]:
     for cls in get_builtin_types():
         visible = cls in get_visible_builtin_types()
         result.append(Dtype(cls, hidden=not visible))
-    return list(result)
+    return tuple(result)

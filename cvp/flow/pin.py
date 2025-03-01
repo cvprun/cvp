@@ -218,7 +218,9 @@ class FlowPin(Serializable):
         self.hidden = data.get(self.Keys.hidden, False)
         self.arcs = data.get(self.Keys.arcs, list())
 
-        if kind := data.get(self.Keys.kind):
+        kind = data.get(self.Keys.kind)
+        if kind is not None:
+            assert isinstance(kind, int)
             self.kind = PinKind(kind)
         else:
             self.kind = PinKind.unknown
@@ -348,4 +350,7 @@ class FlowPin(Serializable):
         if self.default is not None:
             return deepcopy(self.default)  # It should not affect the original value
         else:
-            return self.dtype.type()
+            if self.dtype.type == Any:
+                return object()
+            else:
+                return self.dtype.type()

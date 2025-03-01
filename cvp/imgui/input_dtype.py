@@ -5,6 +5,7 @@ from typing import Any, NamedTuple, Optional
 import imgui
 
 from cvp.dtypes.dtype import Dtype
+from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.memory.constraints import Constraints
 
 
@@ -30,9 +31,20 @@ def input_dtype(
     result_value = value
 
     if dtype.type is type(None):
-        raise TypeError("Unsupported none type")
+        if not isinstance(value, type(None)):
+            raise TypeError("The type of the value must be none type")
+
+        input_text_disabled(label, "None")
+    elif dtype.type is Any:
+        input_text_disabled(label, str(value))
     elif dtype.type is bool:
-        raise NotImplementedError
+        if not isinstance(value, bool):
+            raise TypeError("The type of the value must be bool type")
+
+        b_index = 1 if value else 0
+        result = imgui.combo(label, b_index, ["False", "True"])
+        result_changed = result[0]
+        result_value = bool(result[1])
     elif dtype.type is int:
         i_step = int(constraints.step)
         i_fast = int(constraints.step_fast)
@@ -72,6 +84,6 @@ def input_dtype(
     elif dtype.type is object:
         raise NotImplementedError
     else:
-        raise TypeError(f"Unsupported type: {type(value).__name__}")
+        raise TypeError(f"Unsupported type: {dtype.type.__name__}")
 
     return InputAnyResult(result_changed, result_value)

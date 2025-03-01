@@ -6,6 +6,7 @@ from typing import List, Optional, Sequence
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.builtins import get_builtin_nodes
+from cvp.nodes.defaults.casting import get_casting_nodes
 from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.node import Node
 
@@ -19,8 +20,9 @@ def get_default_nodes(
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None
     result: List[Node] = list()
-    result.extend(get_essential_nodes(dtype_registry))
     result.extend(get_builtin_nodes(dtype_registry))
+    result.extend(get_casting_nodes(dtype_registry))
+    result.extend(get_essential_nodes(dtype_registry))
     return tuple(result)
 
 

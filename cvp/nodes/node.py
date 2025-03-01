@@ -221,7 +221,7 @@ class Node(NodeInterface):
 
     @property
     def is_bypass_flow(self) -> bool:
-        if len(self.pins) != 2:
+        if len(self.flows) != 2:
             return False
 
         flow_inputs = self.flow_inputs
@@ -237,8 +237,6 @@ class Node(NodeInterface):
         if not isinstance(flow_outputs[0], NextPin):
             return False
 
-        assert 0 == len(self.data_inputs)
-        assert 0 == len(self.data_outputs)
         return True
 
     def find_pin(self, pin_name: str) -> Optional[Pin]:

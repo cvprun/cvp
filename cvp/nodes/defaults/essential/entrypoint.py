@@ -2,6 +2,7 @@
 
 from typing import Optional
 
+from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
@@ -11,14 +12,14 @@ from cvp.types.override import override
 
 
 class EntrypointNode(Node):
-    def __init__(self):
+    def __init__(self, _: DtypeRegistry):
         self._start = FlowOutputPin(
             name="start",
             docs="Entrypoint flow signal",
         )
         super().__init__(
             name="Entrypoint",
-            path="cvp.entrypoint",
+            path="cvp.essential.entrypoint",
             func=None,
             docs="Indicates the starting point of the graph",
             icon=PLAY,

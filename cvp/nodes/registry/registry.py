@@ -6,7 +6,8 @@ from weakref import ReferenceType, ref
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults import get_default_path2nodes
-from cvp.nodes.defaults.essential.variable import VariableGetterNode, VariableSetterNode
+from cvp.nodes.defaults.essential.getter import VariableGetterNode
+from cvp.nodes.defaults.essential.setter import VariableSetterNode
 from cvp.nodes.node import Node
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
