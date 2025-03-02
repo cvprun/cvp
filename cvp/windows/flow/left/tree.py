@@ -22,6 +22,7 @@ _DEFAULT_OPEN = imgui.TREE_NODE_DEFAULT_OPEN
 
 _COMMON_FLAGS = _OPEN_ON_ARROW | _OPEN_ON_DOUBLE_CLICK | _SPAN_AVAILABLE_WIDTH
 
+CATEGORY_FLAGS = _COMMON_FLAGS | _DEFAULT_OPEN
 NODE_FLAGS = _COMMON_FLAGS
 PIN_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 ARC_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
@@ -48,7 +49,7 @@ class TreeTab(TabItem[Canvases]):
             return
 
         graph_label = f"{graph.name}###{graph.uuid}"
-        if imgui.tree_node(graph_label, imgui.TREE_NODE_DEFAULT_OPEN):
+        if imgui.tree_node(graph_label, CATEGORY_FLAGS):
             try:
                 self.tree_nodes(graph)
                 self.tree_arcs(graph)
@@ -57,7 +58,7 @@ class TreeTab(TabItem[Canvases]):
                 imgui.tree_pop()
 
     def tree_nodes(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Nodes", imgui.TREE_NODE_DEFAULT_OPEN):
+        if imgui.tree_node("Nodes", CATEGORY_FLAGS):
             try:
                 for node in graph.nodes:
                     self.tree_node(graph, node)
@@ -111,7 +112,7 @@ class TreeTab(TabItem[Canvases]):
             imgui.tree_pop()
 
     def tree_arcs(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Arcs", imgui.TREE_NODE_DEFAULT_OPEN):
+        if imgui.tree_node("Arcs", CATEGORY_FLAGS):
             try:
                 for arc in graph.arcs:
                     self.tree_arc(graph, arc)
@@ -140,7 +141,7 @@ class TreeTab(TabItem[Canvases]):
             imgui.text(arc_icon)
 
     def tree_variables(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Variables", imgui.TREE_NODE_DEFAULT_OPEN):
+        if imgui.tree_node("Variables", CATEGORY_FLAGS):
             try:
                 for variable in graph.variables:
                     self.tree_variable(graph, variable)

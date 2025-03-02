@@ -131,16 +131,21 @@ class PropsTab(TabItem[Canvases]):
 
         self.input_icon("Icon", node.icon)
 
+        if lock := checkbox("Lock", node.lock):
+            node.lock = lock.state
+        if bp := checkbox("Breakpoint", node.breakpoint):
+            node.breakpoint = bp.state
+        if hidden := checkbox("Hidden", node.hidden):
+            node.hidden = hidden.state
+
         if color_result := color_edit4("Color", *node.color):
             node.color = color_result.color
 
+        if template := self.context.fm.nodes.get(node.path):
+            template.on_render_properties()
+
         if self.context.debug:
             self.tree_node_debugging("Debugging", node)
-
-        # flow_inputs: List[Pin] = field(default_factory=list)
-        # flow_outputs: List[Pin] = field(default_factory=list)
-        # data_inputs: List[Pin] = field(default_factory=list)
-        # data_outputs: List[Pin] = field(default_factory=list)
 
     @staticmethod
     def tree_pin_debugging(label: str, pin: FlowPin) -> None:
@@ -270,6 +275,7 @@ class PropsTab(TabItem[Canvases]):
             typename = type(item).__name__
             title = f"{typename} ({item.name})" if item.name else typename
             label = f"{title}###{key}"
+
             if imgui.tree_node(label):
                 try:
                     if isinstance(item, FlowNode):

@@ -21,6 +21,10 @@ class NodeInterface(ABC):
     def run(self, record: NodeRecord) -> Optional[str]:
         raise NotImplementedError
 
+    @abstractmethod
+    def on_render(self, record: NodeRecord) -> None:
+        raise NotImplementedError
+
 
 class Node(NodeInterface):
     def __init__(
@@ -261,3 +265,7 @@ class Node(NodeInterface):
             return self.flow_outputs[0].name
         else:
             return None
+
+    @override
+    def on_render(self, record: NodeRecord) -> None:
+        pass
