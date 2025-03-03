@@ -4,6 +4,6 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.casting._base import CastingNode
 
 
-class StringNode(CastingNode):
+class FloatingNode(CastingNode):
     def __init__(self, dtype_registry: DtypeRegistry):
-        super().__init__(dtype_registry, str)
+        super().__init__(dtype_registry, float)

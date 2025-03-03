@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from logging import DEBUG, getLogger
-from sys import exc_info
 from typing import Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
@@ -10,6 +9,7 @@ from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
@@ -50,12 +50,8 @@ class LoggingNode(Node):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[str]:
-        try:
-            logger_name = record.get(self._name)
-            logger = getLogger(logger_name)
-            logger.log(level=record.get(self._level), msg=record.get(self._msg))
-            record.result = None
-        except:  # noqa
-            record.exception = exc_info()
-        return self._next.name
+    def run(self, record: NodeRecord) -> Optional[Pin]:
+        logger_name = record.get(self._name)
+        logger = getLogger(logger_name)
+        logger.log(level=record.get(self._level), msg=record.get(self._msg))
+        return self._next

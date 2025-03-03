@@ -141,8 +141,8 @@ class PropsTab(TabItem[Canvases]):
         if color_result := color_edit4("Color", *node.color):
             node.color = color_result.color
 
-        if template := self.context.fm.nodes.get(node.path):
-            template.on_render_properties()
+        # if template := self.context.fm.nodes.get(node.path):
+        #     template.on_render_properties()
 
         if self.context.debug:
             self.tree_node_debugging("Debugging", node)

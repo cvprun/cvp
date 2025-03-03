@@ -5,13 +5,21 @@ from typing import Optional, Sequence, Type
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.nodes.defaults.casting.boolean import BooleanNode
+from cvp.nodes.defaults.casting.floating import FloatingNode
+from cvp.nodes.defaults.casting.integer import IntegerNode
 from cvp.nodes.defaults.casting.string import StringNode
 from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_casting_types() -> Sequence[Type]:
-    return (StringNode,)
+    return (
+        BooleanNode,
+        FloatingNode,
+        IntegerNode,
+        StringNode,
+    )
 
 
 @lru_cache

@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from inspect import signature
-from sys import exc_info
 from typing import Any, Callable, List, Optional, Sequence
 
 from cvp.dtypes.registry.globals import global_dtype_registry
@@ -18,7 +17,7 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 
 class NodeInterface(ABC):
     @abstractmethod
-    def run(self, record: NodeRecord) -> Optional[str]:
+    def run(self, record: NodeRecord) -> Any:
         raise NotImplementedError
 
     @abstractmethod
@@ -249,20 +248,25 @@ class Node(NodeInterface):
                 return pin
         return None
 
+    def find_return_pin(self) -> Optional[Pin]:
+        for pin in self.pins:
+            if isinstance(pin, ReturnPin):
+                return pin
+        return None
+
     def __call__(self, *args, **kwargs) -> Any:
         if self.func is None:
             raise ValueError("Node function is not set")
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, record: NodeRecord) -> Optional[str]:
-        try:
-            record.result = self.__call__(*record.args, **record.kwargs)
-        except:  # noqa
-            record.exception = exc_info()
+    def run(self, record: NodeRecord) -> Optional[Pin]:
+        result = self.__call__(*record.args, **record.kwargs)
+        if return_pin := self.find_return_pin():
+            record.set(return_pin, result)
 
         if self.is_bypass_flow:
-            return self.flow_outputs[0].name
+            return self.flow_outputs[0]
         else:
             return None
 

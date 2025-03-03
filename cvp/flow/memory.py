@@ -193,7 +193,6 @@ class FlowMemory:
         variables = dict()
         bind_args = list()
         bind_kwargs = dict()
-        result_key = str()
 
         for pin in data_pins:
             if not pin.is_data_action:
@@ -228,7 +227,7 @@ class FlowMemory:
                     case PinKind.var_keyword:
                         bind_kwargs[pin.name] = value
                     case PinKind.return_only:
-                        result_key = pin.name
+                        pass
                     case PinKind.flow_only:
                         assert False, "Inaccessible section"
                     case _:
@@ -241,13 +240,9 @@ class FlowMemory:
             variables=variables,
             args=bind_args,
             kwargs=bind_kwargs,
-            result_key=result_key,
             shared_variables=self._vars,
         )
 
     def update_with_node_execution_record(self, record: NodeRecord) -> None:
         for pin_name, pin_variable in record.variables.items():
             self.set_pin_value(record.node_uuid, pin_name, pin_variable)
-
-        if not record.has_exception and record.result_key:
-            self.set_pin_value(record.node_uuid, record.result_key, record.result)

@@ -20,8 +20,6 @@ class NodeRecord:
         variables: Mapping[str, Any],
         args: Sequence[Any],
         kwargs: Mapping[str, Any],
-        result_key: Optional[str] = None,
-        result: Any = None,
         exception: Optional[ExceptionInfo] = None,
         shared_variables: Optional[Mapping[str, ValueProxy]] = None,
     ):
@@ -33,8 +31,6 @@ class NodeRecord:
         self._kwargs = dict(kwargs)
         self._begin = datetime.now()
         self._end = datetime.now()
-        self._result_key = result_key if result_key else str()
-        self._result = result
         self._exception = exception
         self._shared_variables = dict(shared_variables if shared_variables else dict())
 
@@ -81,19 +77,6 @@ class NodeRecord:
         return self._end - self._begin
 
     @property
-    def result_key(self) -> str:
-        return self._result_key
-
-    @property
-    def result(self):
-        return self._result
-
-    @result.setter
-    def result(self, value: Any) -> None:
-        self._result = value
-        self._exception = None
-
-    @property
     def has_exception(self) -> bool:
         return self._exception is not None
 
@@ -106,7 +89,6 @@ class NodeRecord:
         assert value[0] is not None
         assert value[1] is not None
         assert value[2] is not None
-        self._result = None
         self._exception = value
 
     @property
@@ -125,7 +107,6 @@ class NodeRecord:
         return self._exception[2]
 
     def clear(self) -> None:
-        self._result = None
         self._exception = None
 
     def get(self, key: Union[Pin, str]) -> Any:

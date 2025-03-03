@@ -38,6 +38,8 @@ def input_dtype(
     elif dtype.type is Any:
         input_text_disabled(label, str(value))
     elif dtype.type is bool:
+        if value is None:
+            value = False
         if not isinstance(value, bool):
             raise TypeError("The type of the value must be bool type")
 
@@ -46,6 +48,11 @@ def input_dtype(
         result_changed = result[0]
         result_value = bool(result[1])
     elif dtype.type is int:
+        if value is None:
+            value = 0
+        if not isinstance(value, int):
+            raise TypeError("The type of the value must be int type")
+
         i_step = int(constraints.step)
         i_fast = int(constraints.step_fast)
         i_flags = constraints.flags
@@ -54,6 +61,10 @@ def input_dtype(
         result_changed = result[0]
         result_value = result[1]
     elif dtype.type is float:
+        if value is None:
+            value = 0.0
+        if not isinstance(value, float):
+            raise TypeError("The type of the value must be float type")
         f_step = float(constraints.step)
         f_fast = float(constraints.step_fast)
         f_fmt = constraints.float_format
@@ -75,6 +86,10 @@ def input_dtype(
     elif dtype.type is bytes:
         raise NotImplementedError
     elif dtype.type is str:
+        if value is None:
+            value = ""
+        if not isinstance(value, str):
+            raise TypeError("The type of the value must be str type")
         s_maxlen = -1
         s_flags = 0
 

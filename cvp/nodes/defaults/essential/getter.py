@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from sys import exc_info
 from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin, DataOutputPin
+from cvp.pins.pin import Pin
 from cvp.types.override import override
 
 
@@ -43,12 +43,9 @@ class VariableGetterNode(Node):
         return self._value.name
 
     @override
-    def run(self, record: NodeRecord) -> Optional[str]:
-        try:
-            key = record.get(self._key)
-            assert isinstance(key, str)
-            value = record.get_shared(key)
-            record.set(self._value, value)
-        except:  # noqa
-            record.exception = exc_info()
+    def run(self, record: NodeRecord) -> Optional[Pin]:
+        key = record.get(self._key)
+        assert isinstance(key, str)
+        value = record.get_shared(key)
+        record.set(self._value, value)
         return None

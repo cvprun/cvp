@@ -5,6 +5,7 @@ from concurrent.futures import Executor, Future
 from dataclasses import dataclass
 from enum import IntEnum, auto, unique
 from logging import Logger
+from sys import exc_info
 from threading import Condition, Lock
 from typing import Deque, Dict, Final, NamedTuple, Optional, Union
 
@@ -18,6 +19,7 @@ from cvp.memory.copy import copy_flexible
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.pins.pin import Pin
 from cvp.pins.special import EntrypointPin
 
 INFINITY_COUNTER: Final[int] = -1
@@ -311,15 +313,26 @@ class FlowRunner:
             use_deepcopy=use_deepcopy,
         )
 
+        result_pin: Union[None, Pin, str] = None
+
         try:
-            next_pin_name = node.run(record)
+            result_pin = node.run(record)
+        except:  # noqa
+            record.exception = exc_info()
         finally:
             self.update_result_record(record)
             if record.has_exception:
                 raise record.exc_val.with_traceback(record.exc_tb)
 
-        if next_pin_name is None:
+        if result_pin is None:
             return None  # There is no next flow.
+
+        if isinstance(result_pin, Pin):
+            next_pin_name = result_pin.name
+        elif isinstance(result_pin, str):
+            next_pin_name = result_pin
+        else:
+            raise TypeError(f"Unsupported pin type: {type(result_pin).__name__}")
 
         next_pin = np.node.find_pin(next_pin_name)
         if next_pin is None:
