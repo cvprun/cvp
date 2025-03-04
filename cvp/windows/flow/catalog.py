@@ -43,6 +43,6 @@ class Catalog(WidgetInterface):
                 imgui.selectable(f"{graph.name}##{graph.uuid}")
                 with imgui.begin_drag_drop_source() as drag_drop_src:
                     if drag_drop_src.dragging:
-                        payload = graph.uuid.path.encode()
+                        payload = graph.uuid.encode()
                         imgui.set_drag_drop_payload(DRAG_FLOW_GRAPH, payload)
                         imgui.text(graph.name)

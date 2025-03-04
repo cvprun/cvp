@@ -40,6 +40,10 @@ class FlowManager:
         if refresh_graphs:
             self.refresh_flow_graphs()
 
+    def stop_all_runners(self) -> None:
+        for runner in self._runners.values():
+            runner.stop()
+
     @property
     def graphs(self):
         return self._graphs

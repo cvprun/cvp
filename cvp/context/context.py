@@ -178,6 +178,9 @@ class Context:
         self._flow_manager.runners[graph.uuid] = runner
         return runner
 
+    def stop_all_flow_runners(self) -> None:
+        self._flow_manager.stop_all_runners()
+
     def teardown_process_manager(self) -> None:
         timeout = self._config.process_manager.teardown_timeout
         self._process_manager.teardown(timeout)

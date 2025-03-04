@@ -269,6 +269,7 @@ class PlayerApplication:
         )
 
     def on_exit(self) -> None:
+        self._context.stop_all_flow_runners()
         self._context.teardown_process_manager()
         self._context.windows.do_destroy()
         self._world.on_destroy()
