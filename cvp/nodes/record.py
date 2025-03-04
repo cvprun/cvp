@@ -5,7 +5,7 @@ from types import TracebackType
 from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union
 
 from cvp.patterns.proxy import ValueProxy
-from cvp.pins.pin import Pin
+from cvp.pins.template import PinTemplate
 
 ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
@@ -109,16 +109,16 @@ class NodeRecord:
     def clear(self) -> None:
         self._exception = None
 
-    def get(self, key: Union[Pin, str]) -> Any:
-        if isinstance(key, Pin):
+    def get(self, key: Union[PinTemplate, str]) -> Any:
+        if isinstance(key, PinTemplate):
             return self._variables[key.name]
         elif isinstance(key, str):
             return self._variables[key]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
-    def set(self, key: Union[Pin, str], value: Any) -> None:
-        if isinstance(key, Pin):
+    def set(self, key: Union[PinTemplate, str], value: Any) -> None:
+        if isinstance(key, PinTemplate):
             self._variables[key.name] = value
         elif isinstance(key, str):
             self._variables[key] = value

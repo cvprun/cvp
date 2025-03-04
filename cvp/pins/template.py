@@ -22,7 +22,7 @@ from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
 
 
-class Pin:
+class PinTemplate:
     def __init__(
         self,
         name: str,

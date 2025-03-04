@@ -8,8 +8,8 @@ from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
-from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
+from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
@@ -34,7 +34,7 @@ class Node(NodeInterface):
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        pins: Optional[Sequence[Pin]] = None,
+        pins: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
         hidden=False,
     ):
@@ -57,10 +57,10 @@ class Node(NodeInterface):
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[Pin]] = None,
-        flow_outputs: Optional[Sequence[Pin]] = None,
-        data_inputs: Optional[Sequence[Pin]] = None,
-        data_outputs: Optional[Sequence[Pin]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
         hidden=False,
         *,
@@ -119,7 +119,10 @@ class Node(NodeInterface):
                 base_pins.append(pin)
         else:
             for param in sig.parameters.values():
-                param_pin = Pin.from_parameter(param, dtype_registry=dtype_registry)
+                param_pin = PinTemplate.from_parameter(
+                    parameter=param,
+                    dtype_registry=dtype_registry,
+                )
                 base_pins.append(param_pin)
 
         if data_outputs:
@@ -147,35 +150,35 @@ class Node(NodeInterface):
         )
 
     @property
-    def flows(self) -> List[Pin]:
+    def flows(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_flow_action, self.pins))
 
     @property
-    def datas(self) -> List[Pin]:
+    def datas(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_data_action, self.pins))
 
     @property
-    def inputs(self) -> List[Pin]:
+    def inputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_input_stream, self.pins))
 
     @property
-    def outputs(self) -> List[Pin]:
+    def outputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_output_stream, self.pins))
 
     @property
-    def flow_inputs(self) -> List[Pin]:
+    def flow_inputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_flow_inputs, self.pins))
 
     @property
-    def flow_outputs(self) -> List[Pin]:
+    def flow_outputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_flow_outputs, self.pins))
 
     @property
-    def data_inputs(self) -> List[Pin]:
+    def data_inputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_data_inputs, self.pins))
 
     @property
-    def data_outputs(self) -> List[Pin]:
+    def data_outputs(self) -> List[PinTemplate]:
         return list(filter(lambda p: p.is_data_outputs, self.pins))
 
     @property
@@ -242,13 +245,13 @@ class Node(NodeInterface):
 
         return True
 
-    def find_pin(self, pin_name: str) -> Optional[Pin]:
+    def find_pin(self, pin_name: str) -> Optional[PinTemplate]:
         for pin in self.pins:
             if pin.name == pin_name:
                 return pin
         return None
 
-    def find_return_pin(self) -> Optional[Pin]:
+    def find_return_pin(self) -> Optional[PinTemplate]:
         for pin in self.pins:
             if isinstance(pin, ReturnPin):
                 return pin
@@ -260,7 +263,7 @@ class Node(NodeInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, record: NodeRecord) -> Optional[Pin]:
+    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
         result = self.__call__(*record.args, **record.kwargs)
         if return_pin := self.find_return_pin():
             record.set(return_pin, result)

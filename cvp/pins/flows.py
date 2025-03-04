@@ -4,11 +4,11 @@ from typing import Optional, Sequence
 
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
-from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
+from cvp.pins.template import PinTemplate
 
 
-class FlowInputPin(Pin):
+class FlowInputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
@@ -28,7 +28,7 @@ class FlowInputPin(Pin):
         )
 
 
-class FlowOutputPin(Pin):
+class FlowOutputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,

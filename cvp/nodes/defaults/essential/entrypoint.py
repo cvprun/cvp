@@ -6,15 +6,15 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
-from cvp.pins.flows import FlowOutputPin
-from cvp.pins.pin import Pin
+from cvp.pins.flows import FlowOutputPinTemplate
+from cvp.pins.template import PinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
 class EntrypointNode(Node):
     def __init__(self, _: DtypeRegistry):
-        self._start = FlowOutputPin(
+        self._start = FlowOutputPinTemplate(
             name="start",
             docs="Entrypoint flow signal",
         )
@@ -30,5 +30,5 @@ class EntrypointNode(Node):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[Pin]:
+    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
         return self._start

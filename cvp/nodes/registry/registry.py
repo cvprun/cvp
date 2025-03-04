@@ -9,7 +9,7 @@ from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import VariableGetterNode
 from cvp.nodes.defaults.essential.setter import VariableSetterNode
 from cvp.nodes.node import Node
-from cvp.pins.pin import Pin
+from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
 
 
@@ -106,10 +106,10 @@ class NodeRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[Pin]] = None,
-        flow_outputs: Optional[Sequence[Pin]] = None,
-        data_inputs: Optional[Sequence[Pin]] = None,
-        data_outputs: Optional[Sequence[Pin]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
     ) -> Node:
         node = Node.auto_parse(
@@ -136,10 +136,10 @@ class NodeRegistry:
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[Pin]] = None,
-        flow_outputs: Optional[Sequence[Pin]] = None,
-        data_inputs: Optional[Sequence[Pin]] = None,
-        data_outputs: Optional[Sequence[Pin]] = None,
+        flow_inputs: Optional[Sequence[PinTemplate]] = None,
+        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        data_inputs: Optional[Sequence[PinTemplate]] = None,
+        data_outputs: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
     ):
         def _decorator(func: Callable):

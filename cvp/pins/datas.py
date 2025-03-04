@@ -6,11 +6,11 @@ from cvp.dtypes.dtype import Dtype
 from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
-from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
+from cvp.pins.template import PinTemplate
 
 
-class DataInputPin(Pin):
+class DataInputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
@@ -36,7 +36,7 @@ class DataInputPin(Pin):
         )
 
 
-class DataOutputPin(Pin):
+class DataOutputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,

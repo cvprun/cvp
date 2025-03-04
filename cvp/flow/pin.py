@@ -10,8 +10,8 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
-from cvp.pins.pin import Pin
 from cvp.pins.stream import Stream
+from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
@@ -80,7 +80,7 @@ class FlowPin(Serializable):
         self._connectable = connectable
 
     @classmethod
-    def from_template(cls, template: Pin):
+    def from_template(cls, template: PinTemplate):
         return cls(
             name=template.name,
             dtype=template.dtype,

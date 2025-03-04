@@ -6,20 +6,20 @@ from typing import Any, Optional
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
-from cvp.pins.datas import DataInputPin
-from cvp.pins.pin import Pin
+from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import ReturnPin
+from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 
 
 class ComparisonOperatorNode(Node):
     def __init__(self, dtype_registry: DtypeRegistry, name: str):
-        self._first = DataInputPin(
+        self._first = DataInputPinTemplate(
             name="first",
             dtype=dtype_registry.get(Any),
             docs=f"The first value of the {name.lower()} operator",
         )
-        self._second = DataInputPin(
+        self._second = DataInputPinTemplate(
             name="second",
             dtype=dtype_registry.get(Any),
             docs=f"The second value of the {name.lower()} operator",
@@ -37,7 +37,7 @@ class ComparisonOperatorNode(Node):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[Pin]:
+    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
         first = record.get(self._first)
         second = record.get(self._second)
         result = self.on_operator(first, second)
