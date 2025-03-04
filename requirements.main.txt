@@ -18,7 +18,7 @@ python-dotenv==1.0.1
 requests==2.32.3
 sagecipher==0.7.5
 shapely==2.0.7
-type-serialize==2.0.4
+type-serialize==2.1.0
 uvloop==0.21.0
 watchdog==6.0.0
 zeep==4.3.1
