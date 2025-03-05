@@ -9,18 +9,18 @@ from cvp.nodes.defaults.builtins import get_builtin_nodes
 from cvp.nodes.defaults.casting import get_casting_nodes
 from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.defaults.operators import get_operators_nodes
-from cvp.nodes.node import Node
+from cvp.nodes.template import NodeTemplate
 
-NodeMapping = MappingProxyType[str, Node]
+NodeMapping = MappingProxyType[str, NodeTemplate]
 
 
 def get_default_nodes(
     dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[Node]:
+) -> Sequence[NodeTemplate]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None
-    result: List[Node] = list()
+    result: List[NodeTemplate] = list()
     result.extend(get_builtin_nodes(dtype_registry))
     result.extend(get_casting_nodes(dtype_registry))
     result.extend(get_essential_nodes(dtype_registry))

@@ -5,25 +5,27 @@ from typing import Optional, Sequence, Type
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.defaults.casting.boolean import BooleanNode
-from cvp.nodes.defaults.casting.floating import FloatingNode
-from cvp.nodes.defaults.casting.integer import IntegerNode
-from cvp.nodes.defaults.casting.string import StringNode
-from cvp.nodes.node import Node
+from cvp.nodes.defaults.casting.boolean import BooleanNodeTemplate
+from cvp.nodes.defaults.casting.floating import FloatingNodeTemplate
+from cvp.nodes.defaults.casting.integer import IntegerNodeTemplate
+from cvp.nodes.defaults.casting.string import StringNodeTemplate
+from cvp.nodes.template import NodeTemplate
 
 
 @lru_cache
 def get_casting_types() -> Sequence[Type]:
     return (
-        BooleanNode,
-        FloatingNode,
-        IntegerNode,
-        StringNode,
+        BooleanNodeTemplate,
+        FloatingNodeTemplate,
+        IntegerNodeTemplate,
+        StringNodeTemplate,
     )
 
 
 @lru_cache
-def get_casting_nodes(dtype_registry: Optional[DtypeRegistry] = None) -> Sequence[Node]:
+def get_casting_nodes(
+    dtype_registry: Optional[DtypeRegistry] = None,
+) -> Sequence[NodeTemplate]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None

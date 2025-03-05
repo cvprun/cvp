@@ -3,11 +3,11 @@
 from typing import Any
 
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.defaults.operators.arithmetic._base import ArithmeticOperatorNode
+from cvp.nodes.defaults.operators.arithmetic._base import ArithmeticOperatorNodeTemplate
 from cvp.types.override import override
 
 
-class AddNode(ArithmeticOperatorNode):
+class AddNodeTemplate(ArithmeticOperatorNodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
         super().__init__(dtype_registry, "add")
 

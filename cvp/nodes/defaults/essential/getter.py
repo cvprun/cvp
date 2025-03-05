@@ -3,14 +3,14 @@
 from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
+from cvp.nodes.template import NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate, DataOutputPinTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 
 
-class VariableGetterNode(Node):
+class GetterNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._key = DataInputPinTemplate(
             name="key",

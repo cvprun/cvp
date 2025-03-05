@@ -6,13 +6,13 @@ import imgui
 
 from cvp.config.sections.catalog import CatalogManagerConfig
 from cvp.imgui.input_text_disabled import input_text_disabled
-from cvp.nodes.node import Node
+from cvp.nodes.template import NodeTemplate
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.manager import Manager
 
 
-class CatalogManager(Manager[CatalogManagerConfig, Node]):
+class CatalogManager(Manager[CatalogManagerConfig, NodeTemplate]):
     def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
@@ -23,7 +23,7 @@ class CatalogManager(Manager[CatalogManagerConfig, Node]):
         )
 
     @override
-    def get_menus(self) -> Mapping[str, Node]:
+    def get_menus(self) -> Mapping[str, NodeTemplate]:
         return {key: value for key, value in self.context.fm.nodes.items()}
 
     @override
@@ -31,7 +31,7 @@ class CatalogManager(Manager[CatalogManagerConfig, Node]):
         pass
 
     @override
-    def on_menu(self, key: str, item: Node) -> None:
+    def on_menu(self, key: str, item: NodeTemplate) -> None:
         imgui.text("Catalog information")
         imgui.separator()
 

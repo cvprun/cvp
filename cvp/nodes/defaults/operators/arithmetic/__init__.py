@@ -5,26 +5,26 @@ from typing import Optional, Sequence, Type
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.defaults.operators.arithmetic.add import AddNode
-from cvp.nodes.defaults.operators.arithmetic.divide import DivideNode
-from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyNode
-from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractNode
-from cvp.nodes.node import Node
+from cvp.nodes.defaults.operators.arithmetic.add import AddNodeTemplate
+from cvp.nodes.defaults.operators.arithmetic.divide import DivideNodeTemplate
+from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyNodeTemplate
+from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractNodeTemplate
+from cvp.nodes.template import NodeTemplate
 
 
 @lru_cache
 def get_arithmetic_types() -> Sequence[Type]:
     return (
-        AddNode,
-        DivideNode,
-        MultiplyNode,
-        SubtractNode,
+        AddNodeTemplate,
+        DivideNodeTemplate,
+        MultiplyNodeTemplate,
+        SubtractNodeTemplate,
     )
 
 
 def get_arithmetic_nodes(
     dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[Node]:
+) -> Sequence[NodeTemplate]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None

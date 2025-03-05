@@ -6,16 +6,16 @@ from weakref import ReferenceType, ref
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults import get_default_path2nodes
-from cvp.nodes.defaults.essential.getter import VariableGetterNode
-from cvp.nodes.defaults.essential.setter import VariableSetterNode
-from cvp.nodes.node import Node
+from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
+from cvp.nodes.defaults.essential.setter import SetterNodeTemplate
+from cvp.nodes.template import NodeTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
 
 
 class NodeRegistry:
     _dtype_registry: ReferenceType[DtypeRegistry]
-    _nodes: Dict[str, Node]
+    _nodes: Dict[str, NodeTemplate]
 
     def __init__(
         self,
@@ -28,8 +28,8 @@ class NodeRegistry:
         assert dtype_registry is not None
         self._dtype_registry = ref(dtype_registry)
         self._nodes = dict()
-        self._getter_node = VariableGetterNode(dtype_registry)
-        self._setter_node = VariableSetterNode(dtype_registry)
+        self._getter_node = GetterNodeTemplate(dtype_registry)
+        self._setter_node = SetterNodeTemplate(dtype_registry)
 
         if not no_defaults:
             self._nodes.update(get_default_path2nodes(dtype_registry))
@@ -68,16 +68,16 @@ class NodeRegistry:
     def update(self, other: "NodeRegistry") -> None:
         self._nodes.update(other.nodes)
 
-    def has(self, path: Union[str, Node]) -> bool:
-        if isinstance(path, Node):
+    def has(self, path: Union[str, NodeTemplate]) -> bool:
+        if isinstance(path, NodeTemplate):
             return path.path in self._nodes
         elif isinstance(path, str):
             return path in self._nodes
         else:
             raise TypeError(f"Unsupported path type: {type(path).__name__}")
 
-    def get(self, path: Union[str, Node]) -> Node:
-        if isinstance(path, Node):
+    def get(self, path: Union[str, NodeTemplate]) -> NodeTemplate:
+        if isinstance(path, NodeTemplate):
             return self._nodes[path.path]
         elif isinstance(path, str):
             return self._nodes[path]
@@ -87,13 +87,13 @@ class NodeRegistry:
     def __len__(self) -> int:
         return len(self._nodes)
 
-    def __contains__(self, path: Union[str, Node]) -> bool:
+    def __contains__(self, path: Union[str, NodeTemplate]) -> bool:
         return self.has(path)
 
-    def __getitem__(self, path: Union[str, Node]) -> Node:
+    def __getitem__(self, path: Union[str, NodeTemplate]) -> NodeTemplate:
         return self.get(path)
 
-    def add(self, node: Node) -> None:
+    def add(self, node: NodeTemplate) -> None:
         if node.path in self._nodes:
             raise KeyError(f"Duplicate node path: {node.path}")
         self._nodes[node.path] = node
@@ -111,8 +111,8 @@ class NodeRegistry:
         data_inputs: Optional[Sequence[PinTemplate]] = None,
         data_outputs: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
-    ) -> Node:
-        node = Node.auto_parse(
+    ) -> NodeTemplate:
+        node = NodeTemplate.auto_parse(
             func=func,
             name=name,
             path=path,

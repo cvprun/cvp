@@ -25,7 +25,7 @@ class NodeInterface(ABC):
         raise NotImplementedError
 
 
-class Node(NodeInterface):
+class NodeTemplate(NodeInterface):
     def __init__(
         self,
         name: str,

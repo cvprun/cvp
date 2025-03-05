@@ -4,15 +4,15 @@ from abc import abstractmethod
 from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
+from cvp.nodes.template import NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import ReturnPin
 from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 
 
-class ArithmeticOperatorNode(Node):
+class ArithmeticOperatorNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry, name: str):
         self._first = DataInputPinTemplate(
             name="first",

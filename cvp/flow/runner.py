@@ -16,9 +16,9 @@ from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
 from cvp.memory.copy import copy_flexible
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.nodes.template import NodeTemplate
 from cvp.pins.special import EntrypointPin
 from cvp.pins.template import PinTemplate
 
@@ -42,7 +42,7 @@ class FlowRunnerState(NamedTuple):
 
 @dataclass
 class _FlowRunnerArguments:
-    nodes: Dict[str, Node]
+    nodes: Dict[str, NodeTemplate]
     graph: FlowGraph
     start_node: FlowNode
     entrypoint: FlowPin
@@ -259,7 +259,7 @@ class FlowRunner:
         index: int,
         graph: FlowGraph,
         np: FlowNodePin,
-        node: Node,
+        node: NodeTemplate,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -300,7 +300,7 @@ class FlowRunner:
         index: int,
         graph: FlowGraph,
         np: FlowNodePin,
-        node: Node,
+        node: NodeTemplate,
         *,
         use_copy=False,
         use_deepcopy=False,

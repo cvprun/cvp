@@ -5,30 +5,32 @@ from typing import Optional, Sequence, Type
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.defaults.operators.comparison.equal import EqualNode
-from cvp.nodes.defaults.operators.comparison.greater import GreaterNode
-from cvp.nodes.defaults.operators.comparison.greater_equal import GreaterEqualNode
-from cvp.nodes.defaults.operators.comparison.less import LessNode
-from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualNode
-from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualNode
-from cvp.nodes.node import Node
+from cvp.nodes.defaults.operators.comparison.equal import EqualNodeTemplate
+from cvp.nodes.defaults.operators.comparison.greater import GreaterNodeTemplate
+from cvp.nodes.defaults.operators.comparison.greater_equal import (
+    GreaterEqualNodeTemplate,
+)
+from cvp.nodes.defaults.operators.comparison.less import LessNodeTemplate
+from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualNodeTemplate
+from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualNodeTemplate
+from cvp.nodes.template import NodeTemplate
 
 
 @lru_cache
 def get_comparison_types() -> Sequence[Type]:
     return (
-        EqualNode,
-        GreaterNode,
-        GreaterEqualNode,
-        LessNode,
-        LessEqualNode,
-        NotEqualNode,
+        EqualNodeTemplate,
+        GreaterNodeTemplate,
+        GreaterEqualNodeTemplate,
+        LessNodeTemplate,
+        LessEqualNodeTemplate,
+        NotEqualNodeTemplate,
     )
 
 
 def get_comparison_nodes(
     dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[Node]:
+) -> Sequence[NodeTemplate]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None

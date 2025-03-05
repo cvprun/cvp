@@ -6,7 +6,7 @@ from typing import Callable, Optional, Sequence
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.nodes.node import Node
+from cvp.nodes.template import NodeTemplate
 
 
 @lru_cache
@@ -44,12 +44,12 @@ def get_builtin_functions() -> Sequence[Callable]:
 
 def get_builtin_nodes(
     dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[Node]:
+) -> Sequence[NodeTemplate]:
     if dtype_registry is None:
         dtype_registry = global_dtype_registry()
     assert dtype_registry is not None
     result = list()
     for func in get_builtin_functions():
-        node = Node.auto_parse(func, dtype_registry=dtype_registry)
+        node = NodeTemplate.auto_parse(func, dtype_registry=dtype_registry)
         result.append(node)
     return tuple(result)
