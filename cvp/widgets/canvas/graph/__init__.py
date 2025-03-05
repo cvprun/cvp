@@ -7,13 +7,13 @@ import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.anchor import FlowAnchor
-from cvp.flow.arc import FlowArc
 from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
+from cvp.flow.wire import FlowWire
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
@@ -57,8 +57,8 @@ class CanvasGraph(CanvasController):
         self._config = None
 
         graph.clear_state()
-        graph.update_arcs_io()
-        graph.update_arcs_polyline()
+        graph.update_wires_io()
+        graph.update_wires_polyline()
 
         self._history = History(max_history=config.max_history)
         self._history.save_history("Initialize graph", graph)
@@ -284,8 +284,8 @@ class CanvasGraph(CanvasController):
             self.graph.control.zoom = result.zoom
 
         self.update_nodes_state()
-        self.graph.update_arcs_io()
-        self.graph.update_arcs_polyline()
+        self.graph.update_wires_io()
+        self.graph.update_wires_polyline()
 
     # ==================================================================================
     # Draw Operations
@@ -299,7 +299,7 @@ class CanvasGraph(CanvasController):
             self.draw_axis_x()
             self.draw_axis_y()
 
-            self.draw_arcs()
+            self.draw_wires()
             self.draw_nodes()
 
             self.draw_pin_connects()
@@ -466,10 +466,10 @@ class CanvasGraph(CanvasController):
 
         if self.changed_left_up:
             self._mode = ControlMode.normal
-            selected_arc = self.graph.selected_arc_only
-            assert selected_arc is not None
-            selected_arc.start_anchor.selected = False
-            selected_arc.end_anchor.selected = False
+            selected_wire = self.graph.selected_wire_only
+            assert selected_wire is not None
+            selected_wire.start_anchor.selected = False
+            selected_wire.end_anchor.selected = False
             self.save_history("The anchor has been moved")
 
     def _update_nodes_state_for_selection_box(self) -> None:
@@ -579,24 +579,24 @@ class CanvasGraph(CanvasController):
             else:
                 return self.config.pins.normal_color
 
-    def get_arc_color(self, arc: FlowArc) -> RGBA:
-        if arc.selected:
-            return self.config.arcs.selected_color
-        elif arc.hovering:
-            return self.config.arcs.hovering_color
+    def get_wire_color(self, wire: FlowWire) -> RGBA:
+        if wire.selected:
+            return self.config.wires.selected_color
+        elif wire.hovering:
+            return self.config.wires.hovering_color
         else:
-            return self.config.arcs.normal_color
+            return self.config.wires.normal_color
 
-    def get_arc_color_u32(self, arc: FlowArc) -> int:
-        return imgui.get_color_u32_rgba(*self.get_arc_color(arc))
+    def get_wire_color_u32(self, wire: FlowWire) -> int:
+        return imgui.get_color_u32_rgba(*self.get_wire_color(wire))
 
-    def get_arc_thickness(self, arc: FlowArc) -> float:
-        if arc.selected:
-            return self.config.arcs.selected_thickness
-        elif arc.hovering:
-            return self.config.arcs.hovering_thickness
+    def get_wire_thickness(self, wire: FlowWire) -> float:
+        if wire.selected:
+            return self.config.wires.selected_thickness
+        elif wire.hovering:
+            return self.config.wires.hovering_thickness
         else:
-            return self.config.arcs.normal_thickness
+            return self.config.wires.normal_thickness
 
     def get_anchor_color(self, anchor: FlowAnchor) -> RGBA:
         if anchor.selected:
@@ -829,39 +829,39 @@ class CanvasGraph(CanvasController):
     # Arc Operations
     # ==================================================================================
 
-    def draw_arcs(self) -> None:
-        for arc in self.graph.arcs:
-            assert arc.output is not None
-            assert arc.input is not None
-            self.draw_arc(arc)
+    def draw_wires(self) -> None:
+        for wire in self.graph.wires:
+            assert wire.output is not None
+            assert wire.input is not None
+            self.draw_wire(wire)
 
-        if selected_arc := self.graph.selected_arc_only:
-            if selected_arc.selected and selected_arc.is_bezier_cubic_line_type:
-                self.draw_bezier_cubic_anchors(selected_arc)
+        if selected_wire := self.graph.selected_wire_only:
+            if selected_wire.selected and selected_wire.is_bezier_cubic_line_type:
+                self.draw_bezier_cubic_anchors(selected_wire)
 
-    def draw_arc(self, arc: FlowArc) -> None:
-        color = self.get_arc_color_u32(arc)
-        thickness = self.get_arc_thickness(arc)
-        polyline = [self.canvas_to_screen_coords(p) for p in arc.polyline]
+    def draw_wire(self, wire: FlowWire) -> None:
+        color = self.get_wire_color_u32(wire)
+        thickness = self.get_wire_thickness(wire)
+        polyline = [self.canvas_to_screen_coords(p) for p in wire.polyline]
         self._draw_list.add_polyline(polyline, color, 0, thickness)
 
-    def draw_bezier_cubic_anchors(self, arc: FlowArc) -> None:
-        assert arc.is_bezier_cubic_line_type
-        assert 2 <= len(arc.polyline)
+    def draw_bezier_cubic_anchors(self, wire: FlowWire) -> None:
+        assert wire.is_bezier_cubic_line_type
+        assert 2 <= len(wire.polyline)
 
         # The first/last index point is located at the connected pin.
-        sx, sy = self.canvas_to_screen_coords(arc.polyline[0])
-        ex, ey = self.canvas_to_screen_coords(arc.polyline[-1])
+        sx, sy = self.canvas_to_screen_coords(wire.polyline[0])
+        ex, ey = self.canvas_to_screen_coords(wire.polyline[-1])
 
         radius = self.anchor_radius
-        start, end = arc.get_bezier_cubic_anchors()
+        start, end = wire.get_bezier_cubic_anchors()
 
-        start_color = self.get_anchor_color_u32(arc.start_anchor)
+        start_color = self.get_anchor_color_u32(wire.start_anchor)
         sax, say = self.canvas_to_screen_coords(start)
         draw_dotted_line(self._draw_list, sx, sy, sax, say, start_color)
         self._draw_list.add_circle_filled(sax, say, radius, start_color)
 
-        end_color = self.get_anchor_color_u32(arc.end_anchor)
+        end_color = self.get_anchor_color_u32(wire.end_anchor)
         eax, eay = self.canvas_to_screen_coords(end)
         draw_dotted_line(self._draw_list, ex, ey, eax, eay, end_color)
         self._draw_list.add_circle_filled(eax, eay, radius, end_color)

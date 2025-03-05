@@ -191,7 +191,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.separator()
         menu_item("Select all", enabled=False)
         menu_item("Select nodes", enabled=False)
-        menu_item("Select arcs", enabled=False)
+        menu_item("Select wires", enabled=False)
         menu_item("Select pins", enabled=False)
 
     def _process_enabled_edit_menu(self, canvas: CanvasGraph) -> None:
@@ -248,9 +248,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Select nodes"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_nodes()
-        if menu_item("Select arcs"):
+        if menu_item("Select wires"):
             canvas.graph.unselect_all_items()
-            canvas.graph.select_all_arcs()
+            canvas.graph.select_all_wires()
         if menu_item("Select pins"):
             canvas.graph.unselect_all_items()
             canvas.graph.select_all_pins()

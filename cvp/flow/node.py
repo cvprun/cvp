@@ -515,22 +515,22 @@ class FlowNode(Serializable):
                 result.append(pin)
         return result
 
-    def find_output_pin(self, arc_uuid: str) -> Optional[FlowPin]:
+    def find_output_pin(self, wire_uuid: str) -> Optional[FlowPin]:
         for pin in self.output_pins:
-            if arc_uuid in pin.arcs:
+            if wire_uuid in pin.wires:
                 return pin
         return None
 
-    def find_input_pin(self, arc_uuid: str) -> Optional[FlowPin]:
+    def find_input_pin(self, wire_uuid: str) -> Optional[FlowPin]:
         for pin in self.input_pins:
-            if arc_uuid in pin.arcs:
+            if wire_uuid in pin.wires:
                 return pin
         return None
 
-    def remove_arc_from_pins(self, arc_uuid: str) -> None:
+    def remove_wire_from_pins(self, wire_uuid: str) -> None:
         for pin in self.pins:
             try:
-                pin.arcs.remove(arc_uuid)
+                pin.wires.remove(wire_uuid)
             except ValueError:
                 pass
 

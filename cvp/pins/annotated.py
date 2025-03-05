@@ -71,14 +71,14 @@ class PinVisible(PinHidden):
         super().__init__(not visible)
 
 
-class PinArcs(PinAnnotated):
-    def __init__(self, arcs: Sequence[str]):
-        self.arcs = list(arcs)
+class PinWires(PinAnnotated):
+    def __init__(self, wires: Sequence[str]):
+        self.wires = list(wires)
 
 
-class PinArc(PinAnnotated):
-    def __init__(self, arc: str):
-        self.arc = arc
+class PinWire(PinAnnotated):
+    def __init__(self, wire: str):
+        self.wire = wire
 
 
 class PinDefault(PinAnnotated):
@@ -137,13 +137,13 @@ def get_hidden(*args, default: Optional[bool] = None) -> bool:
     return bool(default)
 
 
-def get_arcs(*args) -> List[str]:
+def get_wires(*args) -> List[str]:
     result = list()
     for arg in args:
-        if isinstance(arg, PinArcs):
-            result.extend(arg.arcs)
-        elif isinstance(arg, PinArc):
-            result.append(arg.arc)
+        if isinstance(arg, PinWires):
+            result.extend(arg.wires)
+        elif isinstance(arg, PinWire):
+            result.append(arg.wire)
     return result
 
 

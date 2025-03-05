@@ -2,10 +2,10 @@
 
 import imgui
 
-from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
+from cvp.flow.wire import FlowWire
 from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
@@ -52,7 +52,7 @@ class TreeTab(TabItem[Canvases]):
         if imgui.tree_node(graph_label, CATEGORY_FLAGS):
             try:
                 self.tree_nodes(graph)
-                self.tree_arcs(graph)
+                self.tree_wires(graph)
                 self.tree_variables(graph)
             finally:
                 imgui.tree_pop()
@@ -111,34 +111,34 @@ class TreeTab(TabItem[Canvases]):
         finally:
             imgui.tree_pop()
 
-    def tree_arcs(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Arcs", CATEGORY_FLAGS):
+    def tree_wires(self, graph: FlowGraph) -> None:
+        if imgui.tree_node("Wires", CATEGORY_FLAGS):
             try:
-                for arc in graph.arcs:
-                    self.tree_arc(graph, arc)
+                for wire in graph.wires:
+                    self.tree_wire(graph, wire)
             finally:
                 imgui.tree_pop()
 
-    def tree_arc(self, graph: FlowGraph, arc: FlowArc) -> None:
-        arc_n_icon = self.context.config.flow_aui.pins.arc_n_icon
-        arc_y_icon = self.context.config.flow_aui.pins.arc_y_icon
-        arc_icon = arc_y_icon if arc.connected else arc_n_icon
+    def tree_wire(self, graph: FlowGraph, wire: FlowWire) -> None:
+        wire_n_icon = self.context.config.flow_aui.pins.wire_n_icon
+        wire_y_icon = self.context.config.flow_aui.pins.wire_y_icon
+        wire_icon = wire_y_icon if wire.connected else wire_n_icon
         key_ctrl = imgui.get_io().key_ctrl
 
         flags = ARC_FLAGS
-        if arc.selected:
+        if wire.selected:
             flags |= imgui.TREE_NODE_SELECTED
 
-        imgui.tree_node(f"{arc.name}###{arc.uuid}", flags)
+        imgui.tree_node(f"{wire.name}###{wire.uuid}", flags)
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
                 graph.unselect_all_items()
-            graph.flip_select_item(arc)
+            graph.flip_select_item(wire)
 
         imgui.same_line(imgui.get_cursor_pos_x())
 
         with self.normal_icon:
-            imgui.text(arc_icon)
+            imgui.text(wire_icon)
 
     def tree_variables(self, graph: FlowGraph) -> None:
         if imgui.tree_node("Variables", CATEGORY_FLAGS):

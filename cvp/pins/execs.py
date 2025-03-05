@@ -13,7 +13,7 @@ class ExecInputPinTemplate(PinTemplate):
         self,
         name: str,
         docs: Optional[str] = None,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
     ):
         super().__init__(
             name=name,
@@ -23,7 +23,7 @@ class ExecInputPinTemplate(PinTemplate):
             stream=Stream.input,
             required=False,
             hidden=False,
-            arcs=arcs,
+            wires=wires,
             kind=PinKind.exec_only,
         )
 
@@ -33,7 +33,7 @@ class ExecOutputPinTemplate(PinTemplate):
         self,
         name: str,
         docs: Optional[str] = None,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
     ):
         super().__init__(
             name=name,
@@ -43,6 +43,6 @@ class ExecOutputPinTemplate(PinTemplate):
             stream=Stream.output,
             required=False,
             hidden=False,
-            arcs=arcs,
+            wires=wires,
             kind=PinKind.exec_only,
         )

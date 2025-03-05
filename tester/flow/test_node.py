@@ -21,7 +21,7 @@ class NodeTestCase(TestCase):
             stream=Stream.output,
             required=True,
             hidden=True,
-            arcs=("1", "2"),
+            wires=("1", "2"),
             icon_pos=(1.0, 1.0),
             icon_size=(2.0, 2.0),
             name_pos=(3.0, 3.0),

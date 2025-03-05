@@ -25,7 +25,7 @@ class FlowPinKeys(StrEnum):
     stream = auto()
     required = auto()
     hidden = auto()
-    arcs = auto()
+    wires = auto()
     kind = auto()
     default = auto()
     icon_pos = auto()
@@ -46,7 +46,7 @@ class FlowPin(Serializable):
         stream=Stream.input,
         required=False,
         hidden=False,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = None,
         icon_pos: Point = EMPTY_POINT,
@@ -65,7 +65,7 @@ class FlowPin(Serializable):
         self.stream = stream
         self.required = required
         self.hidden = hidden
-        self.arcs = list(arcs if arcs else ())
+        self.wires = list(wires if wires else ())
         self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
 
@@ -89,7 +89,7 @@ class FlowPin(Serializable):
             stream=template.stream,
             required=template.required,
             hidden=template.hidden,
-            arcs=deepcopy(template.arcs),
+            wires=deepcopy(template.wires),
             kind=template.kind,
             default=deepcopy(template.default) if template.has_default else None,
         )
@@ -109,7 +109,7 @@ class FlowPin(Serializable):
             and self.stream == other.stream
             and self.required == other.required
             and self.hidden == other.hidden
-            and self.arcs == other.arcs
+            and self.wires == other.wires
             and self.kind == other.kind
             and self.default == other.default
             and self.icon_pos == other.icon_pos
@@ -128,7 +128,7 @@ class FlowPin(Serializable):
         result.stream = copy(self.stream)
         result.required = copy(self.required)
         result.hidden = copy(self.hidden)
-        result.arcs = copy(self.arcs)
+        result.wires = copy(self.wires)
         result.kind = copy(self.kind)
         result.default = copy(self.default)
         result.icon_pos = copy(self.icon_pos)
@@ -152,7 +152,7 @@ class FlowPin(Serializable):
         result.stream = deepcopy(self.stream, memo)
         result.required = deepcopy(self.required, memo)
         result.hidden = deepcopy(self.hidden, memo)
-        result.arcs = deepcopy(self.arcs, memo)
+        result.wires = deepcopy(self.wires, memo)
         result.kind = deepcopy(self.kind, memo)
         result.default = deepcopy(self.default, memo)
         result.icon_pos = deepcopy(self.icon_pos, memo)
@@ -175,7 +175,7 @@ class FlowPin(Serializable):
             self.Keys.stream: str(self.stream),
             self.Keys.required: self.required,
             self.Keys.hidden: self.hidden,
-            self.Keys.arcs: self.arcs,
+            self.Keys.wires: self.wires,
             self.Keys.kind: int(self.kind),
             self.Keys.default: dumps(self.default),
             self.Keys.icon_pos: list(self.icon_pos),
@@ -216,7 +216,7 @@ class FlowPin(Serializable):
 
         self.required = data.get(self.Keys.required, False)
         self.hidden = data.get(self.Keys.hidden, False)
-        self.arcs = data.get(self.Keys.arcs, list())
+        self.wires = data.get(self.Keys.wires, list())
 
         kind = data.get(self.Keys.kind)
         if kind is not None:
@@ -275,7 +275,7 @@ class FlowPin(Serializable):
 
     @property
     def connected(self) -> bool:
-        return bool(self.arcs)
+        return bool(self.wires)
 
     @property
     def icon_roi(self) -> Rect:
@@ -334,7 +334,7 @@ class FlowPin(Serializable):
             f"Stream: {self.stream}\n"
             f"Required: {self.required}\n"
             f"Hidden: {self.hidden}\n"
-            f"Arcs: {len(self.arcs)}\n"
+            f"Arcs: {len(self.wires)}\n"
             f"Kind: {self.kind}\n"
             f"Default: {self.default}\n"
             f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"

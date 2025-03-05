@@ -15,15 +15,15 @@ from typing import (
 )
 from uuid import uuid4
 
-from cvp.flow.arc import FlowArc
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.variable import FlowVariable
+from cvp.flow.wire import FlowWire
 from cvp.types.shapes import Point
 
 FlowSelectableKey: TypeAlias = int
-FlowSelectableAny = Union[FlowNode, FlowPin, FlowArc, FlowVariable]
+FlowSelectableAny = Union[FlowNode, FlowPin, FlowWire, FlowVariable]
 FlowSelectableDict = OrderedDict[FlowSelectableKey, FlowSelectableAny]
 
 
@@ -90,8 +90,8 @@ class FlowSelection:
         return isinstance(item, FlowPin)
 
     @staticmethod
-    def _is_arc(item: FlowSelectableAny) -> TypeGuard[FlowArc]:
-        return isinstance(item, FlowArc)
+    def _is_wire(item: FlowSelectableAny) -> TypeGuard[FlowWire]:
+        return isinstance(item, FlowWire)
 
     @staticmethod
     def _is_variable(item: FlowSelectableAny) -> TypeGuard[FlowVariable]:
@@ -106,8 +106,8 @@ class FlowSelection:
         return list(filter(self._is_pin, self._items.values()))
 
     @property
-    def arcs(self) -> List[FlowArc]:
-        return list(filter(self._is_arc, self._items.values()))
+    def wires(self) -> List[FlowWire]:
+        return list(filter(self._is_wire, self._items.values()))
 
     @property
     def variables(self) -> List[FlowVariable]:
@@ -136,11 +136,11 @@ class FlowSelection:
         return first if isinstance(first, FlowPin) else None
 
     @property
-    def selected_arc_only(self) -> Optional[FlowArc]:
+    def selected_wire_only(self) -> Optional[FlowWire]:
         if 1 != len(self._items):
             return None
         first = self.first
-        return first if isinstance(first, FlowArc) else None
+        return first if isinstance(first, FlowWire) else None
 
     @property
     def selected_variable_only(self) -> Optional[FlowVariable]:
@@ -183,25 +183,25 @@ class FlowSelection:
     def copy_validated_items(
         self,
         point: Point,
-    ) -> Tuple[List[FlowNode], List[FlowArc], List[FlowVariable]]:
+    ) -> Tuple[List[FlowNode], List[FlowWire], List[FlowVariable]]:
         nodes = self.nodes
-        arcs = self.arcs
+        wires = self.wires
         variables = self.variables
         dx, dy = self.group_pos
         x = point[0] - dx
         y = point[1] - dy
 
         new_nodes = list()
-        candidate_arcs = list()
-        arc_uuid_mapping = {arc.uuid: str(uuid4()) for arc in arcs}
+        candidate_wires = list()
+        wire_uuid_mapping = {wire.uuid: str(uuid4()) for wire in wires}
 
-        for arc in arcs:
-            arc = deepcopy(arc)
-            arc.uuid = arc_uuid_mapping[arc.uuid]
-            arc.output = None
-            arc.input = None
-            arc.polyline.clear()
-            candidate_arcs.append(arc)
+        for wire in wires:
+            wire = deepcopy(wire)
+            wire.uuid = wire_uuid_mapping[wire.uuid]
+            wire.output = None
+            wire.input = None
+            wire.polyline.clear()
+            candidate_wires.append(wire)
 
         for node in nodes:
             node = deepcopy(node)
@@ -210,31 +210,31 @@ class FlowSelection:
             node.node_pos = x + nx, y + ny
             new_nodes.append(node)
 
-            # Remap old_arc_uuid to new_arc_uuid
+            # Remap old_wire_uuid to new_wire_uuid
             for pin in node.pins:
-                for i, old_arc_uuid in enumerate(pin.arcs):
-                    if old_arc_uuid in arc_uuid_mapping:
-                        pin.arcs[i] = arc_uuid_mapping[old_arc_uuid]
+                for i, old_wire_uuid in enumerate(pin.wires):
+                    if old_wire_uuid in wire_uuid_mapping:
+                        pin.wires[i] = wire_uuid_mapping[old_wire_uuid]
 
-        new_arcs = list()
+        new_wires = list()
 
-        # Connect the arc to a pin on the local node.
-        for candidate_arc in candidate_arcs:
-            assert candidate_arc.input is None
-            assert candidate_arc.output is None
+        # Connect the wire to a pin on the local node.
+        for candidate_wire in candidate_wires:
+            assert candidate_wire.input is None
+            assert candidate_wire.output is None
 
             for new_node in new_nodes:
-                if candidate_arc.input is None:
-                    if input_pin := new_node.find_input_pin(candidate_arc.uuid):
-                        candidate_arc.input = FlowNodePin(new_node, input_pin)
+                if candidate_wire.input is None:
+                    if input_pin := new_node.find_input_pin(candidate_wire.uuid):
+                        candidate_wire.input = FlowNodePin(new_node, input_pin)
 
-                if candidate_arc.output is None:
-                    if output_pin := new_node.find_output_pin(candidate_arc.uuid):
-                        candidate_arc.output = FlowNodePin(new_node, output_pin)
+                if candidate_wire.output is None:
+                    if output_pin := new_node.find_output_pin(candidate_wire.uuid):
+                        candidate_wire.output = FlowNodePin(new_node, output_pin)
 
-            if candidate_arc.input and candidate_arc.output:
-                new_arcs.append(candidate_arc)
+            if candidate_wire.input and candidate_wire.output:
+                new_wires.append(candidate_wire)
 
         new_variables = [deepcopy(variable) for variable in variables]
 
-        return new_nodes, new_arcs, new_variables
+        return new_nodes, new_wires, new_variables

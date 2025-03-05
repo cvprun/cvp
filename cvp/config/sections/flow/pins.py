@@ -26,8 +26,8 @@ EXEC_PIN_UNCONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD_OUTLINE
 EXEC_PIN_CONNECTED_ICON: Final[str] = ARROW_RIGHT_BOLD
 DATA_PIN_UNCONNECTED_ICON: Final[str] = CIRCLE_OUTLINE
 DATA_PIN_CONNECTED_ICON: Final[str] = CIRCLE
-ARC_UNCONNECTED_ICON: Final[str] = LINK_OFF
-ARC_CONNECTED_ICON: Final[str] = LINK
+WIRE_UNCONNECTED_ICON: Final[str] = LINK_OFF
+WIRE_CONNECTED_ICON: Final[str] = LINK
 VARIABLE_ICON: Final[str] = VARIABLE
 
 
@@ -37,8 +37,8 @@ class Pins:
     exec_y_icon: str = EXEC_PIN_CONNECTED_ICON
     data_n_icon: str = DATA_PIN_UNCONNECTED_ICON
     data_y_icon: str = DATA_PIN_CONNECTED_ICON
-    arc_n_icon: str = ARC_UNCONNECTED_ICON
-    arc_y_icon: str = ARC_CONNECTED_ICON
+    wire_n_icon: str = WIRE_UNCONNECTED_ICON
+    wire_y_icon: str = WIRE_CONNECTED_ICON
     variable_icon: str = VARIABLE_ICON
 
     icon_size: FontSize = FontSize.normal

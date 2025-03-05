@@ -14,7 +14,7 @@ from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
 from cvp.variables import FLOW_PATH_SEPARATOR
 
-ArcKey = NewType("ArcKey", str)
+WireKey = NewType("WireKey", str)
 
 
 class PinKey(NamedTuple):
@@ -28,19 +28,19 @@ class PinKey(NamedTuple):
 class FlowMemory:
     _datas: Deque[Any]
     _pins: Dict[PinKey, int]
-    _arcs: Dict[ArcKey, int]
+    _wires: Dict[WireKey, int]
     _vars: Dict[str, ValueProxy]
 
     def __init__(self):
         self._datas = deque()
         self._pins = dict()
-        self._arcs = dict()
+        self._wires = dict()
         self._vars = dict()
 
     def clear(self):
         self._datas.clear()
         self._pins.clear()
-        self._arcs.clear()
+        self._wires.clear()
         self._vars.clear()
 
     def __insert_output_datas(self, node_uuid: str, pins: Sequence[FlowPin]) -> None:
@@ -51,20 +51,20 @@ class FlowMemory:
             index = len(self._datas)
             self._datas.append(value)
             self._pins[pin_key] = index
-            for arc_uuid in pin.arcs:
-                self._arcs[ArcKey(arc_uuid)] = index
+            for wire_uuid in pin.wires:
+                self._wires[WireKey(wire_uuid)] = index
 
     def __insert_input_datas(self, node_uuid: str, pins: Sequence[FlowPin]) -> None:
         for pin in pins:
             assert pin.is_data_inputs
-            assert len(pin.arcs) in (0, 1)
+            assert len(pin.wires) in (0, 1)
 
             pin_key = PinKey(node_uuid, pin.name)
 
-            if pin.arcs:
-                arc_key = ArcKey(pin.arcs[0])
-                assert arc_key in self._arcs
-                self._pins[pin_key] = self._arcs[arc_key]
+            if pin.wires:
+                wire_key = WireKey(pin.wires[0])
+                assert wire_key in self._wires
+                self._pins[pin_key] = self._wires[wire_key]
             else:
                 value = pin.get_initial_value()
                 index = len(self._datas)
@@ -116,7 +116,7 @@ class FlowMemory:
         result = cls.__new__(cls)
         result._datas = copy(self._datas)
         result._pins = copy(self._pins)
-        result._arcs = copy(self._arcs)
+        result._wires = copy(self._wires)
         result._vars = copy(self._vars)
         return result
 
@@ -127,7 +127,7 @@ class FlowMemory:
         result = cls.__new__(cls)
         result._datas = deepcopy(self._datas, memo)
         result._pins = deepcopy(self._pins, memo)
-        result._arcs = deepcopy(self._arcs, memo)
+        result._wires = deepcopy(self._wires, memo)
         result._vars = deepcopy(self._vars, memo)
         memo[id(self)] = result
         return result
@@ -140,8 +140,8 @@ class FlowMemory:
         return PinKey(node_uuid, pin_name)
 
     @staticmethod
-    def gen_arc_key(arc_uuid: str):
-        return ArcKey(arc_uuid)
+    def gen_wire_key(wire_uuid: str):
+        return WireKey(wire_uuid)
 
     def get_pin_value(self, node_uuid: str, pin_name: str) -> Any:
         key = self.gen_pin_key(node_uuid, pin_name)
@@ -150,11 +150,11 @@ class FlowMemory:
             raise KeyError(f"Not found pin value: {key}")
         return self._datas[data_index]
 
-    def get_arc_value(self, arc_uuid: str) -> Any:
-        key = self.gen_arc_key(arc_uuid)
-        data_index = self._arcs.get(key)
+    def get_wire_value(self, wire_uuid: str) -> Any:
+        key = self.gen_wire_key(wire_uuid)
+        data_index = self._wires.get(key)
         if data_index is None:
-            raise KeyError(f"Not found arc value: {arc_uuid}")
+            raise KeyError(f"Not found wire value: {wire_uuid}")
         return self._datas[data_index]
 
     def set_pin_value(self, node_uuid: str, pin_name: str, value: Any) -> None:
@@ -167,15 +167,15 @@ class FlowMemory:
             self._datas.append(value)
             self._pins[key] = index
 
-    def set_arc_value(self, arc_uuid: str, value: Any) -> None:
-        key = self.gen_arc_key(arc_uuid)
-        index = self._arcs.get(key)
+    def set_wire_value(self, wire_uuid: str, value: Any) -> None:
+        key = self.gen_wire_key(wire_uuid)
+        index = self._wires.get(key)
         if index is not None:
             self._datas[index] = value
         else:
             index = len(self._datas)
             self._datas.append(value)
-            self._arcs[key] = index
+            self._wires[key] = index
 
     def create_node_execution_record(
         self,

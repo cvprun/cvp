@@ -8,10 +8,10 @@ from cvp.config.sections.canvas.anchors import Anchors
 from cvp.config.sections.canvas.axis import Axis
 from cvp.config.sections.canvas.grid import Grid
 from cvp.config.sections.canvas.roi import Roi
-from cvp.config.sections.flow.arcs import Arcs
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
+from cvp.config.sections.flow.wires import Wires
 from cvp.types.colors import RGBA
 from cvp.variables import (
     FLOW_BACKGROUND_COLOR,
@@ -47,7 +47,7 @@ class FlowAuiConfig(AuiWindowConfig):
 
     nodes: Nodes = field(default_factory=Nodes)
     pins: Pins = field(default_factory=Pins)
-    arcs: Arcs = field(default_factory=Arcs)
+    wires: Wires = field(default_factory=Wires)
     anchors: Anchors = field(default_factory=Anchors)
 
     roi: Roi = field(default_factory=Roi)

@@ -5,7 +5,6 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.canvas.axis import Axis
-from cvp.flow.arc import FlowArc
 from cvp.flow.graph import FlowGraph
 from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
@@ -17,6 +16,7 @@ from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
+from cvp.flow.wire import FlowWire
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -49,7 +49,7 @@ class PropsTab(TabItem[Canvases]):
         selected_items = graph.selection
         selected_nodes = selected_items.nodes
         selected_pins = selected_items.pins
-        selected_arcs = selected_items.arcs
+        selected_wires = selected_items.wires
         selected_variables = selected_items.variables
 
         if len(selected_items) == 0:
@@ -58,25 +58,25 @@ class PropsTab(TabItem[Canvases]):
             if selected_items.nodes:
                 assert 1 == len(selected_nodes)
                 assert 0 == len(selected_pins)
-                assert 0 == len(selected_arcs)
+                assert 0 == len(selected_wires)
                 assert 0 == len(selected_variables)
                 self.on_node_item(selected_nodes[0])
             elif selected_items.pins:
                 assert 0 == len(selected_nodes)
                 assert 1 == len(selected_pins)
-                assert 0 == len(selected_arcs)
+                assert 0 == len(selected_wires)
                 assert 0 == len(selected_variables)
                 self.on_pin_item(selected_pins[0])
-            elif selected_items.arcs:
+            elif selected_items.wires:
                 assert 0 == len(selected_nodes)
                 assert 0 == len(selected_pins)
-                assert 1 == len(selected_arcs)
+                assert 1 == len(selected_wires)
                 assert 0 == len(selected_variables)
-                self.on_arc_item(graph, selected_arcs[0])
+                self.on_wire_item(graph, selected_wires[0])
             elif selected_items.variables:
                 assert 0 == len(selected_nodes)
                 assert 0 == len(selected_pins)
-                assert 0 == len(selected_arcs)
+                assert 0 == len(selected_wires)
                 assert 1 == len(selected_variables)
                 self.on_variable_item(selected_variables[0])
             else:
@@ -188,40 +188,40 @@ class PropsTab(TabItem[Canvases]):
         if self.context.debug:
             self.tree_pin_debugging("Debugging", pin)
 
-    def on_arc_item(self, graph: FlowGraph, arc: FlowArc) -> None:
-        input_text_disabled("Type", type(arc).__name__)
-        input_text_disabled("UUID", arc.uuid)
+    def on_wire_item(self, graph: FlowGraph, wire: FlowWire) -> None:
+        input_text_disabled("Type", type(wire).__name__)
+        input_text_disabled("UUID", wire.uuid)
 
-        arc.name = input_text_value("Name", arc.name)
-        arc.docs = input_text_value("Docs", arc.docs)
+        wire.name = input_text_value("Name", wire.name)
+        wire.docs = input_text_value("Docs", wire.docs)
 
-        line_index = LINE_TYPE_NAME2INDEX[str(arc.line_type)]
+        line_index = LINE_TYPE_NAME2INDEX[str(wire.line_type)]
         if line_result := combo("Line Type", line_index, LINE_TYPE_NAMES):
             line_name = LINE_TYPE_INDEX2NAME[line_result.value]
-            arc.line_type = FlowLineType(line_name)
-            graph.update_arc_polyline(arc, force=True)
+            wire.line_type = FlowLineType(line_name)
+            graph.update_wire_polyline(wire, force=True)
 
-        sax, say = arc.start_anchor.point
+        sax, say = wire.start_anchor.point
         if anchor_result := drag_float2("Start Anchor", sax, say):
-            arc.start_anchor.point = anchor_result.values
-            graph.update_arc_polyline(arc, force=True)
+            wire.start_anchor.point = anchor_result.values
+            graph.update_wire_polyline(wire, force=True)
 
-        eax, eay = arc.end_anchor.point
+        eax, eay = wire.end_anchor.point
         if anchor_result := drag_float2("End Anchor", eax, eay):
-            arc.end_anchor.point = anchor_result.values
-            graph.update_arc_polyline(arc, force=True)
+            wire.end_anchor.point = anchor_result.values
+            graph.update_wire_polyline(wire, force=True)
 
-        if arc.output:
+        if wire.output:
             if imgui.tree_node("Output pin"):
                 try:
-                    self.on_pin_item(arc.output.pin)
+                    self.on_pin_item(wire.output.pin)
                 finally:
                     imgui.tree_pop()
 
-        if arc.input:
+        if wire.input:
             if imgui.tree_node("Input pin"):
                 try:
-                    self.on_pin_item(arc.input.pin)
+                    self.on_pin_item(wire.input.pin)
                 finally:
                     imgui.tree_pop()
 
@@ -282,8 +282,8 @@ class PropsTab(TabItem[Canvases]):
                         self.on_node_item(item)
                     elif isinstance(item, FlowPin):
                         self.on_pin_item(item)
-                    elif isinstance(item, FlowArc):
-                        self.on_arc_item(graph, item)
+                    elif isinstance(item, FlowWire):
+                        self.on_wire_item(graph, item)
                     elif isinstance(item, FlowVariable):
                         self.on_variable_item(item)
                     else:

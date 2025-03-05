@@ -18,7 +18,7 @@ class DataInputPinTemplate(PinTemplate):
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -30,7 +30,7 @@ class DataInputPinTemplate(PinTemplate):
             stream=Stream.input,
             required=required,
             hidden=hidden,
-            arcs=arcs,
+            wires=wires,
             kind=kind,
             default=default,
         )
@@ -43,7 +43,7 @@ class DataOutputPinTemplate(PinTemplate):
         dtype: Dtype,
         docs: Optional[str] = None,
         hidden: Optional[bool] = None,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -55,7 +55,7 @@ class DataOutputPinTemplate(PinTemplate):
             stream=Stream.output,
             required=False,
             hidden=hidden,
-            arcs=arcs,
+            wires=wires,
             kind=kind,
             default=default,
         )

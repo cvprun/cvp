@@ -338,26 +338,26 @@ class FlowRunner:
         if next_pin is None:
             raise IndexError(f"Not found next pin: '{next_pin_name}'")
 
-        if not next_pin.arcs:
-            return None  # The arc is not connected.
+        if not next_pin.wires:
+            return None  # The wire is not connected.
 
-        if 2 <= len(next_pin.arcs):
-            raise ValueError("Only one output arc is allowed")
+        if 2 <= len(next_pin.wires):
+            raise ValueError("Only one output wire is allowed")
 
-        arc_uuid = next_pin.arcs[0]
-        arc = graph.arcs.get(arc_uuid)
-        if arc is None:
-            raise IndexError(f"Not found arc: '{arc_uuid}'")
+        wire_uuid = next_pin.wires[0]
+        wire = graph.wires.get(wire_uuid)
+        if wire is None:
+            raise IndexError(f"Not found wire: '{wire_uuid}'")
 
-        assert arc.output is not None
-        assert next_pin.name == arc.output.pin.name
+        assert wire.output is not None
+        assert next_pin.name == wire.output.pin.name
 
-        input_node_uuid = arc.input.node.uuid
+        input_node_uuid = wire.input.node.uuid
         input_node = graph.find_node(input_node_uuid)
         if input_node is None:
             raise IndexError(f"Not found input node: '{input_node_uuid}'")
 
-        input_pin = input_node.find_pin(arc.input.pin.name)
+        input_pin = input_node.find_pin(wire.input.pin.name)
         if input_pin is None:
             raise IndexError("Not found input pin")
 

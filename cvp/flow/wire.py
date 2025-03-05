@@ -16,7 +16,7 @@ from cvp.types.shapes import Point, Rect
 
 
 @unique
-class FlowArcKeys(StrEnum):
+class FlowWireKeys(StrEnum):
     uuid = auto()
     name_ = "name"
     docs = auto()
@@ -25,8 +25,8 @@ class FlowArcKeys(StrEnum):
     end_anchor = auto()
 
 
-class FlowArc(Serializable):
-    Keys = FlowArcKeys
+class FlowWire(Serializable):
+    Keys = FlowWireKeys
 
     # noinspection PyShadowingBuiltins
     def __init__(

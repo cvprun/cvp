@@ -136,7 +136,7 @@ class FlowManager:
     @staticmethod
     def loads_graph_yaml(data: bytes) -> FlowGraph:
         result = deserialize(full_load(data), FlowGraph)
-        result.update_arcs_io(force=True)
+        result.update_wires_io(force=True)
         return result
 
     def read_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> FlowGraph:

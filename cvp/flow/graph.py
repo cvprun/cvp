@@ -13,7 +13,6 @@ from type_serialize import Serializable, deserialize, serialize
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
-from cvp.flow.arc import FlowArc
 from cvp.flow.connection import FlowConnection
 from cvp.flow.control import FlowControl
 from cvp.flow.node import FlowNode
@@ -21,6 +20,7 @@ from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable
+from cvp.flow.wire import FlowWire
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Point, Size
@@ -35,7 +35,7 @@ class FlowGraphKeys(StrEnum):
     lock = auto()
     color = auto()
     nodes = auto()
-    arcs = auto()
+    wires = auto()
     variables = auto()
     control = auto()
     tags = auto()
@@ -53,7 +53,7 @@ class FlowGraph(Serializable):
         lock=False,
         color: RGBA = WHITE_RGBA,
         nodes: Optional[Sequence[FlowNode]] = None,
-        arcs: Optional[Sequence[FlowArc]] = None,
+        wires: Optional[Sequence[FlowWire]] = None,
         variables: Optional[Sequence[FlowVariable]] = None,
         control: Optional[FlowControl] = None,
         tags: Optional[Sequence[str]] = None,
@@ -68,7 +68,7 @@ class FlowGraph(Serializable):
         self.color = color
 
         self.nodes = MappingDeque[str, FlowNode](nodes, keyable=self._node_keyable)
-        self.arcs = MappingDeque[str, FlowArc](arcs, keyable=self._arc_keyable)
+        self.wires = MappingDeque[str, FlowWire](wires, keyable=self._wire_keyable)
         self.variables = MappingDeque[str, FlowVariable](
             variables,
             keyable=self._variable_keyable,
@@ -83,8 +83,8 @@ class FlowGraph(Serializable):
         return node.uuid
 
     @staticmethod
-    def _arc_keyable(arc: FlowArc) -> str:
-        return arc.uuid
+    def _wire_keyable(wire: FlowWire) -> str:
+        return wire.uuid
 
     @staticmethod
     def _variable_keyable(variable: FlowVariable) -> str:
@@ -101,7 +101,7 @@ class FlowGraph(Serializable):
             and self.lock == other.lock
             and self.color == other.color
             and self.nodes == other.nodes
-            and self.arcs == other.arcs
+            and self.wires == other.wires
             and self.variables == other.variables
             and self.control == other.control
             and self.tags == other.tags
@@ -117,7 +117,7 @@ class FlowGraph(Serializable):
         result.lock = copy(self.lock)
         result.color = copy(self.color)
         result.nodes = copy(self.nodes)
-        result.arcs = copy(self.arcs)
+        result.wires = copy(self.wires)
         result.variables = copy(self.variables)
         result.control = copy(self.control)
         result.tags = copy(self.tags)
@@ -136,7 +136,7 @@ class FlowGraph(Serializable):
         result.lock = deepcopy(self.lock, memo)
         result.color = deepcopy(self.color, memo)
         result.nodes = deepcopy(self.nodes, memo)
-        result.arcs = deepcopy(self.arcs, memo)
+        result.wires = deepcopy(self.wires, memo)
         result.variables = deepcopy(self.variables, memo)
         result.control = deepcopy(self.control, memo)
         result.tags = deepcopy(self.tags, memo)
@@ -154,7 +154,7 @@ class FlowGraph(Serializable):
             self.Keys.lock: self.lock,
             self.Keys.color: list(self.color),
             self.Keys.nodes: serialize(self.nodes.as_list()),
-            self.Keys.arcs: serialize(self.arcs.as_list()),
+            self.Keys.wires: serialize(self.wires.as_list()),
             self.Keys.variables: serialize(self.variables.as_list()),
             self.Keys.control: serialize(self.control),
             self.Keys.tags: self.tags,
@@ -175,15 +175,15 @@ class FlowGraph(Serializable):
         assert len(self.color) == 4
 
         self.nodes = MappingDeque(keyable=self._node_keyable)
-        self.arcs = MappingDeque(keyable=self._arc_keyable)
+        self.wires = MappingDeque(keyable=self._wire_keyable)
         self.variables = MappingDeque(keyable=self._variable_keyable)
 
         if nodes := data.get(self.Keys.nodes):
             for node in nodes:
                 self.nodes.append(deserialize(node, FlowNode))
-        if arcs := data.get(self.Keys.arcs):
-            for arc in arcs:
-                self.arcs.append(deserialize(arc, FlowArc))
+        if wires := data.get(self.Keys.wires):
+            for wire in wires:
+                self.wires.append(deserialize(wire, FlowWire))
         if variables := data.get(self.Keys.variables):
             for variable in variables:
                 self.variables.append(deserialize(variable, FlowVariable))
@@ -201,8 +201,8 @@ class FlowGraph(Serializable):
         return self._selection
 
     @property
-    def selected_arc_only(self) -> Optional[FlowArc]:
-        return self._selection.selected_arc_only
+    def selected_wire_only(self) -> Optional[FlowWire]:
+        return self._selection.selected_wire_only
 
     def restore(self, other: "FlowGraph") -> None:
         if self.uuid != other.uuid:
@@ -212,7 +212,7 @@ class FlowGraph(Serializable):
         self.docs = other.docs
         self.icon = other.icon
         self.nodes = other.nodes
-        self.arcs = other.arcs
+        self.wires = other.wires
         self.variables = other.variables
         self.control = other.control
         self.tags = other.tags
@@ -225,27 +225,27 @@ class FlowGraph(Serializable):
         *,
         selected: Optional[bool] = None,
     ) -> None:
-        nodes, arcs, variables = items.copy_validated_items(point)
+        nodes, wires, variables = items.copy_validated_items(point)
 
         if selected is not None:
             for node in nodes:
                 for pin in node.pins:
                     pin.selected = False
                 node.selected = selected
-            for arc in arcs:
-                arc.selected = selected
+            for wire in wires:
+                wire.selected = selected
             for variable in variables:
                 variable.selected = selected
 
         for node in nodes:
             self.nodes.insert(0, node)
-        for arc in arcs:
-            self.arcs.insert(0, arc)
+        for wire in wires:
+            self.wires.insert(0, wire)
         for variable in variables:
             self.variables.insert(0, variable)
 
         self.update_selected_items()
-        self.update_arcs_polyline(force=True)
+        self.update_wires_polyline(force=True)
 
     def update_selected_item(self, item: FlowSelectableAny) -> None:
         self._selection.apply(item)
@@ -255,8 +255,8 @@ class FlowGraph(Serializable):
             for pin in node.pins:
                 self._selection.apply(pin)
             self._selection.apply(node)
-        for arc in self.arcs:
-            self._selection.apply(arc)
+        for wire in self.wires:
+            self._selection.apply(wire)
         for variable in self.variables:
             self._selection.apply(variable)
 
@@ -264,9 +264,9 @@ class FlowGraph(Serializable):
         for node in self.nodes:
             self._selection.apply(node)
 
-    def update_selected_arcs(self) -> None:
-        for arc in self.arcs:
-            self._selection.apply(arc)
+    def update_selected_wires(self) -> None:
+        for wire in self.wires:
+            self._selection.apply(wire)
 
     def update_selected_variables(self) -> None:
         for variable in self.variables:
@@ -283,9 +283,9 @@ class FlowGraph(Serializable):
         for node in self.nodes:
             self.select_item(node)
 
-    def select_all_arcs(self) -> None:
-        for arc in self.arcs:
-            self.select_item(arc)
+    def select_all_wires(self) -> None:
+        for wire in self.wires:
+            self.select_item(wire)
 
     def select_all_pins(self) -> None:
         for node in self.nodes:
@@ -294,7 +294,7 @@ class FlowGraph(Serializable):
 
     def select_all_items(self) -> None:
         self.select_all_nodes()
-        self.select_all_arcs()
+        self.select_all_wires()
 
     def unselect_item(self, item: FlowSelectableAny) -> None:
         self.select_item(item, selected=False)
@@ -310,10 +310,10 @@ class FlowGraph(Serializable):
                 pin.hovering = False
                 pin.connectable = False
 
-        for arc in self.arcs:
-            arc.hovering = False
-            arc.start_anchor.hovering = False
-            arc.end_anchor.hovering = False
+        for wire in self.wires:
+            wire.hovering = False
+            wire.start_anchor.hovering = False
+            wire.end_anchor.hovering = False
 
         for variable in self.variables:
             variable.hovering = False
@@ -365,18 +365,18 @@ class FlowGraph(Serializable):
 
         return FlowNodePin(node, pin)
 
-    def find_hovering_arc_with_mouse(self, mouse: Point) -> Optional[FlowArc]:
+    def find_hovering_wire_with_mouse(self, mouse: Point) -> Optional[FlowWire]:
         mp = shapely.Point(mouse)
-        for arc in self.arcs:
-            distance = shapely.LineString(arc.polyline).distance(mp)
-            if distance <= self.control.arc_hovering_tolerance:
-                return arc
+        for wire in self.wires:
+            distance = shapely.LineString(wire.polyline).distance(mp)
+            if distance <= self.control.wire_hovering_tolerance:
+                return wire
         return None
 
-    def find_hovering_arc(self) -> Optional[FlowArc]:
-        for arc in self.arcs:
-            if arc.hovering:
-                return arc
+    def find_hovering_wire(self) -> Optional[FlowWire]:
+        for wire in self.wires:
+            if wire.hovering:
+                return wire
         return None
 
     def find_variable(self, key: str) -> Optional[FlowVariable]:
@@ -390,33 +390,33 @@ class FlowGraph(Serializable):
 
     def find_hovering_anchor_with_mouse(
         self,
-        arc: FlowArc,
+        wire: FlowWire,
         mouse: Point,
     ) -> Optional[FlowAnchor]:
         mx, my = mouse
 
-        start, end = arc.get_bezier_cubic_anchors()
+        start, end = wire.get_bezier_cubic_anchors()
         sx, sy = start
         sdx = mx - sx
         sdy = my - sy
         start_distance = sqrt(sdx**2 + sdy**2)
         if start_distance <= self.control.anchor_hovering_tolerance:
-            return arc.start_anchor
+            return wire.start_anchor
 
         ex, ey = end
         edx = mx - ex
         edy = my - ey
         end_distance = sqrt(edx**2 + edy**2)
         if end_distance <= self.control.anchor_hovering_tolerance:
-            return arc.end_anchor
+            return wire.end_anchor
         return None
 
     def find_hovering_anchor(self) -> Optional[FlowAnchor]:
-        if selected_arc := self.selected_arc_only:
-            if selected_arc.start_anchor.hovering:
-                return selected_arc.start_anchor
-            if selected_arc.end_anchor.hovering:
-                return selected_arc.end_anchor
+        if selected_wire := self.selected_wire_only:
+            if selected_wire.start_anchor.hovering:
+                return selected_wire.start_anchor
+            if selected_wire.end_anchor.hovering:
+                return selected_wire.end_anchor
         return None
 
     def find_hovering_item(self) -> Optional[FlowSelectableAny]:
@@ -429,9 +429,9 @@ class FlowGraph(Serializable):
 
             return node
 
-        if arc := self.find_hovering_arc():
-            assert arc.hovering
-            return arc
+        if wire := self.find_hovering_wire():
+            assert wire.hovering
+            return wire
 
         if variable := self.find_hovering_variable():
             assert variable.hovering
@@ -439,25 +439,25 @@ class FlowGraph(Serializable):
 
         return None
 
-    def pop_arcs(self, uuids: Union[Set[str], Sequence[str]]) -> List[FlowArc]:
+    def pop_wires(self, uuids: Union[Set[str], Sequence[str]]) -> List[FlowWire]:
         if not isinstance(uuids, set):
             uuids = set(uuids)
-        remain_arcs = list()
-        pop_arcs = list()
-        for arc in self.arcs:
-            if arc.uuid in uuids:
-                pop_arcs.append(arc)
+        remain_wires = list()
+        pop_wires = list()
+        for wire in self.wires:
+            if wire.uuid in uuids:
+                pop_wires.append(wire)
             else:
-                remain_arcs.append(arc)
-        self.arcs.clear()
-        self.arcs.extend(remain_arcs)
-        return pop_arcs
+                remain_wires.append(wire)
+        self.wires.clear()
+        self.wires.extend(remain_wires)
+        return pop_wires
 
-    def find_selected_arcs(self) -> List[FlowArc]:
+    def find_selected_wires(self) -> List[FlowWire]:
         result = list()
-        for arc in self.arcs:
-            if arc.selected:
-                result.append(arc)
+        for wire in self.wires:
+            if wire.selected:
+                result.append(wire)
         return result
 
     def find_selected_pins(self) -> List[FlowPin]:
@@ -487,10 +487,10 @@ class FlowGraph(Serializable):
             for pin in node.pins:
                 pin.selected = False
 
-        for arc in self.arcs:
-            arc.selected = False
-            arc.start_anchor.selected = False
-            arc.end_anchor.selected = False
+        for wire in self.wires:
+            wire.selected = False
+            wire.start_anchor.selected = False
+            wire.end_anchor.selected = False
 
         for variable in self.variables:
             variable.selected = False
@@ -511,11 +511,11 @@ class FlowGraph(Serializable):
                 self._selection.apply(node)
                 return node
 
-        if arc := self.find_hovering_arc():
-            assert arc.hovering
-            arc.selected = not arc.selected
-            self._selection.apply(arc)
-            return arc
+        if wire := self.find_hovering_wire():
+            assert wire.hovering
+            wire.selected = not wire.selected
+            self._selection.apply(wire)
+            return wire
 
         if variable := self.find_hovering_variable():
             assert variable.hovering
@@ -528,9 +528,9 @@ class FlowGraph(Serializable):
     def move_node(self, node: FlowNode, pos: Point) -> None:
         node.node_pos = pos
         for pin in node.pins:
-            for arc_uuid in pin.arcs:
-                if arc := self.arcs.get(arc_uuid):
-                    self.update_arc_polyline(arc, force=True)
+            for wire_uuid in pin.wires:
+                if wire := self.wires.get(wire_uuid):
+                    self.update_wire_polyline(wire, force=True)
 
     def move_on_selected_nodes(self, delta: Size) -> None:
         dx, dy = delta
@@ -550,67 +550,67 @@ class FlowGraph(Serializable):
         if dx == 0 and dy == 0:
             return
 
-        selected_arc = self.selected_arc_only
-        if selected_arc is None:
+        selected_wire = self.selected_wire_only
+        if selected_wire is None:
             return
 
-        if selected_arc.start_anchor.selected:
-            selected_arc.start_anchor.x += dx
-            selected_arc.start_anchor.y += dy
+        if selected_wire.start_anchor.selected:
+            selected_wire.start_anchor.x += dx
+            selected_wire.start_anchor.y += dy
 
-        if selected_arc.end_anchor.selected:
-            selected_arc.end_anchor.x += dx
-            selected_arc.end_anchor.y += dy
+        if selected_wire.end_anchor.selected:
+            selected_wire.end_anchor.x += dx
+            selected_wire.end_anchor.y += dy
 
-        self.update_arc_polyline(selected_arc, force=True)
+        self.update_wire_polyline(selected_wire, force=True)
 
-    def update_arcs_io(self, *, force=False) -> None:
-        for arc in self.arcs:
-            self.update_arc_io(arc, force=force)
+    def update_wires_io(self, *, force=False) -> None:
+        for wire in self.wires:
+            self.update_wire_io(wire, force=force)
 
-    def update_arc_io(self, arc: FlowArc, *, force=False) -> None:
-        self.update_arc_output(arc, force=force)
-        self.update_arc_input(arc, force=force)
+    def update_wire_io(self, wire: FlowWire, *, force=False) -> None:
+        self.update_wire_output(wire, force=force)
+        self.update_wire_input(wire, force=force)
 
-    def update_arc_output(self, arc: FlowArc, *, force=False) -> None:
-        if not force and arc.output is not None:
-            return
-
-        for node in self.nodes:
-            if pin := node.find_output_pin(arc.uuid):
-                arc.output = FlowNodePin(node, pin)
-                return
-
-        raise IndexError("Could not find the output pin of the arc")
-
-    def update_arc_input(self, arc: FlowArc, *, force=False) -> None:
-        if not force and arc.input is not None:
+    def update_wire_output(self, wire: FlowWire, *, force=False) -> None:
+        if not force and wire.output is not None:
             return
 
         for node in self.nodes:
-            if pin := node.find_input_pin(arc.uuid):
-                arc.input = FlowNodePin(node, pin)
+            if pin := node.find_output_pin(wire.uuid):
+                wire.output = FlowNodePin(node, pin)
                 return
 
-        raise IndexError("Could not find the input pin of the arc")
+        raise IndexError("Could not find the output pin of the wire")
 
-    def update_arcs_polyline(self, *, force=False) -> None:
-        for arc in self.arcs:
-            self.update_arc_polyline(arc, force=force)
-
-    def update_arc_polyline(self, arc: FlowArc, *, force=False) -> None:
-        if not force and arc.polyline:
+    def update_wire_input(self, wire: FlowWire, *, force=False) -> None:
+        if not force and wire.input is not None:
             return
 
-        if arc.output is None:
-            self.update_arc_output(arc)
+        for node in self.nodes:
+            if pin := node.find_input_pin(wire.uuid):
+                wire.input = FlowNodePin(node, pin)
+                return
 
-        if arc.input is None:
-            self.update_arc_input(arc)
+        raise IndexError("Could not find the input pin of the wire")
 
-        assert arc.output is not None
-        assert arc.input is not None
-        arc.update_polyline(self.control.bezier_curve_tessellation_tolerance)
+    def update_wires_polyline(self, *, force=False) -> None:
+        for wire in self.wires:
+            self.update_wire_polyline(wire, force=force)
+
+    def update_wire_polyline(self, wire: FlowWire, *, force=False) -> None:
+        if not force and wire.polyline:
+            return
+
+        if wire.output is None:
+            self.update_wire_output(wire)
+
+        if wire.input is None:
+            self.update_wire_input(wire)
+
+        assert wire.output is not None
+        assert wire.input is not None
+        wire.update_polyline(self.control.bezier_curve_tessellation_tolerance)
 
     def connect_pins(
         self,
@@ -618,23 +618,23 @@ class FlowGraph(Serializable):
         in_conn: FlowNodePin,
         *,
         no_reorder=False,
-    ) -> FlowArc:
+    ) -> FlowWire:
         if not no_reorder:
             connection_pair = FlowConnection.reorder_connectable_pins(out_conn, in_conn)
             out_conn, in_conn = connection_pair
 
-        arc = FlowArc.from_connect_pair(
+        wire = FlowWire.from_connect_pair(
             out_conn,
             in_conn,
             self.control.bezier_curve_tessellation_tolerance,
             name=f"{out_conn.pin.name}-{out_conn.pin.name}",
             docs=f"{str(out_conn)}-{str(out_conn)}",
         )
-        self.arcs.append(arc)
-        out_conn.pin.arcs.append(arc.uuid)
-        in_conn.pin.arcs.append(arc.uuid)
+        self.wires.append(wire)
+        out_conn.pin.wires.append(wire.uuid)
+        in_conn.pin.wires.append(wire.uuid)
 
-        return arc
+        return wire
 
     def update_hovering_state(self, mouse: Point) -> None:
         if hovering_node := self.find_hovering_node_with_mouse(mouse):
@@ -643,12 +643,12 @@ class FlowGraph(Serializable):
                 hovering_pin.hovering = True
             return
 
-        hovering_arc = self.find_hovering_arc_with_mouse(mouse)
-        if hovering_arc is not None:
-            hovering_arc.hovering = True
+        hovering_wire = self.find_hovering_wire_with_mouse(mouse)
+        if hovering_wire is not None:
+            hovering_wire.hovering = True
 
-        if selected_arc_only := self.selected_arc_only:
-            if anchor := self.find_hovering_anchor_with_mouse(selected_arc_only, mouse):
+        if selected_wire := self.selected_wire_only:
+            if anchor := self.find_hovering_anchor_with_mouse(selected_wire, mouse):
                 anchor.hovering = True
 
     def remove_variable(self, variable: FlowVariable) -> None:
@@ -659,23 +659,23 @@ class FlowGraph(Serializable):
         for variable in self.find_selected_variables():
             self.remove_variable(variable)
 
-    def remove_arc(self, arc: FlowArc) -> None:
-        if arc.input:
-            arc.input.pin.arcs.remove(arc.uuid)
-        if arc.output:
-            arc.output.pin.arcs.remove(arc.uuid)
-        self.arcs.remove(arc)
-        self._selection.remove_noraise(arc)
+    def remove_wire(self, wire: FlowWire) -> None:
+        if wire.input:
+            wire.input.pin.wires.remove(wire.uuid)
+        if wire.output:
+            wire.output.pin.wires.remove(wire.uuid)
+        self.wires.remove(wire)
+        self._selection.remove_noraise(wire)
 
-    def remove_selected_arcs(self) -> None:
-        for arc in self.find_selected_arcs():
-            self.remove_arc(arc)
+    def remove_selected_wires(self) -> None:
+        for wire in self.find_selected_wires():
+            self.remove_wire(wire)
 
     def remove_node(self, node: FlowNode):
         for pin in node.pins:
-            for arc_uuid in pin.arcs:
-                if arc := self.arcs.get(arc_uuid):
-                    self.remove_arc(arc)
+            for wire_uuid in pin.wires:
+                if wire := self.wires.get(wire_uuid):
+                    self.remove_wire(wire)
             self._selection.remove_noraise(pin)
         self.nodes.remove(node)
         self._selection.remove_noraise(node)
@@ -686,7 +686,7 @@ class FlowGraph(Serializable):
 
     def remove_selected_items(self) -> None:
         self.remove_selected_nodes()
-        self.remove_selected_arcs()
+        self.remove_selected_wires()
         self.remove_selected_variable()
 
     def items_to_front(self, items: Sequence[FlowSelectableAny]) -> None:
@@ -696,8 +696,8 @@ class FlowGraph(Serializable):
     def item_to_front(self, item: FlowSelectableAny) -> None:
         if isinstance(item, FlowNode):
             self.node_to_front(item)
-        elif isinstance(item, FlowArc):
-            self.arc_to_front(item)
+        elif isinstance(item, FlowWire):
+            self.wire_to_front(item)
         elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
@@ -709,11 +709,11 @@ class FlowGraph(Serializable):
             assert node == self.nodes.pop(index)
             self.nodes.insert(index - 1, node)
 
-    def arc_to_front(self, arc: FlowArc) -> None:
-        index = self.arcs.index(arc)
+    def wire_to_front(self, wire: FlowWire) -> None:
+        index = self.wires.index(wire)
         if 0 <= index - 1:
-            assert arc == self.arcs.pop(index)
-            self.arcs.insert(index - 1, arc)
+            assert wire == self.wires.pop(index)
+            self.wires.insert(index - 1, wire)
 
     def items_to_back(self, items: Sequence[FlowSelectableAny]) -> None:
         for item in items:
@@ -722,8 +722,8 @@ class FlowGraph(Serializable):
     def item_to_back(self, item: FlowSelectableAny) -> None:
         if isinstance(item, FlowNode):
             self.node_to_back(item)
-        elif isinstance(item, FlowArc):
-            self.arc_to_back(item)
+        elif isinstance(item, FlowWire):
+            self.wire_to_back(item)
         elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
@@ -735,17 +735,17 @@ class FlowGraph(Serializable):
             assert node == self.nodes.pop(index)
             self.nodes.insert(index + 1, node)
 
-    def arc_to_back(self, arc: FlowArc) -> None:
-        index = self.arcs.index(arc)
-        if index + 1 < len(self.arcs):
-            assert arc == self.arcs.pop(index)
-            self.arcs.insert(index + 1, arc)
+    def wire_to_back(self, wire: FlowWire) -> None:
+        index = self.wires.index(wire)
+        if index + 1 < len(self.wires):
+            assert wire == self.wires.pop(index)
+            self.wires.insert(index + 1, wire)
 
     def item_bring_forward(self, item: FlowSelectableAny) -> None:
         if isinstance(item, FlowNode):
             self.node_bring_forward(item)
-        elif isinstance(item, FlowArc):
-            self.arc_bring_forward(item)
+        elif isinstance(item, FlowWire):
+            self.wire_bring_forward(item)
         elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
@@ -757,17 +757,17 @@ class FlowGraph(Serializable):
             assert node == self.nodes.pop(index)
             self.nodes.insert(0, node)
 
-    def arc_bring_forward(self, arc: FlowArc) -> None:
-        index = self.arcs.index(arc)
+    def wire_bring_forward(self, wire: FlowWire) -> None:
+        index = self.wires.index(wire)
         if 0 != index:
-            assert arc == self.arcs.pop(index)
-            self.arcs.insert(0, arc)
+            assert wire == self.wires.pop(index)
+            self.wires.insert(0, wire)
 
     def item_send_backward(self, item: FlowSelectableAny) -> None:
         if isinstance(item, FlowNode):
             self.node_send_backward(item)
-        elif isinstance(item, FlowArc):
-            self.arc_send_backward(item)
+        elif isinstance(item, FlowWire):
+            self.wire_send_backward(item)
         elif isinstance(item, (FlowPin, FlowVariable)):
             pass
         else:
@@ -775,15 +775,15 @@ class FlowGraph(Serializable):
 
     def node_send_backward(self, node: FlowNode) -> None:
         index = self.nodes.index(node)
-        if index < len(self.arcs) - 1:
+        if index < len(self.wires) - 1:
             assert node == self.nodes.pop(index)
             self.nodes.append(node)
 
-    def arc_send_backward(self, arc: FlowArc) -> None:
-        index = self.arcs.index(arc)
-        if index < len(self.arcs) - 1:
-            assert arc == self.arcs.pop(index)
-            self.arcs.append(arc)
+    def wire_send_backward(self, wire: FlowWire) -> None:
+        index = self.wires.index(wire)
+        if index < len(self.wires) - 1:
+            assert wire == self.wires.pop(index)
+            self.wires.append(wire)
 
     def nodes_align_left(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
@@ -883,11 +883,11 @@ class FlowGraph(Serializable):
     def retrieve_data_node_execution_order(self, node: FlowNode) -> List[FlowNodePin]:
         result = list()
         for data_input in node.data_inputs:
-            for arc_uuid in data_input.arcs:
-                arc = self.arcs.get(arc_uuid)
-                assert arc is not None
+            for wire_uuid in data_input.wires:
+                wire = self.wires.get(wire_uuid)
+                assert wire is not None
 
-                prev_np = arc.output
+                prev_np = wire.output
                 if prev_np is None:
                     raise ValueError("Output node-pin is not cached")
 

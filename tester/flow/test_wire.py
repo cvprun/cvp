@@ -5,13 +5,13 @@ from unittest import TestCase, main
 from type_serialize import deserialize, serialize
 
 from cvp.flow.anchor import FlowAnchor
-from cvp.flow.arc import FlowArc
 from cvp.flow.line_type import FlowLineType
+from cvp.flow.wire import FlowWire
 
 
-class ArcTestCase(TestCase):
+class WireTestCase(TestCase):
     def test_serialize_deserialize(self):
-        arc1 = FlowArc(
+        wire1 = FlowWire(
             uuid="uuid",
             name="name",
             docs="docs",
@@ -25,20 +25,20 @@ class ArcTestCase(TestCase):
             polyline=((1.0, 1.0), (2.0, 2.0)),
         )
 
-        serialized = serialize(arc1)
+        serialized = serialize(wire1)
         self.assertIsInstance(serialized, dict)
 
-        arc2 = deserialize(serialized, FlowArc)
-        self.assertIsInstance(arc2, FlowArc)
+        wire2 = deserialize(serialized, FlowWire)
+        self.assertIsInstance(wire2, FlowWire)
 
-        self.assertEqual(arc2, arc1)
+        self.assertEqual(wire2, wire1)
 
-        self.assertIsNone(arc2.input)
-        self.assertIsNone(arc2.output)
-        self.assertFalse(arc2.selected)
-        self.assertFalse(arc2.hovering)
-        self.assertIsInstance(arc2.polyline, list)
-        self.assertFalse(arc2.polyline)
+        self.assertIsNone(wire2.input)
+        self.assertIsNone(wire2.output)
+        self.assertFalse(wire2.selected)
+        self.assertFalse(wire2.hovering)
+        self.assertIsInstance(wire2.polyline, list)
+        self.assertFalse(wire2.polyline)
 
 
 if __name__ == "__main__":

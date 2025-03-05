@@ -10,13 +10,13 @@ from cvp.inspect.parameter import NoDefault, inspect_parameter_required
 from cvp.pins.action import Action
 from cvp.pins.annotated import (
     get_action,
-    get_arcs,
     get_default,
     get_docs,
     get_hidden,
     get_name,
     get_required,
     get_stream,
+    get_wires,
 )
 from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
@@ -32,7 +32,7 @@ class PinTemplate:
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        arcs: Optional[Sequence[str]] = None,
+        wires: Optional[Sequence[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -43,7 +43,7 @@ class PinTemplate:
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.hidden = bool(hidden)
-        self.arcs = list(arcs if arcs else list())
+        self.wires = list(wires if wires else list())
         self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
 
@@ -73,7 +73,7 @@ class PinTemplate:
             param_docs = get_docs(*param_args, default=None)
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
-            param_arcs = get_arcs(*param_args)
+            param_wires = get_wires(*param_args)
             param_default = get_default(*param_args, default=parameter.default)
             param_required = get_required(*param_args, default=param_required)
             param_hidden = get_hidden(*param_args, default=False)
@@ -83,7 +83,7 @@ class PinTemplate:
             param_docs = str()
             param_action = Action.data
             param_stream = Stream.input
-            param_arcs = list()
+            param_wires = list()
             param_default = parameter.default
             param_hidden = False
 
@@ -95,7 +95,7 @@ class PinTemplate:
             stream=param_stream,
             required=param_required,
             hidden=param_hidden,
-            arcs=param_arcs,
+            wires=param_wires,
             kind=param_kind,
             default=param_default,
         )
