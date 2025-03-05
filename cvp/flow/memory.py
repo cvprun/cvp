@@ -228,7 +228,7 @@ class FlowMemory:
                         bind_kwargs[pin.name] = value
                     case PinKind.return_only:
                         pass
-                    case PinKind.flow_only:
+                    case PinKind.exec_only:
                         assert False, "Inaccessible section"
                     case _:
                         assert False, "Inaccessible section"

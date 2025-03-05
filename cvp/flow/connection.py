@@ -46,8 +46,8 @@ class FlowConnection(NamedTuple):
         if in_type != Any and not issubclass(out_type, in_type):
             raise TypeError("The output pin must subclass the input pin")
 
-        if action == Action.flow and out_pin.arcs:
-            raise ValueError("There cannot be multiple output flow pins")
+        if action == Action.exec and out_pin.arcs:
+            raise ValueError("There cannot be multiple output exec pins")
         if action == Action.data and in_pin.arcs:
             raise ValueError("There cannot be multiple input data pins")
 

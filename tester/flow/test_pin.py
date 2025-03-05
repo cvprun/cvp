@@ -16,7 +16,7 @@ class PinTestCase(TestCase):
             name="name",
             dtype=Dtype(int),
             docs="docs",
-            action=Action.flow,
+            action=Action.exec,
             stream=Stream.output,
             required=True,
             hidden=True,

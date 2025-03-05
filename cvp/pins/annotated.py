@@ -31,9 +31,9 @@ class PinData(PinAction):
         super().__init__(Action.data)
 
 
-class PinFlow(PinAction):
+class PinExec(PinAction):
     def __init__(self):
-        super().__init__(Action.flow)
+        super().__init__(Action.exec)
 
 
 class PinStream(PinAnnotated):

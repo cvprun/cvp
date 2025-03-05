@@ -246,8 +246,8 @@ class FlowPin(Serializable):
         return self.action == Action.data
 
     @property
-    def is_flow_action(self):
-        return self.action == Action.flow
+    def is_exec_action(self):
+        return self.action == Action.exec
 
     @property
     def is_input_stream(self):
@@ -258,12 +258,12 @@ class FlowPin(Serializable):
         return self.stream == Stream.output
 
     @property
-    def is_flow_inputs(self) -> bool:
-        return self.is_flow_action and self.is_input_stream
+    def is_exec_inputs(self) -> bool:
+        return self.is_exec_action and self.is_input_stream
 
     @property
-    def is_flow_outputs(self) -> bool:
-        return self.is_flow_action and self.is_output_stream
+    def is_exec_outputs(self) -> bool:
+        return self.is_exec_action and self.is_output_stream
 
     @property
     def is_data_inputs(self) -> bool:

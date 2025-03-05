@@ -629,21 +629,21 @@ class CanvasGraph(CanvasController):
         title_y_diff = title_h / 2 - node_name_h / 2
 
         with self.pin_font:
-            flow_n_w, flow_n_h = imgui.calc_text_size(self.config.pins.flow_n_icon)
-            flow_y_w, flow_y_h = imgui.calc_text_size(self.config.pins.flow_y_icon)
+            exec_n_w, exec_n_h = imgui.calc_text_size(self.config.pins.exec_n_icon)
+            exec_y_w, exec_y_h = imgui.calc_text_size(self.config.pins.exec_y_icon)
             data_n_w, data_n_h = imgui.calc_text_size(self.config.pins.data_n_icon)
             data_y_w, data_y_h = imgui.calc_text_size(self.config.pins.data_y_icon)
 
-        iw = max(flow_y_w, flow_n_w, data_y_w, data_n_w)
-        ih = max(flow_y_h, flow_n_h, data_y_h, data_n_h)
+        iw = max(exec_y_w, exec_n_w, data_y_w, data_n_w)
+        ih = max(exec_y_h, exec_n_h, data_y_h, data_n_h)
 
-        visible_flow_inputs = [p for p in node.flow_inputs if not p.hidden]
-        visible_flow_outputs = [p for p in node.flow_outputs if not p.hidden]
+        visible_exec_inputs = [p for p in node.exec_inputs if not p.hidden]
+        visible_exec_outputs = [p for p in node.exec_outputs if not p.hidden]
         visible_data_inputs = [p for p in node.data_inputs if not p.hidden]
         visible_data_outputs = [p for p in node.data_outputs if not p.hidden]
 
-        visible_inputs = visible_flow_inputs + visible_data_inputs
-        visible_outputs = visible_flow_outputs + visible_data_outputs
+        visible_inputs = visible_exec_inputs + visible_data_inputs
+        visible_outputs = visible_exec_outputs + visible_data_outputs
 
         with self.text_font:
             for pin in node.pins:
@@ -670,16 +670,16 @@ class CanvasGraph(CanvasController):
         wd = isw + iw + isw + inw + center_padding + onw + isw + iw + isw
         node_w = max((wt, wf, wd))
 
-        flow_line_count = max(len(visible_flow_inputs), len(visible_flow_outputs))
+        exec_line_count = max(len(visible_exec_inputs), len(visible_exec_outputs))
         data_line_count = max(len(visible_data_inputs), len(visible_data_outputs))
 
         head_h = ish + title_h + ish
-        flow_h = ish + (ih + ish) * flow_line_count
+        exec_h = ish + (ih + ish) * exec_line_count
         data_h = ish + (ih + ish) * data_line_count
-        node_h = head_h + flow_h + data_h
+        node_h = head_h + exec_h + data_h
 
         node.head_height = head_h
-        node.flow_height = flow_h
+        node.exec_height = exec_h
         node.data_height = data_h
 
         node_icon_x = isw
@@ -695,7 +695,7 @@ class CanvasGraph(CanvasController):
         node.node_pos = self.mouse_to_canvas_coords()
         node.node_size = node_w, node_h
 
-        for i, pin in enumerate(visible_flow_inputs):
+        for i, pin in enumerate(visible_exec_inputs):
             icon_x = isw
             icon_y = head_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -706,14 +706,14 @@ class CanvasGraph(CanvasController):
 
         for i, pin in enumerate(visible_data_inputs):
             icon_x = isw
-            icon_y = head_h + flow_h + ish + (ih + ish) * i
+            icon_y = head_h + exec_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
 
             name_x = icon_x + pin.icon_size[0] + isw
             name_y = icon_y + pin_name_y_diff
             pin.name_pos = name_x, name_y
 
-        for i, pin in enumerate(visible_flow_outputs):
+        for i, pin in enumerate(visible_exec_outputs):
             icon_x = node_w - isw - iw
             icon_y = head_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
@@ -724,7 +724,7 @@ class CanvasGraph(CanvasController):
 
         for i, pin in enumerate(visible_data_outputs):
             icon_x = node_w - isw - iw
-            icon_y = head_h + flow_h + ish + (ih + ish) * i
+            icon_y = head_h + exec_h + ish + (ih + ish) * i
             pin.icon_pos = icon_x, icon_y + pin_icon_y_diff
 
             name_x = icon_x - isw - pin.name_size[0]
@@ -771,27 +771,27 @@ class CanvasGraph(CanvasController):
                 y2 = y1 + node.name_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
-        visible_flow_inputs = [p for p in node.flow_inputs if not p.hidden]
-        visible_flow_outputs = [p for p in node.flow_outputs if not p.hidden]
+        visible_exec_inputs = [p for p in node.exec_inputs if not p.hidden]
+        visible_exec_outputs = [p for p in node.exec_outputs if not p.hidden]
         visible_data_inputs = [p for p in node.data_inputs if not p.hidden]
         visible_data_outputs = [p for p in node.data_outputs if not p.hidden]
 
-        visible_flows = visible_flow_inputs + visible_flow_outputs
+        visible_execs = visible_exec_inputs + visible_exec_outputs
         visible_datas = visible_data_inputs + visible_data_outputs
 
-        visible_pins = visible_flows + visible_datas
+        visible_pins = visible_execs + visible_datas
 
-        # visible_inputs = visible_flow_inputs + visible_data_inputs
-        # visible_outputs = visible_flow_outputs + visible_data_outputs
+        # visible_inputs = visible_exec_inputs + visible_data_inputs
+        # visible_outputs = visible_exec_outputs + visible_data_outputs
 
         with self.pin_font:
-            flow_pin_n_icon = self.config.pins.flow_n_icon
-            flow_pin_y_icon = self.config.pins.flow_y_icon
+            exec_pin_n_icon = self.config.pins.exec_n_icon
+            exec_pin_y_icon = self.config.pins.exec_y_icon
 
-            for pin in visible_flows:
+            for pin in visible_execs:
                 x1 = nx1 + pin.icon_pos[0] * zoom
                 y1 = ny1 + pin.icon_pos[1] * zoom
-                pin_icon = flow_pin_y_icon if pin.connected else flow_pin_n_icon
+                pin_icon = exec_pin_y_icon if pin.connected else exec_pin_n_icon
                 pin_rgba = self.get_pin_color(pin)
                 pin_color = imgui.get_color_u32_rgba(*pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)

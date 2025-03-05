@@ -12,7 +12,7 @@ class PinKind(IntEnum):
     keyword_only = Parameter.KEYWORD_ONLY.value
     var_keyword = Parameter.VAR_KEYWORD.value
     return_only = auto()
-    flow_only = auto()
+    exec_only = auto()
     unknown = auto()
 
 
@@ -48,7 +48,7 @@ def kind_to_parameter(kind: PinKind):
             return Parameter.VAR_KEYWORD
         case PinKind.return_only:
             raise ValueError(f"Unsupported '{PinKind.return_only.name}' pin")
-        case PinKind.flow_only:
-            raise ValueError(f"Unsupported '{PinKind.flow_only.name}' pin")
+        case PinKind.exec_only:
+            raise ValueError(f"Unsupported '{PinKind.exec_only.name}' pin")
         case _:
             raise ValueError(f"Unexpected pin kind: '{kind.name}'")

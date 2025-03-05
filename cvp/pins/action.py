@@ -5,7 +5,7 @@ from enum import StrEnum, auto, unique
 
 @unique
 class Action(StrEnum):
-    flow = auto()
+    exec = auto()
     """
     Execution pins are used to connect nodes together to create a flow of execution.
     """

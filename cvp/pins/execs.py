@@ -8,7 +8,7 @@ from cvp.pins.stream import Stream
 from cvp.pins.template import PinTemplate
 
 
-class FlowInputPinTemplate(PinTemplate):
+class ExecInputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
@@ -19,16 +19,16 @@ class FlowInputPinTemplate(PinTemplate):
             name=name,
             dtype=None,
             docs=docs,
-            action=Action.flow,
+            action=Action.exec,
             stream=Stream.input,
             required=False,
             hidden=False,
             arcs=arcs,
-            kind=PinKind.flow_only,
+            kind=PinKind.exec_only,
         )
 
 
-class FlowOutputPinTemplate(PinTemplate):
+class ExecOutputPinTemplate(PinTemplate):
     def __init__(
         self,
         name: str,
@@ -39,10 +39,10 @@ class FlowOutputPinTemplate(PinTemplate):
             name=name,
             dtype=None,
             docs=docs,
-            action=Action.flow,
+            action=Action.exec,
             stream=Stream.output,
             required=False,
             hidden=False,
             arcs=arcs,
-            kind=PinKind.flow_only,
+            kind=PinKind.exec_only,
         )

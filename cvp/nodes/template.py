@@ -57,8 +57,8 @@ class NodeTemplate(NodeInterface):
         docs: Optional[str] = None,
         icon: Optional[str] = None,
         color: Optional[RGBA] = None,
-        flow_inputs: Optional[Sequence[PinTemplate]] = None,
-        flow_outputs: Optional[Sequence[PinTemplate]] = None,
+        exec_inputs: Optional[Sequence[PinTemplate]] = None,
+        exec_outputs: Optional[Sequence[PinTemplate]] = None,
         data_inputs: Optional[Sequence[PinTemplate]] = None,
         data_outputs: Optional[Sequence[PinTemplate]] = None,
         tags: Optional[Sequence[str]] = None,
@@ -90,18 +90,18 @@ class NodeTemplate(NodeInterface):
 
         base_pins = list()
 
-        if flow_inputs:
-            for pin in flow_inputs:
-                if not pin.is_flow_inputs:
-                    raise ValueError("Pin must be flow inputs")
+        if exec_inputs:
+            for pin in exec_inputs:
+                if not pin.is_exec_inputs:
+                    raise ValueError("Pin must be exec inputs")
                 base_pins.append(pin)
         else:
             base_pins.append(PrevPinTemplate())
 
-        if flow_outputs:
-            for pin in flow_outputs:
-                if not pin.is_flow_outputs:
-                    raise ValueError("Pin must be flow outputs")
+        if exec_outputs:
+            for pin in exec_outputs:
+                if not pin.is_exec_outputs:
+                    raise ValueError("Pin must be exec outputs")
                 base_pins.append(pin)
         else:
             base_pins.append(NextPinTemplate())
@@ -150,8 +150,8 @@ class NodeTemplate(NodeInterface):
         )
 
     @property
-    def flows(self) -> List[PinTemplate]:
-        return list(filter(lambda p: p.is_flow_action, self.pins))
+    def execs(self) -> List[PinTemplate]:
+        return list(filter(lambda p: p.is_exec_action, self.pins))
 
     @property
     def datas(self) -> List[PinTemplate]:
@@ -166,12 +166,12 @@ class NodeTemplate(NodeInterface):
         return list(filter(lambda p: p.is_output_stream, self.pins))
 
     @property
-    def flow_inputs(self) -> List[PinTemplate]:
-        return list(filter(lambda p: p.is_flow_inputs, self.pins))
+    def exec_inputs(self) -> List[PinTemplate]:
+        return list(filter(lambda p: p.is_exec_inputs, self.pins))
 
     @property
-    def flow_outputs(self) -> List[PinTemplate]:
-        return list(filter(lambda p: p.is_flow_outputs, self.pins))
+    def exec_outputs(self) -> List[PinTemplate]:
+        return list(filter(lambda p: p.is_exec_outputs, self.pins))
 
     @property
     def data_inputs(self) -> List[PinTemplate]:
@@ -182,16 +182,16 @@ class NodeTemplate(NodeInterface):
         return list(filter(lambda p: p.is_data_outputs, self.pins))
 
     @property
-    def has_flow_input(self) -> bool:
-        return bool(self.flow_inputs)
+    def has_exec_input(self) -> bool:
+        return bool(self.exec_inputs)
 
     @property
-    def has_flow_output(self) -> bool:
-        return bool(self.flow_outputs)
+    def has_exec_output(self) -> bool:
+        return bool(self.exec_outputs)
 
     @property
-    def any_flow(self) -> bool:
-        return self.has_flow_input or self.has_flow_output
+    def any_exec(self) -> bool:
+        return self.has_exec_input or self.has_exec_output
 
     @property
     def has_data_input(self) -> bool:
@@ -206,41 +206,41 @@ class NodeTemplate(NodeInterface):
         return self.has_data_input or self.has_data_output
 
     @property
-    def is_flow_only(self) -> bool:
-        return self.any_flow and not self.any_data
+    def is_exec_only(self) -> bool:
+        return self.any_exec and not self.any_data
 
     @property
     def is_data_only(self) -> bool:
-        return not self.any_flow and self.any_data
+        return not self.any_exec and self.any_data
 
     @property
     def is_begin(self) -> bool:
-        return not self.has_flow_input and self.has_flow_output
+        return not self.has_exec_input and self.has_exec_output
 
     @property
     def is_middle(self) -> bool:
-        return self.has_flow_input and self.has_flow_output
+        return self.has_exec_input and self.has_exec_output
 
     @property
     def is_end(self) -> bool:
-        return self.has_flow_input and not self.has_flow_output
+        return self.has_exec_input and not self.has_exec_output
 
     @property
-    def is_bypass_flow(self) -> bool:
-        if len(self.flows) != 2:
+    def is_bypass_exec(self) -> bool:
+        if len(self.execs) != 2:
             return False
 
-        flow_inputs = self.flow_inputs
-        if len(flow_inputs) != 1:
+        exec_inputs = self.exec_inputs
+        if len(exec_inputs) != 1:
             return False
 
-        flow_outputs = self.flow_outputs
-        if len(flow_outputs) != 1:
+        exec_outputs = self.exec_outputs
+        if len(exec_outputs) != 1:
             return False
 
-        if not isinstance(flow_inputs[0], PrevPinTemplate):
+        if not isinstance(exec_inputs[0], PrevPinTemplate):
             return False
-        if not isinstance(flow_outputs[0], NextPinTemplate):
+        if not isinstance(exec_outputs[0], NextPinTemplate):
             return False
 
         return True
@@ -268,8 +268,8 @@ class NodeTemplate(NodeInterface):
         if return_pin := self.find_return_pin():
             record.set(return_pin, result)
 
-        if self.is_bypass_flow:
-            return self.flow_outputs[0]
+        if self.is_bypass_exec:
+            return self.exec_outputs[0]
         else:
             return None
 

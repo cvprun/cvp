@@ -26,13 +26,13 @@ class FlowNodeKeys(StrEnum):
     breakpoint = auto()
     hidden = auto()
     color = auto()
-    flow_inputs = auto()
-    flow_outputs = auto()
+    exec_inputs = auto()
+    exec_outputs = auto()
     data_inputs = auto()
     data_outputs = auto()
     tags = auto()
     head_height = auto()
-    flow_height = auto()
+    exec_height = auto()
     data_height = auto()
     icon_pos = auto()
     icon_size = auto()
@@ -57,13 +57,13 @@ class FlowNode(Serializable):
         breakpoint=False,
         hidden=False,
         color: RGBA = WHITE_RGBA,
-        flow_inputs: Optional[Sequence[FlowPin]] = None,
-        flow_outputs: Optional[Sequence[FlowPin]] = None,
+        exec_inputs: Optional[Sequence[FlowPin]] = None,
+        exec_outputs: Optional[Sequence[FlowPin]] = None,
         data_inputs: Optional[Sequence[FlowPin]] = None,
         data_outputs: Optional[Sequence[FlowPin]] = None,
         tags: Optional[Sequence[str]] = None,
         head_height=0.0,
-        flow_height=0.0,
+        exec_height=0.0,
         data_height=0.0,
         icon_pos: Point = EMPTY_POINT,
         icon_size: Size = EMPTY_SIZE,
@@ -85,14 +85,14 @@ class FlowNode(Serializable):
         self.hidden = hidden
         self.color = color
 
-        self.flow_inputs = list(flow_inputs if flow_inputs else ())
-        self.flow_outputs = list(flow_outputs if flow_outputs else ())
+        self.exec_inputs = list(exec_inputs if exec_inputs else ())
+        self.exec_outputs = list(exec_outputs if exec_outputs else ())
         self.data_inputs = list(data_inputs if data_inputs else ())
         self.data_outputs = list(data_outputs if data_outputs else ())
         self.tags = list(tags if tags else ())
 
         self.head_height = head_height
-        self.flow_height = flow_height
+        self.exec_height = exec_height
         self.data_height = data_height
 
         self.icon_pos = icon_pos
@@ -117,8 +117,8 @@ class FlowNode(Serializable):
             breakpoint=False,
             hidden=False,
             color=template.color,
-            flow_inputs=list(FlowPin.from_template(p) for p in template.flow_inputs),
-            flow_outputs=list(FlowPin.from_template(p) for p in template.flow_outputs),
+            exec_inputs=list(FlowPin.from_template(p) for p in template.exec_inputs),
+            exec_outputs=list(FlowPin.from_template(p) for p in template.exec_outputs),
             data_inputs=list(FlowPin.from_template(p) for p in template.data_inputs),
             data_outputs=list(FlowPin.from_template(p) for p in template.data_outputs),
             tags=deepcopy(template.tags),
@@ -142,13 +142,13 @@ class FlowNode(Serializable):
             and self.breakpoint == other.breakpoint
             and self.hidden == other.hidden
             and self.color == other.color
-            and self.flow_inputs == other.flow_inputs
-            and self.flow_outputs == other.flow_outputs
+            and self.exec_inputs == other.exec_inputs
+            and self.exec_outputs == other.exec_outputs
             and self.data_inputs == other.data_inputs
             and self.data_outputs == other.data_outputs
             and self.tags == other.tags
             and self.head_height == other.head_height
-            and self.flow_height == other.flow_height
+            and self.exec_height == other.exec_height
             and self.data_height == other.data_height
             and self.icon_pos == other.icon_pos
             and self.icon_size == other.icon_size
@@ -170,13 +170,13 @@ class FlowNode(Serializable):
         result.breakpoint = copy(self.breakpoint)
         result.hidden = copy(self.hidden)
         result.color = copy(self.color)
-        result.flow_inputs = copy(self.flow_inputs)
-        result.flow_outputs = copy(self.flow_outputs)
+        result.exec_inputs = copy(self.exec_inputs)
+        result.exec_outputs = copy(self.exec_outputs)
         result.data_inputs = copy(self.data_inputs)
         result.data_outputs = copy(self.data_outputs)
         result.tags = copy(self.tags)
         result.head_height = copy(self.head_height)
-        result.flow_height = copy(self.flow_height)
+        result.exec_height = copy(self.exec_height)
         result.data_height = copy(self.data_height)
         result.icon_pos = copy(self.icon_pos)
         result.icon_size = copy(self.icon_size)
@@ -202,13 +202,13 @@ class FlowNode(Serializable):
         result.breakpoint = deepcopy(self.breakpoint, memo)
         result.hidden = deepcopy(self.hidden, memo)
         result.color = deepcopy(self.color, memo)
-        result.flow_inputs = deepcopy(self.flow_inputs, memo)
-        result.flow_outputs = deepcopy(self.flow_outputs, memo)
+        result.exec_inputs = deepcopy(self.exec_inputs, memo)
+        result.exec_outputs = deepcopy(self.exec_outputs, memo)
         result.data_inputs = deepcopy(self.data_inputs, memo)
         result.data_outputs = deepcopy(self.data_outputs, memo)
         result.tags = deepcopy(self.tags, memo)
         result.head_height = deepcopy(self.head_height, memo)
-        result.flow_height = deepcopy(self.flow_height, memo)
+        result.exec_height = deepcopy(self.exec_height, memo)
         result.data_height = deepcopy(self.data_height, memo)
         result.icon_pos = deepcopy(self.icon_pos, memo)
         result.icon_size = deepcopy(self.icon_size, memo)
@@ -233,13 +233,13 @@ class FlowNode(Serializable):
             self.Keys.breakpoint: self.breakpoint,
             self.Keys.hidden: self.hidden,
             self.Keys.color: list(self.color),
-            self.Keys.flow_inputs: serialize(self.flow_inputs),
-            self.Keys.flow_outputs: serialize(self.flow_outputs),
+            self.Keys.exec_inputs: serialize(self.exec_inputs),
+            self.Keys.exec_outputs: serialize(self.exec_outputs),
             self.Keys.data_inputs: serialize(self.data_inputs),
             self.Keys.data_outputs: serialize(self.data_outputs),
             self.Keys.tags: self.tags,
             self.Keys.head_height: self.head_height,
-            self.Keys.flow_height: self.flow_height,
+            self.Keys.exec_height: self.exec_height,
             self.Keys.data_height: self.data_height,
             self.Keys.icon_pos: list(self.icon_pos),
             self.Keys.icon_size: list(self.icon_size),
@@ -267,17 +267,17 @@ class FlowNode(Serializable):
         self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
         assert len(self.color) == 4
 
-        self.flow_inputs = list()
-        self.flow_outputs = list()
+        self.exec_inputs = list()
+        self.exec_outputs = list()
         self.data_inputs = list()
         self.data_outputs = list()
 
-        if flow_inputs := data.get(self.Keys.flow_inputs):
-            for pin in flow_inputs:
-                self.flow_inputs.append(deserialize(pin, FlowPin))
-        if flow_outputs := data.get(self.Keys.flow_outputs):
-            for pin in flow_outputs:
-                self.flow_outputs.append(deserialize(pin, FlowPin))
+        if exec_inputs := data.get(self.Keys.exec_inputs):
+            for pin in exec_inputs:
+                self.exec_inputs.append(deserialize(pin, FlowPin))
+        if exec_outputs := data.get(self.Keys.exec_outputs):
+            for pin in exec_outputs:
+                self.exec_outputs.append(deserialize(pin, FlowPin))
         if data_inputs := data.get(self.Keys.data_inputs):
             for pin in data_inputs:
                 self.data_inputs.append(deserialize(pin, FlowPin))
@@ -288,7 +288,7 @@ class FlowNode(Serializable):
         self.tags = data.get(self.Keys.tags, list())
 
         self.head_height = data.get(self.Keys.head_height, 0.0)
-        self.flow_height = data.get(self.Keys.flow_height, 0.0)
+        self.exec_height = data.get(self.Keys.exec_height, 0.0)
         self.data_height = data.get(self.Keys.data_height, 0.0)
 
         self.icon_pos = tuple(data.get(self.Keys.icon_pos, EMPTY_POINT))
@@ -309,12 +309,12 @@ class FlowNode(Serializable):
         self._hovering = False
 
     @property
-    def as_flow_input_names(self):
-        return [pin.name for pin in self.flow_inputs]
+    def as_exec_input_names(self):
+        return [pin.name for pin in self.exec_inputs]
 
     @property
-    def as_flow_output_names(self):
-        return [pin.name for pin in self.flow_outputs]
+    def as_exec_output_names(self):
+        return [pin.name for pin in self.exec_outputs]
 
     @property
     def as_data_input_names(self):
@@ -361,8 +361,8 @@ class FlowNode(Serializable):
         return self.y1 + self.height
 
     @property
-    def flow_pins(self) -> List[FlowPin]:
-        return self.flow_inputs + self.flow_outputs
+    def exec_pins(self) -> List[FlowPin]:
+        return self.exec_inputs + self.exec_outputs
 
     @property
     def data_pins(self) -> List[FlowPin]:
@@ -370,35 +370,35 @@ class FlowNode(Serializable):
 
     @property
     def input_pins(self) -> List[FlowPin]:
-        return self.flow_inputs + self.data_inputs
+        return self.exec_inputs + self.data_inputs
 
     @property
     def output_pins(self) -> List[FlowPin]:
-        return self.flow_outputs + self.data_outputs
+        return self.exec_outputs + self.data_outputs
 
     @property
     def pins(self) -> List[FlowPin]:
-        return self.flow_pins + self.data_pins
+        return self.exec_pins + self.data_pins
 
     @property
-    def flow_lines(self):
-        return max(len(self.flow_inputs), len(self.flow_outputs))
+    def exec_lines(self):
+        return max(len(self.exec_inputs), len(self.exec_outputs))
 
     @property
     def data_lines(self):
         return max(len(self.data_inputs), len(self.data_outputs))
 
     @property
-    def has_flow_input(self) -> bool:
-        return bool(self.flow_inputs)
+    def has_exec_input(self) -> bool:
+        return bool(self.exec_inputs)
 
     @property
-    def has_flow_output(self) -> bool:
-        return bool(self.flow_outputs)
+    def has_exec_output(self) -> bool:
+        return bool(self.exec_outputs)
 
     @property
-    def any_flow(self) -> bool:
-        return self.has_flow_input or self.has_flow_output
+    def any_exec(self) -> bool:
+        return self.has_exec_input or self.has_exec_output
 
     @property
     def has_data_input(self) -> bool:
@@ -413,24 +413,24 @@ class FlowNode(Serializable):
         return self.has_data_input or self.has_data_output
 
     @property
-    def is_flow_only(self) -> bool:
-        return self.any_flow and not self.any_data
+    def is_exec_only(self) -> bool:
+        return self.any_exec and not self.any_data
 
     @property
     def is_data_only(self) -> bool:
-        return not self.any_flow and self.any_data
+        return not self.any_exec and self.any_data
 
     @property
     def is_begin(self) -> bool:
-        return not self.has_flow_input and self.has_flow_output
+        return not self.has_exec_input and self.has_exec_output
 
     @property
     def is_middle(self) -> bool:
-        return self.has_flow_input and self.has_flow_output
+        return self.has_exec_input and self.has_exec_output
 
     @property
     def is_end(self) -> bool:
-        return self.has_flow_input and not self.has_flow_output
+        return self.has_exec_input and not self.has_exec_output
 
     @property
     def selected(self):
@@ -456,8 +456,8 @@ class FlowNode(Serializable):
             f"Icon: {self.icon}\n"
             f"Lock: {self.lock}\n"
             f"Color: {self.color}\n"
-            f"Flow inputs: {len(self.flow_inputs)}\n"
-            f"Flow outputs: {len(self.flow_outputs)}\n"
+            f"Flow inputs: {len(self.exec_inputs)}\n"
+            f"Flow outputs: {len(self.exec_outputs)}\n"
             f"Data inputs: {len(self.data_inputs)}\n"
             f"Data outputs: {len(self.data_inputs)}\n"
             f"Begin: {self.is_begin}\n"
@@ -465,7 +465,7 @@ class FlowNode(Serializable):
             f"End: {self.is_end}\n"
             f"Tags: {self.tags}\n"
             f"Head height: {self.head_height:.02f}\n"
-            f"Flow height: {self.flow_height:.02f}\n"
+            f"Flow height: {self.exec_height:.02f}\n"
             f"Data height: {self.data_height:.02f}\n"
             f"Icon pos: {self.icon_pos[0]:.02f}, {self.icon_pos[1]:.02f}\n"
             f"Icon size: {self.icon_size[0]:.02f}, {self.icon_size[1]:.02f}\n"

@@ -60,12 +60,12 @@ class RegistryTestCase(TestCase):
 
         any_dtype = registry.dtype_registry.any_dtype
 
-        self.assertEqual(1, len(add_node.flow_inputs))
-        self.assertEqual(1, len(add_node.flow_outputs))
+        self.assertEqual(1, len(add_node.exec_inputs))
+        self.assertEqual(1, len(add_node.exec_outputs))
         self.assertEqual(2, len(add_node.data_inputs))
         self.assertEqual(1, len(add_node.data_outputs))
-        self.assertIsInstance(add_node.flow_inputs[0], PrevPinTemplate)
-        self.assertIsInstance(add_node.flow_outputs[0], NextPinTemplate)
+        self.assertIsInstance(add_node.exec_inputs[0], PrevPinTemplate)
+        self.assertIsInstance(add_node.exec_outputs[0], NextPinTemplate)
         self.assertEqual("a", add_node.data_inputs[0].name)
         self.assertEqual("b", add_node.data_inputs[1].name)
         self.assertEqual(any_dtype, add_node.data_inputs[0].dtype)

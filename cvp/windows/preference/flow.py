@@ -104,8 +104,8 @@ class FlowPreference(PreferenceWidget):
     def tree_pins(label: str, pins: Pins) -> None:
         if imgui.tree_node(label):
             try:
-                input_text_disabled("Flow unconnected", pins.flow_n_icon)
-                input_text_disabled("Flow connected", pins.flow_y_icon)
+                input_text_disabled("Exec unconnected", pins.exec_n_icon)
+                input_text_disabled("Exec connected", pins.exec_y_icon)
                 input_text_disabled("Data unconnected", pins.data_n_icon)
                 input_text_disabled("Data connected", pins.data_y_icon)
             finally:

@@ -165,7 +165,7 @@ class PropsTab(TabItem[Canvases]):
         with style_disable_input():
             same_vertical_x = 90.0
 
-            imgui.radio_button("Flow", pin.is_flow_action)
+            imgui.radio_button("Flow", pin.is_exec_action)
             imgui.same_line(same_vertical_x)
             imgui.radio_button("Data", pin.is_data_action)
 

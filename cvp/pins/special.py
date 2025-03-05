@@ -16,11 +16,11 @@ from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.pins.annotated import get_arcs, get_docs, get_name
 from cvp.pins.datas import DataOutputPinTemplate
-from cvp.pins.flows import FlowInputPinTemplate, FlowOutputPinTemplate
+from cvp.pins.execs import ExecInputPinTemplate, ExecOutputPinTemplate
 from cvp.pins.kind import PinKind
 
 
-class EntrypointPinTemplate(FlowInputPinTemplate):
+class EntrypointPinTemplate(ExecInputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,
@@ -34,7 +34,7 @@ class EntrypointPinTemplate(FlowInputPinTemplate):
         )
 
 
-class PrevPinTemplate(FlowInputPinTemplate):
+class PrevPinTemplate(ExecInputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,
@@ -48,7 +48,7 @@ class PrevPinTemplate(FlowInputPinTemplate):
         )
 
 
-class NextPinTemplate(FlowOutputPinTemplate):
+class NextPinTemplate(ExecOutputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,

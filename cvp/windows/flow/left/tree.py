@@ -66,8 +66,8 @@ class TreeTab(TabItem[Canvases]):
                 imgui.tree_pop()
 
     def tree_node(self, graph: FlowGraph, node: FlowNode) -> None:
-        flow_pin_n_icon = self.context.config.flow_aui.pins.flow_n_icon
-        flow_pin_y_icon = self.context.config.flow_aui.pins.flow_y_icon
+        exec_pin_n_icon = self.context.config.flow_aui.pins.exec_n_icon
+        exec_pin_y_icon = self.context.config.flow_aui.pins.exec_y_icon
         data_pin_n_icon = self.context.config.flow_aui.pins.data_n_icon
         data_pin_y_icon = self.context.config.flow_aui.pins.data_y_icon
         key_ctrl = imgui.get_io().key_ctrl
@@ -87,8 +87,8 @@ class TreeTab(TabItem[Canvases]):
 
         try:
             for pin in node.pins:
-                if pin.is_flow_action:
-                    pin_icon = flow_pin_y_icon if pin.connected else flow_pin_n_icon
+                if pin.is_exec_action:
+                    pin_icon = exec_pin_y_icon if pin.connected else exec_pin_n_icon
                 elif pin.is_data_action:
                     pin_icon = data_pin_y_icon if pin.connected else data_pin_n_icon
                 else:
