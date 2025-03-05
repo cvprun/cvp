@@ -6,7 +6,7 @@ from unittest import TestCase, main
 from cvp.inspect.parameter import NoDefault
 from cvp.nodes.registry.globals import GlobalNodeRegistry, global_node_registry
 from cvp.nodes.registry.registry import NodeRegistry
-from cvp.pins.special import NextPin, PrevPin, ReturnPin
+from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 
@@ -64,8 +64,8 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(add_node.flow_outputs))
         self.assertEqual(2, len(add_node.data_inputs))
         self.assertEqual(1, len(add_node.data_outputs))
-        self.assertIsInstance(add_node.flow_inputs[0], PrevPin)
-        self.assertIsInstance(add_node.flow_outputs[0], NextPin)
+        self.assertIsInstance(add_node.flow_inputs[0], PrevPinTemplate)
+        self.assertIsInstance(add_node.flow_outputs[0], NextPinTemplate)
         self.assertEqual("a", add_node.data_inputs[0].name)
         self.assertEqual("b", add_node.data_inputs[1].name)
         self.assertEqual(any_dtype, add_node.data_inputs[0].dtype)
@@ -74,7 +74,7 @@ class RegistryTestCase(TestCase):
         self.assertTrue(add_node.data_inputs[1].required)
         self.assertEqual(NoDefault, add_node.data_inputs[0].default)
         self.assertEqual(NoDefault, add_node.data_inputs[1].default)
-        self.assertIsInstance(add_node.data_outputs[0], ReturnPin)
+        self.assertIsInstance(add_node.data_outputs[0], ReturnPinTemplate)
         self.assertEqual(any_dtype, add_node.data_outputs[0].dtype)
 
     def test_register_node_custom_annotation_int(self):

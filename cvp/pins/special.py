@@ -20,7 +20,7 @@ from cvp.pins.flows import FlowInputPinTemplate, FlowOutputPinTemplate
 from cvp.pins.kind import PinKind
 
 
-class EntrypointPin(FlowInputPinTemplate):
+class EntrypointPinTemplate(FlowInputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,
@@ -34,7 +34,7 @@ class EntrypointPin(FlowInputPinTemplate):
         )
 
 
-class PrevPin(FlowInputPinTemplate):
+class PrevPinTemplate(FlowInputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,
@@ -48,7 +48,7 @@ class PrevPin(FlowInputPinTemplate):
         )
 
 
-class NextPin(FlowOutputPinTemplate):
+class NextPinTemplate(FlowOutputPinTemplate):
     def __init__(
         self,
         name: Optional[str] = None,
@@ -66,7 +66,7 @@ DEFAULT_RETURN_PIN_NAME: Final[str] = "return"
 DEFAULT_RETURN_PIN_DOCS: Final[str] = "The return value of a function"
 
 
-class ReturnPin(DataOutputPinTemplate):
+class ReturnPinTemplate(DataOutputPinTemplate):
     def __init__(
         self,
         dtype: Dtype,

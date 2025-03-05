@@ -19,7 +19,7 @@ from cvp.memory.copy import copy_flexible
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.nodes.template import NodeTemplate
-from cvp.pins.special import EntrypointPin
+from cvp.pins.special import EntrypointPinTemplate
 from cvp.pins.template import PinTemplate
 
 INFINITY_COUNTER: Final[int] = -1
@@ -119,7 +119,7 @@ class FlowRunner:
         arguments = _FlowRunnerArguments(
             nodes=registered_nodes,
             start_node=start_node,
-            entrypoint=FlowPin.from_template(EntrypointPin()),
+            entrypoint=FlowPin.from_template(EntrypointPinTemplate()),
             graph=graph,
             logger=logger if logger else flow_logger,
             use_copy=use_copy,

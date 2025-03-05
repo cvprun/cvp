@@ -8,7 +8,7 @@ from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
-from cvp.pins.special import NextPin, PrevPin, ReturnPin
+from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
@@ -96,7 +96,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be flow inputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(PrevPin())
+            base_pins.append(PrevPinTemplate())
 
         if flow_outputs:
             for pin in flow_outputs:
@@ -104,7 +104,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be flow outputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(NextPin())
+            base_pins.append(NextPinTemplate())
 
         if dtype_registry is None:
             dtype_registry = global_dtype_registry()
@@ -131,7 +131,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be data outputs")
                 base_pins.append(pin)
         else:
-            return_pin = ReturnPin.from_return_annotation(
+            return_pin = ReturnPinTemplate.from_return_annotation(
                 sig.return_annotation,
                 dtype_registry=dtype_registry,
             )
@@ -238,9 +238,9 @@ class NodeTemplate(NodeInterface):
         if len(flow_outputs) != 1:
             return False
 
-        if not isinstance(flow_inputs[0], PrevPin):
+        if not isinstance(flow_inputs[0], PrevPinTemplate):
             return False
-        if not isinstance(flow_outputs[0], NextPin):
+        if not isinstance(flow_outputs[0], NextPinTemplate):
             return False
 
         return True
@@ -253,7 +253,7 @@ class NodeTemplate(NodeInterface):
 
     def find_return_pin(self) -> Optional[PinTemplate]:
         for pin in self.pins:
-            if isinstance(pin, ReturnPin):
+            if isinstance(pin, ReturnPinTemplate):
                 return pin
         return None
 

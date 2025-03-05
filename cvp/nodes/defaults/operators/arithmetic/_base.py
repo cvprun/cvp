@@ -7,7 +7,7 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
-from cvp.pins.special import ReturnPin
+from cvp.pins.special import ReturnPinTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 
@@ -24,7 +24,7 @@ class ArithmeticOperatorNodeTemplate(NodeTemplate):
             dtype=dtype_registry.get(Any),
             docs=f"The second value of the {name.lower()} operator",
         )
-        self._return = ReturnPin(
+        self._return = ReturnPinTemplate(
             dtype=dtype_registry.get(Any),
             docs=f"The result value of the {name.lower()} operator.",
         )
