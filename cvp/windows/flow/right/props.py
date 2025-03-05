@@ -28,19 +28,19 @@ from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_var import style_disable_input
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.canvases import Canvases
 
 INPUT_BUFFER: Final[int] = 256
 ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 
 
-class PropsTab(TabItem[Canvases]):
+class PropsTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Props")
 
     @override
-    def on_item(self, item: Canvases) -> None:
+    def on_item(self, item: FlowCanvasTabs) -> None:
         graph = item.graph
         if graph is None:
             self.on_none()

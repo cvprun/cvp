@@ -25,8 +25,8 @@ from cvp.patterns.delta import Delta
 from cvp.renderer.context import RendererContext
 from cvp.types.colors import RGBA
 from cvp.types.override import override
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.canvases import Canvases
 
 LEVEL_NAMES = [
     SEVERITY_NAME_CRITICAL,
@@ -59,7 +59,7 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
     logger.removeHandler(handler)
 
 
-class LogsTab(TabItem[Canvases]):
+class LogsTab(TabItem[FlowCanvasTabs]):
     _records: Deque[_LineRecord]
 
     def __init__(self, context: RendererContext):

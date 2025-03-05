@@ -29,9 +29,9 @@ from cvp.types.override import override
 from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
 from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.flow import FlowCanvas
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
-from cvp.windows.flow.canvases import Canvases
 from cvp.windows.flow.catalog import Catalog
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
@@ -57,7 +57,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             modifiable_title=False,
         )
 
-        self._canvases = Canvases(context)
+        self._canvases = FlowCanvasTabs(context)
         self._catalog = Catalog(context)
         self._left_tabs = FlowLeftTabs(context)
         self._right_tabs = FlowRightTabs(context)

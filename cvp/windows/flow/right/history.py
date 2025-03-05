@@ -4,16 +4,16 @@ import imgui
 
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.canvases import Canvases
 
 
-class HistoryTab(TabItem[Canvases]):
+class HistoryTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "History")
 
     @override
-    def on_item(self, item: Canvases) -> None:
+    def on_item(self, item: FlowCanvasTabs) -> None:
         canvas = item.canvas
         if canvas is None:
             self.on_none()

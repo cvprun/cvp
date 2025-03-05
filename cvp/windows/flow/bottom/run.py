@@ -15,16 +15,16 @@ from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.canvases import Canvases
 
 
-class RunTab(TabItem[Canvases]):
+class RunTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Run")
 
     @override
-    def on_item(self, item: Canvases) -> None:
+    def on_item(self, item: FlowCanvasTabs) -> None:
         opened = item.opened
         opened = False  # TODO: Remove
         button(f"{PLAY} Run", disabled=not opened)

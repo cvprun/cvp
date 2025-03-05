@@ -28,10 +28,11 @@ class FlowManager:
     _clipboard_pivot: Optional[Point]
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False):
-        self._graphs = OrderedDict()
-        self._runners = OrderedDict()
         self._dtype_registry = DtypeRegistry()
         self._node_registry = NodeRegistry(self._dtype_registry)
+
+        self._graphs = OrderedDict()
+        self._runners = OrderedDict()
 
         self._home = home
         self._clipboard_items = None

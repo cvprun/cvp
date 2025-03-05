@@ -9,7 +9,7 @@ from cvp.renderer.context import RendererContext
 from cvp.widgets.canvas.flow import FlowCanvas
 
 
-class Canvases:
+class FlowCanvasTabs:
     _canvases: Dict[str, FlowCanvas]
     _ref: Optional[ReferenceType[FlowGraph]]
 

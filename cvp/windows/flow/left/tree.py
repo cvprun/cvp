@@ -10,8 +10,8 @@ from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
+from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-from cvp.windows.flow.canvases import Canvases
 
 _LEAF = imgui.TREE_NODE_LEAF
 _NO_TREE_PUSH_ON_OPEN = imgui.TREE_NODE_NO_TREE_PUSH_ON_OPEN
@@ -29,7 +29,7 @@ ARC_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 VARIABLE_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
-class TreeTab(TabItem[Canvases]):
+class TreeTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Tree")
 
@@ -42,7 +42,7 @@ class TreeTab(TabItem[Canvases]):
         text_centered("Please select a graph")
 
     @override
-    def on_item(self, item: Canvases) -> None:
+    def on_item(self, item: FlowCanvasTabs) -> None:
         graph = item.graph
         if graph is None:
             self.on_none()
