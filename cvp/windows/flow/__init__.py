@@ -28,7 +28,7 @@ from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
 from cvp.widgets.aui import AuiWindow
-from cvp.widgets.canvas.graph import CanvasGraph
+from cvp.widgets.canvas.flow import FlowCanvas
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
 from cvp.windows.flow.canvases import Canvases
@@ -194,7 +194,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         menu_item("Select wires", enabled=False)
         menu_item("Select pins", enabled=False)
 
-    def _process_enabled_edit_menu(self, canvas: CanvasGraph) -> None:
+    def _process_enabled_edit_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         undoable = canvas.history.undoable
@@ -256,7 +256,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             canvas.graph.select_all_pins()
 
     @staticmethod
-    def _process_enabled_layout_menu(canvas: CanvasGraph) -> None:
+    def _process_enabled_layout_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         selected_items = canvas.graph.selection
@@ -287,7 +287,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         menu_item("Send Backward", enabled=False)
 
     @staticmethod
-    def _process_enabled_align_menu(canvas: CanvasGraph) -> None:
+    def _process_enabled_align_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         nodes = canvas.graph.selection.nodes
@@ -324,7 +324,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.begin_menu("Align", enabled=False)
 
     @staticmethod
-    def _process_enabled_distribute_menu(canvas: CanvasGraph) -> None:
+    def _process_enabled_distribute_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         nodes = canvas.graph.selection.nodes
@@ -344,7 +344,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def _process_disabled_distribute_menu() -> None:
         imgui.begin_menu("Distribute", enabled=False)
 
-    def _process_enabled_run_menu(self, canvas: CanvasGraph) -> None:
+    def _process_enabled_run_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         with imgui.begin_menu(f"{PLAY} Run") as run_menu:
@@ -392,7 +392,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=False)
 
     @staticmethod
-    def _process_enabled_deploy_menu(canvas: CanvasGraph) -> None:
+    def _process_enabled_deploy_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
         if menu_item("Upload to ...", enabled=False):
@@ -402,7 +402,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def _process_disabled_deploy_menu() -> None:
         menu_item("Upload to ...", enabled=False)
 
-    def _process_add_variable_menu(self, canvas: CanvasGraph) -> None:
+    def _process_add_variable_menu(self, canvas: FlowCanvas) -> None:
         menu_item(f"Add {self._variable_key} variable node", enabled=False)
         imgui.separator()
 
@@ -609,7 +609,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             imgui.pop_style_color()
             imgui.pop_style_var()
 
-    def on_canvas_events(self, canvas: CanvasGraph) -> None:
+    def on_canvas_events(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
         ctrl_down = canvas.ctrl_down
         shift_down = canvas.shift_down
@@ -677,7 +677,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             canvas.save_history("Paste selected items")
             return
 
-    def on_canvas(self, canvas: CanvasGraph) -> None:
+    def on_canvas(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
         canvas.do_process_canvas()
 

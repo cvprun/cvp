@@ -23,11 +23,11 @@ from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
 from cvp.widgets.canvas.controller import CanvasController
-from cvp.widgets.canvas.graph.history import History
-from cvp.widgets.canvas.graph.mode import ControlMode
+from cvp.widgets.canvas.flow.history import History
+from cvp.widgets.canvas.flow.mode import ControlMode
 
 
-class CanvasGraph(CanvasController):
+class FlowCanvas(CanvasController):
     _graph_ref: ReferenceType[FlowGraph]
     _fonts_ref: ReferenceType[FontMapper]
     _config_ref: ReferenceType[FlowAuiConfig]

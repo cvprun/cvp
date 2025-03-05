@@ -6,11 +6,11 @@ from weakref import ReferenceType, ref
 from cvp.flow.graph import FlowGraph
 from cvp.logging.logging import flow_logger as logger
 from cvp.renderer.context import RendererContext
-from cvp.widgets.canvas.graph import CanvasGraph
+from cvp.widgets.canvas.flow import FlowCanvas
 
 
 class Canvases:
-    _canvases: Dict[str, CanvasGraph]
+    _canvases: Dict[str, FlowCanvas]
     _ref: Optional[ReferenceType[FlowGraph]]
 
     def __init__(self, context: RendererContext):
@@ -18,8 +18,8 @@ class Canvases:
         self._canvases = dict()
         self._ref = None
 
-    def _create_canvas(self, graph: FlowGraph) -> CanvasGraph:
-        canvas = CanvasGraph(graph, self._context.fonts, self._context.config.flow_aui)
+    def _create_canvas(self, graph: FlowGraph) -> FlowCanvas:
+        canvas = FlowCanvas(graph, self._context.fonts, self._context.config.flow_aui)
         self._canvases[graph.uuid] = canvas
         return canvas
 
@@ -27,7 +27,7 @@ class Canvases:
         self._canvases.clear()
 
     @property
-    def canvas(self) -> Optional[CanvasGraph]:
+    def canvas(self) -> Optional[FlowCanvas]:
         if self._ref is None:
             return None
 
