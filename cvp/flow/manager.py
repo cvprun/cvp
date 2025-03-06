@@ -3,7 +3,7 @@
 from collections import OrderedDict
 from copy import deepcopy
 from os import PathLike
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
@@ -14,10 +14,13 @@ from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.nodes.template import NodeTemplate
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
+from cvp.flow.variable import FlowVariable
+from cvp.dtypes.dtype import Dtype
 
 
 class FlowManager:
@@ -99,13 +102,14 @@ class FlowManager:
 
     def create_graph(
         self,
-        name: str,
+        name: Optional[str] = None,
         *,
         template: Optional[str] = None,
         append=False,
     ) -> FlowGraph:
         template = template if template else str()
         assert isinstance(template, str)
+
         graph = FlowGraph(name=name)
         assert is_uuid4(graph.uuid)
 
@@ -150,17 +154,39 @@ class FlowManager:
             raise ValueError("The 'uuid' of the flow graph does not exist")
         self._graphs[graph.uuid] = graph
 
-    def add_node(self, graph: FlowGraph, path: str) -> FlowNode:
-        node_template = self._node_registry.nodes[path]
-        node = FlowNode.from_template(node_template)
-        graph.nodes.insert(0, node)
-        return node
+    def add_node(self, graph: FlowGraph, node: Union[str, NodeTemplate]) -> FlowNode:
+        node_template = self._node_registry[node]
+        flow_node = FlowNode.from_template(node_template)
+        graph.nodes.insert(0, flow_node)
+        return flow_node
 
-    def add_setter_node(self, graph: FlowGraph, key: str) -> FlowNode:
+    def add_variable(
+        self,
+        graph: FlowGraph,
+        variable_name: str,
+        dtype: Any,
+    ) -> FlowVariable:
+        if not isinstance(dtype, Dtype):
+            dtype = self._dtype_registry[dtype]
+        assert isinstance(dtype, Dtype)
+        return graph.add_variable(variable_name, dtype)
+
+    @staticmethod
+    def _find_variable(graph: FlowGraph, key: Union[str, FlowVariable]) -> FlowVariable:
+        if isinstance(key, FlowVariable):
+            return key
+        assert isinstance(key, str)
         variable = graph.find_variable(key)
         if variable is None:
             raise KeyError(f"Not found variable: '{key}'")
+        return variable
 
+    def add_setter_node(
+        self,
+        graph: FlowGraph,
+        key: Union[str, FlowVariable],
+    ) -> FlowNode:
+        variable = self._find_variable(graph, key)
         dtype = deepcopy(variable.dtype)
         setter_node = self._node_registry.setter_node
         node = FlowNode.from_template(setter_node)
@@ -170,11 +196,12 @@ class FlowManager:
         graph.nodes.insert(0, node)
         return node
 
-    def add_getter_node(self, graph: FlowGraph, key: str) -> FlowNode:
-        variable = graph.find_variable(key)
-        if variable is None:
-            raise KeyError(f"Not found variable: '{key}'")
-
+    def add_getter_node(
+        self,
+        graph: FlowGraph,
+        key: Union[str, FlowVariable],
+    ) -> FlowNode:
+        variable = self._find_variable(graph, key)
         dtype = deepcopy(variable.dtype)
         getter_node = self._node_registry.getter_node
         node = FlowNode.from_template(getter_node)
