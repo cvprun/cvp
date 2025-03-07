@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os
-from unittest import TestCase, main
 from tempfile import TemporaryDirectory
+from unittest import TestCase, main
 
 from type_serialize import deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.graph import FlowGraph
-from cvp.flow.node import FlowNode
 from cvp.flow.manager import FlowManager
+from cvp.flow.node import FlowNode
 from cvp.resources.home import HomeDir
 
 

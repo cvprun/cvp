@@ -8,19 +8,19 @@ from typing import Any, Optional, Union
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
+from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
+from cvp.flow.variable import FlowVariable
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.nodes.template import NodeTemplate
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
 from cvp.yaml.dumpers import IndentListDumper
-from cvp.flow.variable import FlowVariable
-from cvp.dtypes.dtype import Dtype
 
 
 class FlowManager:

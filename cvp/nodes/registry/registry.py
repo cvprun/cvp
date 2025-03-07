@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from typing import Callable, Dict, Optional, Sequence, Union
-from weakref import ReferenceType, ref
 
-from cvp.dtypes.registry.globals import global_dtype_registry
+from cvp.dtypes.registry.ref import DtypeRegistryRef
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
@@ -14,7 +13,6 @@ from cvp.types.colors import RGBA
 
 
 class NodeRegistry:
-    _dtype_registry: ReferenceType[DtypeRegistry]
     _nodes: Dict[str, NodeTemplate]
 
     def __init__(
@@ -23,10 +21,11 @@ class NodeRegistry:
         *,
         no_defaults=False,
     ):
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
+        self._dtype_registry = DtypeRegistryRef(dtype_registry)
+
+        dtype_registry = self._dtype_registry.get_force()
         assert dtype_registry is not None
-        self._dtype_registry = ref(dtype_registry)
+
         self._nodes = dict()
         self._getter_node = GetterNodeTemplate(dtype_registry)
         self._setter_node = SetterNodeTemplate(dtype_registry)
@@ -35,15 +34,12 @@ class NodeRegistry:
             self._nodes.update(get_default_path2nodes(dtype_registry))
 
     @property
-    def nodes(self):
-        return self._nodes
+    def dtype_registry(self):
+        return self._dtype_registry.get_force()
 
     @property
-    def dtype_registry(self) -> DtypeRegistry:
-        if registry := self._dtype_registry():
-            return registry
-        else:
-            return global_dtype_registry()
+    def nodes(self):
+        return self._nodes
 
     @property
     def getter_node(self):
@@ -66,7 +62,7 @@ class NodeRegistry:
         self._nodes.clear()
 
     def update(self, other: "NodeRegistry") -> None:
-        self._nodes.update(other.nodes)
+        self._nodes.update(other._nodes)
 
     def has(self, path: Union[str, NodeTemplate]) -> bool:
         if isinstance(path, NodeTemplate):
