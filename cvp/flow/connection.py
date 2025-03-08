@@ -43,7 +43,7 @@ class FlowConnection(NamedTuple):
         assert isinstance(out_type, type)
         assert isinstance(in_type, type)
 
-        if in_type != Any and not issubclass(out_type, in_type):
+        if in_type != Any and out_type != Any and not issubclass(out_type, in_type):
             raise TypeError("The output pin must subclass the input pin")
 
         if action == Action.exec and out_pin.wires:

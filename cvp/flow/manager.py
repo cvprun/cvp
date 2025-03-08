@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from concurrent.futures import Executor
 from copy import deepcopy
 from os import PathLike
 from typing import Any, Optional, Union
@@ -12,9 +13,11 @@ from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
+from cvp.flow.pin import FlowPin
 from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
+from cvp.flow.wire import FlowWire
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.nodes.template import NodeTemplate
 from cvp.resources.home import HomeDir
@@ -191,7 +194,7 @@ class FlowManager:
         setter_node = self._node_registry.setter_node
         node = FlowNode.from_template(setter_node)
         node.name = f"({dtype.type.__name__}) {key}"
-        node.set_default(setter_node.key_name, key)
+        node.set_default(setter_node.key_name, variable.name)
         node.set_dtype(setter_node.value_name, dtype)
         graph.nodes.insert(0, node)
         return node
@@ -206,7 +209,42 @@ class FlowManager:
         getter_node = self._node_registry.getter_node
         node = FlowNode.from_template(getter_node)
         node.name = f"({dtype.type.__name__}) {key}"
-        node.set_default(getter_node.key_name, key)
+        node.set_default(getter_node.key_name, variable.name)
         node.set_dtype(getter_node.value_name, dtype)
         graph.nodes.insert(0, node)
         return node
+
+    @staticmethod
+    def add_wire(
+        graph: FlowGraph,
+        output_node: Union[FlowNode, str],
+        output_pin: Union[FlowPin, str],
+        input_node: Union[FlowNode, str],
+        input_pin: Union[FlowPin, str],
+    ) -> FlowWire:
+        out_conn = graph.create_node_pin(output_node, output_pin)
+        in_conn = graph.create_node_pin(input_node, input_pin)
+        return graph.connect_pins(out_conn, in_conn)
+
+    def add_runner(
+        self,
+        graph: FlowGraph,
+        start_node: Union[FlowNode, str],
+        executor: Executor,
+        *,
+        name: Optional[str] = None,
+        debug=False,
+        verbose=0,
+    ):
+        runner = FlowRunner(
+            executor=executor,
+            node_registry=self._node_registry,
+            graph=graph,
+            start_node=start_node,
+            use_copy=False,
+            use_deepcopy=False,
+            debug=debug,
+            verbose=verbose,
+        )
+        self._runners[name if name else graph.uuid] = runner
+        return runner

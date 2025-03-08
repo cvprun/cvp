@@ -319,10 +319,44 @@ class FlowGraph(Serializable):
             variable.hovering = False
 
     def find_node(self, node_uuid: str) -> Optional[FlowNode]:
-        for node in self.nodes:
-            if node.uuid == node_uuid:
-                return node
-        return None
+        return self.nodes.get(node_uuid)
+
+    def create_node_pin(
+        self,
+        node: Union[FlowNode, str],
+        pin: Union[FlowPin, str],
+    ) -> FlowNodePin:
+        if isinstance(node, str):
+            node_ = self.find_node(node)
+            if node_ is None:
+                raise IndexError(f"Not found '{node}' node in the '{self.name}' graph")
+            node = node_
+        elif isinstance(node, FlowNode):
+            if self.nodes.index(node) < 0:
+                raise IndexError(
+                    f"The '{node.name}' node does not exist in the '{self.name}' graph"
+                )
+        else:
+            raise TypeError(f"Unsupported node type: {type(node).__name__}")
+
+        assert isinstance(node, FlowNode)
+
+        if isinstance(pin, str):
+            pin_ = node.find_pin(pin)
+            if pin_ is None:
+                raise IndexError(f"Not found '{pin}' pin in the '{node.name}' node")
+            pin = pin_
+        elif isinstance(pin, FlowPin):
+            if node.pins.index(pin) < 0:
+                raise IndexError(
+                    f"The '{pin.name}' pin does not exist in the '{node.name}' node"
+                )
+        else:
+            raise TypeError(f"Unsupported pin type: {type(pin).__name__}")
+
+        assert isinstance(pin, FlowPin)
+
+        return FlowNodePin(node, pin)
 
     def find_begin_nodes(self) -> List[FlowNode]:
         return list(filter(lambda node: node.is_begin, self.nodes))

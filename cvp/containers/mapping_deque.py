@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
-from copy import deepcopy
+from copy import copy, deepcopy
 from inspect import signature
 from typing import (
     Any,
@@ -168,21 +168,27 @@ class MappingDeque(Generic[_KT, _VT]):
         self._mapping.clear()
 
     def copy(self):
-        return type(self)(
-            items=self._deque.copy(),
-            keyable=self._keyable,
-        )
+        return self.__copy__()
+
+    def deepcopy(self):
+        return self.__deepcopy__()
 
     def __copy__(self):
-        return self.copy()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result._keyable = copy(self._keyable)
+        result._deque = copy(self._deque)
+        result._mapping = copy(self._mapping)
+        return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
         if memo is None:
             memo = dict()
-        result = type(self)(
-            items=deepcopy(self._deque, memo),
-            keyable=deepcopy(self._keyable, memo),
-        )
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result._keyable = deepcopy(self._keyable, memo)
+        result._deque = deepcopy(self._deque, memo)
+        result._mapping = deepcopy(self._mapping, memo)
         memo[id(self)] = result
         return result
 

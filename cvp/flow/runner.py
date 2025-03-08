@@ -136,6 +136,39 @@ class FlowRunner:
     def future(self):
         return self._future
 
+    def __repr__(self):
+        return self._future.__repr__()
+
+    def cancel(self):
+        return self._future.cancel()
+
+    def cancelled(self):
+        return self._future.cancelled()
+
+    def running(self):
+        return self._future.running()
+
+    def done(self):
+        return self._future.done()
+
+    def add_done_callback(self, fn):
+        return self._future.add_done_callback(fn)
+
+    def result(self, timeout=None):
+        return self._future.result(timeout)
+
+    def exception(self, timeout=None):
+        return self._future.exception(timeout)
+
+    def set_running_or_notify_cancel(self) -> None:
+        self._future.set_running_or_notify_cancel()
+
+    def set_result(self, result: Deque[NodeRecord]) -> None:
+        self._future.set_result(result)
+
+    def set_exception(self, exception: BaseException) -> None:
+        self._future.set_exception(exception)
+
     @property
     def state(self):
         with self._lock:
