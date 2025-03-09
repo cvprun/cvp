@@ -16,9 +16,9 @@ class NodeTestCase(TestCase):
         pin1 = FlowPin(
             name="name",
             dtype=Dtype(int),
-            docs="docs",
             action=Action.exec,
             stream=Stream.output,
+            docs="docs",
             required=True,
             hidden=True,
             wires=("1", "2"),

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Dict, Iterable, List, Optional, Sequence, SupportsIndex, Union
+from typing import Any, Dict, Iterable, List, Optional, SupportsIndex, Union
 
 from type_serialize import Serializable, deserialize, serialize
 
@@ -12,7 +12,7 @@ from cvp.types.override import override
 
 
 class FlowPins(Serializable):
-    def __init__(self, pins: Optional[Sequence[FlowPin]] = None):
+    def __init__(self, pins: Optional[Iterable[FlowPin]] = None):
         self.pins = self.__create_map(list(pins if pins else ()))
 
     @staticmethod
@@ -24,23 +24,48 @@ class FlowPins(Serializable):
         return MappingDeque[str, FlowPin](pins, keyable=FlowPins.__pin_keyable)
 
     @classmethod
-    def from_template(cls, templates: Optional[Sequence[PinTemplate]] = None):
+    def from_template(cls, templates: Optional[Iterable[PinTemplate]] = None):
         pins = list()
         if templates:
             for template in templates:
                 pins.append(FlowPin.from_template(template))
         return cls(pins)
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.pins == other.pins
+
+    def __copy__(self):
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.pins = copy(self.pins)
+        return result
+
+    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
+        if memo is None:
+            memo = dict()
+        cls = self.__class__
+        result = cls.__new__(cls)
+        result.pins = deepcopy(self.pins, memo)
+        memo[id(self)] = result
+        return result
+
+    @override
+    def __serialize__(self) -> Any:
+        return list(serialize(pin) for pin in self.pins)
+
+    @override
+    def __deserialize__(self, data: Any) -> None:
+        if not isinstance(data, list):
+            raise TypeError(f"Unexpected data type: {type(data).__name__}")
+        self.pins = self.__create_map(list(deserialize(d, FlowPin) for d in data))
+
     def as_list(self):
         return self.pins.as_list()
 
     def as_dict(self):
         return self.pins.as_dict()
-
-    def __eq__(self, other) -> bool:
-        if not isinstance(other, type(self)):
-            return False
-        return self.pins == other.pins
 
     def __len__(self) -> int:
         return self.pins.__len__()
@@ -78,111 +103,144 @@ class FlowPins(Serializable):
     def clear(self) -> None:
         self.pins.clear()
 
-    def __copy__(self):
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.pins = copy(self.pins)
-        return result
+    def as_exec_inputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_exec_inputs and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_exec_inputs, self.pins))
 
-    def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
-        if memo is None:
-            memo = dict()
-        cls = self.__class__
-        result = cls.__new__(cls)
-        result.pins = deepcopy(self.pins, memo)
-        memo[id(self)] = result
-        return result
+    def as_exec_outputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_exec_outputs and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_exec_outputs, self.pins))
 
-    @override
-    def __serialize__(self) -> Any:
-        return list(serialize(pin) for pin in self.pins)
+    def as_data_inputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_data_inputs and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_data_inputs, self.pins))
 
-    @override
-    def __deserialize__(self, data: Any) -> None:
-        if not isinstance(data, list):
-            raise TypeError(f"Unexpected data type: {type(data).__name__}")
-        self.pins = self.__create_map(list(deserialize(d, FlowPin) for d in data))
+    def as_data_outputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_data_outputs and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_data_outputs, self.pins))
 
-    @property
-    def exec_inputs(self):
-        return list(filter(lambda p: p.is_exec_inputs(), self.pins))
+    def as_execs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_exec_action and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_exec_action, self.pins))
 
-    @property
-    def exec_outputs(self):
-        return list(filter(lambda p: p.is_exec_outputs(), self.pins))
+    def as_datas(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_data_action and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_data_action, self.pins))
 
-    @property
-    def data_inputs(self):
-        return list(filter(lambda p: p.is_data_inputs(), self.pins))
+    def as_inputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_input_stream and not p.hidden, self.pins))
+        else:
+            return list(filter(lambda p: p.is_input_stream, self.pins))
 
-    @property
-    def data_outputs(self):
-        return list(filter(lambda p: p.is_data_outputs(), self.pins))
+    # fmt: off
 
-    @property
-    def inputs(self):
-        return list(filter(lambda p: p.is_input_stream(), self.pins))
+    def as_outputs(self, *, visible_only=False) -> List[FlowPin]:
+        if visible_only:
+            return list(filter(lambda p: p.is_output_stream and not p.hidden, self.pins))  # noqa: E501
+        else:
+            return list(filter(lambda p: p.is_output_stream, self.pins))
 
-    @property
-    def outputs(self):
-        return list(filter(lambda p: p.is_output_stream(), self.pins))
+    def get_exec_lines(self, *, visible_only=False) -> int:
+        return max(
+            len(self.as_exec_inputs(visible_only=visible_only)),
+            len(self.as_exec_outputs(visible_only=visible_only)),
+        )
 
-    @property
-    def execs(self):
-        return list(filter(lambda p: p.is_exec_action(), self.pins))
+    def get_data_lines(self, *, visible_only=False) -> int:
+        return max(
+            len(self.as_data_inputs(visible_only=visible_only)),
+            len(self.as_data_outputs(visible_only=visible_only)),
+        )
 
-    @property
-    def datas(self):
-        return list(filter(lambda p: p.is_data_action(), self.pins))
+    def has_exec_input(self, *, visible_only=False) -> bool:
+        return bool(self.as_exec_inputs(visible_only=visible_only))
 
-    @property
-    def exec_lines(self):
-        return max(len(self.exec_inputs), len(self.exec_outputs))
+    def has_exec_output(self, *, visible_only=False) -> bool:
+        return bool(self.as_exec_outputs(visible_only=visible_only))
 
-    @property
-    def data_lines(self):
-        return max(len(self.data_inputs), len(self.data_outputs))
+    def has_data_input(self, *, visible_only=False) -> bool:
+        return bool(self.as_data_inputs(visible_only=visible_only))
 
-    @property
-    def has_exec_input(self) -> bool:
-        return bool(self.exec_inputs)
+    def has_data_output(self, *, visible_only=False) -> bool:
+        return bool(self.as_data_outputs(visible_only=visible_only))
 
-    @property
-    def has_exec_output(self) -> bool:
-        return bool(self.exec_outputs)
+    def is_any_exec(self, *, visible_only=False) -> bool:
+        return (
+            self.has_exec_input(visible_only=visible_only)
+            or self.has_exec_output(visible_only=visible_only)
+        )
 
-    @property
-    def has_data_input(self) -> bool:
-        return bool(self.data_inputs)
+    def is_any_data(self, *, visible_only=False) -> bool:
+        return (
+            self.has_data_input(visible_only=visible_only)
+            or self.has_data_output(visible_only=visible_only)
+        )
 
-    @property
-    def has_data_output(self) -> bool:
-        return bool(self.data_outputs)
+    def is_any_input(self, *, visible_only=False) -> bool:
+        return (
+            self.has_exec_input(visible_only=visible_only)
+            or self.has_data_input(visible_only=visible_only)
+        )
 
-    @property
-    def any_exec(self) -> bool:
-        return self.has_exec_input or self.has_exec_output
+    def is_any_output(self, *, visible_only=False) -> bool:
+        return (
+            self.has_exec_output(visible_only=visible_only)
+            or self.has_data_output(visible_only=visible_only)
+        )
 
-    @property
-    def any_data(self) -> bool:
-        return self.has_data_input or self.has_data_output
+    def is_exec_only(self, *, visible_only=False) -> bool:
+        return (
+            self.is_any_exec(visible_only=visible_only)
+            and not self.is_any_data(visible_only=visible_only)
+        )
 
-    @property
-    def is_exec_only(self) -> bool:
-        return self.any_exec and not self.any_data
+    def is_data_only(self, *, visible_only=False) -> bool:
+        return (
+            not self.is_any_exec(visible_only=visible_only)
+            and self.is_any_data(visible_only=visible_only)
+        )
 
-    @property
-    def is_data_only(self) -> bool:
-        return not self.any_exec and self.any_data
+    def is_input_only(self, *, visible_only=False) -> bool:
+        return (
+            self.is_any_input(visible_only=visible_only)
+            and not self.is_any_output(visible_only=visible_only)
+        )
 
-    @property
-    def is_begin(self) -> bool:
-        return not self.has_exec_input and self.has_exec_output
+    def is_output_only(self, *, visible_only=False) -> bool:
+        return (
+            not self.is_any_input(visible_only=visible_only)
+            and self.is_any_output(visible_only=visible_only)
+        )
 
-    @property
-    def is_middle(self) -> bool:
-        return self.has_exec_input and self.has_exec_output
+    def is_begin(self, *, visible_only=False) -> bool:
+        return (
+            not self.has_exec_input(visible_only=visible_only)
+            and self.has_exec_output(visible_only=visible_only)
+        )
 
-    @property
-    def is_end(self) -> bool:
-        return self.has_exec_input and not self.has_exec_output
+    def is_middle(self, *, visible_only=False) -> bool:
+        return (
+            self.has_exec_input(visible_only=visible_only)
+            and self.has_exec_output(visible_only=visible_only)
+        )
+
+    def is_end(self, *, visible_only=False) -> bool:
+        return (
+            self.has_exec_input(visible_only=visible_only)
+            and not self.has_exec_output(visible_only=visible_only)
+        )
+
+    # fmt: on

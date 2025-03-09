@@ -2,15 +2,15 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Optional, Sequence
+from typing import Any, Dict, Literal, Optional, Sequence, Union
 
 from type_serialize import Serializable, deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
-from cvp.pins.action import Action
+from cvp.pins.action import Action, create_action
 from cvp.pins.kind import PinKind
-from cvp.pins.stream import Stream
+from cvp.pins.stream import Stream, create_stream
 from cvp.pins.template import PinTemplate
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
@@ -41,9 +41,9 @@ class FlowPin(Serializable):
         self,
         name: str,
         dtype: Dtype,
+        action: Union[Action, Literal["exec", "data", 0, 1]],
+        stream: Union[Stream, Literal["input", "output", 0, 1]],
         docs: Optional[str] = None,
-        action=Action.data,
-        stream=Stream.input,
         required=False,
         hidden=False,
         wires: Optional[Sequence[str]] = None,
@@ -60,9 +60,10 @@ class FlowPin(Serializable):
     ):
         self.name = name
         self.dtype = dtype
+        self.action = create_action(action)
+        self.stream = create_stream(stream)
+
         self.docs = docs if docs else str()
-        self.action = action
-        self.stream = stream
         self.required = required
         self.hidden = hidden
         self.wires = list(wires if wires else ())
@@ -84,9 +85,9 @@ class FlowPin(Serializable):
         return cls(
             name=template.name,
             dtype=template.dtype,
-            docs=template.docs,
             action=template.action,
             stream=template.stream,
+            docs=template.docs,
             required=template.required,
             hidden=template.hidden,
             wires=deepcopy(template.wires),
@@ -104,9 +105,9 @@ class FlowPin(Serializable):
         return (
             self.name == other.name
             and self.dtype == other.dtype
-            and self.docs == other.docs
             and self.action == other.action
             and self.stream == other.stream
+            and self.docs == other.docs
             and self.required == other.required
             and self.hidden == other.hidden
             and self.wires == other.wires
@@ -123,9 +124,9 @@ class FlowPin(Serializable):
         result = cls.__new__(cls)
         result.name = copy(self.name)
         result.dtype = copy(self.dtype)
-        result.docs = copy(self.docs)
         result.action = copy(self.action)
         result.stream = copy(self.stream)
+        result.docs = copy(self.docs)
         result.required = copy(self.required)
         result.hidden = copy(self.hidden)
         result.wires = copy(self.wires)
@@ -147,9 +148,9 @@ class FlowPin(Serializable):
         result = cls.__new__(cls)
         result.name = deepcopy(self.name, memo)
         result.dtype = deepcopy(self.dtype, memo)
-        result.docs = deepcopy(self.docs, memo)
         result.action = deepcopy(self.action, memo)
         result.stream = deepcopy(self.stream, memo)
+        result.docs = deepcopy(self.docs, memo)
         result.required = deepcopy(self.required, memo)
         result.hidden = deepcopy(self.hidden, memo)
         result.wires = deepcopy(self.wires, memo)
@@ -170,9 +171,9 @@ class FlowPin(Serializable):
         result = {
             self.Keys.name_: self.name,
             self.Keys.dtype: serialize(self.dtype),
-            self.Keys.docs: self.docs,
             self.Keys.action: str(self.action),
             self.Keys.stream: str(self.stream),
+            self.Keys.docs: self.docs,
             self.Keys.required: self.required,
             self.Keys.hidden: self.hidden,
             self.Keys.wires: self.wires,
@@ -197,23 +198,22 @@ class FlowPin(Serializable):
             raise TypeError(f"The '{self.Keys.name_}' attribute only allows str type")
 
         dtype = data.get(self.Keys.dtype)
-        if not dtype:
+        if dtype is None:
             raise ValueError(f"The '{self.Keys.dtype}' attribute is required")
+
+        action = data.get(self.Keys.action)
+        if action is None:
+            raise ValueError(f"The '{self.Keys.action}' attribute is required")
+
+        stream = data.get(self.Keys.stream)
+        if stream is None:
+            raise ValueError(f"The '{self.Keys.stream}' attribute is required")
 
         self.name = name
         self.dtype = deserialize(dtype, Dtype)
+        self.action = create_action(action)
+        self.stream = create_stream(stream)
         self.docs = data.get(self.Keys.docs, str())
-
-        if action := data.get(self.Keys.action):
-            self.action = Action(action)
-        else:
-            self.action = Action.data
-
-        if stream := data.get(self.Keys.stream):
-            self.stream = Stream(stream)
-        else:
-            self.stream = Stream.input
-
         self.required = data.get(self.Keys.required, False)
         self.hidden = data.get(self.Keys.hidden, False)
         self.wires = data.get(self.Keys.wires, list())
