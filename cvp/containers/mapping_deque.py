@@ -157,7 +157,7 @@ class MappingDeque(Generic[_KT, _VT]):
     def rotate(self, n=1) -> None:
         self._deque.rotate(n)
 
-    def index(self, value: _VT, start=0, stop: Optional[int] = None):
+    def index(self, value: _VT, start=0, stop: Optional[int] = None) -> int:
         if stop is not None:
             return self._deque.index(value, start, stop)
         else:

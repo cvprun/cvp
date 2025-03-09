@@ -44,8 +44,8 @@ class NodeTemplate(NodeInterface):
         self.docs = docs if docs else str()
         self.icon = icon if icon else str()
         self.color = color if color else WHITE_RGBA
-        self.pins = list(pins if pins else [])
-        self.tags = list(tags if tags else [])
+        self.pins = list(pins if pins else ())
+        self.tags = list(tags if tags else ())
         self.hidden = hidden
 
     @classmethod

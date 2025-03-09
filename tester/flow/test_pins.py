@@ -20,6 +20,14 @@ class PinsTestCase(TestCase):
     def test_default(self):
         self.assertEqual(4, len(self.pins))
 
+        self.assertEqual(0, self.pins.index(self.pin1))
+        self.assertEqual(1, self.pins.index(self.pin2))
+        self.assertEqual(2, self.pins.index(self.pin3))
+        self.assertEqual(3, self.pins.index(self.pin4))
+
+        with self.assertRaises(ValueError):
+            self.pins.index(FlowPin("temp", Dtype(int), action="data", stream="output"))
+
         self.assertEqual(1, len(self.pins.as_exec_inputs()))
         self.assertEqual(1, len(self.pins.as_exec_outputs()))
         self.assertEqual(1, len(self.pins.as_data_inputs()))

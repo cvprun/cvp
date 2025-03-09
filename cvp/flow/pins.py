@@ -100,6 +100,9 @@ class FlowPins(Serializable):
     def values(self):
         return self.pins.values()
 
+    def index(self, value: FlowPin, start=0, stop: Optional[int] = None) -> int:
+        return self.pins.index(value, start, stop)
+
     def clear(self) -> None:
         self.pins.clear()
 
