@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
-from typing import Optional, Sequence
+from typing import Iterable, Optional
 
+from cvp.fonts.types import IconCode
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.nodes.template import NodePath
 from cvp.patterns.singleton import singleton
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
@@ -20,16 +22,16 @@ def global_node_registry() -> GlobalNodeRegistry:
 
 
 def register_node(
+    path: Optional[NodePath] = None,
     name: Optional[str] = None,
-    path: Optional[str] = None,
     docs: Optional[str] = None,
-    icon: Optional[str] = None,
+    icon: Optional[IconCode] = None,
     color: Optional[RGBA] = None,
-    exec_inputs: Optional[Sequence[PinTemplate]] = None,
-    exec_outputs: Optional[Sequence[PinTemplate]] = None,
-    data_inputs: Optional[Sequence[PinTemplate]] = None,
-    data_outputs: Optional[Sequence[PinTemplate]] = None,
-    tags: Optional[Sequence[str]] = None,
+    exec_inputs: Optional[Iterable[PinTemplate]] = None,
+    exec_outputs: Optional[Iterable[PinTemplate]] = None,
+    data_inputs: Optional[Iterable[PinTemplate]] = None,
+    data_outputs: Optional[Iterable[PinTemplate]] = None,
+    tags: Optional[Iterable[str]] = None,
 ):
     return global_node_registry().register(
         name=name,

@@ -2,10 +2,11 @@
 
 from abc import ABC, abstractmethod
 from inspect import signature
-from typing import Any, Callable, List, Optional, Sequence
+from typing import Any, Callable, Iterable, List, NewType, Optional
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.fonts.types import IconCode
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
@@ -13,6 +14,8 @@ from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
+
+NodePath = NewType("NodePath", str)
 
 
 class NodeInterface(ABC):
@@ -28,17 +31,28 @@ class NodeInterface(ABC):
 class NodeTemplate(NodeInterface):
     def __init__(
         self,
-        name: str,
-        path: str,
+        path: NodePath,
+        name: Optional[str] = None,
         func: Optional[Callable] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        pins: Optional[Sequence[PinTemplate]] = None,
-        tags: Optional[Sequence[str]] = None,
+        pins: Optional[Iterable[PinTemplate]] = None,
+        tags: Optional[Iterable[str]] = None,
         hidden=False,
     ):
-        self.name = name
+        if not path:
+            raise ValueError("The 'path' argument is required")
+
+        if name:
+            self.name = name
+        elif func is not None:
+            self.name = type(func).__name__
+        elif type(self) is NodeTemplate:
+            self.name = type(self).__name__
+        else:
+            self.name = str(path)
+
         self.path = path
         self.func = func
         self.docs = docs if docs else str()
@@ -49,19 +63,19 @@ class NodeTemplate(NodeInterface):
         self.hidden = hidden
 
     @classmethod
-    def auto_parse(
+    def from_callable(
         cls,
         func: Callable,
+        path: Optional[NodePath] = None,
         name: Optional[str] = None,
-        path: Optional[str] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Sequence[PinTemplate]] = None,
-        exec_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
-        tags: Optional[Sequence[str]] = None,
+        exec_inputs: Optional[Iterable[PinTemplate]] = None,
+        exec_outputs: Optional[Iterable[PinTemplate]] = None,
+        data_inputs: Optional[Iterable[PinTemplate]] = None,
+        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        tags: Optional[Iterable[str]] = None,
         hidden=False,
         *,
         dtype_registry: Optional[DtypeRegistry] = None,
@@ -79,7 +93,7 @@ class NodeTemplate(NodeInterface):
         if path:
             base_path = path
         elif hasattr(func, "__module__"):
-            base_path = func.__module__ + FLOW_PATH_SEPARATOR + base_name
+            base_path = NodePath(func.__module__ + FLOW_PATH_SEPARATOR + base_name)
         else:
             raise ValueError("Could not find attribute '__module__' in callable")
 
@@ -138,8 +152,8 @@ class NodeTemplate(NodeInterface):
             base_pins.append(return_pin)
 
         return cls(
-            name=base_name,
             path=base_path,
+            name=base_name,
             func=func,
             docs=base_docs,
             icon=base_icon,

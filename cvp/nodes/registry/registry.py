@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Dict, Optional, Sequence, Union
+from typing import Callable, Dict, Iterable, Optional, Union
 
 from cvp.dtypes.registry.ref import DtypeRegistryRef
 from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.fonts.types import IconCode
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
 from cvp.nodes.defaults.essential.setter import SetterNodeTemplate
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
 
@@ -97,21 +98,21 @@ class NodeRegistry:
     def add_new(
         self,
         func: Callable,
+        path: Optional[NodePath] = None,
         name: Optional[str] = None,
-        path: Optional[str] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Sequence[PinTemplate]] = None,
-        exec_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
-        tags: Optional[Sequence[str]] = None,
+        exec_inputs: Optional[Iterable[PinTemplate]] = None,
+        exec_outputs: Optional[Iterable[PinTemplate]] = None,
+        data_inputs: Optional[Iterable[PinTemplate]] = None,
+        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> NodeTemplate:
-        node = NodeTemplate.auto_parse(
+        node = NodeTemplate.from_callable(
             func=func,
-            name=name,
             path=path,
+            name=name,
             docs=docs,
             icon=icon,
             color=color,
@@ -128,21 +129,21 @@ class NodeRegistry:
     def register(
         self,
         name: Optional[str] = None,
-        path: Optional[str] = None,
+        path: Optional[NodePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Sequence[PinTemplate]] = None,
-        exec_outputs: Optional[Sequence[PinTemplate]] = None,
-        data_inputs: Optional[Sequence[PinTemplate]] = None,
-        data_outputs: Optional[Sequence[PinTemplate]] = None,
-        tags: Optional[Sequence[str]] = None,
+        exec_inputs: Optional[Iterable[PinTemplate]] = None,
+        exec_outputs: Optional[Iterable[PinTemplate]] = None,
+        data_inputs: Optional[Iterable[PinTemplate]] = None,
+        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        tags: Optional[Iterable[str]] = None,
     ):
         def _decorator(func: Callable):
             self.add_new(
                 func=func,
-                name=name,
                 path=path,
+                name=name,
                 docs=docs,
                 icon=icon,
                 color=color,

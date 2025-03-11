@@ -7,7 +7,7 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
 from cvp.pins.template import PinTemplate
@@ -39,8 +39,8 @@ class LoggingNodeTemplate(NodeTemplate):
         )
 
         super().__init__(
+            path=NodePath("cvp.essential.logging"),
             name="Logging",
-            path="cvp.essential.logging",
             func=None,
             docs="Logs a message with integer level level on this logger",
             icon=PLAY,

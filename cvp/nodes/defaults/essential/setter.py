@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
 from cvp.pins.template import PinTemplate
@@ -29,8 +29,8 @@ class SetterNodeTemplate(NodeTemplate):
             docs="The value of the variable",
         )
         super().__init__(
+            path=NodePath("cvp.essential.setter"),
             name="Setter",
-            path="cvp.essential.setter",
             docs="Set a variable to a specific value",
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
