@@ -16,32 +16,30 @@ from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
-@unique
-class FlowNodeKeys(StrEnum):
-    uuid = auto()
-    name_ = "name"
-    path = auto()
-    docs = auto()
-    icon = auto()
-    lock = auto()
-    breakpoint = auto()
-    hidden = auto()
-    color = auto()
-    pins = auto()
-    tags = auto()
-    head_height = auto()
-    exec_height = auto()
-    data_height = auto()
-    icon_pos = auto()
-    icon_size = auto()
-    name_pos = auto()
-    name_size = auto()
-    node_pos = auto()
-    node_size = auto()
-
-
 class FlowNode(Serializable):
-    Keys = FlowNodeKeys
+
+    @unique
+    class _Keys(StrEnum):
+        uuid = auto()
+        name_ = "name"
+        path = auto()
+        docs = auto()
+        icon = auto()
+        lock = auto()
+        breakpoint = auto()
+        hidden = auto()
+        color = auto()
+        pins = auto()
+        tags = auto()
+        head_height = auto()
+        exec_height = auto()
+        data_height = auto()
+        icon_pos = auto()
+        icon_size = auto()
+        name_pos = auto()
+        name_size = auto()
+        node_pos = auto()
+        node_size = auto()
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -212,26 +210,26 @@ class FlowNode(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.uuid: self.uuid,
-            self.Keys.name_: self.name,
-            self.Keys.path: self.path,
-            self.Keys.docs: self.docs,
-            self.Keys.icon: self.icon,
-            self.Keys.lock: self.lock,
-            self.Keys.breakpoint: self.breakpoint,
-            self.Keys.hidden: self.hidden,
-            self.Keys.color: list(self.color),
-            self.Keys.pins: serialize(self.pins),
-            self.Keys.tags: self.tags,
-            self.Keys.head_height: self.head_height,
-            self.Keys.exec_height: self.exec_height,
-            self.Keys.data_height: self.data_height,
-            self.Keys.icon_pos: list(self.icon_pos),
-            self.Keys.icon_size: list(self.icon_size),
-            self.Keys.name_pos: list(self.name_pos),
-            self.Keys.name_size: list(self.name_size),
-            self.Keys.node_pos: list(self.node_pos),
-            self.Keys.node_size: list(self.node_size),
+            self._Keys.uuid: self.uuid,
+            self._Keys.name_: self.name,
+            self._Keys.path: self.path,
+            self._Keys.docs: self.docs,
+            self._Keys.icon: self.icon,
+            self._Keys.lock: self.lock,
+            self._Keys.breakpoint: self.breakpoint,
+            self._Keys.hidden: self.hidden,
+            self._Keys.color: list(self.color),
+            self._Keys.pins: serialize(self.pins),
+            self._Keys.tags: self.tags,
+            self._Keys.head_height: self.head_height,
+            self._Keys.exec_height: self.exec_height,
+            self._Keys.data_height: self.data_height,
+            self._Keys.icon_pos: list(self.icon_pos),
+            self._Keys.icon_size: list(self.icon_size),
+            self._Keys.name_pos: list(self.name_pos),
+            self._Keys.name_size: list(self.name_size),
+            self._Keys.node_pos: list(self.node_pos),
+            self._Keys.node_size: list(self.node_size),
         }
         return {str(key): val for key, val in result.items()}
 
@@ -240,19 +238,19 @@ class FlowNode(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = data.get(self.Keys.uuid, str())
-        self.name = data.get(self.Keys.name_, str())
-        self.path = data.get(self.Keys.path, str())
-        self.docs = data.get(self.Keys.docs, str())
-        self.icon = data.get(self.Keys.icon, str())
-        self.lock = data.get(self.Keys.lock, False)
-        self.breakpoint = data.get(self.Keys.breakpoint, False)
-        self.hidden = data.get(self.Keys.hidden, False)
+        self.uuid = data.get(self._Keys.uuid, str())
+        self.name = data.get(self._Keys.name_, str())
+        self.path = data.get(self._Keys.path, str())
+        self.docs = data.get(self._Keys.docs, str())
+        self.icon = data.get(self._Keys.icon, str())
+        self.lock = data.get(self._Keys.lock, False)
+        self.breakpoint = data.get(self._Keys.breakpoint, False)
+        self.hidden = data.get(self._Keys.hidden, False)
 
-        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
+        self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
         assert len(self.color) == 4
 
-        pins = data.get(self.Keys.pins)
+        pins = data.get(self._Keys.pins)
         if pins is None:
             self.pins = FlowPins()
         elif isinstance(pins, list):
@@ -260,18 +258,18 @@ class FlowNode(Serializable):
         else:
             raise TypeError(f"Unsupported pins type: {type(pins).__name__}")
 
-        self.tags = data.get(self.Keys.tags, list())
+        self.tags = data.get(self._Keys.tags, list())
 
-        self.head_height = data.get(self.Keys.head_height, 0.0)
-        self.exec_height = data.get(self.Keys.exec_height, 0.0)
-        self.data_height = data.get(self.Keys.data_height, 0.0)
+        self.head_height = data.get(self._Keys.head_height, 0.0)
+        self.exec_height = data.get(self._Keys.exec_height, 0.0)
+        self.data_height = data.get(self._Keys.data_height, 0.0)
 
-        self.icon_pos = tuple(data.get(self.Keys.icon_pos, EMPTY_POINT))
-        self.icon_size = tuple(data.get(self.Keys.icon_size, EMPTY_SIZE))
-        self.name_pos = tuple(data.get(self.Keys.name_pos, EMPTY_POINT))
-        self.name_size = tuple(data.get(self.Keys.name_size, EMPTY_SIZE))
-        self.node_pos = tuple(data.get(self.Keys.node_pos, EMPTY_POINT))
-        self.node_size = tuple(data.get(self.Keys.node_size, EMPTY_SIZE))
+        self.icon_pos = tuple(data.get(self._Keys.icon_pos, EMPTY_POINT))
+        self.icon_size = tuple(data.get(self._Keys.icon_size, EMPTY_SIZE))
+        self.name_pos = tuple(data.get(self._Keys.name_pos, EMPTY_POINT))
+        self.name_size = tuple(data.get(self._Keys.name_size, EMPTY_SIZE))
+        self.node_pos = tuple(data.get(self._Keys.node_pos, EMPTY_POINT))
+        self.node_size = tuple(data.get(self._Keys.node_size, EMPTY_SIZE))
 
         assert len(self.icon_pos) == 2
         assert len(self.icon_size) == 2

@@ -10,14 +10,12 @@ from cvp.types.override import override
 from cvp.types.shapes import Point
 
 
-@unique
-class FlowAnchorKeys(StrEnum):
-    x = auto()
-    y = auto()
-
-
 class FlowAnchor(Serializable):
-    Keys = FlowAnchorKeys
+
+    @unique
+    class _Keys(StrEnum):
+        x = auto()
+        y = auto()
 
     def __init__(
         self,
@@ -60,7 +58,7 @@ class FlowAnchor(Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {self.Keys.x: self.x, self.Keys.y: self.y}
+        result = {self._Keys.x: self.x, self._Keys.y: self.y}
         return {str(key): val for key, val in result.items()}
 
     @override
@@ -68,8 +66,8 @@ class FlowAnchor(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.x = data.get(self.Keys.x, 0.0)
-        self.y = data.get(self.Keys.y, 0.0)
+        self.x = data.get(self._Keys.x, 0.0)
+        self.y = data.get(self._Keys.y, 0.0)
         self._selected = False
         self._hovering = False
 

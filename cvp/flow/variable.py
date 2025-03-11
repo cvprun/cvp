@@ -13,22 +13,20 @@ from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
 
 
-@unique
-class FlowVariableKeys(StrEnum):
-    name_ = "name"
-    dtype = auto()
-    docs = auto()
-
-    value_ = "value"
-    initial = auto()
-
-    persistent = auto()
-    use_copy = auto()
-    use_deepcopy = auto()
-
-
 class FlowVariable(ValueProxy[ValueT], Serializable):
-    Keys = FlowVariableKeys
+
+    @unique
+    class _Keys(StrEnum):
+        name_ = "name"
+        dtype = auto()
+        docs = auto()
+
+        value_ = "value"
+        initial = auto()
+
+        persistent = auto()
+        use_copy = auto()
+        use_deepcopy = auto()
 
     _value: Any
     _initial: Any
@@ -119,14 +117,14 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.name_: self.name,
-            self.Keys.dtype: serialize(self.dtype),
-            self.Keys.docs: self.docs,
-            self.Keys.value_: dumps(self._value),
-            self.Keys.initial: dumps(self._initial),
-            self.Keys.persistent: self.persistent,
-            self.Keys.use_copy: self.use_copy,
-            self.Keys.use_deepcopy: self.use_deepcopy,
+            self._Keys.name_: self.name,
+            self._Keys.dtype: serialize(self.dtype),
+            self._Keys.docs: self.docs,
+            self._Keys.value_: dumps(self._value),
+            self._Keys.initial: dumps(self._initial),
+            self._Keys.persistent: self.persistent,
+            self._Keys.use_copy: self.use_copy,
+            self._Keys.use_deepcopy: self.use_deepcopy,
         }
         return {str(key): val for key, val in result.items()}
 
@@ -135,26 +133,26 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self._value = loads(data.get(self.Keys.value_, None))
-        self._initial = loads(data.get(self.Keys.initial, None))
+        self._value = loads(data.get(self._Keys.value_, None))
+        self._initial = loads(data.get(self._Keys.initial, None))
 
-        name = data.get(self.Keys.name_)
+        name = data.get(self._Keys.name_)
         if not name:
-            raise ValueError(f"The '{self.Keys.name_}' attribute is required")
+            raise ValueError(f"The '{self._Keys.name_}' attribute is required")
         if not isinstance(name, str):
-            raise TypeError(f"The '{self.Keys.name_}' attribute only allows str type")
+            raise TypeError(f"The '{self._Keys.name_}' attribute only allows str type")
 
-        dtype = data.get(self.Keys.dtype)
+        dtype = data.get(self._Keys.dtype)
         if not dtype:
-            raise ValueError(f"The '{self.Keys.dtype}' attribute is required")
+            raise ValueError(f"The '{self._Keys.dtype}' attribute is required")
 
         self.name = name
         self.dtype = deserialize(dtype, Dtype)
-        self.docs = data.get(self.Keys.docs, str())
+        self.docs = data.get(self._Keys.docs, str())
 
-        self.persistent = data.get(self.Keys.persistent, False)
-        self.use_copy = data.get(self.Keys.use_copy, False)
-        self.use_deepcopy = data.get(self.Keys.use_deepcopy, False)
+        self.persistent = data.get(self._Keys.persistent, False)
+        self.use_copy = data.get(self._Keys.use_copy, False)
+        self.use_deepcopy = data.get(self._Keys.use_deepcopy, False)
 
         if self.use_copy and self.use_deepcopy:
             raise ValueError("use_copy and use_deepcopy cannot coexist")

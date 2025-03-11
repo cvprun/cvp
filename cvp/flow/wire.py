@@ -15,18 +15,16 @@ from cvp.types.override import override
 from cvp.types.shapes import Point, Rect
 
 
-@unique
-class FlowWireKeys(StrEnum):
-    uuid = auto()
-    name_ = "name"
-    docs = auto()
-    line_type = auto()
-    start_anchor = auto()
-    end_anchor = auto()
-
-
 class FlowWire(Serializable):
-    Keys = FlowWireKeys
+
+    @unique
+    class _Keys(StrEnum):
+        uuid = auto()
+        name_ = "name"
+        docs = auto()
+        line_type = auto()
+        start_anchor = auto()
+        end_anchor = auto()
 
     # noinspection PyShadowingBuiltins
     def __init__(
@@ -139,12 +137,12 @@ class FlowWire(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.uuid: self.uuid,
-            self.Keys.name_: self.name,
-            self.Keys.docs: self.docs,
-            self.Keys.line_type: str(self.line_type),
-            self.Keys.start_anchor: serialize(self.start_anchor),
-            self.Keys.end_anchor: serialize(self.end_anchor),
+            self._Keys.uuid: self.uuid,
+            self._Keys.name_: self.name,
+            self._Keys.docs: self.docs,
+            self._Keys.line_type: str(self.line_type),
+            self._Keys.start_anchor: serialize(self.start_anchor),
+            self._Keys.end_anchor: serialize(self.end_anchor),
         }
         return {str(key): val for key, val in result.items()}
 
@@ -153,21 +151,21 @@ class FlowWire(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = data.get(self.Keys.uuid, str())
-        self.name = data.get(self.Keys.name_, str())
-        self.docs = data.get(self.Keys.docs, str())
+        self.uuid = data.get(self._Keys.uuid, str())
+        self.name = data.get(self._Keys.name_, str())
+        self.docs = data.get(self._Keys.docs, str())
 
-        if line_type := data.get(self.Keys.line_type):
+        if line_type := data.get(self._Keys.line_type):
             self.line_type = FlowLineType(line_type)
         else:
             self.line_type = FlowLineType.bezier_cubic
 
-        if start_anchor := data.get(self.Keys.start_anchor):
+        if start_anchor := data.get(self._Keys.start_anchor):
             self.start_anchor = deserialize(start_anchor, FlowAnchor)
         else:
             self.start_anchor = FlowAnchor()
 
-        if end_anchor := data.get(self.Keys.end_anchor):
+        if end_anchor := data.get(self._Keys.end_anchor):
             self.end_anchor = deserialize(end_anchor, FlowAnchor)
         else:
             self.end_anchor = FlowAnchor()

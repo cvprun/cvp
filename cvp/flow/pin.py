@@ -16,26 +16,24 @@ from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
 
-@unique
-class FlowPinKeys(StrEnum):
-    name_ = "name"
-    docs = auto()
-    dtype = auto()
-    action = auto()
-    stream = auto()
-    required = auto()
-    hidden = auto()
-    wires = auto()
-    kind = auto()
-    default = auto()
-    icon_pos = auto()
-    icon_size = auto()
-    name_pos = auto()
-    name_size = auto()
-
-
 class FlowPin(Serializable):
-    Keys = FlowPinKeys
+
+    @unique
+    class _Keys(StrEnum):
+        name_ = "name"
+        docs = auto()
+        dtype = auto()
+        action = auto()
+        stream = auto()
+        required = auto()
+        hidden = auto()
+        wires = auto()
+        kind = auto()
+        default = auto()
+        icon_pos = auto()
+        icon_size = auto()
+        name_pos = auto()
+        name_size = auto()
 
     def __init__(
         self,
@@ -169,20 +167,20 @@ class FlowPin(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.name_: self.name,
-            self.Keys.dtype: serialize(self.dtype),
-            self.Keys.action: str(self.action),
-            self.Keys.stream: str(self.stream),
-            self.Keys.docs: self.docs,
-            self.Keys.required: self.required,
-            self.Keys.hidden: self.hidden,
-            self.Keys.wires: self.wires,
-            self.Keys.kind: int(self.kind),
-            self.Keys.default: dumps(self.default),
-            self.Keys.icon_pos: list(self.icon_pos),
-            self.Keys.icon_size: list(self.icon_size),
-            self.Keys.name_pos: list(self.name_pos),
-            self.Keys.name_size: list(self.name_size),
+            self._Keys.name_: self.name,
+            self._Keys.dtype: serialize(self.dtype),
+            self._Keys.action: str(self.action),
+            self._Keys.stream: str(self.stream),
+            self._Keys.docs: self.docs,
+            self._Keys.required: self.required,
+            self._Keys.hidden: self.hidden,
+            self._Keys.wires: self.wires,
+            self._Keys.kind: int(self.kind),
+            self._Keys.default: dumps(self.default),
+            self._Keys.icon_pos: list(self.icon_pos),
+            self._Keys.icon_size: list(self.icon_size),
+            self._Keys.name_pos: list(self.name_pos),
+            self._Keys.name_size: list(self.name_size),
         }
         return {str(key): val for key, val in result.items()}
 
@@ -191,46 +189,46 @@ class FlowPin(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        name = data.get(self.Keys.name_)
+        name = data.get(self._Keys.name_)
         if not name:
-            raise ValueError(f"The '{self.Keys.name_}' attribute is required")
+            raise ValueError(f"The '{self._Keys.name_}' attribute is required")
         if not isinstance(name, str):
-            raise TypeError(f"The '{self.Keys.name_}' attribute only allows str type")
+            raise TypeError(f"The '{self._Keys.name_}' attribute only allows str type")
 
-        dtype = data.get(self.Keys.dtype)
+        dtype = data.get(self._Keys.dtype)
         if dtype is None:
-            raise ValueError(f"The '{self.Keys.dtype}' attribute is required")
+            raise ValueError(f"The '{self._Keys.dtype}' attribute is required")
 
-        action = data.get(self.Keys.action)
+        action = data.get(self._Keys.action)
         if action is None:
-            raise ValueError(f"The '{self.Keys.action}' attribute is required")
+            raise ValueError(f"The '{self._Keys.action}' attribute is required")
 
-        stream = data.get(self.Keys.stream)
+        stream = data.get(self._Keys.stream)
         if stream is None:
-            raise ValueError(f"The '{self.Keys.stream}' attribute is required")
+            raise ValueError(f"The '{self._Keys.stream}' attribute is required")
 
         self.name = name
         self.dtype = deserialize(dtype, Dtype)
         self.action = create_action(action)
         self.stream = create_stream(stream)
-        self.docs = data.get(self.Keys.docs, str())
-        self.required = data.get(self.Keys.required, False)
-        self.hidden = data.get(self.Keys.hidden, False)
-        self.wires = data.get(self.Keys.wires, list())
+        self.docs = data.get(self._Keys.docs, str())
+        self.required = data.get(self._Keys.required, False)
+        self.hidden = data.get(self._Keys.hidden, False)
+        self.wires = data.get(self._Keys.wires, list())
 
-        kind = data.get(self.Keys.kind)
+        kind = data.get(self._Keys.kind)
         if kind is not None:
             assert isinstance(kind, int)
             self.kind = PinKind(kind)
         else:
             self.kind = PinKind.unknown
 
-        self.default = loads(data.get(self.Keys.default, None))
+        self.default = loads(data.get(self._Keys.default, None))
 
-        self.icon_pos = tuple(data.get(self.Keys.icon_pos, EMPTY_POINT))
-        self.icon_size = tuple(data.get(self.Keys.icon_size, EMPTY_SIZE))
-        self.name_pos = tuple(data.get(self.Keys.name_pos, EMPTY_POINT))
-        self.name_size = tuple(data.get(self.Keys.name_size, EMPTY_SIZE))
+        self.icon_pos = tuple(data.get(self._Keys.icon_pos, EMPTY_POINT))
+        self.icon_size = tuple(data.get(self._Keys.icon_size, EMPTY_SIZE))
+        self.name_pos = tuple(data.get(self._Keys.name_pos, EMPTY_POINT))
+        self.name_size = tuple(data.get(self._Keys.name_size, EMPTY_SIZE))
 
         assert len(self.icon_pos) == 2
         assert len(self.icon_size) == 2

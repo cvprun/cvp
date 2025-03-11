@@ -26,23 +26,21 @@ from cvp.types.override import override
 from cvp.types.shapes import Point, Size
 
 
-@unique
-class FlowGraphKeys(StrEnum):
-    uuid = auto()
-    name_ = "name"
-    docs = auto()
-    icon = auto()
-    lock = auto()
-    color = auto()
-    nodes = auto()
-    wires = auto()
-    variables = auto()
-    control = auto()
-    tags = auto()
-
-
 class FlowGraph(Serializable):
-    Keys = FlowGraphKeys
+
+    @unique
+    class _Keys(StrEnum):
+        uuid = auto()
+        name_ = "name"
+        docs = auto()
+        icon = auto()
+        lock = auto()
+        color = auto()
+        nodes = auto()
+        wires = auto()
+        variables = auto()
+        control = auto()
+        tags = auto()
 
     def __init__(
         self,
@@ -147,17 +145,17 @@ class FlowGraph(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self.Keys.uuid: self.uuid,
-            self.Keys.name_: self.name,
-            self.Keys.docs: self.docs,
-            self.Keys.icon: self.icon,
-            self.Keys.lock: self.lock,
-            self.Keys.color: list(self.color),
-            self.Keys.nodes: serialize(self.nodes.as_list()),
-            self.Keys.wires: serialize(self.wires.as_list()),
-            self.Keys.variables: serialize(self.variables.as_list()),
-            self.Keys.control: serialize(self.control),
-            self.Keys.tags: self.tags,
+            self._Keys.uuid: self.uuid,
+            self._Keys.name_: self.name,
+            self._Keys.docs: self.docs,
+            self._Keys.icon: self.icon,
+            self._Keys.lock: self.lock,
+            self._Keys.color: list(self.color),
+            self._Keys.nodes: serialize(self.nodes.as_list()),
+            self._Keys.wires: serialize(self.wires.as_list()),
+            self._Keys.variables: serialize(self.variables.as_list()),
+            self._Keys.control: serialize(self.control),
+            self._Keys.tags: self.tags,
         }
         return {str(key): val for key, val in result.items()}
 
@@ -166,34 +164,34 @@ class FlowGraph(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = data.get(self.Keys.uuid, str())
-        self.name = data.get(self.Keys.name_, str())
-        self.docs = data.get(self.Keys.docs, str())
-        self.icon = data.get(self.Keys.icon, str())
-        self.lock = data.get(self.Keys.lock, False)
-        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
+        self.uuid = data.get(self._Keys.uuid, str())
+        self.name = data.get(self._Keys.name_, str())
+        self.docs = data.get(self._Keys.docs, str())
+        self.icon = data.get(self._Keys.icon, str())
+        self.lock = data.get(self._Keys.lock, False)
+        self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
         assert len(self.color) == 4
 
         self.nodes = MappingDeque(keyable=self._node_keyable)
         self.wires = MappingDeque(keyable=self._wire_keyable)
         self.variables = MappingDeque(keyable=self._variable_keyable)
 
-        if nodes := data.get(self.Keys.nodes):
+        if nodes := data.get(self._Keys.nodes):
             for node in nodes:
                 self.nodes.append(deserialize(node, FlowNode))
-        if wires := data.get(self.Keys.wires):
+        if wires := data.get(self._Keys.wires):
             for wire in wires:
                 self.wires.append(deserialize(wire, FlowWire))
-        if variables := data.get(self.Keys.variables):
+        if variables := data.get(self._Keys.variables):
             for variable in variables:
                 self.variables.append(deserialize(variable, FlowVariable))
 
-        if control := data.get(self.Keys.control):
+        if control := data.get(self._Keys.control):
             self.control = deserialize(control, FlowControl)
         else:
             self.control = FlowControl()
 
-        self.tags = data.get(self.Keys.tags, list())
+        self.tags = data.get(self._Keys.tags, list())
         self._selection = FlowSelection()
 
     @property
