@@ -361,7 +361,7 @@ class FlowRunner:
             return None  # There is no next flow.
 
         if isinstance(result_pin, PinTemplate):
-            next_pin_name = result_pin.name
+            next_pin_name = str(result_pin.name)
         elif isinstance(result_pin, str):
             next_pin_name = result_pin
         else:

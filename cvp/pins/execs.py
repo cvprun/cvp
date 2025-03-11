@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Sequence
+from typing import Iterable, Optional
 
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 
 
 class ExecInputPinTemplate(PinTemplate):
     def __init__(
         self,
-        name: str,
+        name: PinName,
         docs: Optional[str] = None,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
     ):
         super().__init__(
             name=name,
@@ -31,9 +31,9 @@ class ExecInputPinTemplate(PinTemplate):
 class ExecOutputPinTemplate(PinTemplate):
     def __init__(
         self,
-        name: str,
+        name: PinName,
         docs: Optional[str] = None,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
     ):
         super().__init__(
             name=name,

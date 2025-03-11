@@ -6,14 +6,14 @@ from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate, DataOutputPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 
 
 class GetterNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry):
         self._key = DataInputPinTemplate(
-            name="key",
+            name=PinName("key"),
             dtype=dtype_registry.get(str),
             docs="The key of the variable",
             required=True,
@@ -21,7 +21,7 @@ class GetterNodeTemplate(NodeTemplate):
             default=None,
         )
         self._value = DataOutputPinTemplate(
-            name="value",
+            name=PinName("value"),
             dtype=dtype_registry.get(Any),
             docs="The value of the variable",
         )

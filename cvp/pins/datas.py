@@ -1,24 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional, Sequence
+from typing import Any, Iterable, Optional
 
 from cvp.dtypes.dtype import Dtype
 from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 
 
 class DataInputPinTemplate(PinTemplate):
     def __init__(
         self,
-        name: str,
+        name: PinName,
         dtype: Dtype,
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -39,11 +39,11 @@ class DataInputPinTemplate(PinTemplate):
 class DataOutputPinTemplate(PinTemplate):
     def __init__(
         self,
-        name: str,
+        name: PinName,
         dtype: Dtype,
         docs: Optional[str] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):

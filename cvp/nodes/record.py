@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 from types import TracebackType
-from typing import Any, Mapping, Optional, Sequence, Tuple, Type, Union
+from typing import Any, Iterable, Mapping, Optional, Tuple, Type, Union
 
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.template import PinTemplate
@@ -18,7 +18,7 @@ class NodeRecord:
         node_uuid: str,
         pin_name: str,
         variables: Mapping[str, Any],
-        args: Sequence[Any],
+        args: Iterable[Any],
         kwargs: Mapping[str, Any],
         exception: Optional[ExceptionInfo] = None,
         shared_variables: Optional[Mapping[str, ValueProxy]] = None,
@@ -32,7 +32,7 @@ class NodeRecord:
         self._begin = datetime.now()
         self._end = datetime.now()
         self._exception = exception
-        self._shared_variables = dict(shared_variables if shared_variables else dict())
+        self._shared_variables = dict(shared_variables if shared_variables else {})
 
     @property
     def index(self):

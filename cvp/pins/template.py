@@ -1,7 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
-from typing import Annotated, Any, Optional, Sequence, Union, get_args, get_origin
+from typing import (
+    Annotated,
+    Any,
+    Iterable,
+    NewType,
+    Optional,
+    Union,
+    get_args,
+    get_origin,
+)
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.globals import global_dtype_registry
@@ -21,21 +30,26 @@ from cvp.pins.annotated import (
 from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
 
+PinName = NewType("PinName", str)
+
 
 class PinTemplate:
     def __init__(
         self,
-        name: str,
+        name: PinName,
         dtype: Optional[Dtype] = None,
         docs: Optional[str] = None,
         action: Optional[Action] = None,
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
+        if not name:
+            raise ValueError("The 'name' argument is required")
+
         self.name = name
         self.dtype = dtype if dtype is not None else Dtype(type(None))
         self.docs = docs if docs else str()
@@ -43,7 +57,7 @@ class PinTemplate:
         self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.hidden = bool(hidden)
-        self.wires = list(wires if wires else list())
+        self.wires = list(wires if wires else ())
         self.kind = kind if kind is not None else PinKind.unknown
         self.default = default
 
@@ -69,7 +83,7 @@ class PinTemplate:
             param_args = get_args(parameter.annotation)
             assert 2 <= len(param_args)
             param_dtype = dtype_registry.get(param_args[0])
-            param_name = get_name(*param_args, default=parameter.name)
+            param_name = PinName(get_name(*param_args, default=parameter.name))
             param_docs = get_docs(*param_args, default=None)
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
@@ -79,7 +93,7 @@ class PinTemplate:
             param_hidden = get_hidden(*param_args, default=False)
         else:
             param_dtype = dtype_registry.get(parameter.annotation)
-            param_name = parameter.name
+            param_name = PinName(parameter.name)
             param_docs = str()
             param_action = Action.data
             param_stream = Stream.input
@@ -101,12 +115,8 @@ class PinTemplate:
         )
 
     @property
-    def has_dtype(self):
-        return self.dtype is not None
-
-    @property
     def path(self):
-        return self.dtype.path if self.dtype else str()
+        return self.dtype.path
 
     @property
     def is_data_action(self):

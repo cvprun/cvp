@@ -7,7 +7,7 @@ from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 
 
@@ -16,7 +16,7 @@ class SetterNodeTemplate(NodeTemplate):
         self._prev = PrevPinTemplate()
         self._next = NextPinTemplate()
         self._key = DataInputPinTemplate(
-            name="key",
+            name=PinName("key"),
             dtype=dtype_registry.get(str),
             docs="The key of the variable",
             required=True,
@@ -24,7 +24,7 @@ class SetterNodeTemplate(NodeTemplate):
             default=None,
         )
         self._value = DataInputPinTemplate(
-            name="value",
+            name=PinName("value"),
             dtype=dtype_registry.get(Any),
             docs="The value of the variable",
         )

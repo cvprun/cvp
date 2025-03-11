@@ -10,7 +10,7 @@ from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
@@ -20,19 +20,19 @@ class LoggingNodeTemplate(NodeTemplate):
         self._prev = PrevPinTemplate()
         self._next = NextPinTemplate()
         self._name = DataInputPinTemplate(
-            name="name",
+            name=PinName("name"),
             dtype=dtype_registry.get(str),
             docs="Logger's name",
             default=CVP_FLOW_LOGGER_NAME,
         )
         self._level = DataInputPinTemplate(
-            name="level",
+            name=PinName("level"),
             dtype=dtype_registry.get(int),
             docs="The threshold of this logger",
             default=DEBUG,
         )
         self._msg = DataInputPinTemplate(
-            name="msg",
+            name=PinName("msg"),
             dtype=dtype_registry.get(str),
             docs="The message format string",
             default=str(),

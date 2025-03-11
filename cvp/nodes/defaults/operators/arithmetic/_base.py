@@ -8,19 +8,19 @@ from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import ReturnPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 
 
 class ArithmeticOperatorNodeTemplate(NodeTemplate):
     def __init__(self, dtype_registry: DtypeRegistry, name: str):
         self._first = DataInputPinTemplate(
-            name="first",
+            name=PinName("first"),
             dtype=dtype_registry.get(Any),
             docs=f"The first value of the {name.lower()} operator",
         )
         self._second = DataInputPinTemplate(
-            name="second",
+            name=PinName("second"),
             dtype=dtype_registry.get(Any),
             docs=f"The second value of the {name.lower()} operator",
         )
