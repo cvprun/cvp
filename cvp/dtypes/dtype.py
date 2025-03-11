@@ -2,12 +2,13 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 from type_serialize import Serializable, deserialize, serialize
 
 from cvp.dtypes.icons import DTYPE_ICON_MAPPING
-from cvp.modules.class_path import ClassPath
+from cvp.fonts.types import IconCode
+from cvp.modules.class_path import ClassPath, TypePath
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
@@ -17,39 +18,38 @@ def default_dtype_name_with_type(base: type) -> str:
     return base.__name__
 
 
-def default_dtype_path_with_type(base: type, name: Optional[str] = None) -> str:
-    return base.__module__ + FLOW_PATH_SEPARATOR + (name if name else base.__name__)
+def default_dtype_path_with_type(base: type, name: Optional[str] = None) -> TypePath:
+    path = base.__module__ + FLOW_PATH_SEPARATOR + (name if name else base.__name__)
+    return TypePath(path)
 
 
 def default_dtype_docs_with_type(base: type) -> str:
     return base.__doc__ if base.__doc__ else str()
 
 
-def default_dtype_icon_with_type(base: type, name: Optional[str] = None) -> str:
+def default_dtype_icon_with_type(base: type, name: Optional[str] = None) -> IconCode:
     return DTYPE_ICON_MAPPING[(name if name else base.__name__)[0]]
 
 
-@unique
-class DtypeKeys(StrEnum):
-    base = auto()
-    name_ = "name"
-    path = auto()
-    docs = auto()
-    icon = auto()
-    color = auto()
-    hidden = auto()
-
-
 class Dtype(Serializable):
-    Keys = DtypeKeys
+
+    @unique
+    class _Keys(StrEnum):
+        base = auto()
+        name_ = "name"
+        path = auto()
+        docs = auto()
+        icon = auto()
+        color = auto()
+        hidden = auto()
 
     def __init__(
         self,
         base: type,
         name: Optional[str] = None,
-        path: Optional[str] = None,
+        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
         *,
         hidden=False,
@@ -130,39 +130,48 @@ class Dtype(Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {
-            self.Keys.base: serialize(self.base),
-            self.Keys.name_: self.name,
-            self.Keys.path: self.path,
-            self.Keys.docs: self.docs,
-            self.Keys.icon: self.icon,
-            self.Keys.color: list(self.color),
-            self.Keys.hidden: self.hidden,
+        return {
+            str(self._Keys.base): serialize(self.base),
+            str(self._Keys.name_): self.name,
+            str(self._Keys.path): self.path,
+            str(self._Keys.docs): self.docs,
+            str(self._Keys.icon): self.icon,
+            str(self._Keys.color): list(self.color),
+            str(self._Keys.hidden): self.hidden,
         }
-        return {str(key): val for key, val in result.items()}
 
     @override
     def __deserialize__(self, data: Any) -> None:
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.base = deserialize(data.get(self.Keys.base), ClassPath)
-        self.name = str(data.get(self.Keys.name_, str()))
-        self.path = str(data.get(self.Keys.path, str()))
-        self.docs = str(data.get(self.Keys.docs, str()))
-        self.icon = str(data.get(self.Keys.icon, str()))
-        self.color = tuple(data.get(self.Keys.color, WHITE_RGBA))
-        self.hidden = data.get(self.Keys.hidden, False)
+        self.base = deserialize(data.get(self._Keys.base), ClassPath)
+        self.name = str(data.get(self._Keys.name_, str()))
+        self.path = TypePath(data.get(self._Keys.path, str()))
+        self.docs = str(data.get(self._Keys.docs, str()))
+        self.icon = IconCode(data.get(self._Keys.icon, str()))
+        self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
+        self.hidden = data.get(self._Keys.hidden, False)
+
+        assert isinstance(self.base, ClassPath)
+        assert isinstance(self.name, str)
+        assert isinstance(self.path, str)
+        assert isinstance(self.docs, str)
+        assert isinstance(self.icon, str)
+        assert isinstance(self.color, tuple)
+        assert len(self.color) == 4
+        assert all(isinstance(c, float) for c in self.color)
+        assert isinstance(self.hidden, bool)
 
     @property
     def type(self):
         return self.base.type
 
     @property
-    def type_path(self):
+    def type_path(self) -> TypePath:
         return self.base.path
 
-    def split(self):
+    def split(self) -> Tuple[str, str]:
         return self.base.split()
 
     @property

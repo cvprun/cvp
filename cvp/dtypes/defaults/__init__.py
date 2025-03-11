@@ -9,9 +9,10 @@ from cvp.dtypes.defaults.extras import get_extra_dtypes
 from cvp.dtypes.defaults.standards import get_standard_dtypes
 from cvp.dtypes.defaults.typing import get_typing_dtypes
 from cvp.dtypes.dtype import Dtype
+from cvp.modules.class_path import TypePath
 
 TypeToDtypeMapping = MappingProxyType[Type, Dtype]
-PathToDtypeMapping = MappingProxyType[str, Dtype]
+PathToDtypeMapping = MappingProxyType[TypePath, Dtype]
 
 
 @lru_cache

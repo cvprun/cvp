@@ -4,6 +4,8 @@ from functools import lru_cache
 from typing import Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.fonts.types import IconCode
+from cvp.modules.class_path import TypePath
 from cvp.patterns.singleton import singleton
 from cvp.types.colors import RGBA
 
@@ -20,9 +22,9 @@ def global_dtype_registry() -> GlobalDtypeRegistry:
 
 def register_dtype(
     name: Optional[str] = None,
-    path: Optional[str] = None,
+    path: Optional[TypePath] = None,
     docs: Optional[str] = None,
-    icon: Optional[str] = None,
+    icon: Optional[IconCode] = None,
     color: Optional[RGBA] = None,
 ):
     return global_dtype_registry().register(name, path, docs, icon, color)

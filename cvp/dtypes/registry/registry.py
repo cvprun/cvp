@@ -6,11 +6,13 @@ from typing import Any, Dict, List, Optional, Type, Union, get_args, get_origin
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
+from cvp.fonts.types import IconCode
+from cvp.modules.class_path import TypePath
 from cvp.types.colors import RGBA
 
 
 class DtypeRegistry:
-    _path2dtypes: Dict[str, Dtype]
+    _path2dtypes: Dict[TypePath, Dtype]
     _type2dtypes: Dict[Type, Dtype]
 
     def __init__(self, *, no_defaults=False):
@@ -84,7 +86,7 @@ class DtypeRegistry:
         elif isinstance(key, type):
             return self._type2dtypes[key]
         elif isinstance(key, str):
-            return self._path2dtypes[key]
+            return self._path2dtypes[TypePath(key)]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
@@ -118,9 +120,9 @@ class DtypeRegistry:
         self,
         base: type,
         name: Optional[str] = None,
-        path: Optional[str] = None,
+        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
     ) -> Dtype:
         result = Dtype(base, name, path, docs, icon, color)
@@ -130,9 +132,9 @@ class DtypeRegistry:
     def register(
         self,
         name: Optional[str] = None,
-        path: Optional[str] = None,
+        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
     ):
         def _decorator(base: type):
