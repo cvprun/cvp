@@ -4,8 +4,9 @@ from types import MappingProxyType
 from typing import Final
 
 from cvp.fonts.glyphs import mdi
+from cvp.fonts.types import IconCode
 
-DTYPE_ICON_MAPPING: Final[MappingProxyType[str, str]] = MappingProxyType(
+DTYPE_ICON_MAPPING: Final[MappingProxyType[str, IconCode]] = MappingProxyType(
     {
         "": mdi.HELP,
         # Underscore
