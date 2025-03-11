@@ -3,18 +3,31 @@
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from importlib import import_module
-from typing import Any, Dict, Final, Generic, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    Final,
+    Generic,
+    NewType,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
 from type_serialize import Serializable
 
 from cvp.types.override import override
 
-NONE_TYPE_PATH: Final[str] = "builtins.NoneType"
+TypePath = NewType("TypePath", str)
+
+NONE_TYPE_PATH: Final[TypePath] = TypePath("builtins.NoneType")
 
 _T = TypeVar("_T")
 
 
-def _load_with_path(path: str) -> Tuple[type, str]:
+def _load_with_path(path: str) -> Tuple[type, TypePath]:
     if path == NONE_TYPE_PATH:
         return type(None), NONE_TYPE_PATH
 
@@ -23,31 +36,29 @@ def _load_with_path(path: str) -> Tuple[type, str]:
     cls = getattr(module, class_name)
     if not isinstance(cls, type):
         raise TypeError(f"This is not a class type: '{path}'")
-    return cls, path
+    return cls, TypePath(path)
 
 
-def _load_with_cls(cls: type) -> Tuple[type, str]:
+def _load_with_cls(cls: type) -> Tuple[type, TypePath]:
     path = cls.__module__ + "." + cls.__name__
-    return cls, path
+    return cls, TypePath(path)
 
 
-def _load(cls: Union[str, type, Type[_T]]) -> Tuple[type, str]:
+def _load(cls: Union[str, type]) -> Tuple[type, TypePath]:
     if isinstance(cls, str):
-        return _load_with_path(cls)
+        return _load_with_path(TypePath(cls))
     else:
         return _load_with_cls(cls)
 
 
-@unique
-class ClassPathKey(StrEnum):
-    path = auto()
-
-
 class ClassPath(Generic[_T], Serializable):
-    Keys = ClassPathKey
+
+    @unique
+    class _Keys(StrEnum):
+        path = auto()
 
     _type: Type[_T]
-    _path: str
+    _path: TypePath
 
     def __init__(self, cls: Union[str, type, Type[_T]]):
         self._type, self._path = _load(cls)
@@ -91,7 +102,7 @@ class ClassPath(Generic[_T], Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {self.Keys.path: self._path}
+        result = {self._Keys.path: self._path}
         return {str(key): val for key, val in result.items()}
 
     @override
@@ -99,12 +110,12 @@ class ClassPath(Generic[_T], Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        path = data.get(self.Keys.path)
+        path = data.get(self._Keys.path)
         if not path:
             raise ValueError("Undefined class path")
 
         if not isinstance(path, str):
-            raise TypeError(f"The type of '{str(self.Keys.path)}' only allows str")
+            raise TypeError(f"The type of '{str(self._Keys.path)}' only allows str")
 
         self._type, self._path = _load_with_path(path)
         assert isinstance(self._type, type)
@@ -115,7 +126,7 @@ class ClassPath(Generic[_T], Serializable):
         return self._type
 
     @property
-    def path(self) -> str:
+    def path(self) -> TypePath:
         return self._path
 
     def split(self) -> Tuple[str, str]:
