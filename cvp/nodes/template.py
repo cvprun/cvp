@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from inspect import signature
-from typing import Any, Callable, Iterable, List, NewType, Optional
+from typing import Any, Callable, Iterable, List, Optional
 
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
@@ -15,8 +15,13 @@ from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
 
-NodeName = NewType("NodeName", str)
-NodePath = NewType("NodePath", str)
+
+class NodeName(str):
+    pass
+
+
+class NodePath(str):
+    pass
 
 
 class NodeInterface(ABC):
