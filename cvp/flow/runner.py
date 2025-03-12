@@ -58,7 +58,7 @@ class _FlowRunnerArguments:
 
     @property
     def graph_uuid(self):
-        return self.graph.uuid
+        return self.graph.key
 
     @property
     def start_cursor(self) -> Optional[FlowNodePin]:

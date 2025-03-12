@@ -175,7 +175,7 @@ class Context:
             debug=self.debug,
             verbose=self.verbose,
         )
-        self._flow_manager.runners[graph.uuid] = runner
+        self._flow_manager.runners[graph.key] = runner
         return runner
 
     def stop_all_flow_runners(self) -> None:
@@ -190,7 +190,7 @@ class Context:
         logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
 
     def save_graph(self, graph: FlowGraph) -> None:
-        filepath = self._home.flows.graph_filepath(graph.uuid)
+        filepath = self._home.flows.graph_filepath(graph.key)
         self._flow_manager.write_graph_yaml(filepath, graph)
         logger.info(f"Save the graph file: '{str(filepath)}'")
 

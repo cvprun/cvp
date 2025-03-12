@@ -113,13 +113,13 @@ class FlowManager:
         template = template if template else str()
         assert isinstance(template, str)
 
-        graph = FlowGraph(uuid=None, name=GraphName(name) if name else None)
-        assert is_uuid4(graph.uuid)
+        graph = FlowGraph(key=None, name=GraphName(name) if name else None)
+        assert is_uuid4(graph.key)
 
         if append:
-            assert graph.uuid
-            assert graph.uuid not in self._graphs
-            self._graphs[graph.uuid] = graph
+            assert graph.key
+            assert graph.key not in self._graphs
+            self._graphs[graph.key] = graph
 
         return graph
 
@@ -153,9 +153,9 @@ class FlowManager:
 
     def update_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> None:
         graph = self.read_graph_yaml(filepath)
-        if not graph.uuid:
+        if not graph.key:
             raise ValueError("The 'uuid' of the flow graph does not exist")
-        self._graphs[graph.uuid] = graph
+        self._graphs[graph.key] = graph
 
     def add_node(self, graph: FlowGraph, node: Union[str, NodeTemplate]) -> FlowNode:
         node_template = self._node_registry[node]
@@ -246,5 +246,5 @@ class FlowManager:
             debug=debug,
             verbose=verbose,
         )
-        self._runners[name if name else graph.uuid] = runner
+        self._runners[name if name else graph.key] = runner
         return runner

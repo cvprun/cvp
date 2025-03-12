@@ -145,7 +145,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     def on_new_graph_popup(self, name: str) -> None:
         graph = self.context.fm.create_graph(name, append=True)
-        filepath = self.context.home.flows.graph_filepath(graph.uuid)
+        filepath = self.context.home.flows.graph_filepath(graph.key)
         if filepath.exists():
             raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
         self.context.fm.write_graph_yaml(filepath, graph)
@@ -527,9 +527,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         try:
             self.context.save_graph(graph)
-            logger.info(f"The flow graph was successfully saved: '{graph.uuid}'")
+            logger.info(f"The flow graph was successfully saved: '{graph.key}'")
         except BaseException as e:
-            logger.error(f"Failed to save the flow graph: '{graph.uuid}' -> '{e}'")
+            logger.error(f"Failed to save the flow graph: '{graph.key}' -> '{e}'")
 
     def close_current_graph(self):
         graph = self._canvases.graph
@@ -537,13 +537,13 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             return
 
         self._canvases.close()
-        logger.info(f"Close the flow graph: '{graph.uuid}'")
+        logger.info(f"Close the flow graph: '{graph.key}'")
 
     def refresh_graphs(self) -> None:
         graph_uuid_stash = str()
 
         if graph := self._canvases.graph:
-            graph_uuid_stash = graph.uuid
+            graph_uuid_stash = graph.key
 
         self.context.fm.graphs.clear()
         self._canvases.clear()

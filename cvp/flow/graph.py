@@ -35,7 +35,7 @@ class FlowGraph(Serializable):
 
     @unique
     class _Keys(StrEnum):
-        uuid = auto()
+        key = auto()
         name_ = "name"
         docs = auto()
         icon = auto()
@@ -50,7 +50,7 @@ class FlowGraph(Serializable):
 
     def __init__(
         self,
-        uuid: Optional[GraphKey] = None,
+        key: Optional[GraphKey] = None,
         name: Optional[GraphName] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
@@ -65,7 +65,7 @@ class FlowGraph(Serializable):
         *,
         selection: Optional[FlowSelection] = None,
     ):
-        self.uuid = uuid if uuid else GraphKey(str(uuid4()))
+        self.key = key if key else GraphKey(str(uuid4()))
         self.name = name if name else GraphName(str())
         self.docs = docs if docs else str()
         self.icon = icon if icon else IconCode(str())
@@ -107,7 +107,7 @@ class FlowGraph(Serializable):
         if not isinstance(other, type(self)):
             return False
         return (
-            self.uuid == other.uuid
+            self.key == other.key
             and self.name == other.name
             and self.docs == other.docs
             and self.icon == other.icon
@@ -124,7 +124,7 @@ class FlowGraph(Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.uuid = copy(self.uuid)
+        result.key = copy(self.key)
         result.name = copy(self.name)
         result.docs = copy(self.docs)
         result.icon = copy(self.icon)
@@ -144,7 +144,7 @@ class FlowGraph(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.uuid = deepcopy(self.uuid, memo)
+        result.key = deepcopy(self.key, memo)
         result.name = deepcopy(self.name, memo)
         result.docs = deepcopy(self.docs, memo)
         result.icon = deepcopy(self.icon, memo)
@@ -163,7 +163,7 @@ class FlowGraph(Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.uuid): str(self.uuid),
+            str(self._Keys.key): str(self.key),
             str(self._Keys.name_): str(self.name),
             str(self._Keys.docs): str(self.docs),
             str(self._Keys.icon): str(self.icon),
@@ -182,7 +182,7 @@ class FlowGraph(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = GraphKey(data.get(self._Keys.uuid, str()))
+        self.key = GraphKey(data.get(self._Keys.key, str()))
         self.name = GraphName(data.get(self._Keys.name_, str()))
         self.docs = str(data.get(self._Keys.docs, str()))
         self.icon = IconCode(data.get(self._Keys.icon, str()))
@@ -234,8 +234,8 @@ class FlowGraph(Serializable):
         return self._selection.selected_wire_only
 
     def restore(self, other: "FlowGraph") -> None:
-        if self.uuid != other.uuid:
-            raise ValueError("The uuid of the graph to be restored does not match")
+        if self.key != other.key:
+            raise ValueError("The key of the graph to be restored does not match")
 
         self.name = other.name
         self.docs = other.docs

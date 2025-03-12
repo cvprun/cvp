@@ -48,7 +48,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
             self.on_none()
             return
 
-        graph_label = f"{graph.name}###{graph.uuid}"
+        graph_label = f"{graph.name}###{graph.key}"
         if imgui.tree_node(graph_label, CATEGORY_FLAGS):
             try:
                 self.tree_nodes(graph)

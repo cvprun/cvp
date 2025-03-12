@@ -106,7 +106,7 @@ class PropsTab(TabItem[FlowCanvasTabs]):
 
     def on_graph_cursor(self, graph: FlowGraph) -> None:
         input_text_disabled("Type", "Graph")
-        input_text_disabled("UUID", graph.uuid)
+        input_text_disabled("UUID", graph.key)
 
         graph.name = GraphName(input_text_value("Name", graph.name))
         graph.docs = input_text_value("Docs", graph.docs)

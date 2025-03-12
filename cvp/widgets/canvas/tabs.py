@@ -20,7 +20,7 @@ class FlowCanvasTabs:
 
     def _create_canvas(self, graph: FlowGraph) -> FlowCanvas:
         canvas = FlowCanvas(graph, self._context.fonts, self._context.config.flow_aui)
-        self._canvases[graph.uuid] = canvas
+        self._canvases[graph.key] = canvas
         return canvas
 
     def clear(self) -> None:
@@ -35,7 +35,7 @@ class FlowCanvasTabs:
         if graph is None:
             return None
 
-        if canvas := self._canvases.get(graph.uuid):
+        if canvas := self._canvases.get(graph.key):
             return canvas
 
         return self._create_canvas(graph)
@@ -56,12 +56,12 @@ class FlowCanvasTabs:
         if self._ref is not None:
             prev_graph = self._ref()
             if prev_graph is not None:
-                if prev_graph.uuid in self._canvases:
-                    self._canvases.pop(prev_graph.uuid)
+                if prev_graph.key in self._canvases:
+                    self._canvases.pop(prev_graph.key)
 
         self._ref = ref(graph)
-        if graph.uuid in self._canvases:
-            self._canvases.pop(graph.uuid)
+        if graph.key in self._canvases:
+            self._canvases.pop(graph.key)
         self._create_canvas(graph)
         logger.info("The graph has been opened")
 
@@ -70,7 +70,7 @@ class FlowCanvasTabs:
             return
         graph = self._ref()
         if graph is not None:
-            if graph.uuid in self._canvases:
-                self._canvases.pop(graph.uuid)
+            if graph.key in self._canvases:
+                self._canvases.pop(graph.key)
         self._ref = None
         logger.info("The graph has been closed")
