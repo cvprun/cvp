@@ -5,7 +5,7 @@ from typing import Optional
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodePath, NodeTemplate
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.execs import ExecOutputPinTemplate
 from cvp.pins.template import PinName, PinTemplate
 from cvp.types.colors import GREEN_RGBA
@@ -20,7 +20,7 @@ class EntrypointNodeTemplate(NodeTemplate):
         )
         super().__init__(
             path=NodePath("cvp.essential.entrypoint"),
-            name="Entrypoint",
+            name=NodeName("Entrypoint"),
             func=None,
             docs="Indicates the starting point of the graph",
             icon=PLAY,

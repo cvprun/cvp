@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodePath, NodeTemplate
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
 from cvp.pins.template import PinName, PinTemplate
@@ -24,7 +24,7 @@ class CastingNodeTemplate(NodeTemplate):
         self._return = ReturnPinTemplate(dtype_registry.get(cls))
         super().__init__(
             path=NodePath(f"cvp.casting.{cls.__name__}"),
-            name=cls.__name__,
+            name=NodeName(cls.__name__),
             func=None,
             docs=f"Casting to {cls.__name__} type",
             pins=(self._prev, self._next, self._value, self._return),

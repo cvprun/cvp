@@ -15,6 +15,7 @@ from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
 
+NodeName = NewType("NodeName", str)
 NodePath = NewType("NodePath", str)
 
 
@@ -32,7 +33,7 @@ class NodeTemplate(NodeInterface):
     def __init__(
         self,
         path: NodePath,
-        name: Optional[str] = None,
+        name: Optional[NodeName] = None,
         func: Optional[Callable] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
@@ -47,16 +48,16 @@ class NodeTemplate(NodeInterface):
         if name:
             self.name = name
         elif func is not None:
-            self.name = type(func).__name__
+            self.name = NodeName(type(func).__name__)
         elif type(self) is NodeTemplate:
-            self.name = type(self).__name__
+            self.name = NodeName(type(self).__name__)
         else:
-            self.name = str(path)
+            self.name = NodeName(path)
 
         self.path = path
         self.func = func
         self.docs = docs if docs else str()
-        self.icon = icon if icon else str()
+        self.icon = icon if icon else IconCode(str())
         self.color = color if color else WHITE_RGBA
         self.pins = list(pins if pins else ())
         self.tags = list(tags if tags else ())
@@ -67,7 +68,7 @@ class NodeTemplate(NodeInterface):
         cls,
         func: Callable,
         path: Optional[NodePath] = None,
-        name: Optional[str] = None,
+        name: Optional[NodeName] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
@@ -83,7 +84,7 @@ class NodeTemplate(NodeInterface):
         if not callable(func):
             raise TypeError(f"Only callables can be registered: {func}")
 
-        base_name = name if name else func.__name__
+        base_name = name if name else NodeName(func.__name__)
         base_docs = docs if docs else func.__doc__
         base_icon = icon if icon else NODE_ICON_MAPPING[base_name[0]]
         base_color = color if color else WHITE_RGBA

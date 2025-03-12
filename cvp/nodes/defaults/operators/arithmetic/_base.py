@@ -5,7 +5,7 @@ from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodePath, NodeTemplate
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
 from cvp.pins.special import ReturnPinTemplate
 from cvp.pins.template import PinName, PinTemplate
@@ -30,7 +30,7 @@ class ArithmeticOperatorNodeTemplate(NodeTemplate):
         )
         super().__init__(
             path=NodePath(f"cvp.operators.arithmetic.{name.lower()}"),
-            name=name.capitalize(),
+            name=NodeName(name.capitalize()),
             docs=f"Apply the {name.lower()} operator",
             pins=(self._first, self._second, self._return),
             tags=("operator", "arithmetic", name.lower()),

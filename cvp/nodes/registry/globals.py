@@ -5,7 +5,7 @@ from typing import Iterable, Optional
 
 from cvp.fonts.types import IconCode
 from cvp.nodes.registry.registry import NodeRegistry
-from cvp.nodes.template import NodePath
+from cvp.nodes.template import NodeName, NodePath
 from cvp.patterns.singleton import singleton
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
@@ -23,7 +23,7 @@ def global_node_registry() -> GlobalNodeRegistry:
 
 def register_node(
     path: Optional[NodePath] = None,
-    name: Optional[str] = None,
+    name: Optional[NodeName] = None,
     docs: Optional[str] = None,
     icon: Optional[IconCode] = None,
     color: Optional[RGBA] = None,

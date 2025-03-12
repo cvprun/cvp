@@ -8,7 +8,7 @@ from cvp.fonts.types import IconCode
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
 from cvp.nodes.defaults.essential.setter import SetterNodeTemplate
-from cvp.nodes.template import NodePath, NodeTemplate
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.template import PinTemplate
 from cvp.types.colors import RGBA
 
@@ -99,7 +99,7 @@ class NodeRegistry:
         self,
         func: Callable,
         path: Optional[NodePath] = None,
-        name: Optional[str] = None,
+        name: Optional[NodeName] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
@@ -128,7 +128,7 @@ class NodeRegistry:
 
     def register(
         self,
-        name: Optional[str] = None,
+        name: Optional[NodeName] = None,
         path: Optional[NodePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,

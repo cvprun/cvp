@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodePath, NodeTemplate
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate, DataOutputPinTemplate
 from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
@@ -27,7 +27,7 @@ class GetterNodeTemplate(NodeTemplate):
         )
         super().__init__(
             path=NodePath("cvp.essential.getter"),
-            name="getter",
+            name=NodeName("getter"),
             docs="Get a variable to a specific value",
             pins=(self._key, self._value),
             tags=("value", "variable", "getter", "accessor"),
