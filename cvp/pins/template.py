@@ -5,6 +5,7 @@ from typing import (
     Annotated,
     Any,
     Iterable,
+    NewType,
     Optional,
     Union,
     get_args,
@@ -29,13 +30,8 @@ from cvp.pins.annotated import (
 from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
 
-
-class PinName(str):
-    pass
-
-
-class WireKey(str):
-    pass
+PinName = NewType("PinName", str)
+WireKey = NewType("WireKey", str)
 
 
 class PinTemplate:

@@ -112,8 +112,6 @@ class NodeRecord:
     def get(self, key: Union[PinTemplate, PinName, str]) -> Any:
         if isinstance(key, PinTemplate):
             return self._variables[key.name]
-        elif isinstance(key, PinName):
-            return self._variables[key]
         elif isinstance(key, str):
             return self._variables[PinName(key)]
         else:
@@ -122,8 +120,6 @@ class NodeRecord:
     def set(self, key: Union[PinTemplate, PinName, str], value: Any) -> None:
         if isinstance(key, PinTemplate):
             self._variables[key.name] = value
-        elif isinstance(key, PinName):
-            self._variables[key] = value
         elif isinstance(key, str):
             self._variables[PinName(key)] = value
         else:
