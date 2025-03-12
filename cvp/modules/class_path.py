@@ -8,7 +8,6 @@ from typing import (
     Dict,
     Final,
     Generic,
-    NewType,
     Optional,
     Tuple,
     Type,
@@ -20,16 +19,19 @@ from type_serialize import Serializable
 
 from cvp.types.override import override
 
-TypePath = NewType("TypePath", str)
 
+class TypePath(str):
+    pass
+
+
+NONE_TYPE_CLS: Final[type] = type(None)
 NONE_TYPE_PATH: Final[TypePath] = TypePath("builtins.NoneType")
-
-_T = TypeVar("_T")
+NONE_TYPE_CLS_PATH: Final[Tuple[type, TypePath]] = NONE_TYPE_CLS, NONE_TYPE_PATH
 
 
 def _load_with_path(path: str) -> Tuple[type, TypePath]:
     if path == NONE_TYPE_PATH:
-        return type(None), NONE_TYPE_PATH
+        return NONE_TYPE_CLS_PATH
 
     module_path, class_name = path.rsplit(".", 1)
     module = import_module(module_path)
@@ -44,11 +46,16 @@ def _load_with_cls(cls: type) -> Tuple[type, TypePath]:
     return cls, TypePath(path)
 
 
-def _load(cls: Union[str, type]) -> Tuple[type, TypePath]:
-    if isinstance(cls, str):
+def _load(cls: Union[None, str, type]) -> Tuple[type, TypePath]:
+    if cls is None:
+        return NONE_TYPE_CLS_PATH
+    elif isinstance(cls, str):
         return _load_with_path(TypePath(cls))
     else:
         return _load_with_cls(cls)
+
+
+_T = TypeVar("_T")
 
 
 class ClassPath(Generic[_T], Serializable):
@@ -60,7 +67,7 @@ class ClassPath(Generic[_T], Serializable):
     _type: Type[_T]
     _path: TypePath
 
-    def __init__(self, cls: Union[str, type, Type[_T]]):
+    def __init__(self, cls: Union[None, str, type, Type[_T]]):
         self._type, self._path = _load(cls)
         assert isinstance(self._type, type)
         assert isinstance(self._path, str)
@@ -102,8 +109,7 @@ class ClassPath(Generic[_T], Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {self._Keys.path: self._path}
-        return {str(key): val for key, val in result.items()}
+        return {str(self._Keys.path): self._path}
 
     @override
     def __deserialize__(self, data: Any) -> None:
@@ -115,7 +121,7 @@ class ClassPath(Generic[_T], Serializable):
             raise ValueError("Undefined class path")
 
         if not isinstance(path, str):
-            raise TypeError(f"The type of '{str(self._Keys.path)}' only allows str")
+            raise TypeError(f"The type of '{self._Keys.path}' only allows str")
 
         self._type, self._path = _load_with_path(path)
         assert isinstance(self._type, type)
