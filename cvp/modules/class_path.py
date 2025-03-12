@@ -8,6 +8,7 @@ from typing import (
     Dict,
     Final,
     Generic,
+    NewType,
     Optional,
     Tuple,
     Type,
@@ -19,10 +20,7 @@ from type_serialize import Serializable
 
 from cvp.types.override import override
 
-
-class TypePath(str):
-    pass
-
+TypePath = NewType("TypePath", str)
 
 MODULE_PATH_SEPARATOR: Final[str] = "."
 

@@ -4,7 +4,7 @@ from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from functools import reduce
 from math import sqrt
-from typing import Any, Dict, List, Optional, Sequence, Set, Union
+from typing import Any, Dict, List, NewType, Optional, Sequence, Set, Union
 from uuid import uuid4
 
 import shapely
@@ -22,9 +22,13 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
+from cvp.fonts.types import IconCode
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Point, Size
+
+GraphKey = NewType("GraphKey", str)
+GraphName = NewType("GraphName", str)
 
 
 class FlowGraph(Serializable):
@@ -46,10 +50,10 @@ class FlowGraph(Serializable):
 
     def __init__(
         self,
-        uuid: Optional[str] = None,
-        name: Optional[str] = None,
+        uuid: Optional[GraphKey] = None,
+        name: Optional[GraphName] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         lock=False,
         color: RGBA = WHITE_RGBA,
         nodes: Optional[Sequence[FlowNode]] = None,
@@ -61,36 +65,43 @@ class FlowGraph(Serializable):
         *,
         selection: Optional[FlowSelection] = None,
     ):
-        self.uuid = uuid if uuid else str(uuid4())
-        self.name = name if name else str()
+        self.uuid = uuid if uuid else GraphKey(str(uuid4()))
+        self.name = name if name else GraphName(str())
         self.docs = docs if docs else str()
-        self.icon = icon if icon else str()
+        self.icon = icon if icon else IconCode(str())
         self.lock = lock
         self.color = color
-
-        self.nodes = MappingDeque[str, FlowNode](nodes, keyable=self._node_keyable)
-        self.wires = MappingDeque[str, FlowWire](wires, keyable=self._wire_keyable)
-        self.variables = MappingDeque[str, FlowVariable](
-            variables,
-            keyable=self._variable_keyable,
-        )
-
+        self.nodes = self.__create_nodes(nodes)
+        self.wires = self.__create_wires(wires)
+        self.variables = self.__create_variables(variables)
         self.control = control if control else FlowControl()
         self.options = options if options else FlowOptions()
         self.tags = list(tags if tags else ())
         self._selection = selection if selection else FlowSelection()
 
     @staticmethod
-    def _node_keyable(node: FlowNode) -> str:
+    def __node_keyable(node: FlowNode) -> str:
         return node.uuid
 
     @staticmethod
-    def _wire_keyable(wire: FlowWire) -> str:
+    def __wire_keyable(wire: FlowWire) -> str:
         return wire.uuid
 
     @staticmethod
-    def _variable_keyable(variable: FlowVariable) -> str:
+    def __variable_keyable(variable: FlowVariable) -> str:
         return variable.name
+
+    def __create_nodes(self, nodes: Optional[Sequence[FlowNode]] = None):
+        return MappingDeque[str, FlowNode](items=nodes, keyable=self.__node_keyable)
+
+    def __create_wires(self, wires: Optional[Sequence[FlowWire]] = None):
+        return MappingDeque[str, FlowWire](items=wires, keyable=self.__wire_keyable)
+
+    def __create_variables(self, variables: Optional[Sequence[FlowVariable]] = None):
+        return MappingDeque[str, FlowVariable](
+            items=variables,
+            keyable=self.__variable_keyable,
+        )
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
@@ -151,48 +162,55 @@ class FlowGraph(Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {
-            self._Keys.uuid: self.uuid,
-            self._Keys.name_: self.name,
-            self._Keys.docs: self.docs,
-            self._Keys.icon: self.icon,
-            self._Keys.lock: self.lock,
-            self._Keys.color: list(self.color),
-            self._Keys.nodes: serialize(self.nodes.as_list()),
-            self._Keys.wires: serialize(self.wires.as_list()),
-            self._Keys.variables: serialize(self.variables.as_list()),
-            self._Keys.control: serialize(self.control),
-            self._Keys.options: serialize(self.options),
-            self._Keys.tags: self.tags,
+        return {
+            str(self._Keys.uuid): str(self.uuid),
+            str(self._Keys.name_): str(self.name),
+            str(self._Keys.docs): str(self.docs),
+            str(self._Keys.icon): str(self.icon),
+            str(self._Keys.lock): bool(self.lock),
+            str(self._Keys.color): list(float(c) for c in self.color),
+            str(self._Keys.nodes): serialize(self.nodes.as_list()),
+            str(self._Keys.wires): serialize(self.wires.as_list()),
+            str(self._Keys.variables): serialize(self.variables.as_list()),
+            str(self._Keys.control): serialize(self.control),
+            str(self._Keys.options): serialize(self.options),
+            str(self._Keys.tags): list(str(t) for t in self.tags),
         }
-        return {str(key): val for key, val in result.items()}
 
     @override
     def __deserialize__(self, data: Any) -> None:
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = data.get(self._Keys.uuid, str())
-        self.name = data.get(self._Keys.name_, str())
-        self.docs = data.get(self._Keys.docs, str())
-        self.icon = data.get(self._Keys.icon, str())
-        self.lock = data.get(self._Keys.lock, False)
+        self.uuid = GraphKey(data.get(self._Keys.uuid, str()))
+        self.name = GraphName(data.get(self._Keys.name_, str()))
+        self.docs = str(data.get(self._Keys.docs, str()))
+        self.icon = IconCode(data.get(self._Keys.icon, str()))
+        self.lock = bool(data.get(self._Keys.lock, False))
         self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
+
         assert len(self.color) == 4
+        assert all(isinstance(c, float) for c in self.color)
 
-        self.nodes = MappingDeque(keyable=self._node_keyable)
-        self.wires = MappingDeque(keyable=self._wire_keyable)
-        self.variables = MappingDeque(keyable=self._variable_keyable)
+        nodes = list()
+        wires = list()
+        variables = list()
 
-        if nodes := data.get(self._Keys.nodes):
-            for node in nodes:
-                self.nodes.append(deserialize(node, FlowNode))
-        if wires := data.get(self._Keys.wires):
-            for wire in wires:
-                self.wires.append(deserialize(wire, FlowWire))
-        if variables := data.get(self._Keys.variables):
-            for variable in variables:
-                self.variables.append(deserialize(variable, FlowVariable))
+        if raw_nodes := data.get(self._Keys.nodes):
+            for raw_node in raw_nodes:
+                nodes.append(deserialize(raw_node, FlowNode))
+
+        if raw_wires := data.get(self._Keys.wires):
+            for raw_wire in raw_wires:
+                wires.append(deserialize(raw_wire, FlowWire))
+
+        if raw_variables := data.get(self._Keys.variables):
+            for raw_variable in raw_variables:
+                variables.append(deserialize(raw_variable, FlowVariable))
+
+        self.nodes = self.__create_nodes(nodes)
+        self.wires = self.__create_wires(wires)
+        self.variables = self.__create_variables(variables)
 
         if control := data.get(self._Keys.control):
             self.control = deserialize(control, FlowControl)

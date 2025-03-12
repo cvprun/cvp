@@ -11,7 +11,7 @@ from yaml import dump, full_load
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.flow.graph import FlowGraph
+from cvp.flow.graph import FlowGraph, GraphKey, GraphName
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.runner import FlowRunner
@@ -27,7 +27,7 @@ from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager:
-    _graphs: OrderedDict[str, FlowGraph]
+    _graphs: OrderedDict[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
 
     _clipboard_items: Optional[FlowSelection]
@@ -113,7 +113,7 @@ class FlowManager:
         template = template if template else str()
         assert isinstance(template, str)
 
-        graph = FlowGraph(name=name)
+        graph = FlowGraph(uuid=None, name=GraphName(name) if name else None)
         assert is_uuid4(graph.uuid)
 
         if append:
@@ -123,7 +123,7 @@ class FlowManager:
 
         return graph
 
-    def remove_graph(self, uuid: str) -> FlowGraph:
+    def remove_graph(self, uuid: GraphKey) -> FlowGraph:
         if uuid in self._graphs:
             raise KeyError(f"Not exists flow graph: '{uuid}'")
         return self._graphs.pop(uuid)

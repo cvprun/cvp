@@ -5,7 +5,7 @@ from typing import Final
 import imgui
 
 from cvp.config.sections.canvas.axis import Axis
-from cvp.flow.graph import FlowGraph
+from cvp.flow.graph import FlowGraph, GraphName
 from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
     LINE_TYPE_NAME2INDEX,
@@ -108,7 +108,7 @@ class PropsTab(TabItem[FlowCanvasTabs]):
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.uuid)
 
-        graph.name = input_text_value("Name", graph.name)
+        graph.name = GraphName(input_text_value("Name", graph.name))
         graph.docs = input_text_value("Docs", graph.docs)
 
         self.input_icon("Icon", graph.icon)
