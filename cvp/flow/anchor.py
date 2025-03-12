@@ -58,21 +58,20 @@ class FlowAnchor(Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {self._Keys.x: self.x, self._Keys.y: self.y}
-        return {str(key): val for key, val in result.items()}
+        return {str(self._Keys.x): float(self.x), str(self._Keys.y): float(self.y)}
 
     @override
     def __deserialize__(self, data: Any) -> None:
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.x = data.get(self._Keys.x, 0.0)
-        self.y = data.get(self._Keys.y, 0.0)
+        self.x = float(data.get(self._Keys.x, 0.0))
+        self.y = float(data.get(self._Keys.y, 0.0))
         self._selected = False
         self._hovering = False
 
     @property
-    def point(self):
+    def point(self) -> Point:
         return self.x, self.y
 
     @point.setter
@@ -81,7 +80,7 @@ class FlowAnchor(Serializable):
         self.y = value[1]
 
     @property
-    def selected(self):
+    def selected(self) -> bool:
         return self._selected
 
     @selected.setter
@@ -89,7 +88,7 @@ class FlowAnchor(Serializable):
         self._selected = value
 
     @property
-    def hovering(self):
+    def hovering(self) -> bool:
         return self._hovering
 
     @hovering.setter

@@ -4,7 +4,7 @@ from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from functools import reduce
 from math import sqrt
-from typing import Any, Dict, List, NewType, Optional, Sequence, Set, Union
+from typing import Any, Dict, Iterable, List, NewType, Optional, Set, Union
 from uuid import uuid4
 
 import shapely
@@ -56,12 +56,12 @@ class FlowGraph(Serializable):
         icon: Optional[IconCode] = None,
         lock=False,
         color: RGBA = WHITE_RGBA,
-        nodes: Optional[Sequence[FlowNode]] = None,
-        wires: Optional[Sequence[FlowWire]] = None,
-        variables: Optional[Sequence[FlowVariable]] = None,
+        nodes: Optional[Iterable[FlowNode]] = None,
+        wires: Optional[Iterable[FlowWire]] = None,
+        variables: Optional[Iterable[FlowVariable]] = None,
         control: Optional[FlowControl] = None,
         options: Optional[FlowOptions] = None,
-        tags: Optional[Sequence[str]] = None,
+        tags: Optional[Iterable[str]] = None,
         *,
         selection: Optional[FlowSelection] = None,
     ):
@@ -91,13 +91,13 @@ class FlowGraph(Serializable):
     def __variable_keyable(variable: FlowVariable) -> str:
         return variable.name
 
-    def __create_nodes(self, nodes: Optional[Sequence[FlowNode]] = None):
+    def __create_nodes(self, nodes: Optional[Iterable[FlowNode]] = None):
         return MappingDeque[str, FlowNode](items=nodes, keyable=self.__node_keyable)
 
-    def __create_wires(self, wires: Optional[Sequence[FlowWire]] = None):
+    def __create_wires(self, wires: Optional[Iterable[FlowWire]] = None):
         return MappingDeque[str, FlowWire](items=wires, keyable=self.__wire_keyable)
 
-    def __create_variables(self, variables: Optional[Sequence[FlowVariable]] = None):
+    def __create_variables(self, variables: Optional[Iterable[FlowVariable]] = None):
         return MappingDeque[str, FlowVariable](
             items=variables,
             keyable=self.__variable_keyable,
@@ -503,7 +503,7 @@ class FlowGraph(Serializable):
 
         return None
 
-    def pop_wires(self, uuids: Union[Set[str], Sequence[str]]) -> List[FlowWire]:
+    def pop_wires(self, uuids: Union[Set[str], Iterable[str]]) -> List[FlowWire]:
         if not isinstance(uuids, set):
             uuids = set(uuids)
         remain_wires = list()
@@ -753,7 +753,7 @@ class FlowGraph(Serializable):
         self.remove_selected_wires()
         self.remove_selected_variable()
 
-    def items_to_front(self, items: Sequence[FlowSelectableAny]) -> None:
+    def items_to_front(self, items: Iterable[FlowSelectableAny]) -> None:
         for item in items:
             self.item_to_front(item)
 
@@ -779,7 +779,7 @@ class FlowGraph(Serializable):
             assert wire == self.wires.pop(index)
             self.wires.insert(index - 1, wire)
 
-    def items_to_back(self, items: Sequence[FlowSelectableAny]) -> None:
+    def items_to_back(self, items: Iterable[FlowSelectableAny]) -> None:
         for item in items:
             self.item_to_back(item)
 
@@ -849,14 +849,14 @@ class FlowGraph(Serializable):
             assert wire == self.wires.pop(index)
             self.wires.append(wire)
 
-    def nodes_align_left(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_left(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             px, py = pivot.node_pos
             next_pox = px, ny
             self.move_node(node, next_pox)
 
-    def nodes_align_center(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_center(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -865,7 +865,7 @@ class FlowGraph(Serializable):
             next_pos = px + (pw / 2) - (nw / 2), ny
             self.move_node(node, next_pos)
 
-    def nodes_align_right(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_right(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -874,14 +874,14 @@ class FlowGraph(Serializable):
             next_pos = px + pw - nw, ny
             self.move_node(node, next_pos)
 
-    def nodes_align_top(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_top(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             px, py = pivot.node_pos
             next_pox = nx, py
             self.move_node(node, next_pox)
 
-    def nodes_align_middle(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_middle(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -890,7 +890,7 @@ class FlowGraph(Serializable):
             next_pos = nx, py + (ph / 2) - (nh / 2)
             self.move_node(node, next_pos)
 
-    def nodes_align_bottom(self, nodes: Sequence[FlowNode], pivot: FlowNode) -> None:
+    def nodes_align_bottom(self, nodes: Iterable[FlowNode], pivot: FlowNode) -> None:
         for node in nodes:
             nx, ny = node.node_pos
             nw, nh = node.node_size
@@ -899,7 +899,7 @@ class FlowGraph(Serializable):
             next_pos = nx, py + ph - nh
             self.move_node(node, next_pos)
 
-    def nodes_distribute_horizontal(self, nodes: Sequence[FlowNode]) -> None:
+    def nodes_distribute_horizontal(self, nodes: Iterable[FlowNode]) -> None:
         nx1s = [n.x1 for n in nodes]
         nx2s = [n.x2 for n in nodes]
         nws = [n.width for n in nodes]
@@ -916,7 +916,7 @@ class FlowGraph(Serializable):
             self.move_node(node, next_pos)
             cursor += node.width + space
 
-    def nodes_distribute_vertical(self, nodes: Sequence[FlowNode]) -> None:
+    def nodes_distribute_vertical(self, nodes: Iterable[FlowNode]) -> None:
         ny1s = [n.y1 for n in nodes]
         ny2s = [n.y2 for n in nodes]
         nhs = [n.height for n in nodes]
