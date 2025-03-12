@@ -7,7 +7,7 @@ from type_serialize import Serializable, deserialize, serialize
 
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.flow.pin import FlowPin
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 
 
@@ -16,12 +16,12 @@ class FlowPins(Serializable):
         self.pins = self.__create_map(list(pins if pins else ()))
 
     @staticmethod
-    def __pin_keyable(pin: FlowPin) -> str:
+    def __pin_keyable(pin: FlowPin) -> PinName:
         return pin.name
 
     @staticmethod
     def __create_map(pins: List[FlowPin]):
-        return MappingDeque[str, FlowPin](pins, keyable=FlowPins.__pin_keyable)
+        return MappingDeque[PinName, FlowPin](pins, keyable=FlowPins.__pin_keyable)
 
     @classmethod
     def from_template(cls, templates: Optional[Iterable[PinTemplate]] = None):
@@ -70,16 +70,16 @@ class FlowPins(Serializable):
     def __len__(self) -> int:
         return self.pins.__len__()
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key: PinName) -> bool:
         return self.pins.__contains__(key)
 
-    def __getitem__(self, key: Union[SupportsIndex, str]) -> FlowPin:
+    def __getitem__(self, key: Union[SupportsIndex, PinName]) -> FlowPin:
         return self.pins.__getitem__(key)
 
-    def __setitem__(self, key: Union[SupportsIndex, str], value: FlowPin) -> None:
+    def __setitem__(self, key: Union[SupportsIndex, PinName], value: FlowPin) -> None:
         self.pins.__setitem__(key, value)
 
-    def __delitem__(self, key: Union[SupportsIndex, str]) -> None:
+    def __delitem__(self, key: Union[SupportsIndex, PinName]) -> None:
         self.pins.__delitem__(key)
 
     def __iter__(self):

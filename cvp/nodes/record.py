@@ -5,7 +5,7 @@ from types import TracebackType
 from typing import Any, Iterable, Mapping, Optional, Tuple, Type, Union
 
 from cvp.patterns.proxy import ValueProxy
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 
 ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
@@ -16,10 +16,10 @@ class NodeRecord:
         self,
         index: int,
         node_uuid: str,
-        pin_name: str,
-        variables: Mapping[str, Any],
+        pin_name: PinName,
+        variables: Mapping[PinName, Any],
         args: Iterable[Any],
-        kwargs: Mapping[str, Any],
+        kwargs: Mapping[PinName, Any],
         exception: Optional[ExceptionInfo] = None,
         shared_variables: Optional[Mapping[str, ValueProxy]] = None,
     ):
@@ -109,19 +109,23 @@ class NodeRecord:
     def clear(self) -> None:
         self._exception = None
 
-    def get(self, key: Union[PinTemplate, str]) -> Any:
+    def get(self, key: Union[PinTemplate, PinName, str]) -> Any:
         if isinstance(key, PinTemplate):
             return self._variables[key.name]
-        elif isinstance(key, str):
+        elif isinstance(key, PinName):
             return self._variables[key]
+        elif isinstance(key, str):
+            return self._variables[PinName(key)]
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 
-    def set(self, key: Union[PinTemplate, str], value: Any) -> None:
+    def set(self, key: Union[PinTemplate, PinName, str], value: Any) -> None:
         if isinstance(key, PinTemplate):
             self._variables[key.name] = value
-        elif isinstance(key, str):
+        elif isinstance(key, PinName):
             self._variables[key] = value
+        elif isinstance(key, str):
+            self._variables[PinName(key)] = value
         else:
             raise TypeError(f"Unsupported key type: {type(key).__name__}")
 

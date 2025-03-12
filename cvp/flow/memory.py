@@ -12,6 +12,7 @@ from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
+from cvp.pins.template import PinName
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 WireKey = NewType("WireKey", str)
@@ -19,7 +20,7 @@ WireKey = NewType("WireKey", str)
 
 class PinKey(NamedTuple):
     node_uuid: str
-    pin_name: str
+    pin_name: PinName
 
     def __str__(self):
         return self.node_uuid + FLOW_PATH_SEPARATOR + self.pin_name
@@ -136,14 +137,14 @@ class FlowMemory:
         return self.__copy__()
 
     @staticmethod
-    def gen_pin_key(node_uuid: str, pin_name: str):
+    def gen_pin_key(node_uuid: str, pin_name: PinName):
         return PinKey(node_uuid, pin_name)
 
     @staticmethod
     def gen_wire_key(wire_uuid: str):
         return WireKey(wire_uuid)
 
-    def get_pin_value(self, node_uuid: str, pin_name: str) -> Any:
+    def get_pin_value(self, node_uuid: str, pin_name: PinName) -> Any:
         key = self.gen_pin_key(node_uuid, pin_name)
         data_index = self._pins.get(key)
         if data_index is None:
@@ -157,7 +158,7 @@ class FlowMemory:
             raise KeyError(f"Not found wire value: {wire_uuid}")
         return self._datas[data_index]
 
-    def set_pin_value(self, node_uuid: str, pin_name: str, value: Any) -> None:
+    def set_pin_value(self, node_uuid: str, pin_name: PinName, value: Any) -> None:
         key = self.gen_pin_key(node_uuid, pin_name)
         index = self._pins.get(key)
         if index is not None:
@@ -181,7 +182,7 @@ class FlowMemory:
         self,
         index: int,
         node_uuid: str,
-        pin_name: str,
+        pin_name: PinName,
         data_pins: Sequence[FlowPin],
         *,
         use_copy=False,

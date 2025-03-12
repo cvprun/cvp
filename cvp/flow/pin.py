@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Literal, Optional, Sequence, Union
+from typing import Any, Dict, Iterable, Literal, Optional, Union
 
 from type_serialize import Serializable, deserialize, serialize
 
@@ -11,7 +11,7 @@ from cvp.flow.raw_value import dumps, loads
 from cvp.pins.action import Action, create_action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream, create_stream
-from cvp.pins.template import PinTemplate
+from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
 
@@ -37,14 +37,14 @@ class FlowPin(Serializable):
 
     def __init__(
         self,
-        name: str,
+        name: PinName,
         dtype: Dtype,
         action: Union[Action, Literal["exec", "data", 0, 1]],
         stream: Union[Stream, Literal["input", "output", 0, 1]],
         docs: Optional[str] = None,
         required=False,
         hidden=False,
-        wires: Optional[Sequence[str]] = None,
+        wires: Optional[Iterable[str]] = None,
         kind: Optional[PinKind] = None,
         default: Any = None,
         icon_pos: Point = EMPTY_POINT,
@@ -167,7 +167,7 @@ class FlowPin(Serializable):
     @override
     def __serialize__(self) -> Any:
         result = {
-            self._Keys.name_: self.name,
+            self._Keys.name_: str(self.name),
             self._Keys.dtype: serialize(self.dtype),
             self._Keys.action: str(self.action),
             self._Keys.stream: str(self.stream),
@@ -207,7 +207,7 @@ class FlowPin(Serializable):
         if stream is None:
             raise ValueError(f"The '{self._Keys.stream}' attribute is required")
 
-        self.name = name
+        self.name = PinName(name)
         self.dtype = deserialize(dtype, Dtype)
         self.action = create_action(action)
         self.stream = create_stream(stream)
