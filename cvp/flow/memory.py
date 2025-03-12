@@ -6,7 +6,7 @@ from typing import Any, Deque, Dict, Mapping, NamedTuple, NewType, Optional, Seq
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
-from cvp.flow.variable import FlowVariable
+from cvp.flow.variable import FlowVariable, VariableName
 from cvp.nodes.record import NodeRecord
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
@@ -30,7 +30,7 @@ class FlowMemory:
     _datas: Deque[Any]
     _pins: Dict[PinKey, int]
     _wires: Dict[WireKey, int]
-    _vars: Dict[str, ValueProxy]
+    _vars: Dict[VariableName, ValueProxy]
 
     def __init__(self):
         self._datas = deque()
@@ -72,7 +72,10 @@ class FlowMemory:
                 self._datas.append(value)
                 self._pins[pin_key] = index
 
-    def __insert_shared_variables(self, variables: Mapping[str, FlowVariable]) -> None:
+    def __insert_shared_variables(
+        self,
+        variables: Mapping[VariableName, FlowVariable],
+    ) -> None:
         for key, val in variables.items():
             self._vars[key] = val
 
@@ -241,7 +244,7 @@ class FlowMemory:
             variables=variables,
             args=bind_args,
             kwargs=bind_kwargs,
-            shared_variables=self._vars,
+            shared_variables={str(k): v for k, v in self._vars.items()},
         )
 
     def update_with_node_execution_record(self, record: NodeRecord) -> None:

@@ -15,7 +15,7 @@ from cvp.flow.line_type import (
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
-from cvp.flow.variable import FlowVariable
+from cvp.flow.variable import FlowVariable, VariableName
 from cvp.flow.wire import FlowWire
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
@@ -238,7 +238,7 @@ class PropsTab(TabItem[FlowCanvasTabs]):
         input_text_disabled("Type", type(variable).__name__)
         input_text_disabled("Dtype", variable.dtype.path)
 
-        variable.name = input_text_value("Name", variable.name)
+        variable.name = VariableName(input_text_value("Name", variable.name))
         variable.docs = input_text_value("Docs", variable.docs)
 
         if imgui.radio_button("Persistent", variable.persistent):

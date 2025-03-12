@@ -20,7 +20,7 @@ from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.options import FlowOptions
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
-from cvp.flow.variable import FlowVariable
+from cvp.flow.variable import FlowVariable, VariableName
 from cvp.flow.wire import FlowWire
 from cvp.fonts.types import IconCode
 from cvp.types.colors import RGBA, WHITE_RGBA
@@ -935,7 +935,7 @@ class FlowGraph(Serializable):
 
     def add_variable(self, name: str, dtype: Dtype) -> FlowVariable:
         result = FlowVariable(
-            name=name,
+            name=VariableName(name),
             dtype=dtype,
             docs=None,
             value=dtype.base(),

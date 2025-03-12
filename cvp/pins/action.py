@@ -17,7 +17,8 @@ class Action(StrEnum):
     """
 
 
-AnyAction = Union[Action, Literal["exec", "data", 0, 1]]
+ActionLiteral = Literal["exec", "data", 0, 1]
+AnyAction = Union[Action, ActionLiteral]
 
 
 def create_action(value: AnyAction) -> Action:

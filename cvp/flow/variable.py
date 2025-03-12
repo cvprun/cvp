@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Optional
+from typing import Any, Dict, NewType, Optional
 
 from type_serialize import Serializable, deserialize, serialize
 
@@ -11,6 +11,8 @@ from cvp.flow.raw_value import dumps, loads
 from cvp.memory.copy import CopyMethod, copy_flexible
 from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
+
+VariableName = NewType("VariableName", str)
 
 
 class FlowVariable(ValueProxy[ValueT], Serializable):
@@ -33,18 +35,21 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
 
     def __init__(
         self,
-        name: str,
+        name: VariableName,
         dtype: Dtype,
         docs: Optional[str] = None,
         value: Any = None,
         initial: Any = None,
         *,
-        persistent: bool = False,
-        use_copy: bool = False,
-        use_deepcopy: bool = False,
+        persistent=False,
+        use_copy=False,
+        use_deepcopy=False,
         selected=False,
         hovering=False,
     ):
+        if not name:
+            raise ValueError("The 'name' argument is required")
+
         self.name = name
         self.dtype = dtype
         self.docs = docs if docs else str()
@@ -116,17 +121,16 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {
-            self._Keys.name_: self.name,
-            self._Keys.dtype: serialize(self.dtype),
-            self._Keys.docs: self.docs,
-            self._Keys.value_: dumps(self._value),
-            self._Keys.initial: dumps(self._initial),
-            self._Keys.persistent: self.persistent,
-            self._Keys.use_copy: self.use_copy,
-            self._Keys.use_deepcopy: self.use_deepcopy,
+        return {
+            str(self._Keys.name_): str(self.name),
+            str(self._Keys.dtype): serialize(self.dtype),
+            str(self._Keys.docs): self.docs,
+            str(self._Keys.value_): dumps(self._value),
+            str(self._Keys.initial): dumps(self._initial),
+            str(self._Keys.persistent): self.persistent,
+            str(self._Keys.use_copy): self.use_copy,
+            str(self._Keys.use_deepcopy): self.use_deepcopy,
         }
-        return {str(key): val for key, val in result.items()}
 
     @override
     def __deserialize__(self, data: Any) -> None:
@@ -146,7 +150,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         if not dtype:
             raise ValueError(f"The '{self._Keys.dtype}' attribute is required")
 
-        self.name = name
+        self.name = VariableName(name)
         self.dtype = deserialize(dtype, Dtype)
         self.docs = data.get(self._Keys.docs, str())
 
@@ -229,7 +233,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         )
 
     @property
-    def selected(self):
+    def selected(self) -> bool:
         return self._selected
 
     @selected.setter
@@ -237,7 +241,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         self._selected = value
 
     @property
-    def hovering(self):
+    def hovering(self) -> bool:
         return self._hovering
 
     @hovering.setter

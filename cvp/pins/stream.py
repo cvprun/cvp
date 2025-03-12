@@ -17,7 +17,8 @@ class Stream(StrEnum):
     """
 
 
-AnyStream = Union[Stream, Literal["input", "output", 0, 1]]
+StreamLiteral = Literal["input", "output", 0, 1]
+AnyStream = Union[Stream, StreamLiteral]
 
 
 def create_stream(value: AnyStream) -> Stream:

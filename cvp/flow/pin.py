@@ -2,15 +2,15 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Iterable, Literal, Optional, Union
+from typing import Any, Dict, Iterable, Optional
 
 from type_serialize import Serializable, deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
-from cvp.pins.action import Action, create_action
+from cvp.pins.action import Action, AnyAction, create_action
 from cvp.pins.kind import PinKind
-from cvp.pins.stream import Stream, create_stream
+from cvp.pins.stream import AnyStream, Stream, create_stream
 from cvp.pins.template import PinName, PinTemplate
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
@@ -39,8 +39,8 @@ class FlowPin(Serializable):
         self,
         name: PinName,
         dtype: Dtype,
-        action: Union[Action, Literal["exec", "data", 0, 1]],
-        stream: Union[Stream, Literal["input", "output", 0, 1]],
+        action: AnyAction,
+        stream: AnyStream,
         docs: Optional[str] = None,
         required=False,
         hidden=False,
