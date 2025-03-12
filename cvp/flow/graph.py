@@ -17,6 +17,7 @@ from cvp.flow.connection import FlowConnection
 from cvp.flow.control import FlowControl
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
+from cvp.flow.options import FlowOptions
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable
@@ -40,6 +41,7 @@ class FlowGraph(Serializable):
         wires = auto()
         variables = auto()
         control = auto()
+        options = auto()
         tags = auto()
 
     def __init__(
@@ -54,6 +56,7 @@ class FlowGraph(Serializable):
         wires: Optional[Sequence[FlowWire]] = None,
         variables: Optional[Sequence[FlowVariable]] = None,
         control: Optional[FlowControl] = None,
+        options: Optional[FlowOptions] = None,
         tags: Optional[Sequence[str]] = None,
         *,
         selection: Optional[FlowSelection] = None,
@@ -73,6 +76,7 @@ class FlowGraph(Serializable):
         )
 
         self.control = control if control else FlowControl()
+        self.options = options if options else FlowOptions()
         self.tags = list(tags if tags else ())
         self._selection = selection if selection else FlowSelection()
 
@@ -102,6 +106,7 @@ class FlowGraph(Serializable):
             and self.wires == other.wires
             and self.variables == other.variables
             and self.control == other.control
+            and self.options == other.options
             and self.tags == other.tags
         )
 
@@ -118,6 +123,7 @@ class FlowGraph(Serializable):
         result.wires = copy(self.wires)
         result.variables = copy(self.variables)
         result.control = copy(self.control)
+        result.options = copy(self.options)
         result.tags = copy(self.tags)
         result._selection = copy(self._selection)
         return result
@@ -137,6 +143,7 @@ class FlowGraph(Serializable):
         result.wires = deepcopy(self.wires, memo)
         result.variables = deepcopy(self.variables, memo)
         result.control = deepcopy(self.control, memo)
+        result.options = deepcopy(self.options, memo)
         result.tags = deepcopy(self.tags, memo)
         result._selection = deepcopy(self._selection, memo)
         memo[id(self)] = result
@@ -155,6 +162,7 @@ class FlowGraph(Serializable):
             self._Keys.wires: serialize(self.wires.as_list()),
             self._Keys.variables: serialize(self.variables.as_list()),
             self._Keys.control: serialize(self.control),
+            self._Keys.options: serialize(self.options),
             self._Keys.tags: self.tags,
         }
         return {str(key): val for key, val in result.items()}
@@ -191,6 +199,11 @@ class FlowGraph(Serializable):
         else:
             self.control = FlowControl()
 
+        if options := data.get(self._Keys.options):
+            self.options = deserialize(options, FlowOptions)
+        else:
+            self.options = FlowOptions()
+
         self.tags = data.get(self._Keys.tags, list())
         self._selection = FlowSelection()
 
@@ -213,6 +226,7 @@ class FlowGraph(Serializable):
         self.wires = other.wires
         self.variables = other.variables
         self.control = other.control
+        self.options = other.options
         self.tags = other.tags
         self._selection = other._selection
 
@@ -401,7 +415,7 @@ class FlowGraph(Serializable):
         mp = shapely.Point(mouse)
         for wire in self.wires:
             distance = shapely.LineString(wire.polyline).distance(mp)
-            if distance <= self.control.wire_hovering_tolerance:
+            if distance <= self.options.wire_hovering_tolerance:
                 return wire
         return None
 
@@ -432,14 +446,14 @@ class FlowGraph(Serializable):
         sdx = mx - sx
         sdy = my - sy
         start_distance = sqrt(sdx**2 + sdy**2)
-        if start_distance <= self.control.anchor_hovering_tolerance:
+        if start_distance <= self.options.anchor_hovering_tolerance:
             return wire.start_anchor
 
         ex, ey = end
         edx = mx - ex
         edy = my - ey
         end_distance = sqrt(edx**2 + edy**2)
-        if end_distance <= self.control.anchor_hovering_tolerance:
+        if end_distance <= self.options.anchor_hovering_tolerance:
             return wire.end_anchor
         return None
 
@@ -642,7 +656,7 @@ class FlowGraph(Serializable):
 
         assert wire.output is not None
         assert wire.input is not None
-        wire.update_polyline(self.control.bezier_curve_tessellation_tolerance)
+        wire.update_polyline(self.options.bezier_curve_tessellation_tolerance)
 
     def connect_pins(
         self,
@@ -658,7 +672,7 @@ class FlowGraph(Serializable):
         wire = FlowWire.from_connect_pair(
             out_conn,
             in_conn,
-            self.control.bezier_curve_tessellation_tolerance,
+            self.options.bezier_curve_tessellation_tolerance,
             name=f"{out_conn.pin.name}-{out_conn.pin.name}",
             docs=f"{str(out_conn)}-{str(out_conn)}",
         )

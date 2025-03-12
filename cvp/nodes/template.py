@@ -54,7 +54,7 @@ class NodeTemplate(NodeInterface):
             self.name = name
         elif func is not None:
             self.name = NodeName(type(func).__name__)
-        elif type(self) is NodeTemplate:
+        elif type(self) is not NodeTemplate:
             self.name = NodeName(type(self).__name__)
         else:
             self.name = NodeName(path)
