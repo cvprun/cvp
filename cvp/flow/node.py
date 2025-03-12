@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, NewType, Optional, Union
 from uuid import uuid4
 
 from type_serialize import Serializable, deserialize, serialize
@@ -10,10 +10,13 @@ from type_serialize import Serializable, deserialize, serialize
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
-from cvp.nodes.template import NodeTemplate
+from cvp.fonts.types import IconCode
+from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
+
+NodeKey = NewType("NodeKey", str)
 
 
 class FlowNode(Serializable):
@@ -44,11 +47,11 @@ class FlowNode(Serializable):
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
-        uuid: Optional[str] = None,
-        name: Optional[str] = None,
-        path: Optional[str] = None,
+        uuid: Optional[NodeKey] = None,
+        name: Optional[NodeName] = None,
+        path: Optional[NodePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[str] = None,
+        icon: Optional[IconCode] = None,
         lock=False,
         breakpoint=False,
         hidden=False,
@@ -68,11 +71,12 @@ class FlowNode(Serializable):
         selected: bool = False,
         hovering: bool = False,
     ):
-        self.uuid = uuid if uuid else str(uuid4())
-        self.name = name if name else str()
-        self.path = path if path else str()
+        self.uuid = uuid if uuid else NodeKey(str(uuid4()))
+        self.name = name if name else NodeName(str())
+        self.path = path if path else NodePath(str())
         self.docs = docs if docs else str()
-        self.icon = icon if icon else str()
+        self.icon = icon if icon else IconCode(str())
+
         self.lock = lock
         self.breakpoint = breakpoint
         self.hidden = hidden
@@ -106,7 +110,7 @@ class FlowNode(Serializable):
     @classmethod
     def from_template(cls, template: NodeTemplate):
         return cls(
-            uuid=str(uuid4()),
+            uuid=NodeKey(str(uuid4())),
             name=template.name,
             path=template.path,
             docs=template.docs,
@@ -209,40 +213,39 @@ class FlowNode(Serializable):
 
     @override
     def __serialize__(self) -> Any:
-        result = {
-            self._Keys.uuid: self.uuid,
-            self._Keys.name_: self.name,
-            self._Keys.path: self.path,
-            self._Keys.docs: self.docs,
-            self._Keys.icon: self.icon,
-            self._Keys.lock: self.lock,
-            self._Keys.breakpoint: self.breakpoint,
-            self._Keys.hidden: self.hidden,
-            self._Keys.color: list(self.color),
-            self._Keys.pins: serialize(self.pins),
-            self._Keys.tags: self.tags,
-            self._Keys.head_height: self.head_height,
-            self._Keys.exec_height: self.exec_height,
-            self._Keys.data_height: self.data_height,
-            self._Keys.icon_pos: list(self.icon_pos),
-            self._Keys.icon_size: list(self.icon_size),
-            self._Keys.name_pos: list(self.name_pos),
-            self._Keys.name_size: list(self.name_size),
-            self._Keys.node_pos: list(self.node_pos),
-            self._Keys.node_size: list(self.node_size),
+        return {
+            str(self._Keys.uuid): str(self.uuid),
+            str(self._Keys.name_): str(self.name),
+            str(self._Keys.path): str(self.path),
+            str(self._Keys.docs): self.docs,
+            str(self._Keys.icon): str(self.icon),
+            str(self._Keys.lock): self.lock,
+            str(self._Keys.breakpoint): self.breakpoint,
+            str(self._Keys.hidden): self.hidden,
+            str(self._Keys.color): list(self.color),
+            str(self._Keys.pins): serialize(self.pins),
+            str(self._Keys.tags): self.tags,
+            str(self._Keys.head_height): self.head_height,
+            str(self._Keys.exec_height): self.exec_height,
+            str(self._Keys.data_height): self.data_height,
+            str(self._Keys.icon_pos): list(self.icon_pos),
+            str(self._Keys.icon_size): list(self.icon_size),
+            str(self._Keys.name_pos): list(self.name_pos),
+            str(self._Keys.name_size): list(self.name_size),
+            str(self._Keys.node_pos): list(self.node_pos),
+            str(self._Keys.node_size): list(self.node_size),
         }
-        return {str(key): val for key, val in result.items()}
 
     @override
     def __deserialize__(self, data: Any) -> None:
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = data.get(self._Keys.uuid, str())
-        self.name = data.get(self._Keys.name_, str())
-        self.path = data.get(self._Keys.path, str())
+        self.uuid = NodeKey(data.get(self._Keys.uuid, str()))
+        self.name = NodeName(data.get(self._Keys.name_, str()))
+        self.path = NodePath(data.get(self._Keys.path, str()))
         self.docs = data.get(self._Keys.docs, str())
-        self.icon = data.get(self._Keys.icon, str())
+        self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.lock = data.get(self._Keys.lock, False)
         self.breakpoint = data.get(self._Keys.breakpoint, False)
         self.hidden = data.get(self._Keys.hidden, False)

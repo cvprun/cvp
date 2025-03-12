@@ -15,7 +15,7 @@ from typing import (
 )
 from uuid import uuid4
 
-from cvp.flow.node import FlowNode
+from cvp.flow.node import FlowNode, NodeKey
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.variable import FlowVariable
@@ -205,7 +205,7 @@ class FlowSelection:
 
         for node in nodes:
             node = deepcopy(node)
-            node.uuid = str(uuid4())
+            node.uuid = NodeKey(str(uuid4()))
             nx, ny = node.node_pos
             node.node_pos = x + nx, y + ny
             new_nodes.append(node)
