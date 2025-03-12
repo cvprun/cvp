@@ -34,6 +34,10 @@ class PinName(str):
     pass
 
 
+class WireKey(str):
+    pass
+
+
 class PinTemplate:
     def __init__(
         self,
@@ -44,7 +48,7 @@ class PinTemplate:
         stream: Optional[Stream] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -88,7 +92,7 @@ class PinTemplate:
             param_docs = get_docs(*param_args, default=None)
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
-            param_wires = get_wires(*param_args)
+            param_wires = list(WireKey(w) for w in get_wires(*param_args))
             param_default = get_default(*param_args, default=parameter.default)
             param_required = get_required(*param_args, default=param_required)
             param_hidden = get_hidden(*param_args, default=False)

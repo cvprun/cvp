@@ -5,7 +5,7 @@ from typing import Iterable, Optional
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.template import PinName, PinTemplate, WireKey
 
 
 class ExecInputPinTemplate(PinTemplate):
@@ -13,7 +13,7 @@ class ExecInputPinTemplate(PinTemplate):
         self,
         name: PinName,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
             name=name,
@@ -33,7 +33,7 @@ class ExecOutputPinTemplate(PinTemplate):
         self,
         name: PinName,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
             name=name,

@@ -18,7 +18,7 @@ from cvp.pins.annotated import get_docs, get_name, get_wires
 from cvp.pins.datas import DataOutputPinTemplate
 from cvp.pins.execs import ExecInputPinTemplate, ExecOutputPinTemplate
 from cvp.pins.kind import PinKind
-from cvp.pins.template import PinName
+from cvp.pins.template import PinName, WireKey
 
 ENTRYPOINT_PIN_NAME: Final[PinName] = PinName("entrypoint")
 ENTRYPOINT_PIN_DOCS: Final[str] = "Indicates the starting point of the flow"
@@ -38,7 +38,7 @@ class EntrypointPinTemplate(ExecInputPinTemplate):
         self,
         name: Optional[PinName] = None,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
             name=name if name else ENTRYPOINT_PIN_NAME,
@@ -52,7 +52,7 @@ class PrevPinTemplate(ExecInputPinTemplate):
         self,
         name: Optional[PinName] = None,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
             name=name if name else PREV_PIN_NAME,
@@ -66,7 +66,7 @@ class NextPinTemplate(ExecOutputPinTemplate):
         self,
         name: Optional[PinName] = None,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
             name=name if name else NEXT_PIN_NAME,
@@ -80,7 +80,7 @@ class ReturnPinTemplate(DataOutputPinTemplate):
         self,
         dtype: Dtype,
         docs: Optional[str] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
         *,
         name: Optional[PinName] = None,
     ):
@@ -113,7 +113,7 @@ class ReturnPinTemplate(DataOutputPinTemplate):
             return_dtype = dtype_registry.get(return_args[0])
             return_name = PinName(get_name(*return_args, default=RETURN_PIN_NAME))
             return_docs = get_docs(*return_args, default=RETURN_PIN_DOCS)
-            return_wires = get_wires(*return_args)
+            return_wires = list(WireKey(w) for w in get_wires(*return_args))
         else:
             return_dtype = dtype_registry.get(return_annotation)
             return_name = RETURN_PIN_NAME

@@ -7,7 +7,7 @@ from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.template import PinName, PinTemplate, WireKey
 
 
 class DataInputPinTemplate(PinTemplate):
@@ -18,7 +18,7 @@ class DataInputPinTemplate(PinTemplate):
         docs: Optional[str] = None,
         required: Optional[bool] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
@@ -43,7 +43,7 @@ class DataOutputPinTemplate(PinTemplate):
         dtype: Dtype,
         docs: Optional[str] = None,
         hidden: Optional[bool] = None,
-        wires: Optional[Iterable[str]] = None,
+        wires: Optional[Iterable[WireKey]] = None,
         kind: Optional[PinKind] = None,
         default: Any = NoDefault,
     ):
