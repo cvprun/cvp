@@ -24,8 +24,10 @@ class TypePath(str):
     pass
 
 
+MODULE_PATH_SEPARATOR: Final[str] = "."
+
 NONE_TYPE_CLS: Final[type] = type(None)
-NONE_TYPE_PATH: Final[TypePath] = TypePath("builtins.NoneType")
+NONE_TYPE_PATH: Final[TypePath] = TypePath(f"builtins{MODULE_PATH_SEPARATOR}NoneType")
 NONE_TYPE_CLS_PATH: Final[Tuple[type, TypePath]] = NONE_TYPE_CLS, NONE_TYPE_PATH
 
 
@@ -33,7 +35,7 @@ def _load_with_path(path: str) -> Tuple[type, TypePath]:
     if path == NONE_TYPE_PATH:
         return NONE_TYPE_CLS_PATH
 
-    module_path, class_name = path.rsplit(".", 1)
+    module_path, class_name = path.rsplit(MODULE_PATH_SEPARATOR, 1)
     module = import_module(module_path)
     cls = getattr(module, class_name)
     if not isinstance(cls, type):
@@ -42,7 +44,7 @@ def _load_with_path(path: str) -> Tuple[type, TypePath]:
 
 
 def _load_with_cls(cls: type) -> Tuple[type, TypePath]:
-    path = cls.__module__ + "." + cls.__name__
+    path = cls.__module__ + MODULE_PATH_SEPARATOR + cls.__name__
     return cls, TypePath(path)
 
 
@@ -136,7 +138,7 @@ class ClassPath(Generic[_T], Serializable):
         return self._path
 
     def split(self) -> Tuple[str, str]:
-        module_path, class_name = self._path.rsplit(".", 1)
+        module_path, class_name = self._path.rsplit(MODULE_PATH_SEPARATOR, 1)
         assert isinstance(module_path, str)
         assert isinstance(class_name, str)
         return module_path, class_name
