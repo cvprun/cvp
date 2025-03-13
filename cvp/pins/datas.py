@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Iterable, Optional
+from typing import Iterable, Optional
 
 from cvp.dtypes.dtype import Dtype
 from cvp.inspect.parameter import NoDefault
@@ -16,18 +16,18 @@ class DataInputPinTemplate(PinTemplate):
         name: PinName,
         dtype: Dtype,
         docs: Optional[str] = None,
-        required: Optional[bool] = None,
-        hidden: Optional[bool] = None,
+        required=False,
+        hidden=False,
         wires: Optional[Iterable[WireKey]] = None,
-        kind: Optional[PinKind] = None,
-        default: Any = NoDefault,
+        kind=PinKind.unknown,
+        default=NoDefault,
     ):
         super().__init__(
             name=name,
             dtype=dtype,
-            docs=docs,
             action=Action.data,
             stream=Stream.input,
+            docs=docs,
             required=required,
             hidden=hidden,
             wires=wires,
@@ -42,17 +42,17 @@ class DataOutputPinTemplate(PinTemplate):
         name: PinName,
         dtype: Dtype,
         docs: Optional[str] = None,
-        hidden: Optional[bool] = None,
+        hidden=False,
         wires: Optional[Iterable[WireKey]] = None,
-        kind: Optional[PinKind] = None,
-        default: Any = NoDefault,
+        kind=PinKind.unknown,
+        default=NoDefault,
     ):
         super().__init__(
             name=name,
             dtype=dtype,
-            docs=docs,
             action=Action.data,
             stream=Stream.output,
+            docs=docs,
             required=False,
             hidden=hidden,
             wires=wires,

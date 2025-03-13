@@ -3,7 +3,6 @@
 from inspect import Parameter
 from typing import (
     Annotated,
-    Any,
     Iterable,
     NewType,
     Optional,
@@ -16,6 +15,7 @@ from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.globals import global_dtype_registry
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.inspect.parameter import NoDefault, inspect_parameter_required
+from cvp.modules.class_path import ClassPath
 from cvp.pins.action import Action
 from cvp.pins.annotated import (
     get_action,
@@ -38,24 +38,35 @@ class PinTemplate:
     def __init__(
         self,
         name: PinName,
-        dtype: Optional[Dtype] = None,
+        dtype: Union[None, Dtype, ClassPath, type],
+        action: Action,
+        stream: Stream,
         docs: Optional[str] = None,
-        action: Optional[Action] = None,
-        stream: Optional[Stream] = None,
-        required: Optional[bool] = None,
-        hidden: Optional[bool] = None,
+        required=False,
+        hidden=False,
         wires: Optional[Iterable[WireKey]] = None,
-        kind: Optional[PinKind] = None,
-        default: Any = NoDefault,
+        kind=PinKind.unknown,
+        default=NoDefault,
     ):
         if not name:
             raise ValueError("The 'name' argument is required")
 
-        self.name = name
-        self.dtype = dtype if dtype is not None else Dtype(type(None))
+        if dtype is None:
+            self._dtype = Dtype(type(None))
+        elif isinstance(dtype, Dtype):
+            self._dtype = dtype
+        elif isinstance(dtype, ClassPath):
+            self._dtype = Dtype(dtype)
+        elif isinstance(dtype, type):
+            self._dtype = Dtype(dtype)
+        else:
+            raise TypeError(f"Unsupported dtype type: {type(dtype).__name__}")
+
+        self._name = name
+        self._action = action
+        self._stream = stream
+
         self.docs = docs if docs else str()
-        self.action = action if action is not None else Action.data
-        self.stream = stream if stream is not None else Stream.input
         self.required = bool(required)
         self.hidden = bool(hidden)
         self.wires = list(wires if wires else ())
@@ -85,9 +96,9 @@ class PinTemplate:
             assert 2 <= len(param_args)
             param_dtype = dtype_registry.get(param_args[0])
             param_name = PinName(get_name(*param_args, default=parameter.name))
-            param_docs = get_docs(*param_args, default=None)
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
+            param_docs = get_docs(*param_args, default=None)
             param_wires = list(WireKey(w) for w in get_wires(*param_args))
             param_default = get_default(*param_args, default=parameter.default)
             param_required = get_required(*param_args, default=param_required)
@@ -95,9 +106,9 @@ class PinTemplate:
         else:
             param_dtype = dtype_registry.get(parameter.annotation)
             param_name = PinName(parameter.name)
-            param_docs = str()
             param_action = Action.data
             param_stream = Stream.input
+            param_docs = str()
             param_wires = list()
             param_default = parameter.default
             param_hidden = False
@@ -105,9 +116,9 @@ class PinTemplate:
         return cls(
             name=param_name,
             dtype=param_dtype,
-            docs=param_docs,
             action=param_action,
             stream=param_stream,
+            docs=param_docs,
             required=param_required,
             hidden=param_hidden,
             wires=param_wires,
@@ -116,8 +127,32 @@ class PinTemplate:
         )
 
     @property
+    def name(self) -> PinName:
+        return self._name
+
+    @property
+    def dtype(self) -> Dtype:
+        return self._dtype
+
+    @property
+    def action(self) -> Action:
+        return self._action
+
+    @property
+    def stream(self) -> Stream:
+        return self._stream
+
+    @property
     def path(self):
-        return self.dtype.path
+        return self._dtype.path
+
+    @property
+    def module_path(self) -> str:
+        return self._dtype.module_path
+
+    @property
+    def class_name(self) -> str:
+        return self._dtype.class_name
 
     @property
     def is_data_action(self):

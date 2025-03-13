@@ -20,11 +20,6 @@ class RegistryTestCase(TestCase):
         self.assertNotEqual(0, len(registry.type2dtypes))
         self.assertNotEqual(0, len(registry))
 
-    def test_register_dtype_error(self):
-        registry = DtypeRegistry(no_defaults=True)
-        with self.assertRaises(TypeError):
-            registry.add_new(None)  # noqa
-
     def test_register_dtype_none(self):
         registry = DtypeRegistry(no_defaults=True)
         self.assertEqual(0, len(registry.path2dtypes))

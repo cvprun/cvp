@@ -47,24 +47,24 @@ class Dtype(Serializable):
 
     def __init__(
         self,
-        base: Union[type, ClassPath],
+        base: Union[None, ClassPath, type],
         name: Optional[DtypeName] = None,
-        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
         *,
         hidden=False,
     ):
-        if isinstance(base, ClassPath):
+        if base is None:
+            self.base = ClassPath.none()
+        elif isinstance(base, ClassPath):
             self.base = base
         elif isinstance(base, type):
             self.base = ClassPath(base)  # type: ignore[var-annotated]
         else:
             raise TypeError(f"Only types can be registered: {base}")
 
-        self.name = name if name else default_dtype_name_with_type(base)
-        self.path = path if path else default_dtype_path_with_type(base, self.name)
+        self.name = name if name else self.base.class_name
         self.docs = docs if docs else default_dtype_docs_with_type(base)
         self.icon = icon if icon else default_dtype_icon_with_type(base, self.name)
         self.color = color if color else WHITE_RGBA
@@ -72,8 +72,6 @@ class Dtype(Serializable):
 
         if not self.name:
             raise ValueError("The 'name' attribute is required")
-        if not self.path:
-            raise ValueError("The 'path' attribute is required")
 
     def __str__(self) -> str:
         return self.name
@@ -84,7 +82,6 @@ class Dtype(Serializable):
                 self.__class__,
                 self.base,
                 self.name,
-                self.path,
                 self.docs,
                 self.icon,
                 self.color,
@@ -98,7 +95,6 @@ class Dtype(Serializable):
         return (
             self.base == other.base
             and self.name == other.name
-            and self.path == other.path
             and self.docs == other.docs
             and self.icon == other.icon
             and self.color == other.color
@@ -110,7 +106,6 @@ class Dtype(Serializable):
         result = cls.__new__(cls)
         result.base = copy(self.base)
         result.name = copy(self.name)
-        result.path = copy(self.path)
         result.docs = copy(self.docs)
         result.icon = copy(self.icon)
         result.color = copy(self.color)
@@ -124,7 +119,6 @@ class Dtype(Serializable):
         result = cls.__new__(cls)
         result.base = deepcopy(self.base, memo)
         result.name = deepcopy(self.name, memo)
-        result.path = deepcopy(self.path, memo)
         result.docs = deepcopy(self.docs, memo)
         result.icon = deepcopy(self.icon, memo)
         result.color = deepcopy(self.color, memo)
@@ -137,7 +131,6 @@ class Dtype(Serializable):
         return {
             str(self._Keys.base): serialize(self.base),
             str(self._Keys.name_): str(self.name),
-            str(self._Keys.path): str(self.path),
             str(self._Keys.docs): str(self.docs),
             str(self._Keys.icon): str(self.icon),
             str(self._Keys.color): list(self.color),
@@ -155,7 +148,6 @@ class Dtype(Serializable):
 
         self.base = deserialize(base, ClassPath)
         self.name = DtypeName(data.get(self._Keys.name_, str()))
-        self.path = TypePath(data.get(self._Keys.path, str()))
         self.docs = str(data.get(self._Keys.docs, str()))
         self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
@@ -163,7 +155,6 @@ class Dtype(Serializable):
 
         assert isinstance(self.base, ClassPath)
         assert isinstance(self.name, str)  # DtypeName is str
-        assert isinstance(self.path, str)  # TypePath is str
         assert isinstance(self.docs, str)
         assert isinstance(self.icon, str)  # IconCode is str
         assert isinstance(self.color, tuple)
@@ -176,7 +167,7 @@ class Dtype(Serializable):
         return self.base.type
 
     @property
-    def type_path(self) -> TypePath:
+    def path(self) -> TypePath:
         return self.base.path
 
     def split(self) -> Tuple[str, str]:

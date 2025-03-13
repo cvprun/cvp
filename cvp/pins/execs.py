@@ -18,9 +18,9 @@ class ExecInputPinTemplate(PinTemplate):
         super().__init__(
             name=name,
             dtype=None,
-            docs=docs,
             action=Action.exec,
             stream=Stream.input,
+            docs=docs,
             required=False,
             hidden=False,
             wires=wires,
@@ -38,9 +38,9 @@ class ExecOutputPinTemplate(PinTemplate):
         super().__init__(
             name=name,
             dtype=None,
-            docs=docs,
             action=Action.exec,
             stream=Stream.output,
+            docs=docs,
             required=False,
             hidden=False,
             wires=wires,

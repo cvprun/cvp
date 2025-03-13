@@ -72,6 +72,14 @@ class ClassPath(Generic[_T], Serializable):
         assert isinstance(self._type, type)
         assert isinstance(self._path, str)
 
+    @classmethod
+    def none(cls):
+        return cls(type(None))
+
+    @classmethod
+    def any(cls):
+        return cls(Any)
+
     def __str__(self) -> str:
         return self._path
 
@@ -129,6 +137,10 @@ class ClassPath(Generic[_T], Serializable):
     @property
     def type(self) -> Type[_T]:
         return self._type
+
+    @property
+    def docs(self) -> str:
+        return self._type.__doc__ if self._type.__doc__ else str()
 
     @property
     def path(self) -> TypePath:

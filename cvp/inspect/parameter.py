@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
+from typing import Any, Final
 
-NoDefault = Parameter.empty
+NoDefault: Final[Any] = Parameter.empty
 
 
 def inspect_parameter_required(parameter: Parameter) -> bool:

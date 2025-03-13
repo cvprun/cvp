@@ -23,9 +23,8 @@ def global_dtype_registry() -> GlobalDtypeRegistry:
 
 def register_dtype(
     name: Optional[DtypeName] = None,
-    path: Optional[TypePath] = None,
     docs: Optional[str] = None,
     icon: Optional[IconCode] = None,
     color: Optional[RGBA] = None,
 ):
-    return global_dtype_registry().register(name, path, docs, icon, color)
+    return global_dtype_registry().register(name, docs, icon, color)

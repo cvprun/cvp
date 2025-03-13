@@ -120,25 +120,23 @@ class DtypeRegistry:
         self,
         base: Union[type, ClassPath],
         name: Optional[DtypeName] = None,
-        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
     ) -> Dtype:
-        result = Dtype(base, name, path, docs, icon, color)
+        result = Dtype(base, name, docs, icon, color)
         self.add(result)
         return result
 
     def register(
         self,
         name: Optional[DtypeName] = None,
-        path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
     ):
         def _decorator(base: type):
-            self.add_new(base, name, path, docs, icon, color)
+            self.add_new(base, name, docs, icon, color)
             return base
 
         return _decorator
