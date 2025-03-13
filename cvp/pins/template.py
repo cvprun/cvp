@@ -3,9 +3,11 @@
 from inspect import Parameter
 from typing import (
     Annotated,
+    Any,
     Iterable,
     NewType,
     Optional,
+    Sequence,
     Union,
     get_args,
     get_origin,
@@ -29,6 +31,7 @@ from cvp.pins.annotated import (
 )
 from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
+from cvp.variables import NODOC
 
 PinName = NewType("PinName", str)
 WireKey = NewType("WireKey", str)
@@ -41,12 +44,12 @@ class PinTemplate:
         dtype: Union[None, Dtype, ClassPath, type],
         action: Action,
         stream: Stream,
-        docs: Optional[str] = None,
+        kind: PinKind,
         required=False,
         hidden=False,
-        wires: Optional[Iterable[WireKey]] = None,
-        kind=PinKind.unknown,
         default=NoDefault,
+        docs=NODOC,
+        wires: Optional[Iterable[WireKey]] = None,
     ):
         if not name:
             raise ValueError("The 'name' argument is required")
@@ -65,13 +68,12 @@ class PinTemplate:
         self._name = name
         self._action = action
         self._stream = stream
-
-        self.docs = docs if docs else str()
-        self.required = bool(required)
-        self.hidden = bool(hidden)
-        self.wires = list(wires if wires else ())
-        self.kind = kind if kind is not None else PinKind.unknown
-        self.default = default
+        self._kind = kind
+        self._required = required
+        self._hidden = hidden
+        self._default = default
+        self._docs = docs
+        self._wires = tuple(wires if wires else ())
 
     @classmethod
     def from_parameter(
@@ -88,8 +90,8 @@ class PinTemplate:
         if param_origin == Union:
             raise TypeError("Union parameter is not supported")
 
-        param_required = inspect_parameter_required(parameter)
         param_kind = parameter_to_kind(parameter)
+        param_required = inspect_parameter_required(parameter)
 
         if param_origin == Annotated:
             param_args = get_args(parameter.annotation)
@@ -98,32 +100,32 @@ class PinTemplate:
             param_name = PinName(get_name(*param_args, default=parameter.name))
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
-            param_docs = get_docs(*param_args, default=None)
-            param_wires = list(WireKey(w) for w in get_wires(*param_args))
-            param_default = get_default(*param_args, default=parameter.default)
             param_required = get_required(*param_args, default=param_required)
             param_hidden = get_hidden(*param_args, default=False)
+            param_default = get_default(*param_args, default=parameter.default)
+            param_docs = get_docs(*param_args, default=None)
+            param_wires = list(WireKey(w) for w in get_wires(*param_args))
         else:
             param_dtype = dtype_registry.get(parameter.annotation)
             param_name = PinName(parameter.name)
             param_action = Action.data
             param_stream = Stream.input
+            param_hidden = False
+            param_default = parameter.default
             param_docs = str()
             param_wires = list()
-            param_default = parameter.default
-            param_hidden = False
 
         return cls(
             name=param_name,
             dtype=param_dtype,
             action=param_action,
             stream=param_stream,
-            docs=param_docs,
+            kind=param_kind,
             required=param_required,
             hidden=param_hidden,
-            wires=param_wires,
-            kind=param_kind,
             default=param_default,
+            docs=param_docs,
+            wires=param_wires,
         )
 
     @property
@@ -141,6 +143,34 @@ class PinTemplate:
     @property
     def stream(self) -> Stream:
         return self._stream
+
+    @property
+    def kind(self) -> PinKind:
+        return self._kind
+
+    @property
+    def required(self) -> bool:
+        return self._required
+
+    @property
+    def hidden(self) -> bool:
+        return self._hidden
+
+    @property
+    def default(self) -> Any:
+        return self._default
+
+    @property
+    def has_default(self) -> bool:
+        return self._default is not NoDefault
+
+    @property
+    def docs(self) -> str:
+        return self._docs
+
+    @property
+    def wires(self) -> Sequence[WireKey]:
+        return self._wires
 
     @property
     def path(self):
@@ -185,7 +215,3 @@ class PinTemplate:
     @property
     def is_data_outputs(self) -> bool:
         return self.is_data_action and self.is_output_stream
-
-    @property
-    def has_default(self) -> bool:
-        return self.default != NoDefault

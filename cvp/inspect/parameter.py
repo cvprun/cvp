@@ -19,4 +19,4 @@ def inspect_parameter_required(parameter: Parameter) -> bool:
         case Parameter.VAR_KEYWORD:
             return False
         case _:
-            raise ValueError(f"Unexpected parameter kind: {parameter.kind}")
+            assert False, "Inaccessible section"

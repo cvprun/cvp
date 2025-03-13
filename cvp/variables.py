@@ -27,6 +27,8 @@ LARGE_ICON_FONT_SIZE: Final[int] = 24
 CONFIG_VALUE_SEPARATOR: Final[str] = ","
 CHECKSUM_DELIMITER: Final[str] = ":"
 
+NODOC: Final[str] = str()
+
 CODEPOINT_RANGES_EXTENSION: Final[str] = ".ranges"
 CODEPOINT_GLYPHS_EXTENSION: Final[str] = ".glyphs"
 KEYRING_EXTENSION: Final[str] = ".cfg"
