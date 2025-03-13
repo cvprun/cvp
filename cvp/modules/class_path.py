@@ -73,7 +73,6 @@ class ClassPath(Generic[_T], Serializable):
         assert isinstance(self._path, str)
 
     def __str__(self) -> str:
-        """In `cvp.flow` module, this return value is used as a key value."""
         return self._path
 
     def __hash__(self) -> int:

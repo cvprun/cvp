@@ -3,6 +3,7 @@
 from functools import lru_cache
 from typing import Optional
 
+from cvp.dtypes.dtype import DtypeName
 from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.types import IconCode
 from cvp.modules.class_path import TypePath
@@ -21,7 +22,7 @@ def global_dtype_registry() -> GlobalDtypeRegistry:
 
 
 def register_dtype(
-    name: Optional[str] = None,
+    name: Optional[DtypeName] = None,
     path: Optional[TypePath] = None,
     docs: Optional[str] = None,
     icon: Optional[IconCode] = None,

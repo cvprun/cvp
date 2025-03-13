@@ -5,9 +5,9 @@ from typing import Any, Dict, List, Optional, Type, Union, get_args, get_origin
 
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
 from cvp.dtypes.defaults.typing import get_typing_any
-from cvp.dtypes.dtype import Dtype
+from cvp.dtypes.dtype import Dtype, DtypeName
 from cvp.fonts.types import IconCode
-from cvp.modules.class_path import TypePath
+from cvp.modules.class_path import ClassPath, TypePath
 from cvp.types.colors import RGBA
 
 
@@ -118,8 +118,8 @@ class DtypeRegistry:
 
     def add_new(
         self,
-        base: type,
-        name: Optional[str] = None,
+        base: Union[type, ClassPath],
+        name: Optional[DtypeName] = None,
         path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
@@ -131,7 +131,7 @@ class DtypeRegistry:
 
     def register(
         self,
-        name: Optional[str] = None,
+        name: Optional[DtypeName] = None,
         path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,

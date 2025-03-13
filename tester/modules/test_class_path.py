@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy, deepcopy
 from pathlib import Path
 from typing import Any
 from unittest import TestCase, main
@@ -34,13 +35,13 @@ class ClassPathTestCase(TestCase):
         self.assertIsInstance(path0, Path)
         self.assertIsInstance(path1, Path)
 
-    def test_serialize_deserialize_path(self):
-        cpath0 = ClassPath(Path)
-        cpath1 = deserialize(serialize(cpath0), ClassPath)
+    def test_none_value(self):
+        cpath0 = ClassPath(None)
+        cpath1 = ClassPath(type(None))
         self.assertEqual(cpath0, cpath1)
 
-    def test_serialize_deserialize_bytes(self):
-        cpath0 = ClassPath(bytes)
+    def test_serialize_deserialize_none(self):
+        cpath0 = ClassPath(type(None))
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
@@ -59,8 +60,13 @@ class ClassPathTestCase(TestCase):
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
-    def test_serialize_deserialize_any(self):
-        cpath0 = ClassPath(Any)
+    def test_serialize_deserialize_bytes(self):
+        cpath0 = ClassPath(bytes)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_str(self):
+        cpath0 = ClassPath(str)
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
@@ -74,10 +80,23 @@ class ClassPathTestCase(TestCase):
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
 
-    def test_serialize_deserialize_none(self):
-        cpath0 = ClassPath(type(None))
+    def test_serialize_deserialize_any(self):
+        cpath0 = ClassPath(Any)
         cpath1 = deserialize(serialize(cpath0), ClassPath)
         self.assertEqual(cpath0, cpath1)
+
+    def test_serialize_deserialize_path(self):
+        cpath0 = ClassPath(Path)
+        cpath1 = deserialize(serialize(cpath0), ClassPath)
+        self.assertEqual(cpath0, cpath1)
+
+    def test_copy(self):
+        cpath0 = ClassPath(Path)
+        self.assertEqual(copy(cpath0), cpath0)
+
+    def test_deepcopy(self):
+        cpath0 = ClassPath(Path)
+        self.assertEqual(deepcopy(cpath0), cpath0)
 
 
 if __name__ == "__main__":

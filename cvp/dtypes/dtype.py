@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, NewType, Optional, Tuple, Union
 
 from type_serialize import Serializable, deserialize, serialize
 
@@ -13,9 +13,11 @@ from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
 
+DtypeName = NewType("DtypeName", str)
 
-def default_dtype_name_with_type(base: type) -> str:
-    return base.__name__
+
+def default_dtype_name_with_type(base: type) -> DtypeName:
+    return DtypeName(base.__name__)
 
 
 def default_dtype_path_with_type(base: type, name: Optional[str] = None) -> TypePath:
@@ -45,8 +47,8 @@ class Dtype(Serializable):
 
     def __init__(
         self,
-        base: type,
-        name: Optional[str] = None,
+        base: Union[type, ClassPath],
+        name: Optional[DtypeName] = None,
         path: Optional[TypePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
@@ -54,10 +56,13 @@ class Dtype(Serializable):
         *,
         hidden=False,
     ):
-        if not isinstance(base, type):
+        if isinstance(base, ClassPath):
+            self.base = base
+        elif isinstance(base, type):
+            self.base = ClassPath(base)  # type: ignore[var-annotated]
+        else:
             raise TypeError(f"Only types can be registered: {base}")
 
-        self.base = ClassPath(base)  # type: ignore[var-annotated]
         self.name = name if name else default_dtype_name_with_type(base)
         self.path = path if path else default_dtype_path_with_type(base, self.name)
         self.docs = docs if docs else default_dtype_docs_with_type(base)
@@ -71,7 +76,6 @@ class Dtype(Serializable):
             raise ValueError("The 'path' attribute is required")
 
     def __str__(self) -> str:
-        """In `cvp.flow` module, this return value is used as a key value."""
         return self.name
 
     def __hash__(self) -> int:
@@ -132,12 +136,12 @@ class Dtype(Serializable):
     def __serialize__(self) -> Any:
         return {
             str(self._Keys.base): serialize(self.base),
-            str(self._Keys.name_): self.name,
-            str(self._Keys.path): self.path,
-            str(self._Keys.docs): self.docs,
-            str(self._Keys.icon): self.icon,
+            str(self._Keys.name_): str(self.name),
+            str(self._Keys.path): str(self.path),
+            str(self._Keys.docs): str(self.docs),
+            str(self._Keys.icon): str(self.icon),
             str(self._Keys.color): list(self.color),
-            str(self._Keys.hidden): self.hidden,
+            str(self._Keys.hidden): bool(self.hidden),
         }
 
     @override
@@ -145,26 +149,30 @@ class Dtype(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.base = deserialize(data.get(self._Keys.base), ClassPath)
-        self.name = str(data.get(self._Keys.name_, str()))
+        base = data.get(self._Keys.base)
+        if not base:
+            raise ValueError("Undefined base value")
+
+        self.base = deserialize(base, ClassPath)
+        self.name = DtypeName(data.get(self._Keys.name_, str()))
         self.path = TypePath(data.get(self._Keys.path, str()))
         self.docs = str(data.get(self._Keys.docs, str()))
         self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
-        self.hidden = data.get(self._Keys.hidden, False)
+        self.hidden = bool(data.get(self._Keys.hidden, False))
 
         assert isinstance(self.base, ClassPath)
-        assert isinstance(self.name, str)
-        assert isinstance(self.path, str)
+        assert isinstance(self.name, str)  # DtypeName is str
+        assert isinstance(self.path, str)  # TypePath is str
         assert isinstance(self.docs, str)
-        assert isinstance(self.icon, str)
+        assert isinstance(self.icon, str)  # IconCode is str
         assert isinstance(self.color, tuple)
         assert len(self.color) == 4
         assert all(isinstance(c, float) for c in self.color)
         assert isinstance(self.hidden, bool)
 
     @property
-    def type(self):
+    def type(self) -> type:
         return self.base.type
 
     @property
