@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from abc import ABC, abstractmethod
 from inspect import signature
 from typing import Any, Callable, Iterable, List, NewType, Optional
 
 from cvp.fonts.types import IconCode
+from cvp.nodes.interface import NodeInterface
 from cvp.nodes.record import NodeRecord
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
@@ -14,16 +14,6 @@ from cvp.variables import FLOW_PATH_SEPARATOR
 
 NodeName = NewType("NodeName", str)
 NodePath = NewType("NodePath", str)
-
-
-class NodeInterface(ABC):
-    @abstractmethod
-    def run(self, record: NodeRecord) -> Any:
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_render(self, record: NodeRecord) -> None:
-        raise NotImplementedError
 
 
 class Node(NodeInterface):
