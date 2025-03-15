@@ -25,9 +25,6 @@ class Catalog(WidgetInterface):
 
         if imgui.collapsing_header("Nodes")[0]:
             for node in self._context.fm.nodes.values():
-                if node.hidden:
-                    continue
-
                 imgui.selectable(node.path)
                 with imgui.begin_drag_drop_source() as drag_drop_src:
                     if drag_drop_src.dragging:

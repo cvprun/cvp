@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import deepcopy
 from inspect import Parameter
 from typing import (
     Annotated,
@@ -52,18 +53,18 @@ class Pin:
         if not name:
             raise ValueError("The 'name' argument is required")
 
-        self._dtype = dtype if isinstance(dtype, Dtype) else Dtype(dtype)
-        self._name = name
-        self._action = action
-        self._stream = stream
-        self._kind = kind
+        self.__dtype = dtype if isinstance(dtype, Dtype) else Dtype(dtype)
+        self.__name = name
+        self.__action = action
+        self.__stream = stream
+        self.__kind = kind
 
-        self._default = default
-        self._docs = docs
-        self._wires = tuple(wires if wires else ())
+        self.__default = default
+        self.__docs = docs
+        self.__wires = tuple(wires if wires else ())
 
-        self._required = required
-        self._hidden = hidden
+        self.__required = required
+        self.__hidden = hidden
 
     @classmethod
     def from_parameter(cls, parameter: Parameter):
@@ -118,67 +119,70 @@ class Pin:
 
     @property
     def name(self) -> PinName:
-        return self._name
+        return self.__name
 
     @property
     def dtype(self) -> Dtype:
-        return self._dtype
+        return self.__dtype
 
     @property
     def action(self) -> Action:
-        return self._action
+        return self.__action
 
     @property
     def stream(self) -> Stream:
-        return self._stream
+        return self.__stream
 
     @property
     def kind(self) -> PinKind:
-        return self._kind
+        return self.__kind
 
     @property
     def required(self) -> bool:
-        return self._required
+        return self.__required
 
     @property
     def hidden(self) -> bool:
-        return self._hidden
+        return self.__hidden
 
     @property
     def default(self) -> Any:
-        return self._default
+        return self.__default
 
     @property
     def has_default(self) -> bool:
-        return self._default is not NoDefault
+        return self.__default is not NoDefault
+
+    def deepcopy_default(self):
+        return deepcopy(self.default) if self.has_default else None
 
     @property
     def docs(self) -> str:
-        return self._docs
+        return self.__docs
 
     @property
     def wires(self) -> Sequence[WireKey]:
-        return self._wires
+        return self.__wires
 
     @property
     def type(self):
-        return self._dtype.type
+        return self.__dtype.type
 
     @property
     def path(self):
-        return self._dtype.path
+        return self.__dtype.path
 
     @property
     def type_docs(self):
-        return self._dtype.docs
+        return self.__dtype.docs
 
     @property
     def module_path(self) -> str:
-        return self._dtype.module_path
+        return self.__dtype.module_path
 
     @property
     def class_name(self) -> str:
-        return self._dtype.class_name
+        return self.__dtype.class_name
 
     @property
     def is_data_action(self):

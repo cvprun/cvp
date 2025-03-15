@@ -4,14 +4,12 @@ from logging import DEBUG, getLogger
 from typing import Optional
 
 from cvp.dtypes.dtype import Dtype
-from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin, PinName
 from cvp.pins.special import NextPin, PrevPin
-from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
@@ -42,8 +40,6 @@ class LoggingNode(Node):
             name=NodeName("Logging"),
             func=None,
             docs="Logs a message with integer level level on this logger",
-            icon=PLAY,
-            color=GREEN_RGBA,
             pins=(self._prev, self._next, self._name, self._level, self._msg),
             tags=("logging",),
         )

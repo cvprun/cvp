@@ -2,13 +2,10 @@
 
 from typing import Callable, Dict, Iterable, Optional, Union
 
-from cvp.fonts.types import IconCode
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNode
 from cvp.nodes.defaults.essential.setter import SetterNode
 from cvp.nodes.node import Node, NodeName, NodePath
-from cvp.pins.pin import Pin
-from cvp.types.colors import RGBA
 
 
 class NodeRegistry:
@@ -85,12 +82,6 @@ class NodeRegistry:
         path: Optional[NodePath] = None,
         name: Optional[NodeName] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[Pin]] = None,
-        exec_outputs: Optional[Iterable[Pin]] = None,
-        data_inputs: Optional[Iterable[Pin]] = None,
-        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
     ) -> Node:
         node = Node.from_callable(
@@ -98,12 +89,6 @@ class NodeRegistry:
             path=path,
             name=name,
             docs=docs,
-            icon=icon,
-            color=color,
-            exec_inputs=exec_inputs,
-            exec_outputs=exec_outputs,
-            data_inputs=data_inputs,
-            data_outputs=data_outputs,
             tags=tags,
         )
         self.add(node)
@@ -114,12 +99,6 @@ class NodeRegistry:
         name: Optional[NodeName] = None,
         path: Optional[NodePath] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[Pin]] = None,
-        exec_outputs: Optional[Iterable[Pin]] = None,
-        data_inputs: Optional[Iterable[Pin]] = None,
-        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
     ):
         def _decorator(func: Callable):
@@ -128,12 +107,6 @@ class NodeRegistry:
                 path=path,
                 name=name,
                 docs=docs,
-                icon=icon,
-                color=color,
-                exec_inputs=exec_inputs,
-                exec_outputs=exec_outputs,
-                data_inputs=data_inputs,
-                data_outputs=data_outputs,
                 tags=tags,
             )
             return func

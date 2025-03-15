@@ -88,9 +88,9 @@ class FlowPin(Serializable):
             docs=template.docs,
             required=template.required,
             hidden=template.hidden,
-            wires=deepcopy(template.wires),
+            wires=template.wires,
             kind=template.kind,
-            default=deepcopy(template.default) if template.has_default else None,
+            default=template.deepcopy_default(),
         )
 
     def __str__(self) -> str:

@@ -114,13 +114,11 @@ class FlowNode(Serializable):
             name=template.name,
             path=template.path,
             docs=template.docs,
-            icon=template.icon,
             lock=False,
             breakpoint=False,
             hidden=False,
-            color=template.color,
             pins=FlowPins.from_template(template.pins),
-            tags=deepcopy(template.tags),
+            tags=template.tags,
         )
 
     def __str__(self) -> str:

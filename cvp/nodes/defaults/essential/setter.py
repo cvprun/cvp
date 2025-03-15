@@ -34,7 +34,6 @@ class SetterNode(Node):
             docs="Set a variable to a specific value",
             pins=(self._prev, self._next, self._key, self._value),
             tags=("value", "variable", "setter", "mutator"),
-            hidden=True,
         )
 
     @property

@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from inspect import signature
-from typing import Any, Callable, Iterable, List, NewType, Optional
+from typing import Any, Callable, Iterable, List, NewType, Optional, Sequence
 
-from cvp.fonts.types import IconCode
 from cvp.nodes.interface import NodeInterface
 from cvp.nodes.record import NodeRecord
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
-from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
 
@@ -23,32 +21,26 @@ class Node(NodeInterface):
         name: Optional[NodeName] = None,
         func: Optional[Callable] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
         pins: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
-        hidden=False,
     ):
         if not path:
             raise ValueError("The 'path' argument is required")
 
         if name:
-            self.name = name
+            self.__name = name
         elif func is not None:
-            self.name = NodeName(type(func).__name__)
+            self.__name = NodeName(type(func).__name__)
         elif type(self) is not Node:
-            self.name = NodeName(type(self).__name__)
+            self.__name = NodeName(type(self).__name__)
         else:
-            self.name = NodeName(path)
+            self.__name = NodeName(path)
 
-        self.path = path
-        self.func = func
-        self.docs = docs if docs else str()
-        self.icon = icon if icon else IconCode(str())
-        self.color = color if color else WHITE_RGBA
-        self.pins = list(pins if pins else ())
-        self.tags = list(tags if tags else ())
-        self.hidden = hidden
+        self.__path = path
+        self.__func = func
+        self.__docs = docs if docs else str()
+        self.__pins = tuple(pins if pins else ())
+        self.__tags = tuple(tags if tags else ())
 
     @classmethod
     def from_callable(
@@ -57,119 +49,101 @@ class Node(NodeInterface):
         path: Optional[NodePath] = None,
         name: Optional[NodeName] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[Pin]] = None,
-        exec_outputs: Optional[Iterable[Pin]] = None,
-        data_inputs: Optional[Iterable[Pin]] = None,
-        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
-        hidden=False,
     ):
         if not callable(func):
             raise TypeError(f"Only callables can be registered: {func}")
 
-        base_name = name if name else NodeName(func.__name__)
-        base_docs = docs if docs else func.__doc__
-        base_icon = IconCode(str())
-        base_color = color if color else WHITE_RGBA
-        base_tags = list(tags if tags else list())
-        base_hidden = hidden
+        param_name = name if name else NodeName(func.__name__)
+        param_docs = docs if docs else (func.__doc__ if func.__doc__ else str())
 
         if path:
-            base_path = path
+            param_path = path
         elif hasattr(func, "__module__"):
-            base_path = NodePath(func.__module__ + FLOW_PATH_SEPARATOR + base_name)
+            param_path = NodePath(func.__module__ + FLOW_PATH_SEPARATOR + param_name)
         else:
             raise ValueError("Could not find attribute '__module__' in callable")
 
-        if not base_name:
+        if not param_name:
             raise ValueError("The 'name' attribute is required")
-        if not base_path:
+        if not param_path:
             raise ValueError("The 'path' attribute is required")
 
-        base_pins = list()
-
-        if exec_inputs:
-            for pin in exec_inputs:
-                if not pin.is_exec_inputs:
-                    raise ValueError("Pin must be exec inputs")
-                base_pins.append(pin)
-        else:
-            base_pins.append(PrevPin())
-
-        if exec_outputs:
-            for pin in exec_outputs:
-                if not pin.is_exec_outputs:
-                    raise ValueError("Pin must be exec outputs")
-                base_pins.append(pin)
-        else:
-            base_pins.append(NextPin())
+        param_pins: List[Pin] = list()
+        param_pins.append(PrevPin())
+        param_pins.append(NextPin())
 
         sig = signature(func)
+        param_pins.append(ReturnPin.from_return_annotation(sig.return_annotation))
 
-        if data_inputs:
-            for pin in data_inputs:
-                if not pin.is_data_inputs:
-                    raise ValueError("Pin must be data inputs")
-                base_pins.append(pin)
-        else:
-            for param in sig.parameters.values():
-                param_pin = Pin.from_parameter(param)
-                base_pins.append(param_pin)
-
-        if data_outputs:
-            for pin in data_outputs:
-                if not pin.is_data_outputs:
-                    raise ValueError("Pin must be data outputs")
-                base_pins.append(pin)
-        else:
-            return_pin = ReturnPin.from_return_annotation(sig.return_annotation)
-            base_pins.append(return_pin)
+        for param in sig.parameters.values():
+            param_pin = Pin.from_parameter(param)
+            param_pins.append(param_pin)
 
         return cls(
-            path=base_path,
-            name=base_name,
+            path=param_path,
+            name=param_name,
             func=func,
-            docs=base_docs,
-            icon=base_icon,
-            color=base_color,
-            pins=base_pins,
-            tags=base_tags,
-            hidden=base_hidden,
+            docs=param_docs,
+            pins=param_pins,
+            tags=tags,
         )
 
     @property
+    def name(self) -> NodeName:
+        return self.__name
+
+    @property
+    def path(self) -> NodePath:
+        return self.__path
+
+    @property
+    def func(self) -> Optional[Callable]:
+        return self.__func
+
+    @property
+    def docs(self) -> str:
+        return self.__docs
+
+    @property
+    def pins(self) -> Sequence[Pin]:
+        return self.__pins
+
+    @property
+    def tags(self) -> Sequence[str]:
+        return self.__tags
+
+    @property
     def execs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_exec_action, self.pins))
+        return list(filter(lambda p: p.is_exec_action, self.__pins))
 
     @property
     def datas(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_data_action, self.pins))
+        return list(filter(lambda p: p.is_data_action, self.__pins))
 
     @property
     def inputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_input_stream, self.pins))
+        return list(filter(lambda p: p.is_input_stream, self.__pins))
 
     @property
     def outputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_output_stream, self.pins))
+        return list(filter(lambda p: p.is_output_stream, self.__pins))
 
     @property
     def exec_inputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_exec_inputs, self.pins))
+        return list(filter(lambda p: p.is_exec_inputs, self.__pins))
 
     @property
     def exec_outputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_exec_outputs, self.pins))
+        return list(filter(lambda p: p.is_exec_outputs, self.__pins))
 
     @property
     def data_inputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_data_inputs, self.pins))
+        return list(filter(lambda p: p.is_data_inputs, self.__pins))
 
     @property
     def data_outputs(self) -> List[Pin]:
-        return list(filter(lambda p: p.is_data_outputs, self.pins))
+        return list(filter(lambda p: p.is_data_outputs, self.__pins))
 
     @property
     def has_exec_input(self) -> bool:

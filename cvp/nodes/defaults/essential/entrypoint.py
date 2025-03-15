@@ -2,12 +2,10 @@
 
 from typing import Optional
 
-from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.nodes.record import NodeRecord
 from cvp.pins.execs import ExecOutputPin
 from cvp.pins.pin import Pin, PinName
-from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
@@ -22,8 +20,6 @@ class EntrypointNode(Node):
             name=NodeName("Entrypoint"),
             func=None,
             docs="Indicates the starting point of the graph",
-            icon=PLAY,
-            color=GREEN_RGBA,
             pins=(self._start,),
             tags=("entrypoint", "main"),
         )
