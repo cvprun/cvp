@@ -5,7 +5,6 @@ from inspect import signature
 from typing import Any, Callable, Iterable, List, NewType, Optional
 
 from cvp.fonts.types import IconCode
-from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
 from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
 from cvp.pins.template import PinTemplate
@@ -82,7 +81,7 @@ class NodeTemplate(NodeInterface):
 
         base_name = name if name else NodeName(func.__name__)
         base_docs = docs if docs else func.__doc__
-        base_icon = icon if icon else NODE_ICON_MAPPING[base_name[0]]
+        base_icon = IconCode(str())
         base_color = color if color else WHITE_RGBA
         base_tags = list(tags if tags else list())
         base_hidden = hidden
