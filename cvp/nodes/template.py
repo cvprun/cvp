@@ -4,8 +4,6 @@ from abc import ABC, abstractmethod
 from inspect import signature
 from typing import Any, Callable, Iterable, List, NewType, Optional
 
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.types import IconCode
 from cvp.nodes.icons import NODE_ICON_MAPPING
 from cvp.nodes.record import NodeRecord
@@ -78,8 +76,6 @@ class NodeTemplate(NodeInterface):
         data_outputs: Optional[Iterable[PinTemplate]] = None,
         tags: Optional[Iterable[str]] = None,
         hidden=False,
-        *,
-        dtype_registry: Optional[DtypeRegistry] = None,
     ):
         if not callable(func):
             raise TypeError(f"Only callables can be registered: {func}")
@@ -121,10 +117,6 @@ class NodeTemplate(NodeInterface):
         else:
             base_pins.append(NextPinTemplate())
 
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
-
-        assert dtype_registry is not None
         sig = signature(func)
 
         if data_inputs:
@@ -134,10 +126,7 @@ class NodeTemplate(NodeInterface):
                 base_pins.append(pin)
         else:
             for param in sig.parameters.values():
-                param_pin = PinTemplate.from_parameter(
-                    parameter=param,
-                    dtype_registry=dtype_registry,
-                )
+                param_pin = PinTemplate.from_parameter(param)
                 base_pins.append(param_pin)
 
         if data_outputs:
@@ -146,10 +135,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be data outputs")
                 base_pins.append(pin)
         else:
-            return_pin = ReturnPinTemplate.from_return_annotation(
-                sig.return_annotation,
-                dtype_registry=dtype_registry,
-            )
+            return_pin = ReturnPinTemplate.from_return_annotation(sig.return_annotation)
             base_pins.append(return_pin)
 
         return cls(

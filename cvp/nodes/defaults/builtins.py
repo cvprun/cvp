@@ -2,10 +2,8 @@
 # https://docs.python.org/3/library/functions.html
 
 from functools import lru_cache
-from typing import Callable, Optional, Sequence
+from typing import Callable, Sequence
 
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.template import NodeTemplate
 
 
@@ -42,14 +40,5 @@ def get_builtin_functions() -> Sequence[Callable]:
     )
 
 
-def get_builtin_nodes(
-    dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[NodeTemplate]:
-    if dtype_registry is None:
-        dtype_registry = global_dtype_registry()
-    assert dtype_registry is not None
-    result = list()
-    for func in get_builtin_functions():
-        node = NodeTemplate.from_callable(func, dtype_registry=dtype_registry)
-        result.append(node)
-    return tuple(result)
+def get_builtin_nodes() -> Sequence[NodeTemplate]:
+    return tuple(NodeTemplate.from_callable(func) for func in get_builtin_functions())

@@ -3,6 +3,7 @@
 from typing import Annotated, Optional, Union
 from unittest import TestCase, main
 
+from cvp.dtypes.dtype import Dtype
 from cvp.inspect.parameter import NoDefault
 from cvp.nodes.registry.globals import GlobalNodeRegistry, global_node_registry
 from cvp.nodes.registry.registry import NodeRegistry
@@ -58,8 +59,6 @@ class RegistryTestCase(TestCase):
         self.assertEqual(_add, add_node.func)
         self.assertEqual(30, add_node(10, 20))
 
-        any_dtype = registry.dtype_registry.any_dtype
-
         self.assertEqual(1, len(add_node.exec_inputs))
         self.assertEqual(1, len(add_node.exec_outputs))
         self.assertEqual(2, len(add_node.data_inputs))
@@ -68,14 +67,14 @@ class RegistryTestCase(TestCase):
         self.assertIsInstance(add_node.exec_outputs[0], NextPinTemplate)
         self.assertEqual("a", add_node.data_inputs[0].name)
         self.assertEqual("b", add_node.data_inputs[1].name)
-        self.assertEqual(any_dtype, add_node.data_inputs[0].dtype)
-        self.assertEqual(any_dtype, add_node.data_inputs[1].dtype)
+        self.assertEqual(Dtype.any(), add_node.data_inputs[0].dtype)
+        self.assertEqual(Dtype.any(), add_node.data_inputs[1].dtype)
         self.assertTrue(add_node.data_inputs[0].required)
         self.assertTrue(add_node.data_inputs[1].required)
         self.assertEqual(NoDefault, add_node.data_inputs[0].default)
         self.assertEqual(NoDefault, add_node.data_inputs[1].default)
         self.assertIsInstance(add_node.data_outputs[0], ReturnPinTemplate)
-        self.assertEqual(any_dtype, add_node.data_outputs[0].dtype)
+        self.assertEqual(Dtype.any(), add_node.data_outputs[0].dtype)
 
     def test_register_node_custom_annotation_int(self):
         registry = NodeRegistry(no_defaults=True)
@@ -87,10 +86,9 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry))
         add_node = next(iter(registry.values()))
 
-        int_dtype = registry.dtype_registry.get(int)
-        self.assertEqual(int_dtype, add_node.data_inputs[0].dtype)
-        self.assertEqual(int_dtype, add_node.data_inputs[1].dtype)
-        self.assertEqual(int_dtype, add_node.data_outputs[0].dtype)
+        self.assertEqual(Dtype(int), add_node.data_inputs[0].dtype)
+        self.assertEqual(Dtype(int), add_node.data_inputs[1].dtype)
+        self.assertEqual(Dtype(int), add_node.data_outputs[0].dtype)
 
     def test_register_node_custom_annotation_union(self):
         registry = NodeRegistry(no_defaults=True)
@@ -140,9 +138,8 @@ class RegistryTestCase(TestCase):
 
         pow_node = next(iter(registry.values()))
 
-        int_dtype = registry.dtype_registry.get(int)
-        self.assertEqual(int_dtype, pow_node.data_inputs[0].dtype)
-        self.assertEqual(int_dtype, pow_node.data_outputs[0].dtype)
+        self.assertEqual(Dtype(int), pow_node.data_inputs[0].dtype)
+        self.assertEqual(Dtype(int), pow_node.data_outputs[0].dtype)
 
 
 if __name__ == "__main__":

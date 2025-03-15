@@ -15,4 +15,4 @@ def get_extra_types() -> Sequence[Type]:
 
 @lru_cache
 def get_extra_dtypes() -> Sequence[Dtype]:
-    return tuple(Dtype(cls, hidden=True) for cls in get_extra_types())
+    return tuple(Dtype(cls) for cls in get_extra_types())

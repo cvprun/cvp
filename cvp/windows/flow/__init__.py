@@ -6,6 +6,7 @@ import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy
+from cvp.dtypes.dtype import Dtype
 from cvp.fonts.glyphs.mdi import (
     BUG,
     DEBUG_STEP_INTO,
@@ -71,7 +72,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             negative_delta=True,
         )
 
-        self._drag_dtype = context.fm.dtype_registry.any_dtype
+        self._drag_dtype = Dtype.any()
         self._variable_key = str()
 
         self._menus = (

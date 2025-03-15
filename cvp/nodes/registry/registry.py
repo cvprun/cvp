@@ -2,8 +2,6 @@
 
 from typing import Callable, Dict, Iterable, Optional, Union
 
-from cvp.dtypes.registry.ref import DtypeRegistryRef
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.types import IconCode
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
@@ -16,27 +14,13 @@ from cvp.types.colors import RGBA
 class NodeRegistry:
     _nodes: Dict[str, NodeTemplate]
 
-    def __init__(
-        self,
-        dtype_registry: Optional[DtypeRegistry] = None,
-        *,
-        no_defaults=False,
-    ):
-        self._dtype_registry = DtypeRegistryRef(dtype_registry)
-
-        dtype_registry = self._dtype_registry.get_force()
-        assert dtype_registry is not None
-
+    def __init__(self, *, no_defaults=False):
         self._nodes = dict()
-        self._getter_node = GetterNodeTemplate(dtype_registry)
-        self._setter_node = SetterNodeTemplate(dtype_registry)
+        self._getter_node = GetterNodeTemplate()
+        self._setter_node = SetterNodeTemplate()
 
         if not no_defaults:
-            self._nodes.update(get_default_path2nodes(dtype_registry))
-
-    @property
-    def dtype_registry(self):
-        return self._dtype_registry.get_force()
+            self._nodes.update(get_default_path2nodes())
 
     @property
     def nodes(self):
@@ -121,7 +105,6 @@ class NodeRegistry:
             data_inputs=data_inputs,
             data_outputs=data_outputs,
             tags=tags,
-            dtype_registry=self.dtype_registry,
         )
         self.add(node)
         return node

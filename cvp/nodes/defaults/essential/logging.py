@@ -3,7 +3,7 @@
 from logging import DEBUG, getLogger
 from typing import Optional
 
-from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.dtypes.dtype import Dtype
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.record import NodeRecord
@@ -16,28 +16,27 @@ from cvp.types.override import override
 
 
 class LoggingNodeTemplate(NodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry):
+    def __init__(self):
         self._prev = PrevPinTemplate()
         self._next = NextPinTemplate()
         self._name = DataInputPinTemplate(
             name=PinName("name"),
-            dtype=dtype_registry.get(str),
+            dtype=Dtype(str),
             docs="Logger's name",
             default=CVP_FLOW_LOGGER_NAME,
         )
         self._level = DataInputPinTemplate(
             name=PinName("level"),
-            dtype=dtype_registry.get(int),
+            dtype=Dtype(int),
             docs="The threshold of this logger",
             default=DEBUG,
         )
         self._msg = DataInputPinTemplate(
             name=PinName("msg"),
-            dtype=dtype_registry.get(str),
+            dtype=Dtype(str),
             docs="The message format string",
             default=str(),
         )
-
         super().__init__(
             path=NodePath("cvp.essential.logging"),
             name=NodeName("Logging"),

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional
+from typing import Optional
 
-from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate, DataOutputPinTemplate
@@ -11,10 +11,10 @@ from cvp.types.override import override
 
 
 class GetterNodeTemplate(NodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry):
+    def __init__(self):
         self._key = DataInputPinTemplate(
             name=PinName("key"),
-            dtype=dtype_registry.get(str),
+            dtype=Dtype(str),
             docs="The key of the variable",
             required=True,
             hidden=True,
@@ -22,7 +22,7 @@ class GetterNodeTemplate(NodeTemplate):
         )
         self._value = DataOutputPinTemplate(
             name=PinName("value"),
-            dtype=dtype_registry.get(Any),
+            dtype=Dtype.any(),
             docs="The value of the variable",
         )
         super().__init__(

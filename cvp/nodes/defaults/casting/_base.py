@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional
+from typing import Optional
 
-from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
@@ -12,16 +12,16 @@ from cvp.types.override import override
 
 
 class CastingNodeTemplate(NodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry, cls: type):
+    def __init__(self, cls: type):
         self._prev = PrevPinTemplate()
         self._next = NextPinTemplate()
         self._value = DataInputPinTemplate(
             name=PinName("value"),
-            dtype=dtype_registry.get(Any),
+            dtype=Dtype.any(),
             docs="Source value",
             required=True,
         )
-        self._return = ReturnPinTemplate(dtype_registry.get(cls))
+        self._return = ReturnPinTemplate(Dtype(cls))
         super().__init__(
             path=NodePath(f"cvp.casting.{cls.__name__}"),
             name=NodeName(cls.__name__),

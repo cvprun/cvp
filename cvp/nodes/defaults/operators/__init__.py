@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Sequence
+from typing import List, Sequence
 
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.operators.arithmetic import get_arithmetic_nodes
 from cvp.nodes.defaults.operators.comparison import get_comparison_nodes
 from cvp.nodes.template import NodeTemplate
 
 
-def get_operators_nodes(
-    dtype_registry: Optional[DtypeRegistry] = None,
-) -> Sequence[NodeTemplate]:
-    if dtype_registry is None:
-        dtype_registry = global_dtype_registry()
-    assert dtype_registry is not None
+def get_operators_nodes() -> Sequence[NodeTemplate]:
     result: List[NodeTemplate] = list()
-    result.extend(get_arithmetic_nodes(dtype_registry))
-    result.extend(get_comparison_nodes(dtype_registry))
+    result.extend(get_arithmetic_nodes())
+    result.extend(get_comparison_nodes())
     return tuple(result)

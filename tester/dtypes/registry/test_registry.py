@@ -3,7 +3,7 @@
 from typing import Any
 from unittest import TestCase, main
 
-from cvp.dtypes.dtype import default_dtype_path_with_type
+from cvp.dtypes.dtype import generate_type_path
 from cvp.dtypes.registry.registry import DtypeRegistry
 
 
@@ -73,7 +73,7 @@ class RegistryTestCase(TestCase):
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 
-        test_path = default_dtype_path_with_type(_Custom)
+        test_path = generate_type_path(_Custom)
         self.assertEqual("tester.dtypes.registry.test_registry._Custom", test_path)
 
         self.assertEqual(_Custom, registry.get(_Custom).type)

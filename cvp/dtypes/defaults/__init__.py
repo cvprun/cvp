@@ -8,8 +8,7 @@ from cvp.dtypes.defaults.builtins import get_builtin_dtypes
 from cvp.dtypes.defaults.extras import get_extra_dtypes
 from cvp.dtypes.defaults.standards import get_standard_dtypes
 from cvp.dtypes.defaults.typing import get_typing_dtypes
-from cvp.dtypes.dtype import Dtype
-from cvp.modules.class_path import TypePath
+from cvp.dtypes.dtype import Dtype, TypePath
 
 TypeToDtypeMapping = MappingProxyType[Type, Dtype]
 PathToDtypeMapping = MappingProxyType[TypePath, Dtype]
@@ -27,7 +26,7 @@ def get_default_dtypes() -> Sequence[Dtype]:
 
 @lru_cache
 def get_default_type2dtypes() -> TypeToDtypeMapping:
-    return TypeToDtypeMapping({dt.base.type: dt for dt in get_default_dtypes()})
+    return TypeToDtypeMapping({dt.type: dt for dt in get_default_dtypes()})
 
 
 @lru_cache

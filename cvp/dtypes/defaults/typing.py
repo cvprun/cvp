@@ -12,7 +12,7 @@ def get_typing_any() -> Dtype:
     This is the default type for handling unknown types.
     """
     assert isinstance(Any, type)
-    return Dtype(Any, hidden=True)  # type: ignore[arg-type]
+    return Dtype(Any)  # type: ignore[arg-type]
 
 
 @lru_cache

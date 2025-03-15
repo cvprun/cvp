@@ -12,8 +12,6 @@ from typing import (
 )
 
 from cvp.dtypes.dtype import Dtype
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.pins.annotated import get_docs, get_name, get_wires
 from cvp.pins.datas import DataOutputPinTemplate
 from cvp.pins.execs import ExecInputPinTemplate, ExecOutputPinTemplate
@@ -93,16 +91,7 @@ class ReturnPinTemplate(DataOutputPinTemplate):
         )
 
     @classmethod
-    def from_return_annotation(
-        cls,
-        return_annotation: Any,
-        *,
-        dtype_registry: Optional[DtypeRegistry] = None,
-    ):
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
-        assert dtype_registry is not None
-
+    def from_return_annotation(cls, return_annotation: Any):
         return_origin = get_origin(return_annotation)
         if return_origin == Union:
             raise TypeError("Union return is not supported")
@@ -110,12 +99,12 @@ class ReturnPinTemplate(DataOutputPinTemplate):
         if return_origin == Annotated:
             return_args = get_args(return_annotation)
             assert 2 <= len(return_args)
-            return_dtype = dtype_registry.get(return_args[0])
+            return_dtype = Dtype(return_args[0])  # type: ignore[var-annotated]
             return_name = PinName(get_name(*return_args, default=RETURN_PIN_NAME))
             return_docs = get_docs(*return_args, default=RETURN_PIN_DOCS)
             return_wires = list(WireKey(w) for w in get_wires(*return_args))
         else:
-            return_dtype = dtype_registry.get(return_annotation)
+            return_dtype = Dtype(return_annotation)
             return_name = RETURN_PIN_NAME
             return_docs = RETURN_PIN_DOCS
             return_wires = list()

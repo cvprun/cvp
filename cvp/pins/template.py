@@ -14,10 +14,7 @@ from typing import (
 )
 
 from cvp.dtypes.dtype import Dtype
-from cvp.dtypes.registry.globals import global_dtype_registry
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.inspect.parameter import NoDefault, inspect_parameter_required
-from cvp.modules.class_path import ClassPath
 from cvp.pins.action import Action
 from cvp.pins.annotated import (
     get_action,
@@ -41,7 +38,7 @@ class PinTemplate:
     def __init__(
         self,
         name: PinName,
-        dtype: Union[None, Dtype, ClassPath, type],
+        dtype: Union[None, type, Dtype],
         action: Action,
         stream: Stream,
         kind: PinKind,
@@ -55,11 +52,9 @@ class PinTemplate:
             raise ValueError("The 'name' argument is required")
 
         if dtype is None:
-            self._dtype = Dtype(type(None))
+            self._dtype = Dtype.none()
         elif isinstance(dtype, Dtype):
             self._dtype = dtype
-        elif isinstance(dtype, ClassPath):
-            self._dtype = Dtype(dtype)
         elif isinstance(dtype, type):
             self._dtype = Dtype(dtype)
         else:
@@ -76,16 +71,7 @@ class PinTemplate:
         self._wires = tuple(wires if wires else ())
 
     @classmethod
-    def from_parameter(
-        cls,
-        parameter: Parameter,
-        *,
-        dtype_registry: Optional[DtypeRegistry] = None,
-    ):
-        if dtype_registry is None:
-            dtype_registry = global_dtype_registry()
-        assert dtype_registry is not None
-
+    def from_parameter(cls, parameter: Parameter):
         param_origin = get_origin(parameter.annotation)
         if param_origin == Union:
             raise TypeError("Union parameter is not supported")
@@ -96,7 +82,7 @@ class PinTemplate:
         if param_origin == Annotated:
             param_args = get_args(parameter.annotation)
             assert 2 <= len(param_args)
-            param_dtype = dtype_registry.get(param_args[0])
+            param_dtype = Dtype(param_args[0])  # type: ignore[var-annotated]
             param_name = PinName(get_name(*param_args, default=parameter.name))
             param_action = get_action(*param_args, default=Action.data)
             param_stream = get_stream(*param_args, default=Stream.input)
@@ -106,7 +92,7 @@ class PinTemplate:
             param_docs = get_docs(*param_args, default=None)
             param_wires = list(WireKey(w) for w in get_wires(*param_args))
         else:
-            param_dtype = dtype_registry.get(parameter.annotation)
+            param_dtype = Dtype(parameter.annotation)
             param_name = PinName(parameter.name)
             param_action = Action.data
             param_stream = Stream.input

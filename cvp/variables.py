@@ -29,6 +29,8 @@ CHECKSUM_DELIMITER: Final[str] = ":"
 
 NODOC: Final[str] = str()
 
+MODULE_PATH_SEPARATOR: Final[str] = "."
+
 CODEPOINT_RANGES_EXTENSION: Final[str] = ".ranges"
 CODEPOINT_GLYPHS_EXTENSION: Final[str] = ".glyphs"
 KEYRING_EXTENSION: Final[str] = ".cfg"

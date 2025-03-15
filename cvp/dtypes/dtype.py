@@ -1,115 +1,108 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from enum import StrEnum, auto, unique
-from typing import Any, Dict, NewType, Optional, Tuple, Union
+from importlib import import_module
+from typing import (
+    Any,
+    Dict,
+    Final,
+    Generic,
+    NewType,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 
-from type_serialize import Serializable, deserialize, serialize
+from type_serialize import Serializable
 
-from cvp.dtypes.icons import DTYPE_ICON_MAPPING
-from cvp.fonts.types import IconCode
-from cvp.modules.class_path import ClassPath, TypePath
-from cvp.types.colors import RGBA, WHITE_RGBA
+from cvp.inspect.parameter import NoDefault
 from cvp.types.override import override
-from cvp.variables import FLOW_PATH_SEPARATOR
+from cvp.variables import MODULE_PATH_SEPARATOR
 
-DtypeName = NewType("DtypeName", str)
+_T = TypeVar("_T")
+TypePath = NewType("TypePath", str)
 
-
-def default_dtype_name_with_type(base: type) -> DtypeName:
-    return DtypeName(base.__name__)
-
-
-def default_dtype_path_with_type(base: type, name: Optional[str] = None) -> TypePath:
-    path = base.__module__ + FLOW_PATH_SEPARATOR + (name if name else base.__name__)
-    return TypePath(path)
+NONE_TYPE_CLS: Final[type] = type(None)
+NONE_TYPE_PATH: Final[TypePath] = TypePath("builtins.NoneType")
+NONE_TYPE_CLS_PATH: Final[Tuple[type, TypePath]] = NONE_TYPE_CLS, NONE_TYPE_PATH
 
 
-def default_dtype_docs_with_type(base: type) -> str:
-    return base.__doc__ if base.__doc__ else str()
+def generate_type_path(cls: type) -> TypePath:
+    return TypePath(cls.__module__ + MODULE_PATH_SEPARATOR + cls.__name__)
 
 
-def default_dtype_icon_with_type(base: type, name: Optional[str] = None) -> IconCode:
-    return DTYPE_ICON_MAPPING[(name if name else base.__name__)[0]]
+def load_with_path(path: str) -> Tuple[type, TypePath]:
+    if path == NONE_TYPE_PATH:
+        return NONE_TYPE_CLS_PATH
+
+    module_path, class_name = path.rsplit(MODULE_PATH_SEPARATOR, 1)
+    module = import_module(module_path)
+    cls = getattr(module, class_name)
+    if not isinstance(cls, type):
+        raise TypeError(f"This is not a class type: '{path}'")
+    return cls, TypePath(path)
 
 
-class Dtype(Serializable):
+def load_with_cls(cls: type) -> Tuple[type, TypePath]:
+    if cls is NoDefault:
+        return Any, generate_type_path(Any)  # type: ignore[return-value,arg-type]
+    else:
+        return cls, generate_type_path(cls)
 
-    @unique
-    class _Keys(StrEnum):
-        base = auto()
-        name_ = "name"
-        path = auto()
-        docs = auto()
-        icon = auto()
-        color = auto()
-        hidden = auto()
 
-    def __init__(
-        self,
-        base: Union[None, ClassPath, type],
-        name: Optional[DtypeName] = None,
-        docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-        *,
-        hidden=False,
-    ):
-        if base is None:
-            self.base = ClassPath.none()
-        elif isinstance(base, ClassPath):
-            self.base = base
-        elif isinstance(base, type):
-            self.base = ClassPath(base)  # type: ignore[var-annotated]
-        else:
-            raise TypeError(f"Only types can be registered: {base}")
+def load(cls: Union[None, str, type]) -> Tuple[type, TypePath]:
+    if cls is None:
+        return NONE_TYPE_CLS_PATH
+    elif isinstance(cls, str):
+        return load_with_path(TypePath(cls))
+    else:
+        return load_with_cls(cls)
 
-        self.name = name if name else self.base.class_name
-        self.docs = docs if docs else default_dtype_docs_with_type(base)
-        self.icon = icon if icon else default_dtype_icon_with_type(base, self.name)
-        self.color = color if color else WHITE_RGBA
-        self.hidden = hidden
 
-        if not self.name:
-            raise ValueError("The 'name' attribute is required")
+class Dtype(Generic[_T], Serializable):
+    _type: Type[_T]
+    _path: TypePath
+
+    def __init__(self, cls: Union[None, str, type, Type[_T]]):
+        self._type, self._path = load(cls)
+        assert isinstance(self._type, type)
+        assert isinstance(self._path, str)
+
+    @classmethod
+    def none(cls):
+        return cls(None)
+
+    @classmethod
+    def any(cls):
+        return cls(Any)
 
     def __str__(self) -> str:
-        return self.name
+        return self._path
+
+    def __repr__(self) -> str:
+        return f"<{type(self).__name__} {self._path}>"
 
     def __hash__(self) -> int:
-        return hash(
-            (
-                self.__class__,
-                self.base,
-                self.name,
-                self.docs,
-                self.icon,
-                self.color,
-                self.hidden,
-            )
-        )
+        return hash((self.__class__, self._type, self._path))
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
             return False
-        return (
-            self.base == other.base
-            and self.name == other.name
-            and self.docs == other.docs
-            and self.icon == other.icon
-            and self.color == other.color
-            and self.hidden == other.hidden
-        )
+
+        if self._type is other._type:
+            assert self._path == other._path
+            return True
+        else:
+            assert self._path != other._path
+            return False
 
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.base = copy(self.base)
-        result.name = copy(self.name)
-        result.docs = copy(self.docs)
-        result.icon = copy(self.icon)
-        result.color = copy(self.color)
-        result.hidden = copy(self.hidden)
+        result._type = copy(self._type)
+        result._path = copy(self._path)
         return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
@@ -117,69 +110,48 @@ class Dtype(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.base = deepcopy(self.base, memo)
-        result.name = deepcopy(self.name, memo)
-        result.docs = deepcopy(self.docs, memo)
-        result.icon = deepcopy(self.icon, memo)
-        result.color = deepcopy(self.color, memo)
-        result.hidden = deepcopy(self.hidden, memo)
+        result._type = deepcopy(self._type, memo)
+        result._path = deepcopy(self._path, memo)
         memo[id(self)] = result
         return result
 
     @override
     def __serialize__(self) -> Any:
-        return {
-            str(self._Keys.base): serialize(self.base),
-            str(self._Keys.name_): str(self.name),
-            str(self._Keys.docs): str(self.docs),
-            str(self._Keys.icon): str(self.icon),
-            str(self._Keys.color): list(self.color),
-            str(self._Keys.hidden): bool(self.hidden),
-        }
+        return str(self._path)
 
     @override
     def __deserialize__(self, data: Any) -> None:
-        if not isinstance(data, dict):
+        if not isinstance(data, str):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
-
-        base = data.get(self._Keys.base)
-        if not base:
-            raise ValueError("Undefined base value")
-
-        self.base = deserialize(base, ClassPath)
-        self.name = DtypeName(data.get(self._Keys.name_, str()))
-        self.docs = str(data.get(self._Keys.docs, str()))
-        self.icon = IconCode(data.get(self._Keys.icon, str()))
-        self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
-        self.hidden = bool(data.get(self._Keys.hidden, False))
-
-        assert isinstance(self.base, ClassPath)
-        assert isinstance(self.name, str)  # DtypeName is str
-        assert isinstance(self.docs, str)
-        assert isinstance(self.icon, str)  # IconCode is str
-        assert isinstance(self.color, tuple)
-        assert len(self.color) == 4
-        assert all(isinstance(c, float) for c in self.color)
-        assert isinstance(self.hidden, bool)
+        self._type, self._path = load_with_path(data)
+        assert isinstance(self._type, type)
+        assert isinstance(self._path, str)
 
     @property
-    def type(self) -> type:
-        return self.base.type
+    def type(self) -> Type[_T]:
+        return self._type
 
     @property
     def path(self) -> TypePath:
-        return self.base.path
+        return self._path
+
+    @property
+    def docs(self) -> str:
+        return self._type.__doc__ if self._type.__doc__ else str()
 
     def split(self) -> Tuple[str, str]:
-        return self.base.split()
+        module_path, class_name = self._path.rsplit(MODULE_PATH_SEPARATOR, 1)
+        assert isinstance(module_path, str)
+        assert isinstance(class_name, str)
+        return module_path, class_name
 
     @property
     def module_path(self) -> str:
-        return self.base.module_path
+        return self.split()[0]
 
     @property
     def class_name(self) -> str:
-        return self.base.class_name
+        return self.split()[1]
 
-    def __call__(self, *args, **kwargs):
-        return self.base.__call__(*args, **kwargs)
+    def __call__(self, *args, **kwargs) -> _T:
+        return self._type(*args, **kwargs)

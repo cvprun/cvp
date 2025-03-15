@@ -2,14 +2,13 @@
 
 from typing import Any
 
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNodeTemplate
 from cvp.types.override import override
 
 
 class GreaterEqualNodeTemplate(ComparisonOperatorNodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry):
-        super().__init__(dtype_registry, "greater-equal")
+    def __init__(self):
+        super().__init__("greater-equal")
 
     @override
     def on_operator(self, first: Any, second: Any) -> bool:

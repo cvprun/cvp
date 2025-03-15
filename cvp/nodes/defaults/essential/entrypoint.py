@@ -2,7 +2,6 @@
 
 from typing import Optional
 
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
@@ -13,7 +12,7 @@ from cvp.types.override import override
 
 
 class EntrypointNodeTemplate(NodeTemplate):
-    def __init__(self, _: DtypeRegistry):
+    def __init__(self):
         self._start = ExecOutputPinTemplate(
             name=PinName("start"),
             docs="Entrypoint flow signal",

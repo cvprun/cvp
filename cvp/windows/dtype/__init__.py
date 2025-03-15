@@ -35,7 +35,7 @@ class DtypeManager(Manager[DtypeManagerConfig, Dtype]):
         imgui.text("Dtype information")
         imgui.separator()
 
-        input_text_disabled("Name", item.name)
+        input_text_disabled("Name", item.class_name)
         input_text_disabled("Path", item.path)
 
         # item.docs

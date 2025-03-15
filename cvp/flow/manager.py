@@ -35,7 +35,7 @@ class FlowManager:
 
     def __init__(self, home: HomeDir, *, refresh_graphs=False):
         self._dtype_registry = DtypeRegistry()
-        self._node_registry = NodeRegistry(self._dtype_registry)
+        self._node_registry = NodeRegistry()
 
         self._graphs = OrderedDict()
         self._runners = OrderedDict()
@@ -193,7 +193,7 @@ class FlowManager:
         dtype = deepcopy(variable.dtype)
         setter_node = self._node_registry.setter_node
         node = FlowNode.from_template(setter_node)
-        node.name = f"({dtype.type.__name__}) {key}"
+        node.name = f"({dtype.class_name}) {key}"
         node.set_default(setter_node.key_name, variable.name)
         node.set_dtype(setter_node.value_name, dtype)
         graph.nodes.insert(0, node)
@@ -208,7 +208,7 @@ class FlowManager:
         dtype = deepcopy(variable.dtype)
         getter_node = self._node_registry.getter_node
         node = FlowNode.from_template(getter_node)
-        node.name = f"({dtype.type.__name__}) {key}"
+        node.name = f"({dtype.class_name}) {key}"
         node.set_default(getter_node.key_name, variable.name)
         node.set_dtype(getter_node.value_name, dtype)
         graph.nodes.insert(0, node)

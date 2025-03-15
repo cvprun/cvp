@@ -30,20 +30,5 @@ def get_builtin_types() -> Sequence[Type]:
 
 
 @lru_cache
-def get_visible_builtin_types() -> Sequence[Type]:
-    return (
-        int,
-        float,
-        complex,
-        bool,
-        str,
-    )
-
-
-@lru_cache
 def get_builtin_dtypes() -> Sequence[Dtype]:
-    result = list()
-    for cls in get_builtin_types():
-        visible = cls in get_visible_builtin_types()
-        result.append(Dtype(cls, hidden=not visible))
-    return tuple(result)
+    return tuple(Dtype(cls) for cls in get_builtin_types())

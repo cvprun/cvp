@@ -938,8 +938,8 @@ class FlowGraph(Serializable):
             name=VariableName(name),
             dtype=dtype,
             docs=None,
-            value=dtype.base(),
-            initial=dtype.base(),
+            value=dtype(),
+            initial=dtype(),
         )  # type: ignore[var-annotated]
         self.variables.append(result)
         return result

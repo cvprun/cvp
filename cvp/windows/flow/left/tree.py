@@ -156,7 +156,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
         if variable.selected:
             flags |= imgui.TREE_NODE_SELECTED
 
-        label = f"({variable.dtype.name}) {variable.name}"
+        label = f"({variable.dtype.class_name}) {variable.name}"
         imgui.tree_node(label, flags)
 
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():

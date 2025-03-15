@@ -3,7 +3,7 @@
 from abc import abstractmethod
 from typing import Any, Optional
 
-from cvp.dtypes.registry.registry import DtypeRegistry
+from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPinTemplate
@@ -13,19 +13,19 @@ from cvp.types.override import override
 
 
 class ArithmeticOperatorNodeTemplate(NodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry, name: str):
+    def __init__(self, name: str):
         self._first = DataInputPinTemplate(
             name=PinName("first"),
-            dtype=dtype_registry.get(Any),
+            dtype=Dtype.any(),
             docs=f"The first value of the {name.lower()} operator",
         )
         self._second = DataInputPinTemplate(
             name=PinName("second"),
-            dtype=dtype_registry.get(Any),
+            dtype=Dtype.any(),
             docs=f"The second value of the {name.lower()} operator",
         )
         self._return = ReturnPinTemplate(
-            dtype=dtype_registry.get(Any),
+            dtype=Dtype.any(),
             docs=f"The result value of the {name.lower()} operator.",
         )
         super().__init__(

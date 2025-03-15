@@ -16,9 +16,6 @@ class Catalog(WidgetInterface):
     def on_process(self) -> None:
         if imgui.collapsing_header("Dtypes")[0]:
             for dtype in self._context.fm.dtypes.values():
-                if dtype.hidden:
-                    continue
-
                 imgui.selectable(dtype.path)
                 with imgui.begin_drag_drop_source() as drag_drop_src:
                     if drag_drop_src.dragging:

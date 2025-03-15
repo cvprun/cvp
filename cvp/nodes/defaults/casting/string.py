@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from cvp.dtypes.registry.registry import DtypeRegistry
 from cvp.nodes.defaults.casting._base import CastingNodeTemplate
 
 
 class StringNodeTemplate(CastingNodeTemplate):
-    def __init__(self, dtype_registry: DtypeRegistry):
-        super().__init__(dtype_registry, str)
+    def __init__(self):
+        super().__init__(str)

@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from inspect import Parameter
-from typing import Any, Dict, List, Optional, Type, Union, get_args, get_origin
+from typing import Any, Dict, List, Type, Union, get_args, get_origin
 
 from cvp.dtypes.defaults import DEFAULT_PATH_TO_DTYPES, DEFAULT_TYPE_TO_DTYPES
 from cvp.dtypes.defaults.typing import get_typing_any
-from cvp.dtypes.dtype import Dtype, DtypeName
-from cvp.fonts.types import IconCode
-from cvp.modules.class_path import ClassPath, TypePath
-from cvp.types.colors import RGBA
+from cvp.dtypes.dtype import Dtype, TypePath
 
 
 class DtypeRegistry:
@@ -116,27 +113,14 @@ class DtypeRegistry:
         self._path2dtypes[dtype.path] = dtype
         self._type2dtypes[dtype.type] = dtype
 
-    def add_new(
-        self,
-        base: Union[type, ClassPath],
-        name: Optional[DtypeName] = None,
-        docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-    ) -> Dtype:
-        result = Dtype(base, name, docs, icon, color)
+    def add_new(self, cls: type) -> Dtype:
+        result = Dtype(cls)  # type: ignore[var-annotated]
         self.add(result)
         return result
 
-    def register(
-        self,
-        name: Optional[DtypeName] = None,
-        docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
-        color: Optional[RGBA] = None,
-    ):
-        def _decorator(base: type):
-            self.add_new(base, name, docs, icon, color)
-            return base
+    def register(self):
+        def _decorator(cls: type):
+            self.add_new(cls)
+            return cls
 
         return _decorator
