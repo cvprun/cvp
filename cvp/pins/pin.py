@@ -77,24 +77,31 @@ class Pin:
         if param_origin == Annotated:
             param_args = get_args(parameter.annotation)
             assert 2 <= len(param_args)
-            param_dtype = Dtype(param_args[0])  # type: ignore[var-annotated]
-            param_name = PinName(get_name(*param_args, default=parameter.name))
-            param_action = get_action(*param_args, default=Action.data)
-            param_stream = get_stream(*param_args, default=Stream.input)
-            param_required = get_required(*param_args, default=param_required)
-            param_hidden = get_hidden(*param_args, default=False)
-            param_default = get_default(*param_args, default=parameter.default)
-            param_docs = get_docs(*param_args, default=None)
-            param_wires = list(WireKey(w) for w in get_wires(*param_args))
+
+            param_type = param_args[0]
+            if not isinstance(param_type, type):
+                raise TypeError("Parameters only accept instances of types")
+
+            param_dtype = Dtype(param_type)  # type: ignore[var-annotated]
+
+            annotated_args = param_args[1:]
+            param_name = PinName(get_name(*annotated_args, default=parameter.name))
+            param_action = get_action(*annotated_args, default=Action.data)
+            param_stream = get_stream(*annotated_args, default=Stream.input)
+            param_default = get_default(*annotated_args, default=parameter.default)
+            param_docs = get_docs(*annotated_args, default=None)
+            param_wires = list(WireKey(w) for w in get_wires(*annotated_args))
+            param_required = get_required(*annotated_args, default=param_required)
+            param_hidden = get_hidden(*annotated_args, default=False)
         else:
             param_dtype = Dtype(parameter.annotation)
             param_name = PinName(parameter.name)
             param_action = Action.data
             param_stream = Stream.input
-            param_hidden = False
             param_default = parameter.default
             param_docs = str()
             param_wires = list()
+            param_hidden = False
 
         return cls(
             name=param_name,
