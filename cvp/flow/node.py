@@ -11,7 +11,7 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
 from cvp.fonts.types import IconCode
-from cvp.nodes.template import NodeName, NodePath, NodeTemplate
+from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
@@ -108,7 +108,7 @@ class FlowNode(Serializable):
         self._hovering = hovering
 
     @classmethod
-    def from_template(cls, template: NodeTemplate):
+    def from_template(cls, template: Node):
         return cls(
             uuid=NodeKey(str(uuid4())),
             name=template.name,

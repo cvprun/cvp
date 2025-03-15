@@ -26,7 +26,7 @@ class NodeInterface(ABC):
         raise NotImplementedError
 
 
-class NodeTemplate(NodeInterface):
+class Node(NodeInterface):
     def __init__(
         self,
         path: NodePath,
@@ -46,7 +46,7 @@ class NodeTemplate(NodeInterface):
             self.name = name
         elif func is not None:
             self.name = NodeName(type(func).__name__)
-        elif type(self) is not NodeTemplate:
+        elif type(self) is not Node:
             self.name = NodeName(type(self).__name__)
         else:
             self.name = NodeName(path)

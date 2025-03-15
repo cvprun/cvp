@@ -4,20 +4,20 @@ from typing import Callable, Dict, Iterable, Optional, Union
 
 from cvp.fonts.types import IconCode
 from cvp.nodes.defaults import get_default_path2nodes
-from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
-from cvp.nodes.defaults.essential.setter import SetterNodeTemplate
-from cvp.nodes.template import NodeName, NodePath, NodeTemplate
+from cvp.nodes.defaults.essential.getter import GetterNode
+from cvp.nodes.defaults.essential.setter import SetterNode
+from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
 
 
 class NodeRegistry:
-    _nodes: Dict[str, NodeTemplate]
+    _nodes: Dict[str, Node]
 
     def __init__(self, *, no_defaults=False):
         self._nodes = dict()
-        self._getter_node = GetterNodeTemplate()
-        self._setter_node = SetterNodeTemplate()
+        self._getter_node = GetterNode()
+        self._setter_node = SetterNode()
 
         if not no_defaults:
             self._nodes.update(get_default_path2nodes())
@@ -49,16 +49,16 @@ class NodeRegistry:
     def update(self, other: "NodeRegistry") -> None:
         self._nodes.update(other._nodes)
 
-    def has(self, path: Union[str, NodeTemplate]) -> bool:
-        if isinstance(path, NodeTemplate):
+    def has(self, path: Union[str, Node]) -> bool:
+        if isinstance(path, Node):
             return path.path in self._nodes
         elif isinstance(path, str):
             return path in self._nodes
         else:
             raise TypeError(f"Unsupported path type: {type(path).__name__}")
 
-    def get(self, path: Union[str, NodeTemplate]) -> NodeTemplate:
-        if isinstance(path, NodeTemplate):
+    def get(self, path: Union[str, Node]) -> Node:
+        if isinstance(path, Node):
             return self._nodes[path.path]
         elif isinstance(path, str):
             return self._nodes[path]
@@ -68,13 +68,13 @@ class NodeRegistry:
     def __len__(self) -> int:
         return len(self._nodes)
 
-    def __contains__(self, path: Union[str, NodeTemplate]) -> bool:
+    def __contains__(self, path: Union[str, Node]) -> bool:
         return self.has(path)
 
-    def __getitem__(self, path: Union[str, NodeTemplate]) -> NodeTemplate:
+    def __getitem__(self, path: Union[str, Node]) -> Node:
         return self.get(path)
 
-    def add(self, node: NodeTemplate) -> None:
+    def add(self, node: Node) -> None:
         if node.path in self._nodes:
             raise KeyError(f"Duplicate node path: {node.path}")
         self._nodes[node.path] = node
@@ -92,8 +92,8 @@ class NodeRegistry:
         data_inputs: Optional[Iterable[Pin]] = None,
         data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
-    ) -> NodeTemplate:
-        node = NodeTemplate.from_callable(
+    ) -> Node:
+        node = Node.from_callable(
             func=func,
             path=path,
             name=name,

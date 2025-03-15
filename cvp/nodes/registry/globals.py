@@ -4,8 +4,8 @@ from functools import lru_cache
 from typing import Iterable, Optional
 
 from cvp.fonts.types import IconCode
+from cvp.nodes.node import NodeName, NodePath
 from cvp.nodes.registry.registry import NodeRegistry
-from cvp.nodes.template import NodeName, NodePath
 from cvp.patterns.singleton import singleton
 from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA

@@ -7,13 +7,13 @@ from cvp.nodes.defaults.builtins import get_builtin_nodes
 from cvp.nodes.defaults.casting import get_casting_nodes
 from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.defaults.operators import get_operators_nodes
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.node import Node
 
-NodeMapping = MappingProxyType[str, NodeTemplate]
+NodeMapping = MappingProxyType[str, Node]
 
 
-def get_default_nodes() -> Sequence[NodeTemplate]:
-    result: List[NodeTemplate] = list()
+def get_default_nodes() -> Sequence[Node]:
+    result: List[Node] = list()
     result.extend(get_builtin_nodes())
     result.extend(get_casting_nodes())
     result.extend(get_essential_nodes())

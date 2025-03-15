@@ -26,7 +26,7 @@ from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_var import style_disable_input
-from cvp.nodes.template import NodeName
+from cvp.nodes.node import NodeName
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs

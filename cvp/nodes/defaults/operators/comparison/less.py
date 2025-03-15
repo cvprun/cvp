@@ -2,11 +2,11 @@
 
 from typing import Any
 
-from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNodeTemplate
+from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNode
 from cvp.types.override import override
 
 
-class LessNodeTemplate(ComparisonOperatorNodeTemplate):
+class LessNode(ComparisonOperatorNode):
     def __init__(self):
         super().__init__("less-equal")
 

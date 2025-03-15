@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from cvp.nodes.defaults.casting._base import CastingNodeTemplate
+from cvp.nodes.defaults.casting._base import CastingNode
 
 
-class FloatingNodeTemplate(CastingNodeTemplate):
+class FloatingNode(CastingNode):
     def __init__(self):
         super().__init__(float)

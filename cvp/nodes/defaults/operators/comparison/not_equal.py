@@ -2,11 +2,11 @@
 
 from typing import Any
 
-from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNodeTemplate
+from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNode
 from cvp.types.override import override
 
 
-class NotEqualNodeTemplate(ComparisonOperatorNodeTemplate):
+class NotEqualNode(ComparisonOperatorNode):
     def __init__(self):
         super().__init__("not-equal")
 

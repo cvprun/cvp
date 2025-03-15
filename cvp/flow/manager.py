@@ -18,8 +18,8 @@ from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
+from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
-from cvp.nodes.template import NodeTemplate
 from cvp.resources.home import HomeDir
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
@@ -157,7 +157,7 @@ class FlowManager:
             raise ValueError("The 'uuid' of the flow graph does not exist")
         self._graphs[graph.key] = graph
 
-    def add_node(self, graph: FlowGraph, node: Union[str, NodeTemplate]) -> FlowNode:
+    def add_node(self, graph: FlowGraph, node: Union[str, Node]) -> FlowNode:
         node_template = self._node_registry[node]
         flow_node = FlowNode.from_template(node_template)
         graph.nodes.insert(0, flow_node)

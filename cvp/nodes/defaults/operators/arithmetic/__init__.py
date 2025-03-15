@@ -3,22 +3,22 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.operators.arithmetic.add import AddNodeTemplate
-from cvp.nodes.defaults.operators.arithmetic.divide import DivideNodeTemplate
-from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyNodeTemplate
-from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractNodeTemplate
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.defaults.operators.arithmetic.add import AddNode
+from cvp.nodes.defaults.operators.arithmetic.divide import DivideNode
+from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyNode
+from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractNode
+from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_arithmetic_types() -> Sequence[Type]:
     return (
-        AddNodeTemplate,
-        DivideNodeTemplate,
-        MultiplyNodeTemplate,
-        SubtractNodeTemplate,
+        AddNode,
+        DivideNode,
+        MultiplyNode,
+        SubtractNode,
     )
 
 
-def get_arithmetic_nodes() -> Sequence[NodeTemplate]:
+def get_arithmetic_nodes() -> Sequence[Node]:
     return tuple(cls() for cls in get_arithmetic_types())

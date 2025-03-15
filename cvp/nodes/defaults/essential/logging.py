@@ -6,8 +6,8 @@ from typing import Optional
 from cvp.dtypes.dtype import Dtype
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
+from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin, PinName
 from cvp.pins.special import NextPin, PrevPin
@@ -15,7 +15,7 @@ from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
-class LoggingNodeTemplate(NodeTemplate):
+class LoggingNode(Node):
     def __init__(self):
         self._prev = PrevPin()
         self._next = NextPin()

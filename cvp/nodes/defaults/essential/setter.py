@@ -3,15 +3,15 @@
 from typing import Optional
 
 from cvp.dtypes.dtype import Dtype
+from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin, PinName
 from cvp.pins.special import NextPin, PrevPin
 from cvp.types.override import override
 
 
-class SetterNodeTemplate(NodeTemplate):
+class SetterNode(Node):
     def __init__(self):
         self._prev = PrevPin()
         self._next = NextPin()

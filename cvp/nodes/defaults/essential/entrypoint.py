@@ -3,15 +3,15 @@
 from typing import Optional
 
 from cvp.fonts.glyphs.mdi import PLAY
+from cvp.nodes.node import Node, NodeName, NodePath
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.template import NodeName, NodePath, NodeTemplate
 from cvp.pins.execs import ExecOutputPin
 from cvp.pins.pin import Pin, PinName
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
-class EntrypointNodeTemplate(NodeTemplate):
+class EntrypointNode(Node):
     def __init__(self):
         self._start = ExecOutputPin(
             name=PinName("start"),

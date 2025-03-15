@@ -3,28 +3,26 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.operators.comparison.equal import EqualNodeTemplate
-from cvp.nodes.defaults.operators.comparison.greater import GreaterNodeTemplate
-from cvp.nodes.defaults.operators.comparison.greater_equal import (
-    GreaterEqualNodeTemplate,
-)
-from cvp.nodes.defaults.operators.comparison.less import LessNodeTemplate
-from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualNodeTemplate
-from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualNodeTemplate
-from cvp.nodes.template import NodeTemplate
+from cvp.nodes.defaults.operators.comparison.equal import EqualNode
+from cvp.nodes.defaults.operators.comparison.greater import GreaterNode
+from cvp.nodes.defaults.operators.comparison.greater_equal import GreaterEqualNode
+from cvp.nodes.defaults.operators.comparison.less import LessNode
+from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualNode
+from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualNode
+from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_comparison_types() -> Sequence[Type]:
     return (
-        EqualNodeTemplate,
-        GreaterNodeTemplate,
-        GreaterEqualNodeTemplate,
-        LessNodeTemplate,
-        LessEqualNodeTemplate,
-        NotEqualNodeTemplate,
+        EqualNode,
+        GreaterNode,
+        GreaterEqualNode,
+        LessNode,
+        LessEqualNode,
+        NotEqualNode,
     )
 
 
-def get_comparison_nodes() -> Sequence[NodeTemplate]:
+def get_comparison_nodes() -> Sequence[Node]:
     return tuple(cls() for cls in get_comparison_types())
