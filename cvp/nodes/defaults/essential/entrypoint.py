@@ -5,15 +5,15 @@ from typing import Optional
 from cvp.fonts.glyphs.mdi import PLAY
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.execs import ExecOutputPinTemplate
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.execs import ExecOutputPin
+from cvp.pins.pin import Pin, PinName
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
 class EntrypointNodeTemplate(NodeTemplate):
     def __init__(self):
-        self._start = ExecOutputPinTemplate(
+        self._start = ExecOutputPin(
             name=PinName("start"),
             docs="Entrypoint flow signal",
         )
@@ -29,5 +29,5 @@ class EntrypointNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         return self._start

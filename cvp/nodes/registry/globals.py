@@ -7,7 +7,7 @@ from cvp.fonts.types import IconCode
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.nodes.template import NodeName, NodePath
 from cvp.patterns.singleton import singleton
-from cvp.pins.template import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
 
 
@@ -27,10 +27,10 @@ def register_node(
     docs: Optional[str] = None,
     icon: Optional[IconCode] = None,
     color: Optional[RGBA] = None,
-    exec_inputs: Optional[Iterable[PinTemplate]] = None,
-    exec_outputs: Optional[Iterable[PinTemplate]] = None,
-    data_inputs: Optional[Iterable[PinTemplate]] = None,
-    data_outputs: Optional[Iterable[PinTemplate]] = None,
+    exec_inputs: Optional[Iterable[Pin]] = None,
+    exec_outputs: Optional[Iterable[Pin]] = None,
+    data_inputs: Optional[Iterable[Pin]] = None,
+    data_outputs: Optional[Iterable[Pin]] = None,
     tags: Optional[Iterable[str]] = None,
 ):
     return global_node_registry().register(

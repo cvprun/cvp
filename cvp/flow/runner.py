@@ -19,8 +19,8 @@ from cvp.memory.copy import copy_flexible
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.nodes.template import NodeTemplate
-from cvp.pins.special import EntrypointPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.pin import Pin
+from cvp.pins.special import EntrypointPin
 
 INFINITY_COUNTER: Final[int] = -1
 STOP_COUNTER: Final[int] = -2
@@ -119,7 +119,7 @@ class FlowRunner:
         arguments = _FlowRunnerArguments(
             nodes=registered_nodes,
             start_node=start_node,
-            entrypoint=FlowPin.from_template(EntrypointPinTemplate()),
+            entrypoint=FlowPin.from_template(EntrypointPin()),
             graph=graph,
             logger=logger if logger else flow_logger,
             use_copy=use_copy,
@@ -346,7 +346,7 @@ class FlowRunner:
             use_deepcopy=use_deepcopy,
         )
 
-        result_pin: Union[None, PinTemplate, str] = None
+        result_pin: Union[None, Pin, str] = None
 
         try:
             result_pin = node.run(record)
@@ -360,7 +360,7 @@ class FlowRunner:
         if result_pin is None:
             return None  # There is no next flow.
 
-        if isinstance(result_pin, PinTemplate):
+        if isinstance(result_pin, Pin):
             next_pin_name = str(result_pin.name)
         elif isinstance(result_pin, str):
             next_pin_name = result_pin

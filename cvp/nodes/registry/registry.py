@@ -7,7 +7,7 @@ from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import GetterNodeTemplate
 from cvp.nodes.defaults.essential.setter import SetterNodeTemplate
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.pin import Pin
 from cvp.types.colors import RGBA
 
 
@@ -87,10 +87,10 @@ class NodeRegistry:
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[PinTemplate]] = None,
-        exec_outputs: Optional[Iterable[PinTemplate]] = None,
-        data_inputs: Optional[Iterable[PinTemplate]] = None,
-        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        exec_inputs: Optional[Iterable[Pin]] = None,
+        exec_outputs: Optional[Iterable[Pin]] = None,
+        data_inputs: Optional[Iterable[Pin]] = None,
+        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
     ) -> NodeTemplate:
         node = NodeTemplate.from_callable(
@@ -116,10 +116,10 @@ class NodeRegistry:
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[PinTemplate]] = None,
-        exec_outputs: Optional[Iterable[PinTemplate]] = None,
-        data_inputs: Optional[Iterable[PinTemplate]] = None,
-        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        exec_inputs: Optional[Iterable[Pin]] = None,
+        exec_outputs: Optional[Iterable[Pin]] = None,
+        data_inputs: Optional[Iterable[Pin]] = None,
+        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
     ):
         def _decorator(func: Callable):

@@ -11,8 +11,8 @@ from cvp.nodes.record import NodeRecord
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
+from cvp.pins.pin import PinName
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinName
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 WireKey = NewType("WireKey", str)

@@ -6,28 +6,25 @@ from typing import Any, Optional
 from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.datas import DataInputPinTemplate
-from cvp.pins.special import ReturnPinTemplate
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import Pin, PinName
+from cvp.pins.special import ReturnPin
 from cvp.types.override import override
 
 
 class ArithmeticOperatorNodeTemplate(NodeTemplate):
     def __init__(self, name: str):
-        self._first = DataInputPinTemplate(
+        self._first = DataInputPin(
             name=PinName("first"),
             dtype=Dtype.any(),
             docs=f"The first value of the {name.lower()} operator",
         )
-        self._second = DataInputPinTemplate(
+        self._second = DataInputPin(
             name=PinName("second"),
             dtype=Dtype.any(),
             docs=f"The second value of the {name.lower()} operator",
         )
-        self._return = ReturnPinTemplate(
-            dtype=Dtype.any(),
-            docs=f"The result value of the {name.lower()} operator.",
-        )
+        self._return = ReturnPin(Dtype.any())
         super().__init__(
             path=NodePath(f"cvp.operators.arithmetic.{name.lower()}"),
             name=NodeName(name.capitalize()),
@@ -37,7 +34,7 @@ class ArithmeticOperatorNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         first = record.get(self._first)
         second = record.get(self._second)
         result = self.on_operator(first, second)

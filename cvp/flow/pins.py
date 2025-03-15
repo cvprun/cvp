@@ -7,7 +7,7 @@ from type_serialize import Serializable, deserialize, serialize
 
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.flow.pin import FlowPin
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.pin import Pin, PinName
 from cvp.types.override import override
 
 
@@ -24,7 +24,7 @@ class FlowPins(Serializable):
         return MappingDeque[PinName, FlowPin](pins, keyable=FlowPins.__pin_keyable)
 
     @classmethod
-    def from_template(cls, templates: Optional[Iterable[PinTemplate]] = None):
+    def from_template(cls, templates: Optional[Iterable[Pin]] = None):
         pins = list()
         if templates:
             for template in templates:

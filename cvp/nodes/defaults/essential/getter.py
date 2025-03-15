@@ -5,14 +5,14 @@ from typing import Optional
 from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.datas import DataInputPinTemplate, DataOutputPinTemplate
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.datas import DataInputPin, DataOutputPin
+from cvp.pins.pin import Pin, PinName
 from cvp.types.override import override
 
 
 class GetterNodeTemplate(NodeTemplate):
     def __init__(self):
-        self._key = DataInputPinTemplate(
+        self._key = DataInputPin(
             name=PinName("key"),
             dtype=Dtype(str),
             docs="The key of the variable",
@@ -20,7 +20,7 @@ class GetterNodeTemplate(NodeTemplate):
             hidden=True,
             default=None,
         )
-        self._value = DataOutputPinTemplate(
+        self._value = DataOutputPin(
             name=PinName("value"),
             dtype=Dtype.any(),
             docs="The value of the variable",
@@ -43,7 +43,7 @@ class GetterNodeTemplate(NodeTemplate):
         return self._value.name
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         key = record.get(self._key)
         assert isinstance(key, str)
         value = record.get_shared(key)

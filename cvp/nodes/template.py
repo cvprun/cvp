@@ -6,8 +6,8 @@ from typing import Any, Callable, Iterable, List, NewType, Optional
 
 from cvp.fonts.types import IconCode
 from cvp.nodes.record import NodeRecord
-from cvp.pins.special import NextPinTemplate, PrevPinTemplate, ReturnPinTemplate
-from cvp.pins.template import PinTemplate
+from cvp.pins.pin import Pin
+from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.variables import FLOW_PATH_SEPARATOR
@@ -35,7 +35,7 @@ class NodeTemplate(NodeInterface):
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        pins: Optional[Iterable[PinTemplate]] = None,
+        pins: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
         hidden=False,
     ):
@@ -69,10 +69,10 @@ class NodeTemplate(NodeInterface):
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         color: Optional[RGBA] = None,
-        exec_inputs: Optional[Iterable[PinTemplate]] = None,
-        exec_outputs: Optional[Iterable[PinTemplate]] = None,
-        data_inputs: Optional[Iterable[PinTemplate]] = None,
-        data_outputs: Optional[Iterable[PinTemplate]] = None,
+        exec_inputs: Optional[Iterable[Pin]] = None,
+        exec_outputs: Optional[Iterable[Pin]] = None,
+        data_inputs: Optional[Iterable[Pin]] = None,
+        data_outputs: Optional[Iterable[Pin]] = None,
         tags: Optional[Iterable[str]] = None,
         hidden=False,
     ):
@@ -106,7 +106,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be exec inputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(PrevPinTemplate())
+            base_pins.append(PrevPin())
 
         if exec_outputs:
             for pin in exec_outputs:
@@ -114,7 +114,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be exec outputs")
                 base_pins.append(pin)
         else:
-            base_pins.append(NextPinTemplate())
+            base_pins.append(NextPin())
 
         sig = signature(func)
 
@@ -125,7 +125,7 @@ class NodeTemplate(NodeInterface):
                 base_pins.append(pin)
         else:
             for param in sig.parameters.values():
-                param_pin = PinTemplate.from_parameter(param)
+                param_pin = Pin.from_parameter(param)
                 base_pins.append(param_pin)
 
         if data_outputs:
@@ -134,7 +134,7 @@ class NodeTemplate(NodeInterface):
                     raise ValueError("Pin must be data outputs")
                 base_pins.append(pin)
         else:
-            return_pin = ReturnPinTemplate.from_return_annotation(sig.return_annotation)
+            return_pin = ReturnPin.from_return_annotation(sig.return_annotation)
             base_pins.append(return_pin)
 
         return cls(
@@ -150,35 +150,35 @@ class NodeTemplate(NodeInterface):
         )
 
     @property
-    def execs(self) -> List[PinTemplate]:
+    def execs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_exec_action, self.pins))
 
     @property
-    def datas(self) -> List[PinTemplate]:
+    def datas(self) -> List[Pin]:
         return list(filter(lambda p: p.is_data_action, self.pins))
 
     @property
-    def inputs(self) -> List[PinTemplate]:
+    def inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_input_stream, self.pins))
 
     @property
-    def outputs(self) -> List[PinTemplate]:
+    def outputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_output_stream, self.pins))
 
     @property
-    def exec_inputs(self) -> List[PinTemplate]:
+    def exec_inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_exec_inputs, self.pins))
 
     @property
-    def exec_outputs(self) -> List[PinTemplate]:
+    def exec_outputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_exec_outputs, self.pins))
 
     @property
-    def data_inputs(self) -> List[PinTemplate]:
+    def data_inputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_data_inputs, self.pins))
 
     @property
-    def data_outputs(self) -> List[PinTemplate]:
+    def data_outputs(self) -> List[Pin]:
         return list(filter(lambda p: p.is_data_outputs, self.pins))
 
     @property
@@ -238,22 +238,22 @@ class NodeTemplate(NodeInterface):
         if len(exec_outputs) != 1:
             return False
 
-        if not isinstance(exec_inputs[0], PrevPinTemplate):
+        if not isinstance(exec_inputs[0], PrevPin):
             return False
-        if not isinstance(exec_outputs[0], NextPinTemplate):
+        if not isinstance(exec_outputs[0], NextPin):
             return False
 
         return True
 
-    def find_pin(self, pin_name: str) -> Optional[PinTemplate]:
+    def find_pin(self, pin_name: str) -> Optional[Pin]:
         for pin in self.pins:
             if pin.name == pin_name:
                 return pin
         return None
 
-    def find_return_pin(self) -> Optional[PinTemplate]:
+    def find_return_pin(self) -> Optional[Pin]:
         for pin in self.pins:
-            if isinstance(pin, ReturnPinTemplate):
+            if isinstance(pin, ReturnPin):
                 return pin
         return None
 
@@ -263,7 +263,7 @@ class NodeTemplate(NodeInterface):
         return self.func(*args, **kwargs)
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         result = self.__call__(*record.args, **record.kwargs)
         if return_pin := self.find_return_pin():
             record.set(return_pin, result)

@@ -12,11 +12,11 @@ from typing import (
 )
 
 from cvp.dtypes.dtype import Dtype
-from cvp.pins.annotated import get_docs, get_name, get_wires
-from cvp.pins.datas import DataOutputPinTemplate
-from cvp.pins.execs import ExecInputPinTemplate, ExecOutputPinTemplate
+from cvp.pins.annotated import get_wires
+from cvp.pins.datas import DataOutputPin
+from cvp.pins.execs import ExecInputPin, ExecOutputPin
 from cvp.pins.kind import PinKind
-from cvp.pins.template import PinName, WireKey
+from cvp.pins.pin import PinName, WireKey
 
 ENTRYPOINT_PIN_NAME: Final[PinName] = PinName("entrypoint")
 ENTRYPOINT_PIN_DOCS: Final[str] = "Indicates the starting point of the flow"
@@ -31,61 +31,43 @@ RETURN_PIN_NAME: Final[PinName] = PinName("return")
 RETURN_PIN_DOCS: Final[str] = "The return value of a function"
 
 
-class EntrypointPinTemplate(ExecInputPinTemplate):
-    def __init__(
-        self,
-        name: Optional[PinName] = None,
-        docs: Optional[str] = None,
-        wires: Optional[Iterable[WireKey]] = None,
-    ):
+class EntrypointPin(ExecOutputPin):
+    def __init__(self, wire: Optional[WireKey] = None):
         super().__init__(
-            name=name if name else ENTRYPOINT_PIN_NAME,
-            docs=docs if docs else ENTRYPOINT_PIN_DOCS,
+            name=ENTRYPOINT_PIN_NAME,
+            docs=ENTRYPOINT_PIN_DOCS,
+            wire=wire,
+        )
+
+
+class PrevPin(ExecInputPin):
+    def __init__(self, wires: Optional[Iterable[WireKey]] = None):
+        super().__init__(
+            name=PREV_PIN_NAME,
+            docs=PREV_PIN_DOCS,
             wires=wires,
         )
 
 
-class PrevPinTemplate(ExecInputPinTemplate):
-    def __init__(
-        self,
-        name: Optional[PinName] = None,
-        docs: Optional[str] = None,
-        wires: Optional[Iterable[WireKey]] = None,
-    ):
+class NextPin(ExecOutputPin):
+    def __init__(self, wire: Optional[WireKey] = None):
         super().__init__(
-            name=name if name else PREV_PIN_NAME,
-            docs=docs if docs else PREV_PIN_DOCS,
-            wires=wires,
+            name=NEXT_PIN_NAME,
+            docs=NEXT_PIN_DOCS,
+            wire=wire,
         )
 
 
-class NextPinTemplate(ExecOutputPinTemplate):
-    def __init__(
-        self,
-        name: Optional[PinName] = None,
-        docs: Optional[str] = None,
-        wires: Optional[Iterable[WireKey]] = None,
-    ):
-        super().__init__(
-            name=name if name else NEXT_PIN_NAME,
-            docs=docs if docs else NEXT_PIN_DOCS,
-            wires=wires,
-        )
-
-
-class ReturnPinTemplate(DataOutputPinTemplate):
+class ReturnPin(DataOutputPin):
     def __init__(
         self,
         dtype: Dtype,
-        docs: Optional[str] = None,
         wires: Optional[Iterable[WireKey]] = None,
-        *,
-        name: Optional[PinName] = None,
     ):
         super().__init__(
-            name=name if name else RETURN_PIN_NAME,
+            name=RETURN_PIN_NAME,
             dtype=dtype,
-            docs=docs if docs else RETURN_PIN_DOCS,
+            docs=RETURN_PIN_DOCS,
             wires=wires,
             kind=PinKind.return_only,
         )
@@ -100,18 +82,9 @@ class ReturnPinTemplate(DataOutputPinTemplate):
             return_args = get_args(return_annotation)
             assert 2 <= len(return_args)
             return_dtype = Dtype(return_args[0])  # type: ignore[var-annotated]
-            return_name = PinName(get_name(*return_args, default=RETURN_PIN_NAME))
-            return_docs = get_docs(*return_args, default=RETURN_PIN_DOCS)
             return_wires = list(WireKey(w) for w in get_wires(*return_args))
         else:
             return_dtype = Dtype(return_annotation)
-            return_name = RETURN_PIN_NAME
-            return_docs = RETURN_PIN_DOCS
             return_wires = list()
 
-        return cls(
-            dtype=return_dtype,
-            docs=return_docs,
-            wires=return_wires,
-            name=return_name,
-        )
+        return cls(return_dtype, return_wires)

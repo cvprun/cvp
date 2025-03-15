@@ -1,61 +1,64 @@
 # -*- coding: utf-8 -*-
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Union
 
 from cvp.dtypes.dtype import Dtype
 from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
+from cvp.pins.pin import Pin, PinName, WireKey
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinName, PinTemplate, WireKey
+from cvp.variables import NODOC
 
 
-class DataInputPinTemplate(PinTemplate):
+class DataInputPin(Pin):
     def __init__(
         self,
         name: PinName,
-        dtype: Dtype,
-        docs: Optional[str] = None,
+        dtype: Union[None, type, Dtype],
+        kind=PinKind.positional_or_keyword,
+        default=NoDefault,
+        docs=NODOC,
+        wire: Optional[WireKey] = None,
+        *,
         required=False,
         hidden=False,
-        wires: Optional[Iterable[WireKey]] = None,
-        kind=PinKind.unknown,
-        default=NoDefault,
     ):
         super().__init__(
             name=name,
             dtype=dtype,
             action=Action.data,
             stream=Stream.input,
-            docs=docs,
-            required=required,
-            hidden=hidden,
-            wires=wires,
             kind=kind,
             default=default,
+            docs=docs,
+            wires=(wire,) if wire else None,
+            required=required,
+            hidden=hidden,
         )
 
 
-class DataOutputPinTemplate(PinTemplate):
+class DataOutputPin(Pin):
     def __init__(
         self,
         name: PinName,
-        dtype: Dtype,
-        docs: Optional[str] = None,
-        hidden=False,
-        wires: Optional[Iterable[WireKey]] = None,
-        kind=PinKind.unknown,
+        dtype: Union[None, type, Dtype],
+        kind=PinKind.positional_or_keyword,
         default=NoDefault,
+        docs=NODOC,
+        wires: Optional[Iterable[WireKey]] = None,
+        *,
+        hidden=False,
     ):
         super().__init__(
             name=name,
             dtype=dtype,
             action=Action.data,
             stream=Stream.output,
-            docs=docs,
-            required=False,
-            hidden=hidden,
-            wires=wires,
             kind=kind,
             default=default,
+            docs=docs,
+            wires=wires,
+            required=False,
+            hidden=hidden,
         )

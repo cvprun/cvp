@@ -8,30 +8,30 @@ from cvp.fonts.glyphs.mdi import PLAY
 from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.datas import DataInputPinTemplate
-from cvp.pins.special import NextPinTemplate, PrevPinTemplate
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import Pin, PinName
+from cvp.pins.special import NextPin, PrevPin
 from cvp.types.colors import GREEN_RGBA
 from cvp.types.override import override
 
 
 class LoggingNodeTemplate(NodeTemplate):
     def __init__(self):
-        self._prev = PrevPinTemplate()
-        self._next = NextPinTemplate()
-        self._name = DataInputPinTemplate(
+        self._prev = PrevPin()
+        self._next = NextPin()
+        self._name = DataInputPin(
             name=PinName("name"),
             dtype=Dtype(str),
             docs="Logger's name",
             default=CVP_FLOW_LOGGER_NAME,
         )
-        self._level = DataInputPinTemplate(
+        self._level = DataInputPin(
             name=PinName("level"),
             dtype=Dtype(int),
             docs="The threshold of this logger",
             default=DEBUG,
         )
-        self._msg = DataInputPinTemplate(
+        self._msg = DataInputPin(
             name=PinName("msg"),
             dtype=Dtype(str),
             docs="The message format string",
@@ -49,7 +49,7 @@ class LoggingNodeTemplate(NodeTemplate):
         )
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         logger_name = record.get(self._name)
         logger = getLogger(logger_name)
         logger.log(level=record.get(self._level), msg=record.get(self._msg))

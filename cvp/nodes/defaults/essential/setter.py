@@ -5,17 +5,17 @@ from typing import Optional
 from cvp.dtypes.dtype import Dtype
 from cvp.nodes.record import NodeRecord
 from cvp.nodes.template import NodeName, NodePath, NodeTemplate
-from cvp.pins.datas import DataInputPinTemplate
-from cvp.pins.special import NextPinTemplate, PrevPinTemplate
-from cvp.pins.template import PinName, PinTemplate
+from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import Pin, PinName
+from cvp.pins.special import NextPin, PrevPin
 from cvp.types.override import override
 
 
 class SetterNodeTemplate(NodeTemplate):
     def __init__(self):
-        self._prev = PrevPinTemplate()
-        self._next = NextPinTemplate()
-        self._key = DataInputPinTemplate(
+        self._prev = PrevPin()
+        self._next = NextPin()
+        self._key = DataInputPin(
             name=PinName("key"),
             dtype=Dtype(str),
             docs="The key of the variable",
@@ -23,7 +23,7 @@ class SetterNodeTemplate(NodeTemplate):
             hidden=True,
             default=None,
         )
-        self._value = DataInputPinTemplate(
+        self._value = DataInputPin(
             name=PinName("value"),
             dtype=Dtype.any(),
             docs="The value of the variable",
@@ -46,7 +46,7 @@ class SetterNodeTemplate(NodeTemplate):
         return self._value.name
 
     @override
-    def run(self, record: NodeRecord) -> Optional[PinTemplate]:
+    def run(self, record: NodeRecord) -> Optional[Pin]:
         key = record.get(self._key)
         assert isinstance(key, str)
         value = record.get(self._value)

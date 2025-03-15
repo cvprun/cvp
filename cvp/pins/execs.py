@@ -2,17 +2,19 @@
 
 from typing import Iterable, Optional
 
+from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
+from cvp.pins.pin import Pin, PinName, WireKey
 from cvp.pins.stream import Stream
-from cvp.pins.template import PinName, PinTemplate, WireKey
+from cvp.variables import NODOC
 
 
-class ExecInputPinTemplate(PinTemplate):
+class ExecInputPin(Pin):
     def __init__(
         self,
         name: PinName,
-        docs: Optional[str] = None,
+        docs=NODOC,
         wires: Optional[Iterable[WireKey]] = None,
     ):
         super().__init__(
@@ -20,29 +22,31 @@ class ExecInputPinTemplate(PinTemplate):
             dtype=None,
             action=Action.exec,
             stream=Stream.input,
+            kind=PinKind.exec_only,
+            default=NoDefault,
             docs=docs,
+            wires=wires,
             required=False,
             hidden=False,
-            wires=wires,
-            kind=PinKind.exec_only,
         )
 
 
-class ExecOutputPinTemplate(PinTemplate):
+class ExecOutputPin(Pin):
     def __init__(
         self,
         name: PinName,
-        docs: Optional[str] = None,
-        wires: Optional[Iterable[WireKey]] = None,
+        docs=NODOC,
+        wire: Optional[WireKey] = None,
     ):
         super().__init__(
             name=name,
             dtype=None,
             action=Action.exec,
             stream=Stream.output,
+            kind=PinKind.exec_only,
+            default=NoDefault,
             docs=docs,
+            wires=(wire,) if wire else None,
             required=False,
             hidden=False,
-            wires=wires,
-            kind=PinKind.exec_only,
         )

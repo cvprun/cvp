@@ -34,7 +34,7 @@ PinName = NewType("PinName", str)
 WireKey = NewType("WireKey", str)
 
 
-class PinTemplate:
+class Pin:
     def __init__(
         self,
         name: PinName,
@@ -42,33 +42,28 @@ class PinTemplate:
         action: Action,
         stream: Stream,
         kind: PinKind,
-        required=False,
-        hidden=False,
         default=NoDefault,
         docs=NODOC,
         wires: Optional[Iterable[WireKey]] = None,
+        *,
+        required=False,
+        hidden=False,
     ):
         if not name:
             raise ValueError("The 'name' argument is required")
 
-        if dtype is None:
-            self._dtype = Dtype.none()
-        elif isinstance(dtype, Dtype):
-            self._dtype = dtype
-        elif isinstance(dtype, type):
-            self._dtype = Dtype(dtype)
-        else:
-            raise TypeError(f"Unsupported dtype type: {type(dtype).__name__}")
-
+        self._dtype = dtype if isinstance(dtype, Dtype) else Dtype(dtype)
         self._name = name
         self._action = action
         self._stream = stream
         self._kind = kind
-        self._required = required
-        self._hidden = hidden
+
         self._default = default
         self._docs = docs
         self._wires = tuple(wires if wires else ())
+
+        self._required = required
+        self._hidden = hidden
 
     @classmethod
     def from_parameter(cls, parameter: Parameter):
@@ -107,11 +102,11 @@ class PinTemplate:
             action=param_action,
             stream=param_stream,
             kind=param_kind,
-            required=param_required,
-            hidden=param_hidden,
             default=param_default,
             docs=param_docs,
             wires=param_wires,
+            required=param_required,
+            hidden=param_hidden,
         )
 
     @property
@@ -159,8 +154,16 @@ class PinTemplate:
         return self._wires
 
     @property
+    def type(self):
+        return self._dtype.type
+
+    @property
     def path(self):
         return self._dtype.path
+
+    @property
+    def type_docs(self):
+        return self._dtype.docs
 
     @property
     def module_path(self) -> str:
