@@ -8,8 +8,9 @@ from cvp.nodes.defaults.casting import get_casting_nodes
 from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.defaults.operators import get_operators_nodes
 from cvp.nodes.node import Node
+from cvp.nodes.ntype import NodePath
 
-NodeMapping = MappingProxyType[str, Node]
+NodeMapping = MappingProxyType[NodePath, Node]
 
 
 def get_default_nodes() -> Sequence[Node]:

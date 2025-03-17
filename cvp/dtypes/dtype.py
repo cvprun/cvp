@@ -40,16 +40,21 @@ def load_with_path(path: str) -> Tuple[type, TypePath]:
     module_path, class_name = path.rsplit(MODULE_PATH_SEPARATOR, 1)
     module = import_module(module_path)
     cls = getattr(module, class_name)
+
     if not isinstance(cls, type):
         raise TypeError(f"This is not a class type: '{path}'")
+
     return cls, TypePath(path)
 
 
 def load_with_cls(cls: type) -> Tuple[type, TypePath]:
     if cls is NoDefault:
         return Any, generate_type_path(Any)  # type: ignore[return-value,arg-type]
-    else:
-        return cls, generate_type_path(cls)
+
+    if not isinstance(cls, type):
+        raise TypeError(f"This is not a class type: '{cls.__name__}'")
+
+    return cls, generate_type_path(cls)
 
 
 def load(cls: Union[None, str, type]) -> Tuple[type, TypePath]:

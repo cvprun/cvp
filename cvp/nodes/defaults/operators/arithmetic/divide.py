@@ -6,7 +6,9 @@ from cvp.nodes.defaults.operators.arithmetic._base import ArithmeticOperatorNode
 from cvp.types.override import override
 
 
-class DivideNode(ArithmeticOperatorNode):
+class DivideOperator(ArithmeticOperatorNode):
+    """Apply the divide operator"""
+
     def __init__(self):
         super().__init__("divide")
 

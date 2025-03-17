@@ -25,7 +25,7 @@ class RegistryTestCase(TestCase):
         self.assertEqual(0, len(registry.path2dtypes))
         self.assertEqual(0, len(registry.type2dtypes))
 
-        registry.add_new(type(None))
+        registry.add_type(type(None))
 
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
@@ -36,7 +36,7 @@ class RegistryTestCase(TestCase):
 
     def test_register_dtype_object(self):
         registry = DtypeRegistry(no_defaults=True)
-        registry.add_new(object)
+        registry.add_type(object)
 
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
@@ -46,7 +46,7 @@ class RegistryTestCase(TestCase):
 
     def test_register_dtype_any(self):
         registry = DtypeRegistry(no_defaults=True)
-        registry.add_new(Any)
+        registry.add_type(Any)
 
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
@@ -56,7 +56,7 @@ class RegistryTestCase(TestCase):
 
     def test_register_dtype_float(self):
         registry = DtypeRegistry(no_defaults=True)
-        registry.add_new(float)
+        registry.add_type(float)
         self.assertEqual(1, len(registry.path2dtypes))
         self.assertEqual(1, len(registry.type2dtypes))
 

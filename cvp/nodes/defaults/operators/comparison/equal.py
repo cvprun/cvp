@@ -6,7 +6,9 @@ from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNode
 from cvp.types.override import override
 
 
-class EqualNode(ComparisonOperatorNode):
+class EqualOperator(ComparisonOperatorNode):
+    """Apply the equal operator"""
+
     def __init__(self):
         super().__init__("equal")
 

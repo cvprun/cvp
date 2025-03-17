@@ -8,6 +8,7 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
+from cvp.nodes.ntype import Ntype
 from cvp.pins.action import Action
 from cvp.pins.stream import Stream
 
@@ -33,9 +34,9 @@ class GraphTestCase(TestCase):
         )
 
         node1 = FlowNode(
+            ntype=Ntype(sum),
             uuid="uuid",
             name="name",
-            path="path",
             docs="docs",
             icon="icon",
             lock=False,

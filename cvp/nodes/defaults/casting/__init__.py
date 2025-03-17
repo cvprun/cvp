@@ -3,20 +3,20 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.casting.boolean import BooleanNode
-from cvp.nodes.defaults.casting.floating import FloatingNode
-from cvp.nodes.defaults.casting.integer import IntegerNode
-from cvp.nodes.defaults.casting.string import StringNode
+from cvp.nodes.defaults.casting.boolean import BooleanCasting
+from cvp.nodes.defaults.casting.floating import FloatingCasting
+from cvp.nodes.defaults.casting.integer import IntegerCasting
+from cvp.nodes.defaults.casting.string import StringCasting
 from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_casting_types() -> Sequence[Type]:
     return (
-        BooleanNode,
-        FloatingNode,
-        IntegerNode,
-        StringNode,
+        BooleanCasting,
+        FloatingCasting,
+        IntegerCasting,
+        StringCasting,
     )
 
 

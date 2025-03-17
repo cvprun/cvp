@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from abc import abstractmethod
-from typing import Any, Optional
+from typing import Any
 
 from cvp.dtypes.dtype import Dtype
-from cvp.nodes.node import Node, NodeName, NodePath
+from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin, PinName
@@ -25,21 +25,15 @@ class ComparisonOperatorNode(Node):
             docs=f"The second value of the {name.lower()} operator",
         )
         self._return = ReturnPin(Dtype(bool))
-        super().__init__(
-            path=NodePath(f"cvp.operators.comparison.{name.lower()}"),
-            name=NodeName(name.capitalize()),
-            docs=f"Apply the {name.lower()} operator",
-            pins=(self._first, self._second, self._return),
-            tags=("operator", "comparison", name.lower()),
-        )
+        super().__init__(self._first, self._second, self._return)
 
     @override
-    def run(self, record: NodeRecord) -> Optional[Pin]:
+    def run(self, record: NodeRecord) -> Pin:
         first = record.get(self._first)
         second = record.get(self._second)
         result = self.on_operator(first, second)
         record.set(self._return, result)
-        return None
+        return self.nonext()
 
     @abstractmethod
     def on_operator(self, first: Any, second: Any) -> bool:

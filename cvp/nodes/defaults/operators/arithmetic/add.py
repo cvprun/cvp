@@ -6,7 +6,9 @@ from cvp.nodes.defaults.operators.arithmetic._base import ArithmeticOperatorNode
 from cvp.types.override import override
 
 
-class AddNode(ArithmeticOperatorNode):
+class AddOperator(ArithmeticOperatorNode):
+    """Apply the add operator"""
+
     def __init__(self):
         super().__init__("add")
 

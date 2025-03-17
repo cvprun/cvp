@@ -93,7 +93,8 @@ imageable
 indentless
 infiles
 iscapture
-isnodetype
+islambda
+isnode
 isync
 jaraco
 kdci
@@ -136,7 +137,9 @@ navyblue
 nobuffer
 nocov
 noframe
+nonext
 notuple
+npath
 ntsc
 nullsrc
 numlock

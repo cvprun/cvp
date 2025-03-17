@@ -6,7 +6,9 @@ from cvp.nodes.defaults.operators.arithmetic._base import ArithmeticOperatorNode
 from cvp.types.override import override
 
 
-class MultiplyNode(ArithmeticOperatorNode):
+class MultiplyOperator(ArithmeticOperatorNode):
+    """Apply the multiply operator"""
+
     def __init__(self):
         super().__init__("multiply")
 

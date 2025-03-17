@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Dict, Iterable, Optional, Union
+from typing import Callable, Dict, Union
 
 from cvp.nodes.defaults import get_default_path2nodes
-from cvp.nodes.defaults.essential.getter import GetterNode
-from cvp.nodes.defaults.essential.setter import SetterNode
-from cvp.nodes.node import Node, NodeName, NodePath
+from cvp.nodes.defaults.essential.getter import Getter
+from cvp.nodes.defaults.essential.setter import Setter
+from cvp.nodes.node import Node
+from cvp.nodes.ntype import NodePath
 
 
 class NodeRegistry:
-    _nodes: Dict[str, Node]
+    _nodes: Dict[NodePath, Node]
 
     def __init__(self, *, no_defaults=False):
         self._nodes = dict()
-        self._getter_node = GetterNode()
-        self._setter_node = SetterNode()
+        self._getter_node = Getter()
+        self._setter_node = Setter()
 
         if not no_defaults:
             self._nodes.update(get_default_path2nodes())
@@ -54,11 +55,11 @@ class NodeRegistry:
         else:
             raise TypeError(f"Unsupported path type: {type(path).__name__}")
 
-    def get(self, path: Union[str, Node]) -> Node:
+    def get(self, path: Union[str, NodePath, Node]) -> Node:
         if isinstance(path, Node):
             return self._nodes[path.path]
         elif isinstance(path, str):
-            return self._nodes[path]
+            return self._nodes[NodePath(path)]
         else:
             raise TypeError(f"Unsupported path type: {type(path).__name__}")
 
@@ -76,39 +77,14 @@ class NodeRegistry:
             raise KeyError(f"Duplicate node path: {node.path}")
         self._nodes[node.path] = node
 
-    def add_new(
-        self,
-        func: Callable,
-        path: Optional[NodePath] = None,
-        name: Optional[NodeName] = None,
-        docs: Optional[str] = None,
-        tags: Optional[Iterable[str]] = None,
-    ) -> Node:
-        node = Node.from_callable(
-            func=func,
-            path=path,
-            name=name,
-            docs=docs,
-            tags=tags,
-        )
+    def add_callable(self, func: Callable) -> Node:
+        node = Node.from_callable(func)
         self.add(node)
         return node
 
-    def register(
-        self,
-        name: Optional[NodeName] = None,
-        path: Optional[NodePath] = None,
-        docs: Optional[str] = None,
-        tags: Optional[Iterable[str]] = None,
-    ):
+    def register(self):
         def _decorator(func: Callable):
-            self.add_new(
-                func=func,
-                path=path,
-                name=name,
-                docs=docs,
-                tags=tags,
-            )
+            self.add_callable(func)
             return func
 
         return _decorator

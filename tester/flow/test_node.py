@@ -7,14 +7,16 @@ from type_serialize import deserialize, serialize
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
+from cvp.nodes.ntype import Ntype
 from cvp.pins.action import Action
+from cvp.pins.pin import PinName
 from cvp.pins.stream import Stream
 
 
 class NodeTestCase(TestCase):
     def test_serialize_deserialize(self):
         pin1 = FlowPin(
-            name="name",
+            name=PinName("name"),
             dtype=Dtype(int),
             action=Action.exec,
             stream=Stream.output,
@@ -32,9 +34,9 @@ class NodeTestCase(TestCase):
         )
 
         node1 = FlowNode(
+            ntype=Ntype(sum),
             uuid="uuid",
             name="name",
-            path="path",
             docs="docs",
             icon="icon",
             lock=False,

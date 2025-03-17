@@ -34,6 +34,32 @@ class NodeRecord:
         self._exception = exception
         self._shared_variables = dict(shared_variables if shared_variables else {})
 
+    @classmethod
+    def empty(cls):
+        return cls(
+            index=0,
+            node_uuid=str(),
+            pin_name=PinName(str()),
+            variables=dict(),
+            args=tuple(),
+            kwargs=dict(),
+            exception=None,
+            shared_variables=None,
+        )
+
+    @classmethod
+    def from_call(cls, *args, **kwargs):
+        return cls(
+            index=0,
+            node_uuid=str(),
+            pin_name=PinName(str()),
+            variables=dict(),
+            args=args,
+            kwargs={PinName(k): v for k, v in kwargs.items()},
+            exception=None,
+            shared_variables=None,
+        )
+
     @property
     def index(self):
         return self._index

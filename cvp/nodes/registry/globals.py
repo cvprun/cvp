@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import lru_cache
-from typing import Iterable, Optional
 
-from cvp.nodes.node import NodeName, NodePath
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.patterns.singleton import singleton
 
@@ -18,15 +16,5 @@ def global_node_registry() -> GlobalNodeRegistry:
     return GlobalNodeRegistry()
 
 
-def register_node(
-    path: Optional[NodePath] = None,
-    name: Optional[NodeName] = None,
-    docs: Optional[str] = None,
-    tags: Optional[Iterable[str]] = None,
-):
-    return global_node_registry().register(
-        name=name,
-        path=path,
-        docs=docs,
-        tags=tags,
-    )
+def register_node():
+    return global_node_registry().register()

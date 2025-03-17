@@ -3,20 +3,20 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.operators.arithmetic.add import AddNode
-from cvp.nodes.defaults.operators.arithmetic.divide import DivideNode
-from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyNode
-from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractNode
+from cvp.nodes.defaults.operators.arithmetic.add import AddOperator
+from cvp.nodes.defaults.operators.arithmetic.divide import DivideOperator
+from cvp.nodes.defaults.operators.arithmetic.multiply import MultiplyOperator
+from cvp.nodes.defaults.operators.arithmetic.subtract import SubtractOperator
 from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_arithmetic_types() -> Sequence[Type]:
     return (
-        AddNode,
-        DivideNode,
-        MultiplyNode,
-        SubtractNode,
+        AddOperator,
+        DivideOperator,
+        MultiplyOperator,
+        SubtractOperator,
     )
 
 

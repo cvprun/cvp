@@ -11,7 +11,8 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
 from cvp.fonts.types import IconCode
-from cvp.nodes.node import Node, NodeName, NodePath
+from cvp.nodes.node import Node, NodeName
+from cvp.nodes.ntype import NodePath, Ntype
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
@@ -23,9 +24,9 @@ class FlowNode(Serializable):
 
     @unique
     class _Keys(StrEnum):
+        ntype = auto()
         uuid = auto()
         name_ = "name"
-        path = auto()
         docs = auto()
         icon = auto()
         lock = auto()
@@ -47,9 +48,9 @@ class FlowNode(Serializable):
     # noinspection PyShadowingBuiltins
     def __init__(
         self,
+        ntype: Ntype,
         uuid: Optional[NodeKey] = None,
         name: Optional[NodeName] = None,
-        path: Optional[NodePath] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         lock=False,
@@ -71,9 +72,9 @@ class FlowNode(Serializable):
         selected: bool = False,
         hovering: bool = False,
     ):
+        self.ntype = ntype
         self.uuid = uuid if uuid else NodeKey(str(uuid4()))
         self.name = name if name else NodeName(str())
-        self.path = path if path else NodePath(str())
         self.docs = docs if docs else str()
         self.icon = icon if icon else IconCode(str())
 
@@ -110,15 +111,14 @@ class FlowNode(Serializable):
     @classmethod
     def from_template(cls, template: Node):
         return cls(
+            ntype=template.ntype,
             uuid=NodeKey(str(uuid4())),
-            name=template.name,
-            path=template.path,
+            name=NodeName(template.class_name),
             docs=template.docs,
             lock=False,
             breakpoint=False,
             hidden=False,
             pins=FlowPins.from_template(template.pins),
-            tags=template.tags,
         )
 
     def __str__(self) -> str:
@@ -130,9 +130,9 @@ class FlowNode(Serializable):
             return False
 
         return (
-            self.uuid == other.uuid
+            self.ntype == other.ntype
+            and self.uuid == other.uuid
             and self.name == other.name
-            and self.path == other.path
             and self.docs == other.docs
             and self.icon == other.icon
             and self.lock == other.lock
@@ -155,9 +155,9 @@ class FlowNode(Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
+        result.ntype = copy(self.ntype)
         result.uuid = copy(self.uuid)
         result.name = copy(self.name)
-        result.path = copy(self.path)
         result.docs = copy(self.docs)
         result.icon = copy(self.icon)
         result.lock = copy(self.lock)
@@ -184,9 +184,9 @@ class FlowNode(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
+        result.ntype = deepcopy(self.ntype, memo)
         result.uuid = deepcopy(self.uuid, memo)
         result.name = deepcopy(self.name, memo)
-        result.path = deepcopy(self.path, memo)
         result.docs = deepcopy(self.docs, memo)
         result.icon = deepcopy(self.icon, memo)
         result.lock = deepcopy(self.lock, memo)
@@ -212,9 +212,9 @@ class FlowNode(Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
+            str(self._Keys.ntype): serialize(self.ntype),
             str(self._Keys.uuid): str(self.uuid),
             str(self._Keys.name_): str(self.name),
-            str(self._Keys.path): str(self.path),
             str(self._Keys.docs): str(self.docs),
             str(self._Keys.icon): str(self.icon),
             str(self._Keys.lock): bool(self.lock),
@@ -239,9 +239,13 @@ class FlowNode(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
+        ntype = data.get(self._Keys.ntype)
+        if ntype is None:
+            raise ValueError(f"The '{self._Keys.ntype}' attribute is required")
+
+        self.ntype = deserialize(ntype, Ntype)
         self.uuid = NodeKey(data.get(self._Keys.uuid, str()))
         self.name = NodeName(data.get(self._Keys.name_, str()))
-        self.path = NodePath(data.get(self._Keys.path, str()))
         self.docs = data.get(self._Keys.docs, str())
         self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.lock = data.get(self._Keys.lock, False)
@@ -281,6 +285,10 @@ class FlowNode(Serializable):
 
         self._selected = False
         self._hovering = False
+
+    @property
+    def path(self) -> NodePath:
+        return self.ntype.path
 
     @property
     def node_roi(self) -> Rect:
@@ -477,3 +485,17 @@ class FlowNode(Serializable):
         if pin is None:
             raise KeyError(f"Not found pin: '{pin_name}'")
         pin.dtype = dtype
+
+    # def run(self, record: NodeRecord) -> Optional[Pin]:
+    #     result = self._ntype(*record.args, **record.kwargs)
+    #
+    #     if return_pin := self.find_return_pin():
+    #         record.set(return_pin, result)
+    #
+    #     if self.is_bypass_exec:
+    #         return self.as_exec_outputs()[0]
+    #     else:
+    #         return None
+    #
+    # def render(self, record: NodeRecord) -> None:
+    #     pass

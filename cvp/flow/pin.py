@@ -88,7 +88,6 @@ class FlowPin(Serializable):
             docs=template.docs,
             required=template.required,
             hidden=template.hidden,
-            wires=template.wires,
             kind=template.kind,
             default=template.deepcopy_default(),
         )

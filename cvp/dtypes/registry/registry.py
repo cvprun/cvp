@@ -113,14 +113,14 @@ class DtypeRegistry:
         self._path2dtypes[dtype.path] = dtype
         self._type2dtypes[dtype.type] = dtype
 
-    def add_new(self, cls: type) -> Dtype:
+    def add_type(self, cls: type) -> Dtype:
         result = Dtype(cls)  # type: ignore[var-annotated]
         self.add(result)
         return result
 
     def register(self):
         def _decorator(cls: type):
-            self.add_new(cls)
+            self.add_type(cls)
             return cls
 
         return _decorator

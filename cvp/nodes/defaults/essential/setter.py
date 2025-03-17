@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
-
 from cvp.dtypes.dtype import Dtype
-from cvp.nodes.node import Node, NodeName, NodePath
+from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin
 from cvp.pins.pin import Pin, PinName
@@ -11,7 +9,9 @@ from cvp.pins.special import NextPin, PrevPin
 from cvp.types.override import override
 
 
-class SetterNode(Node):
+class Setter(Node):
+    """Set a variable to a specific value"""
+
     def __init__(self):
         self._prev = PrevPin()
         self._next = NextPin()
@@ -28,13 +28,7 @@ class SetterNode(Node):
             dtype=Dtype.any(),
             docs="The value of the variable",
         )
-        super().__init__(
-            path=NodePath("cvp.essential.setter"),
-            name=NodeName("Setter"),
-            docs="Set a variable to a specific value",
-            pins=(self._prev, self._next, self._key, self._value),
-            tags=("value", "variable", "setter", "mutator"),
-        )
+        super().__init__(self._prev, self._next, self._key, self._value)
 
     @property
     def key_name(self):
@@ -45,7 +39,7 @@ class SetterNode(Node):
         return self._value.name
 
     @override
-    def run(self, record: NodeRecord) -> Optional[Pin]:
+    def run(self, record: NodeRecord) -> Pin:
         key = record.get(self._key)
         assert isinstance(key, str)
         value = record.get(self._value)

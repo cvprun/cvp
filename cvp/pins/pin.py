@@ -5,10 +5,7 @@ from inspect import Parameter
 from typing import (
     Annotated,
     Any,
-    Iterable,
     NewType,
-    Optional,
-    Sequence,
     Union,
     get_args,
     get_origin,
@@ -25,14 +22,12 @@ from cvp.pins.annotated import (
     get_name,
     get_required,
     get_stream,
-    get_wires,
 )
 from cvp.pins.kind import PinKind, parameter_to_kind
 from cvp.pins.stream import Stream
 from cvp.variables import NODOC
 
 PinName = NewType("PinName", str)
-WireKey = NewType("WireKey", str)
 
 
 class Pin:
@@ -45,14 +40,10 @@ class Pin:
         kind: PinKind,
         default=NoDefault,
         docs=NODOC,
-        wires: Optional[Iterable[WireKey]] = None,
         *,
         required=False,
         hidden=False,
     ):
-        if not name:
-            raise ValueError("The 'name' argument is required")
-
         self.__dtype = dtype if isinstance(dtype, Dtype) else Dtype(dtype)
         self.__name = name
         self.__action = action
@@ -61,7 +52,6 @@ class Pin:
 
         self.__default = default
         self.__docs = docs
-        self.__wires = tuple(wires if wires else ())
 
         self.__required = required
         self.__hidden = hidden
@@ -91,7 +81,6 @@ class Pin:
             param_stream = get_stream(*annotated_args, default=Stream.input)
             param_default = get_default(*annotated_args, default=parameter.default)
             param_docs = get_docs(*annotated_args, default=None)
-            param_wires = list(WireKey(w) for w in get_wires(*annotated_args))
             param_required = get_required(*annotated_args, default=param_required)
             param_hidden = get_hidden(*annotated_args, default=False)
         else:
@@ -101,7 +90,6 @@ class Pin:
             param_stream = Stream.input
             param_default = parameter.default
             param_docs = str()
-            param_wires = list()
             param_hidden = False
 
         return cls(
@@ -112,7 +100,6 @@ class Pin:
             kind=param_kind,
             default=param_default,
             docs=param_docs,
-            wires=param_wires,
             required=param_required,
             hidden=param_hidden,
         )
@@ -159,10 +146,6 @@ class Pin:
     @property
     def docs(self) -> str:
         return self.__docs
-
-    @property
-    def wires(self) -> Sequence[WireKey]:
-        return self.__wires
 
     @property
     def type(self):

@@ -3,20 +3,22 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.essential.entrypoint import EntrypointNode
-from cvp.nodes.defaults.essential.getter import GetterNode
-from cvp.nodes.defaults.essential.logging import LoggingNode
-from cvp.nodes.defaults.essential.setter import SetterNode
+from cvp.nodes.defaults.essential.empty import Empty
+from cvp.nodes.defaults.essential.entrypoint import Entrypoint
+from cvp.nodes.defaults.essential.getter import Getter
+from cvp.nodes.defaults.essential.logging import Logging
+from cvp.nodes.defaults.essential.setter import Setter
 from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_essential_types() -> Sequence[Type]:
     return (
-        EntrypointNode,
-        LoggingNode,
-        GetterNode,
-        SetterNode,
+        Empty,
+        Entrypoint,
+        Logging,
+        Getter,
+        Setter,
     )
 
 

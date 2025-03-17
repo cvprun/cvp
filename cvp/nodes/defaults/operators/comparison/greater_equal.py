@@ -6,7 +6,9 @@ from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNode
 from cvp.types.override import override
 
 
-class GreaterEqualNode(ComparisonOperatorNode):
+class GreaterEqualOperator(ComparisonOperatorNode):
+    """Apply the greater-equal operator"""
+
     def __init__(self):
         super().__init__("greater-equal")
 

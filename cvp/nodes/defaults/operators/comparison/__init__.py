@@ -3,24 +3,24 @@
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.nodes.defaults.operators.comparison.equal import EqualNode
-from cvp.nodes.defaults.operators.comparison.greater import GreaterNode
-from cvp.nodes.defaults.operators.comparison.greater_equal import GreaterEqualNode
-from cvp.nodes.defaults.operators.comparison.less import LessNode
-from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualNode
-from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualNode
+from cvp.nodes.defaults.operators.comparison.equal import EqualOperator
+from cvp.nodes.defaults.operators.comparison.greater import GreaterOperator
+from cvp.nodes.defaults.operators.comparison.greater_equal import GreaterEqualOperator
+from cvp.nodes.defaults.operators.comparison.less import LessOperator
+from cvp.nodes.defaults.operators.comparison.less_equal import LessEqualOperator
+from cvp.nodes.defaults.operators.comparison.not_equal import NotEqualOperator
 from cvp.nodes.node import Node
 
 
 @lru_cache
 def get_comparison_types() -> Sequence[Type]:
     return (
-        EqualNode,
-        GreaterNode,
-        GreaterEqualNode,
-        LessNode,
-        LessEqualNode,
-        NotEqualNode,
+        EqualOperator,
+        GreaterOperator,
+        GreaterEqualOperator,
+        LessOperator,
+        LessEqualOperator,
+        NotEqualOperator,
     )
 
 

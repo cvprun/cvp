@@ -8,6 +8,7 @@ from type_serialize import Serializable, deserialize, serialize
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.flow.pin import FlowPin
 from cvp.pins.pin import Pin, PinName
+from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.types.override import override
 
 
@@ -247,3 +248,28 @@ class FlowPins(Serializable):
         )
 
     # fmt: on
+
+    def is_bypass_exec(self) -> bool:
+        if len(self.as_execs()) != 2:
+            return False
+
+        exec_inputs = self.as_exec_inputs()
+        if len(exec_inputs) != 1:
+            return False
+
+        exec_outputs = self.as_exec_outputs()
+        if len(exec_outputs) != 1:
+            return False
+
+        if not isinstance(exec_inputs[0], PrevPin):
+            return False
+        if not isinstance(exec_outputs[0], NextPin):
+            return False
+
+        return True
+
+    def find_return_pin(self) -> Optional[Pin]:
+        for pin in self.pins:
+            if isinstance(pin, ReturnPin):
+                return pin
+        return None

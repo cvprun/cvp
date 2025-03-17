@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, List, Optional, Sequence
+from typing import Any, Optional
 
 from cvp.inspect.parameter import NoDefault
 from cvp.pins.action import Action
@@ -71,16 +71,6 @@ class PinVisible(PinHidden):
         super().__init__(not visible)
 
 
-class PinWires(PinAnnotated):
-    def __init__(self, wires: Sequence[str]):
-        self.wires = list(wires)
-
-
-class PinWire(PinAnnotated):
-    def __init__(self, wire: str):
-        self.wire = wire
-
-
 class PinDefault(PinAnnotated):
     def __init__(self, default: Any):
         self.default = default
@@ -135,16 +125,6 @@ def get_hidden(*args, default: Optional[bool] = None) -> bool:
         if isinstance(arg, PinHidden):
             return arg.hidden
     return bool(default)
-
-
-def get_wires(*args) -> List[str]:
-    result = list()
-    for arg in args:
-        if isinstance(arg, PinWires):
-            result.extend(arg.wires)
-        elif isinstance(arg, PinWire):
-            result.append(arg.wire)
-    return result
 
 
 def get_default(*args, default: Any = NoDefault) -> Any:

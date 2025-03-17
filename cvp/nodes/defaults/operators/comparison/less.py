@@ -6,9 +6,11 @@ from cvp.nodes.defaults.operators.comparison._base import ComparisonOperatorNode
 from cvp.types.override import override
 
 
-class LessNode(ComparisonOperatorNode):
+class LessOperator(ComparisonOperatorNode):
+    """Apply the less operator"""
+
     def __init__(self):
-        super().__init__("less-equal")
+        super().__init__("less")
 
     @override
     def on_operator(self, first: Any, second: Any) -> bool:
