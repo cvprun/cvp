@@ -16,6 +16,7 @@ from cvp.nodes.ntype import NodePath, Ntype
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
+from cvp.nodes.record import NodeRecord
 
 NodeKey = NewType("NodeKey", str)
 
@@ -486,16 +487,16 @@ class FlowNode(Serializable):
             raise KeyError(f"Not found pin: '{pin_name}'")
         pin.dtype = dtype
 
-    # def run(self, record: NodeRecord) -> Optional[Pin]:
-    #     result = self._ntype(*record.args, **record.kwargs)
-    #
-    #     if return_pin := self.find_return_pin():
-    #         record.set(return_pin, result)
-    #
-    #     if self.is_bypass_exec:
-    #         return self.as_exec_outputs()[0]
-    #     else:
-    #         return None
-    #
-    # def render(self, record: NodeRecord) -> None:
-    #     pass
+    def run(self, record: NodeRecord) -> FlowPin:
+        result = self.ntype.run(*record.args, **record.kwargs)
+
+        if return_pin := self.pins.find_return_pin():
+            record.set(return_pin.name, result)
+
+        if self.pins.is_bypass_exec:
+            return self.pins.as_exec_outputs()[0]
+        else:
+            return self.pins.nonext()
+
+    def render(self, record: NodeRecord) -> None:
+        pass

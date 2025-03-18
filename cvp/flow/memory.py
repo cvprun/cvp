@@ -2,10 +2,11 @@
 
 from collections import deque
 from copy import copy, deepcopy
-from typing import Any, Deque, Dict, Mapping, NamedTuple, NewType, Optional, Sequence
+from typing import Any, Deque, Dict, Iterable, Mapping, NamedTuple, NewType, Optional, Sequence
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
+from cvp.flow.pins import FlowPins
 from cvp.flow.variable import FlowVariable, VariableName
 from cvp.nodes.record import NodeRecord
 from cvp.patterns.proxy import ValueProxy
@@ -13,6 +14,7 @@ from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.pin import PinName
 from cvp.pins.stream import Stream
+from cvp.pins.special import ReturnPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 WireKey = NewType("WireKey", str)
@@ -186,7 +188,7 @@ class FlowMemory:
         index: int,
         node_uuid: str,
         pin_name: PinName,
-        data_pins: Sequence[FlowPin],
+        pins: FlowPins,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -198,7 +200,7 @@ class FlowMemory:
         bind_args = list()
         bind_kwargs = dict()
 
-        for pin in data_pins:
+        for pin in pins.as_datas():
             if not pin.is_data_action:
                 raise ValueError(f"Only '{Action.data}' are allowed")
 
@@ -236,6 +238,14 @@ class FlowMemory:
                         assert False, "Inaccessible section"
                     case _:
                         assert False, "Inaccessible section"
+
+        if return_pin := pins.find_return_pin():
+            record.set(return_pin, result)
+
+        if pins.is_bypass_exec():
+            pins.as_exec_outputs()[0]
+        else:
+            pins.None
 
         return NodeRecord(
             index=index,

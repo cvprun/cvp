@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Dict, Iterable, List, Optional, SupportsIndex, Union
+from typing import Any, Callable, Dict, Final, Iterable, List, Optional, SupportsIndex, Union
 
 from type_serialize import Serializable, deserialize, serialize
 
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.flow.pin import FlowPin
 from cvp.pins.pin import Pin, PinName
-from cvp.pins.special import NextPin, PrevPin, ReturnPin
+from cvp.pins.special import PREV_PIN_NAME, NEXT_PIN_NAME, RETURN_PIN_NAME, EmptyNextPin
 from cvp.types.override import override
+
+_EMPTY_NEXT_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(EmptyNextPin())
 
 
 class FlowPins(Serializable):
@@ -23,6 +25,10 @@ class FlowPins(Serializable):
     @staticmethod
     def __create_map(pins: List[FlowPin]):
         return MappingDeque[PinName, FlowPin](pins, keyable=FlowPins.__pin_keyable)
+
+    @staticmethod
+    def nonext():
+        return copy(_EMPTY_NEXT_FLOW_PIN)
 
     @classmethod
     def from_template(cls, templates: Optional[Iterable[Pin]] = None):
@@ -107,55 +113,37 @@ class FlowPins(Serializable):
     def clear(self) -> None:
         self.pins.clear()
 
-    def as_exec_inputs(self, *, visible_only=False) -> List[FlowPin]:
+    def filter(self, func: Callable[[FlowPin], bool], *, visible_only=False):
         if visible_only:
-            return list(filter(lambda p: p.is_exec_inputs and not p.hidden, self.pins))
+            return type(self)(filter(lambda p: func(p) and not p.hidden, self.pins))
         else:
-            return list(filter(lambda p: p.is_exec_inputs, self.pins))
+            return type(self)(filter(lambda p: func(p), self.pins))
 
-    def as_exec_outputs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_exec_outputs and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_exec_outputs, self.pins))
+    def as_exec_inputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_exec_inputs, visible_only=visible_only)
 
-    def as_data_inputs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_data_inputs and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_data_inputs, self.pins))
+    def as_exec_outputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_exec_outputs, visible_only=visible_only)
 
-    def as_data_outputs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_data_outputs and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_data_outputs, self.pins))
+    def as_data_inputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_data_inputs, visible_only=visible_only)
 
-    def as_execs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_exec_action and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_exec_action, self.pins))
+    def as_data_outputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_data_outputs, visible_only=visible_only)
 
-    def as_datas(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_data_action and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_data_action, self.pins))
+    def as_execs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_exec_action, visible_only=visible_only)
 
-    def as_inputs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_input_stream and not p.hidden, self.pins))
-        else:
-            return list(filter(lambda p: p.is_input_stream, self.pins))
+    def as_datas(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_data_action, visible_only=visible_only)
+
+    def as_inputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_input_stream, visible_only=visible_only)
+
+    def as_outputs(self, *, visible_only=False):
+        return self.filter(lambda p: p.is_output_stream, visible_only=visible_only)
 
     # fmt: off
-
-    def as_outputs(self, *, visible_only=False) -> List[FlowPin]:
-        if visible_only:
-            return list(filter(lambda p: p.is_output_stream and not p.hidden, self.pins))  # noqa: E501
-        else:
-            return list(filter(lambda p: p.is_output_stream, self.pins))
 
     def get_exec_lines(self, *, visible_only=False) -> int:
         return max(
@@ -261,15 +249,15 @@ class FlowPins(Serializable):
         if len(exec_outputs) != 1:
             return False
 
-        if not isinstance(exec_inputs[0], PrevPin):
+        if exec_inputs[0].name != PREV_PIN_NAME:
             return False
-        if not isinstance(exec_outputs[0], NextPin):
+        if exec_outputs[0].name != NEXT_PIN_NAME:
             return False
 
         return True
 
-    def find_return_pin(self) -> Optional[Pin]:
+    def find_return_pin(self) -> Optional[FlowPin]:
         for pin in self.pins:
-            if isinstance(pin, ReturnPin):
+            if pin.name == RETURN_PIN_NAME:
                 return pin
         return None

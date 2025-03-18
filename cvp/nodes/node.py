@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from inspect import signature
-from typing import Callable, List, NewType, Optional, Sequence
+from typing import NewType, Optional, Sequence
 
 from cvp.nodes.base import NodeBase
 from cvp.nodes.ntype import Ntype
 from cvp.pins.pin import Pin
-from cvp.pins.special import NextPin, PrevPin, ReturnPin
 
 NodeName = NewType("NodeName", str)
 
@@ -14,25 +12,7 @@ NodeName = NewType("NodeName", str)
 class Node(NodeBase):
     def __init__(self, *pins: Pin, ntype: Optional[Ntype] = None):
         self.__pins = pins
-        self.__ntype = ntype if ntype is not None else Ntype.from_node(self)
-
-    @classmethod
-    def from_callable(cls, func: Callable):
-        if not callable(func):
-            raise TypeError(f"Only callables can be registered: {func}")
-
-        pins: List[Pin] = list()
-        pins.append(PrevPin())
-        pins.append(NextPin())
-
-        sig = signature(func)
-        pins.append(ReturnPin.from_return_annotation(sig.return_annotation))
-
-        for param in sig.parameters.values():
-            param_pin = Pin.from_parameter(param)
-            pins.append(param_pin)
-
-        return cls(*pins, ntype=Ntype(func))
+        self.__ntype = ntype if ntype is not None else Ntype(type(self))
 
     @property
     def pins(self) -> Sequence[Pin]:

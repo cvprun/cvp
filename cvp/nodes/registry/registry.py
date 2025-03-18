@@ -6,6 +6,7 @@ from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import Getter
 from cvp.nodes.defaults.essential.setter import Setter
 from cvp.nodes.node import Node
+from cvp.nodes.callable import CallableNode
 from cvp.nodes.ntype import NodePath
 
 
@@ -77,8 +78,8 @@ class NodeRegistry:
             raise KeyError(f"Duplicate node path: {node.path}")
         self._nodes[node.path] = node
 
-    def add_callable(self, func: Callable) -> Node:
-        node = Node.from_callable(func)
+    def add_callable(self, func: Callable) -> CallableNode:
+        node = CallableNode(func)
         self.add(node)
         return node
 

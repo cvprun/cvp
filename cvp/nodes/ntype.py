@@ -6,7 +6,6 @@ from typing import (
     Any,
     Callable,
     Dict,
-    Final,
     NewType,
     Optional,
     Tuple,
@@ -18,45 +17,23 @@ from typing import (
 from type_serialize import Serializable
 
 from cvp.inspect.islambda import islambda
-from cvp.nodes.base import NodeBase
-from cvp.nodes.record import NodeRecord
-from cvp.pins.pin import Pin
+from cvp.nodes.base import NodeInterface
 from cvp.types.override import override
 from cvp.variables import MODULE_PATH_SEPARATOR
 
-NodeUnion = Union[Callable[..., Any], Type[NodeBase]]
+NodeUnion = Union[Callable[..., Any], Type[NodeInterface]]
 NodePath = NewType("NodePath", str)
 
 
-class _NodeFaker(NodeBase):
-    @override
-    def run(self, record: NodeRecord) -> Pin:
-        raise NotImplementedError("This object should not be called")
-
-    @override
-    def render(self, record: NodeRecord) -> None:
-        raise NotImplementedError("This object should not be called")
-
-
-_DEFAULT_NODE_FAKER: Final[_NodeFaker] = _NodeFaker()
-
-
-def is_node_interface_type(obj) -> TypeGuard[Type[NodeBase]]:
-    return isinstance(obj, type) and issubclass(obj, NodeBase)
+def is_node_interface(obj) -> TypeGuard[Type[NodeInterface]]:
+    return isinstance(obj, type) and issubclass(obj, NodeInterface)
 
 
 def isnode(obj) -> bool:
     if islambda(obj):
         return False
 
-    return is_node_interface_type(obj) or callable(obj)
-
-
-def create_node_interface(obj) -> NodeBase:
-    if isinstance(obj, type) and issubclass(obj, NodeBase):
-        return obj()
-    else:
-        return _DEFAULT_NODE_FAKER
+    return is_node_interface(obj) or callable(obj)
 
 
 def generate_node_path(cls: NodeUnion) -> NodePath:
@@ -83,7 +60,7 @@ def load_with_cls(cls: NodeUnion) -> Tuple[NodeUnion, NodePath]:
 
 def load(cls: Union[str, NodeUnion]) -> Tuple[NodeUnion, NodePath]:
     if isinstance(cls, str):
-        return load_with_path(NodePath(cls))
+        return load_with_path(cls)
     else:
         return load_with_cls(cls)
 
@@ -91,34 +68,11 @@ def load(cls: Union[str, NodeUnion]) -> Tuple[NodeUnion, NodePath]:
 class Ntype(Serializable):
     _type: NodeUnion
     _path: NodePath
-    _node: NodeBase
 
-    def __init__(self, cls: Union[str, NodeUnion], node: Optional[NodeBase] = None):
+    def __init__(self, cls: Union[str, NodeUnion]):
         self._type, self._path = load(cls)
         assert isnode(self._type)
         assert isinstance(self._path, str)
-
-        self._node = node if node is not None else create_node_interface(self._type)
-        assert isinstance(self._node, NodeBase)
-
-        if is_node_interface_type(self._type):
-            if type(self._node) is not self._type:
-                raise TypeError(
-                    f"Expected node type {self._type.__name__}, "
-                    f"but got {type(self._node).__name__}"
-                )
-        else:
-            if not isinstance(self._node, _NodeFaker):
-                raise TypeError(
-                    f"Expected node type {_NodeFaker.__name__}, "
-                    f"but got {type(self._node).__name__}"
-                )
-
-    @classmethod
-    def from_node(cls, node: NodeBase):
-        result = cls(type(node), node=node)
-        assert result._node is node
-        return result
 
     def __str__(self) -> str:
         return self._path
@@ -170,8 +124,11 @@ class Ntype(Serializable):
         assert isnode(self._type)
         assert isinstance(self._path, str)
 
-        self._node = create_node_interface(self._type)
-        assert isinstance(self._node, NodeBase)
+    def is_node_interface(self) -> bool:
+        return is_node_interface(self._type)
+
+    def is_callable(self) -> bool:
+        return callable(self._type)
 
     @property
     def type(self) -> NodeUnion:
@@ -198,25 +155,3 @@ class Ntype(Serializable):
     @property
     def class_name(self) -> str:
         return self.split()[1]
-
-    def run(self, record: NodeRecord) -> Any:
-        if is_node_interface_type(self._type):
-            assert not isinstance(self._node, _NodeFaker)
-            return self._node.run(record)
-        elif callable(self._type):
-            assert isinstance(self._node, _NodeFaker)
-            return self._type(*record.args, **record.kwargs)
-        else:
-            assert False, "Inaccessible section"
-
-    def render(self, record: NodeRecord) -> None:
-        if is_node_interface_type(self._type):
-            assert not isinstance(self._node, _NodeFaker)
-            self._node.render(record)
-        elif callable(self._type):
-            assert isinstance(self._node, _NodeFaker)
-        else:
-            assert False, "Inaccessible section"
-
-    def __call__(self, *args, **kwargs) -> Any:
-        return self.run(NodeRecord.from_call(*args, **kwargs))

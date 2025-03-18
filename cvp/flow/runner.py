@@ -187,7 +187,7 @@ class FlowRunner:
                 index=index,
                 node_uuid=node.uuid,
                 pin_name=pin.name,
-                data_pins=node.data_pins,
+                pins=node.pins,
                 use_copy=use_copy,
                 use_deepcopy=use_deepcopy,
             )
@@ -348,7 +348,7 @@ class FlowRunner:
         next_pin_name = str()
 
         try:
-            result_pin = node.run(record)
+            result_pin = np.node.run(record)
             next_pin_name = str(result_pin.name)
         except:  # noqa
             record.exception = exc_info()

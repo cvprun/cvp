@@ -4,7 +4,7 @@
 from functools import lru_cache
 from typing import Callable, Sequence
 
-from cvp.nodes.node import Node
+from cvp.nodes.callable import CallableNode
 
 
 @lru_cache
@@ -40,5 +40,5 @@ def get_builtin_functions() -> Sequence[Callable]:
     )
 
 
-def get_builtin_nodes() -> Sequence[Node]:
-    return tuple(Node.from_callable(func) for func in get_builtin_functions())
+def get_builtin_nodes() -> Sequence[CallableNode]:
+    return tuple(CallableNode(func) for func in get_builtin_functions())
