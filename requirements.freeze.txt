@@ -96,5 +96,6 @@ urllib3==2.3.0
 uvloop==0.21.0
 watchdog==6.0.0
 wheel==0.45.1
+workerflow==0.0.1
 WSDiscovery==2.1.2
 zeep==4.3.1

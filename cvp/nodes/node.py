@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from inspect import signature
-from typing import Callable, List, NewType, Sequence, Optional
+from typing import Callable, List, NewType, Optional, Sequence
 
 from cvp.nodes.base import NodeBase
 from cvp.nodes.ntype import Ntype
