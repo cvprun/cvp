@@ -27,7 +27,7 @@ jobs:
           python-version: 3.12
 
       - name: pip caching
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('requirements.main.txt') }}
