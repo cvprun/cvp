@@ -13,6 +13,8 @@ class ManagerTestCase(TestCase):
         self.tmpdir = TemporaryDirectory()
         self.home = HomeDir(self.tmpdir.name)
         self.manager = FlowManager(self.home)
+        self.add_operator = "cvp.nodes.defaults.operators.arithmetic.add.AddOperator"
+        self.entrypoint = "cvp.nodes.defaults.essential.entrypoint.Entrypoint"
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -29,7 +31,7 @@ class ManagerTestCase(TestCase):
         var0get_value = var0get.find_pin("value")
         var1get_value = var1get.find_pin("value")
 
-        add = self.manager.add_node(graph, "cvp.nodes.defaults.operators.arithmetic.add.AddOperator")
+        add = self.manager.add_node(graph, self.add_operator)
         add_first = add.find_pin("first")
         add_second = add.find_pin("second")
         add_return = add.find_pin("return")
@@ -37,7 +39,7 @@ class ManagerTestCase(TestCase):
         self.manager.add_wire(graph, var0get, var0get_value, add, add_first)
         self.manager.add_wire(graph, var1get, var1get_value, add, add_second)
 
-        entrypoint = self.manager.add_node(graph, "cvp.nodes.defaults.essential.entrypoint.Entrypoint")
+        entrypoint = self.manager.add_node(graph, self.entrypoint)
         start = entrypoint.find_pin("start")
 
         var2 = self.manager.add_variable(graph, "value2", int)

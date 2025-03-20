@@ -1,17 +1,30 @@
 # -*- coding: utf-8 -*-
 
 from copy import copy, deepcopy
-from typing import Any, Callable, Dict, Final, Iterable, List, Optional, SupportsIndex, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Final,
+    Iterable,
+    List,
+    Optional,
+    SupportsIndex,
+    Union,
+)
 
 from type_serialize import Serializable, deserialize, serialize
 
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.flow.pin import FlowPin
 from cvp.pins.pin import Pin, PinName
-from cvp.pins.special import PREV_PIN_NAME, NEXT_PIN_NAME, RETURN_PIN_NAME, EmptyNextPin
+from cvp.pins.special import EMPTY_NEXT_PIN, ENTRYPOINT_PIN, NEXT_PIN, PREV_PIN
 from cvp.types.override import override
 
-_EMPTY_NEXT_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(EmptyNextPin())
+EMPTY_NEXT_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(EMPTY_NEXT_PIN)
+ENTRYPOINT_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(ENTRYPOINT_PIN)
+PREV_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(PREV_PIN)
+NEXT_FLOW_PIN: Final[FlowPin] = FlowPin.from_template(NEXT_PIN)
 
 
 class FlowPins(Serializable):
@@ -28,7 +41,19 @@ class FlowPins(Serializable):
 
     @staticmethod
     def nonext():
-        return copy(_EMPTY_NEXT_FLOW_PIN)
+        return copy(EMPTY_NEXT_FLOW_PIN)
+
+    @staticmethod
+    def entrypoint():
+        return copy(ENTRYPOINT_FLOW_PIN)
+
+    @staticmethod
+    def prev():
+        return copy(PREV_FLOW_PIN)
+
+    @staticmethod
+    def next():
+        return copy(NEXT_FLOW_PIN)
 
     @classmethod
     def from_template(cls, templates: Optional[Iterable[Pin]] = None):
@@ -236,28 +261,3 @@ class FlowPins(Serializable):
         )
 
     # fmt: on
-
-    def is_bypass_exec(self) -> bool:
-        if len(self.as_execs()) != 2:
-            return False
-
-        exec_inputs = self.as_exec_inputs()
-        if len(exec_inputs) != 1:
-            return False
-
-        exec_outputs = self.as_exec_outputs()
-        if len(exec_outputs) != 1:
-            return False
-
-        if exec_inputs[0].name != PREV_PIN_NAME:
-            return False
-        if exec_outputs[0].name != NEXT_PIN_NAME:
-            return False
-
-        return True
-
-    def find_return_pin(self) -> Optional[FlowPin]:
-        for pin in self.pins:
-            if pin.name == RETURN_PIN_NAME:
-                return pin
-        return None

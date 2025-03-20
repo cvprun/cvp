@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from inspect import signature
-from typing import Callable
+from typing import Any, Callable
 
 from cvp.nodes.node import Node
 from cvp.nodes.ntype import Ntype
+from cvp.nodes.record import NodeRecord
 from cvp.pins.pin import Pin
 from cvp.pins.special import NextPin, PrevPin, ReturnPin
 from cvp.types.override import override
-from cvp.nodes.record import NodeRecord
 
 
 class CallableNode(Node):
@@ -41,3 +41,10 @@ class CallableNode(Node):
         result = self._func(*record.args, **record.kwargs)
         record.set(self._return, result)
         return self._next
+
+    def __call__(self, *args, **kwargs) -> Any:
+        result = super().__call__(*args, **kwargs)
+        assert isinstance(result, dict)
+        assert 1 == len(result)
+        assert self._return.name in result
+        return result[self._return.name]

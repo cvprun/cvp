@@ -2,7 +2,16 @@
 
 from collections import deque
 from copy import copy, deepcopy
-from typing import Any, Deque, Dict, Iterable, Mapping, NamedTuple, NewType, Optional, Sequence
+from typing import (
+    Any,
+    Deque,
+    Dict,
+    Mapping,
+    NamedTuple,
+    NewType,
+    Optional,
+    Sequence,
+)
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
@@ -14,7 +23,6 @@ from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.pin import PinName
 from cvp.pins.stream import Stream
-from cvp.pins.special import ReturnPin
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 WireKey = NewType("WireKey", str)
@@ -238,14 +246,6 @@ class FlowMemory:
                         assert False, "Inaccessible section"
                     case _:
                         assert False, "Inaccessible section"
-
-        if return_pin := pins.find_return_pin():
-            record.set(return_pin, result)
-
-        if pins.is_bypass_exec():
-            pins.as_exec_outputs()[0]
-        else:
-            pins.None
 
         return NodeRecord(
             index=index,

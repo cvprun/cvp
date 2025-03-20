@@ -7,7 +7,7 @@ from enum import IntEnum, auto, unique
 from logging import Logger
 from sys import exc_info
 from threading import Condition, Lock
-from typing import Deque, Dict, Final, NamedTuple, Optional, Union
+from typing import Deque, Final, NamedTuple, Optional, Union
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.memory import FlowMemory
@@ -15,10 +15,7 @@ from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.logging.logging import flow_logger
-from cvp.memory.copy import copy_flexible
-from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
-from cvp.nodes.registry.registry import NodeRegistry
 from cvp.pins.special import EntrypointPin
 
 INFINITY_COUNTER: Final[int] = -1
@@ -41,7 +38,6 @@ class FlowRunnerState(NamedTuple):
 
 @dataclass
 class _FlowRunnerArguments:
-    nodes: Dict[str, Node]
     graph: FlowGraph
     start_node: FlowNode
     entrypoint: FlowPin
@@ -72,7 +68,6 @@ class FlowRunner:
     def __init__(
         self,
         executor: Executor,
-        node_registry: NodeRegistry,
         graph: FlowGraph,
         start_node: Union[FlowNode, str],
         *,
@@ -98,16 +93,6 @@ class FlowRunner:
 
         assert isinstance(start_node, FlowNode)
 
-        registered_nodes = dict()
-        for node in graph.nodes:
-            if node.path in registered_nodes:
-                continue
-            registered_nodes[node.path] = copy_flexible(
-                node_registry.get(node.path),
-                use_copy=use_copy,
-                use_deepcopy=use_deepcopy,
-            )
-
         self._lock = Lock()
         self._counter = INFINITY_COUNTER
         self._condition = Condition(self._lock)
@@ -116,7 +101,6 @@ class FlowRunner:
         self._memory = FlowMemory.from_graph(graph)
 
         arguments = _FlowRunnerArguments(
-            nodes=registered_nodes,
             start_node=start_node,
             entrypoint=FlowPin.from_template(EntrypointPin()),
             graph=graph,
@@ -172,30 +156,6 @@ class FlowRunner:
     def state(self):
         with self._lock:
             return FlowRunnerState(FlowRunnerStep(self._step))
-
-    def create_record(
-        self,
-        index: int,
-        node: FlowNode,
-        pin: FlowPin,
-        *,
-        use_copy=False,
-        use_deepcopy=False,
-    ):
-        with self._lock:
-            return self._memory.create_node_execution_record(
-                index=index,
-                node_uuid=node.uuid,
-                pin_name=pin.name,
-                pins=node.pins,
-                use_copy=use_copy,
-                use_deepcopy=use_deepcopy,
-            )
-
-    def update_result_record(self, record: NodeRecord) -> None:
-        with self._lock:
-            self._memory.update_with_node_execution_record(record)
-            self._records.append(record)
 
     def stop(self) -> None:
         with self._condition:
@@ -253,22 +213,20 @@ class FlowRunner:
             while next_np is not None:
                 data_nps = args.graph.retrieve_data_node_execution_order(next_np.node)
                 for data_np in data_nps:
-                    self._execute_node(
+                    self._execute_node_with_logging(
                         index=index,
                         graph=args.graph,
                         np=data_np,
-                        node=args.nodes[data_np.node.path],
                         use_copy=args.use_copy,
                         use_deepcopy=args.use_deepcopy,
                         logger=args.logger,
                     )
                     index += 1
 
-                next_np = self._execute_node(
+                next_np = self._execute_node_with_logging(
                     index=index,
                     graph=args.graph,
                     np=next_np,
-                    node=args.nodes[next_np.node.path],
                     use_copy=args.use_copy,
                     use_deepcopy=args.use_deepcopy,
                     logger=args.logger,
@@ -286,12 +244,11 @@ class FlowRunner:
                 self._step = FlowRunnerStep.done
                 return self._records.copy()
 
-    def _execute_node(
+    def _execute_node_with_logging(
         self,
         index: int,
         graph: FlowGraph,
         np: FlowNodePin,
-        node: Node,
         *,
         use_copy=False,
         use_deepcopy=False,
@@ -315,11 +272,10 @@ class FlowRunner:
         try:
             if logger is not None:
                 logger.debug(f"{prefix} Start")
-            return self.__execute_node_main(
+            return self._execute_node_wrapper(
                 index=index,
                 graph=graph,
                 np=np,
-                node=node,
                 use_copy=use_copy,
                 use_deepcopy=use_deepcopy,
             )
@@ -327,17 +283,16 @@ class FlowRunner:
             if logger is not None:
                 logger.debug(f"{prefix} End")
 
-    def __execute_node_main(
+    def _execute_node_wrapper(
         self,
         index: int,
         graph: FlowGraph,
         np: FlowNodePin,
-        node: Node,
         *,
         use_copy=False,
         use_deepcopy=False,
     ) -> Optional[FlowNodePin]:
-        record = self.create_record(
+        next_pin = self._execute_node_main(
             index=index,
             node=np.node,
             pin=np.pin,
@@ -345,24 +300,8 @@ class FlowRunner:
             use_deepcopy=use_deepcopy,
         )
 
-        next_pin_name = str()
-
-        try:
-            result_pin = np.node.run(record)
-            next_pin_name = str(result_pin.name)
-        except:  # noqa
-            record.exception = exc_info()
-        finally:
-            self.update_result_record(record)
-            if record.has_exception:
-                raise record.exc_val.with_traceback(record.exc_tb)
-
-        if next_pin_name is None:
+        if not next_pin.name:
             return None  # There is no next flow.
-
-        next_pin = np.node.find_pin(next_pin_name)
-        if next_pin is None:
-            raise IndexError(f"Not found next pin: '{next_pin_name}'")
 
         if not next_pin.wires:
             return None  # The wire is not connected.
@@ -390,3 +329,32 @@ class FlowRunner:
         assert input_node is not None
         assert input_pin is not None
         return FlowNodePin(input_node, input_pin)
+
+    def _execute_node_main(
+        self,
+        index: int,
+        node: FlowNode,
+        pin: FlowPin,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+    ) -> FlowPin:
+        with self._lock:
+            record = self._memory.create_node_execution_record(
+                index=index,
+                node_uuid=node.uuid,
+                pin_name=pin.name,
+                pins=node.pins,
+                use_copy=use_copy,
+                use_deepcopy=use_deepcopy,
+            )
+
+        try:
+            return node.run(record)
+        except:  # noqa
+            record.exception = exc_info()
+            raise
+        finally:
+            with self._lock:
+                self._memory.update_with_node_execution_record(record)
+                self._records.append(record)

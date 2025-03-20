@@ -11,12 +11,14 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
 from cvp.fonts.types import IconCode
+from cvp.nodes.generator import generate_node
 from cvp.nodes.node import Node, NodeName
 from cvp.nodes.ntype import NodePath, Ntype
+from cvp.nodes.record import NodeRecord
+from cvp.pins.special import EmptyNextPin
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import EMPTY_POINT, EMPTY_SIZE, Point, Rect, Size
-from cvp.nodes.record import NodeRecord
 
 NodeKey = NewType("NodeKey", str)
 
@@ -106,6 +108,7 @@ class FlowNode(Serializable):
         self.node_pos = node_pos
         self.node_size = node_size
 
+        self._node = generate_node(self.ntype)
         self._selected = selected
         self._hovering = hovering
 
@@ -176,6 +179,7 @@ class FlowNode(Serializable):
         result.name_size = copy(self.name_size)
         result.node_pos = copy(self.node_pos)
         result.node_size = copy(self.node_size)
+        result._node = copy(self._node)
         result._selected = copy(self._selected)
         result._hovering = copy(self._hovering)
         return result
@@ -205,6 +209,7 @@ class FlowNode(Serializable):
         result.name_size = deepcopy(self.name_size, memo)
         result.node_pos = deepcopy(self.node_pos, memo)
         result.node_size = deepcopy(self.node_size, memo)
+        result._node = deepcopy(self._node, memo)
         result._selected = deepcopy(self._selected, memo)
         result._hovering = deepcopy(self._hovering, memo)
         memo[id(self)] = result
@@ -284,6 +289,7 @@ class FlowNode(Serializable):
         assert len(self.node_pos) == 2
         assert len(self.node_size) == 2
 
+        self._node = generate_node(self.ntype)
         self._selected = False
         self._hovering = False
 
@@ -488,15 +494,11 @@ class FlowNode(Serializable):
         pin.dtype = dtype
 
     def run(self, record: NodeRecord) -> FlowPin:
-        result = self.ntype.run(*record.args, **record.kwargs)
-
-        if return_pin := self.pins.find_return_pin():
-            record.set(return_pin.name, result)
-
-        if self.pins.is_bypass_exec:
-            return self.pins.as_exec_outputs()[0]
+        next_pin = self._node.run(record)
+        if isinstance(next_pin, EmptyNextPin):
+            return FlowPins.nonext()
         else:
-            return self.pins.nonext()
+            return self.pins[next_pin.name]
 
     def render(self, record: NodeRecord) -> None:
-        pass
+        self._node.render(record)

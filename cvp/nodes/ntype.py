@@ -17,7 +17,7 @@ from typing import (
 from type_serialize import Serializable
 
 from cvp.inspect.islambda import islambda
-from cvp.nodes.base import NodeInterface
+from cvp.nodes.interface import NodeInterface
 from cvp.types.override import override
 from cvp.variables import MODULE_PATH_SEPARATOR
 

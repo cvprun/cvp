@@ -2,11 +2,11 @@
 
 from typing import Callable, Dict, Union
 
+from cvp.nodes.callable import CallableNode
 from cvp.nodes.defaults import get_default_path2nodes
 from cvp.nodes.defaults.essential.getter import Getter
 from cvp.nodes.defaults.essential.setter import Setter
 from cvp.nodes.node import Node
-from cvp.nodes.callable import CallableNode
 from cvp.nodes.ntype import NodePath
 
 

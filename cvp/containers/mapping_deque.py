@@ -33,7 +33,7 @@ class MappingDeque(Generic[_KT, _VT]):
     ):
         if keyable is not None:
             sig = signature(keyable)
-            if self.is_indexable_key(sig.return_annotation):
+            if isinstance(sig.return_annotation, SupportsIndex):
                 raise TypeError("The 'keyable' argument must not be indexable")
         else:
             keyable = self.default_keyable
@@ -50,12 +50,8 @@ class MappingDeque(Generic[_KT, _VT]):
         return str(value)
 
     @staticmethod
-    def is_indexable_key(key: Any) -> bool:
-        return hasattr(key, "__index__")
-
-    @staticmethod
     def deque_index(index: SupportsIndex) -> int:
-        if MappingDeque.is_indexable_key(index):
+        if isinstance(index, SupportsIndex):
             return index.__index__()
         else:
             raise TypeError(f"Unsupported index type: {type(index).__name__}")
@@ -254,24 +250,22 @@ class MappingDeque(Generic[_KT, _VT]):
         return self._mapping.__contains__(key)
 
     def __getitem__(self, key: Union[SupportsIndex, _KT]) -> _VT:
-        if self.is_indexable_key(key):
-            _i = self.deque_index(key)  # type: ignore[arg-type]
-            return self._deque.__getitem__(_i)
+        if isinstance(key, SupportsIndex):
+            return self._deque.__getitem__(self.deque_index(key))
         else:
-            _k = self.mapping_key(key)  # type: ignore[arg-type]
-            return self._mapping.__getitem__(_k)
+            return self._mapping.__getitem__(key)
 
     def __setitem__(self, key: Union[SupportsIndex, _KT], value: _VT) -> None:
-        if self.is_indexable_key(key):
-            self.update_with_index(key, value)  # type: ignore[arg-type]
+        if isinstance(key, SupportsIndex):
+            self.update_with_index(key, value)
         else:
-            self.update_with_key_value(key, value)  # type: ignore[arg-type]
+            self.update_with_key_value(key, value)
 
     def __delitem__(self, key: Union[SupportsIndex, _KT]) -> None:
-        if self.is_indexable_key(key):
-            self.remove_with_index(key)  # type: ignore[arg-type]
+        if isinstance(key, SupportsIndex):
+            self.remove_with_index(key)
         else:
-            self.remove_with_key(key)  # type: ignore[arg-type]
+            self.remove_with_key(key)
 
     def __iter__(self):
         return self._deque.__iter__()

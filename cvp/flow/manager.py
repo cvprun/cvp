@@ -238,7 +238,6 @@ class FlowManager:
     ):
         runner = FlowRunner(
             executor=executor,
-            node_registry=self._node_registry,
             graph=graph,
             start_node=start_node,
             use_copy=False,

@@ -167,7 +167,6 @@ class Context:
     def start_flow_thread(self, graph: FlowGraph, start_node: Union[FlowNode, str]):
         runner = FlowRunner(
             executor=self._process_manager.thread_pool,
-            node_registry=self._flow_manager.node_registry,
             graph=graph,
             start_node=start_node,
             use_copy=False,

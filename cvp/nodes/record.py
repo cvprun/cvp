@@ -132,6 +132,10 @@ class NodeRecord:
         assert self._exception is not None
         return self._exception[2]
 
+    def raise_if_exception(self) -> None:
+        if self.has_exception:
+            raise self.exc_val.with_traceback(self.exc_tb)
+
     def clear(self) -> None:
         self._exception = None
 

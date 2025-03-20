@@ -31,6 +31,11 @@ RETURN_PIN_NAME: Final[PinName] = PinName("return")
 RETURN_PIN_DOCS: Final[str] = "The return value of a function"
 
 
+class EmptyNextPin(ExecOutputPin):
+    def __init__(self):
+        super().__init__(EMPTY_NEXT_PIN_NAME, EMPTY_NEXT_PIN_DOCS)
+
+
 class EntrypointPin(ExecOutputPin):
     def __init__(self):
         super().__init__(ENTRYPOINT_PIN_NAME, ENTRYPOINT_PIN_DOCS)
@@ -46,9 +51,10 @@ class NextPin(ExecOutputPin):
         super().__init__(NEXT_PIN_NAME, NEXT_PIN_DOCS)
 
 
-class EmptyNextPin(ExecOutputPin):
-    def __init__(self):
-        super().__init__(EMPTY_NEXT_PIN_NAME, EMPTY_NEXT_PIN_DOCS)
+EMPTY_NEXT_PIN: Final[EmptyNextPin] = EmptyNextPin()
+ENTRYPOINT_PIN: Final[EntrypointPin] = EntrypointPin()
+PREV_PIN: Final[PrevPin] = PrevPin()
+NEXT_PIN: Final[NextPin] = NextPin()
 
 
 class ReturnPin(DataOutputPin):
