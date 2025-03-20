@@ -9,6 +9,7 @@ from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import FlowGraph
+from cvp.flow.history import FlowHistory
 from cvp.flow.mode import FlowMode
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
@@ -24,7 +25,6 @@ from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
 from cvp.widgets.canvas.controller import CanvasController
-from cvp.widgets.canvas.flow.history import History
 
 
 class FlowCanvas(CanvasController):
@@ -60,7 +60,7 @@ class FlowCanvas(CanvasController):
         graph.update_wires_io()
         graph.update_wires_polyline()
 
-        self._history = History(max_history=config.max_history)
+        self._history = FlowHistory(max_history=config.max_history)
         self._history.save_history("Initialize graph", graph)
 
         self._mode = FlowMode.normal

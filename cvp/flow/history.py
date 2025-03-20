@@ -7,14 +7,14 @@ from typing import Deque, NamedTuple, Optional
 from cvp.flow.graph import FlowGraph
 
 
-class RecordItem(NamedTuple):
+class HistoryItem(NamedTuple):
     title: str
     graph: FlowGraph
     details: str
 
 
-class History:
-    _records: Deque[RecordItem]
+class FlowHistory:
+    _records: Deque[HistoryItem]
     _eof: int
 
     def __init__(self, max_history: Optional[int] = None):
@@ -38,7 +38,7 @@ class History:
     def __getitem__(self, index: int):
         return self._records.__getitem__(index)
 
-    def __setitem__(self, index: int, value: RecordItem) -> None:
+    def __setitem__(self, index: int, value: HistoryItem) -> None:
         self._records.__setitem__(index, value)
 
     def __bool__(self):
@@ -86,7 +86,7 @@ class History:
         *,
         max_history: Optional[int] = None,
         freeze_latest=False,
-    ) -> RecordItem:
+    ) -> HistoryItem:
         if max_history is not None:
             self.update_max_history(max_history)
 
@@ -96,7 +96,7 @@ class History:
         if details is None:
             details = str()
 
-        item = RecordItem(title, deepcopy(graph), details)
+        item = HistoryItem(title, deepcopy(graph), details)
         self._records.append(item)
         if not freeze_latest:
             self._eof = len(self._records)
