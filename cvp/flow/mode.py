@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from enum import Enum, auto, unique
+from enum import IntEnum, auto, unique
 
 
 @unique
-class ControlMode(Enum):
+class FlowMode(IntEnum):
     normal = auto()
     node_moving = auto()
     pin_connecting = auto()

@@ -9,6 +9,7 @@ from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import FlowGraph
+from cvp.flow.mode import FlowMode
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
@@ -24,7 +25,6 @@ from cvp.types.override import override
 from cvp.types.shapes import Rect
 from cvp.widgets.canvas.controller import CanvasController
 from cvp.widgets.canvas.flow.history import History
-from cvp.widgets.canvas.flow.mode import ControlMode
 
 
 class FlowCanvas(CanvasController):
@@ -36,7 +36,7 @@ class FlowCanvas(CanvasController):
     _fonts: Optional[FontMapper]
     _config: Optional[FlowAuiConfig]
 
-    _mode: ControlMode
+    _mode: FlowMode
     _connects: List[FlowNodePin]
     _roi: Optional[Rect]
     _selection_stash: Optional[FlowSelection]
@@ -63,7 +63,7 @@ class FlowCanvas(CanvasController):
         self._history = History(max_history=config.max_history)
         self._history.save_history("Initialize graph", graph)
 
-        self._mode = ControlMode.normal
+        self._mode = FlowMode.normal
         self._connects = list()
         self._roi = None
         self._selection_stash = None
@@ -80,23 +80,23 @@ class FlowCanvas(CanvasController):
 
     @property
     def is_normal_mode(self) -> bool:
-        return self._mode == ControlMode.normal
+        return self._mode == FlowMode.normal
 
     @property
     def is_node_moving_mode(self) -> bool:
-        return self._mode == ControlMode.node_moving
+        return self._mode == FlowMode.node_moving
 
     @property
     def is_pin_connecting_mode(self) -> bool:
-        return self._mode == ControlMode.pin_connecting
+        return self._mode == FlowMode.pin_connecting
 
     @property
     def is_anchor_moving_mode(self) -> bool:
-        return self._mode == ControlMode.anchor_moving
+        return self._mode == FlowMode.anchor_moving
 
     @property
     def is_roi_box_mode(self) -> bool:
-        return self._mode == ControlMode.roi_box
+        return self._mode == FlowMode.roi_box
 
     @override
     def as_unformatted_text(self) -> str:
@@ -368,15 +368,15 @@ class FlowCanvas(CanvasController):
             return
 
         match self._mode:
-            case ControlMode.normal:
+            case FlowMode.normal:
                 self._update_nodes_state_for_normal()
-            case ControlMode.node_moving:
+            case FlowMode.node_moving:
                 self._update_nodes_state_for_node_moving()
-            case ControlMode.pin_connecting:
+            case FlowMode.pin_connecting:
                 self._update_nodes_state_for_pin_connecting()
-            case ControlMode.anchor_moving:
+            case FlowMode.anchor_moving:
                 self._update_nodes_state_for_anchor_moving()
-            case ControlMode.roi_box:
+            case FlowMode.roi_box:
                 self._update_nodes_state_for_selection_box()
             case _:
                 assert False, "Inaccessible section"
@@ -397,11 +397,11 @@ class FlowCanvas(CanvasController):
         if self.activating and self.start_left_dragging:
             if hovering_node := self.graph.find_hovering_node():
                 if hovering_pin := hovering_node.find_hovering_pin():
-                    self._mode = ControlMode.pin_connecting
+                    self._mode = FlowMode.pin_connecting
                     self._connects.clear()
                     self._connects.append(FlowNodePin(hovering_node, hovering_pin))
                 else:
-                    self._mode = ControlMode.node_moving
+                    self._mode = FlowMode.node_moving
                     if not hovering_node.selected:
                         if not self.is_multi_select_mode:
                             self.graph.unselect_all_items()
@@ -409,9 +409,9 @@ class FlowCanvas(CanvasController):
             else:
                 if hovering_anchor := self.graph.find_hovering_anchor():
                     hovering_anchor.selected = True
-                    self._mode = ControlMode.anchor_moving
+                    self._mode = FlowMode.anchor_moving
                 else:
-                    self._mode = ControlMode.roi_box
+                    self._mode = FlowMode.roi_box
                     if not self.is_multi_select_mode:
                         self.graph.unselect_all_items()
                     self._roi = self.mx, self.my, self.mx, self.my
@@ -427,7 +427,7 @@ class FlowCanvas(CanvasController):
         self.graph.move_on_selected_nodes((dx, dy))
 
         if self.changed_left_up:
-            self._mode = ControlMode.normal
+            self._mode = FlowMode.normal
             self.save_history("The nodes has been moved")
 
     def _update_nodes_state_for_pin_connecting(self) -> None:
@@ -448,7 +448,7 @@ class FlowCanvas(CanvasController):
             hovering_np.pin.connectable = bool(connect_pairs)
 
         if self.changed_left_up:
-            self._mode = ControlMode.normal
+            self._mode = FlowMode.normal
             self._connects.clear()
             if connect_pairs:
                 for out_conn, in_conn in connect_pairs:
@@ -465,7 +465,7 @@ class FlowCanvas(CanvasController):
         self.graph.move_on_selected_anchor((dx, dy))
 
         if self.changed_left_up:
-            self._mode = ControlMode.normal
+            self._mode = FlowMode.normal
             selected_wire = self.graph.selected_wire_only
             assert selected_wire is not None
             selected_wire.start_anchor.selected = False
@@ -488,7 +488,7 @@ class FlowCanvas(CanvasController):
                 node.selected = node in self._selection_stash
 
         if self.changed_left_up:
-            self._mode = ControlMode.normal
+            self._mode = FlowMode.normal
             self._roi = None
             self._selection_stash = None
             for node in self.graph.nodes:
