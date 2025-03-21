@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple, TypeVar
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
 from cvp.config.sections.proxies.aui import AuiBottomProxy, AuiLeftProxy, AuiRightProxy

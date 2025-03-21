@@ -2,8 +2,8 @@
 
 from typing import Tuple
 
-import imgui
 import numpy as np
+from imgui_bundle import imgui
 
 from cvp.config.sections.games.glyph_hack import (
     DEFAULT_BOARD_COLS,

@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
 from cvp.imgui.button import button

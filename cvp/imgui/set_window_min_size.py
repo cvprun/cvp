@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 
 def set_window_min_size(min_width: int, min_height: int) -> None:

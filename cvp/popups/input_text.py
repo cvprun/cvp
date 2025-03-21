@@ -2,8 +2,8 @@
 
 from typing import Callable, Optional
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.imgui.input_text_value import input_text_value

@@ -2,8 +2,8 @@
 
 from typing import Callable, Optional
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.renderer.popup.base import PopupBase

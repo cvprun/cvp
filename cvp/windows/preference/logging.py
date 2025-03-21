@@ -3,7 +3,7 @@
 import os
 from typing import Final, Sequence
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.logging.logging import (
     SEVERITIES,

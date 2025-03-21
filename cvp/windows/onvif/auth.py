@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.onvif import HttpAuth, OnvifConfig
 from cvp.imgui.input_text_value import input_text_value

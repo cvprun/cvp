@@ -3,7 +3,7 @@
 from shutil import which
 from typing import List, Optional, Sequence
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.proxies.ffmpeg import FFmpegProxy, FFprobeProxy
 from cvp.imgui.button import button

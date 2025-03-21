@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.push_style_var import DefaultStyles, style_colors
 from cvp.logging.logging import logger

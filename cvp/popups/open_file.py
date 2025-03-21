@@ -5,8 +5,8 @@ from os import PathLike
 from pathlib import Path
 from typing import Callable, List, Optional, Union
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button

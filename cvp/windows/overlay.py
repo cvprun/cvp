@@ -3,7 +3,7 @@
 from math import floor
 from typing import Final, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.overlay import OverlayWindowConfig
 from cvp.imgui.begin_popup_context_window import (

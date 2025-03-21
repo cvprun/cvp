@@ -3,7 +3,7 @@
 from dataclasses import fields, is_dataclass
 from typing import Final, List
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.cv.stitching.props import StitcherProps
 from cvp.cv.stitching.types import (

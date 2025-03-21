@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
 from cvp.imgui.button import button

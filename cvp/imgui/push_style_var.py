@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from enum import StrEnum, unique
 from typing import Final, Union
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.types.colors import RGBA
 

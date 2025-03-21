@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.dtype import DtypeManagerConfig
 from cvp.dtypes.dtype import Dtype

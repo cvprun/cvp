@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import imgui
-
 # noinspection PyProtectedMember
 from imgui.core import _DrawList
+from imgui_bundle import imgui
 
 
 def get_window_draw_list():

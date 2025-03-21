@@ -2,7 +2,7 @@
 
 from enum import StrEnum, auto, unique
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.text_centered import text_centered

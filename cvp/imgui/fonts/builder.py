@@ -3,10 +3,9 @@
 from os import PathLike
 from typing import List, Optional, Tuple, Union
 
-import imgui
-
 # noinspection PyProtectedMember
 from imgui.core import FontConfig, _Font
+from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.ranges import UNICODE_SINGLE_BLOCK_SIZE, CodepointRange

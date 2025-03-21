@@ -4,7 +4,7 @@ from argparse import Namespace
 from inspect import Parameter
 from typing import Any, Dict, Final, List, Optional, Tuple
 
-import imgui
+from imgui_bundle import imgui
 from lxml.etree import QName as _EtreeQName
 from zeep.xsd import Attribute, Element
 from zeep.xsd.valueobjects import CompoundValue

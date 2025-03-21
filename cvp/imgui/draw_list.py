@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import imgui
-
 # noinspection PyProtectedMember
 from imgui.core import _DrawList as DrawList
+from imgui_bundle import imgui
 
 
 def create_empty_draw_list():

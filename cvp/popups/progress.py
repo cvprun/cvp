@@ -3,8 +3,8 @@
 from threading import Thread
 from typing import Any, Callable, Iterable, Mapping, Optional
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.renderer.popup.base import PopupBase

@@ -3,7 +3,7 @@
 from math import fmod
 from typing import Tuple, Union
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.drag_float2 import drag_float2
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list

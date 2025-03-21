@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox

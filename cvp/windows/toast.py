@@ -4,7 +4,7 @@ from collections import deque
 from time import time
 from typing import Deque, Final, Optional, Union
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list

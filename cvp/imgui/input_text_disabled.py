@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.push_style_var import (
     DEFAULT_DISABLE_BACKGROUND_COLOR,

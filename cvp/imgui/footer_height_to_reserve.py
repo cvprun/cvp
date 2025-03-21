@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 
 def footer_height_to_reserve() -> int:

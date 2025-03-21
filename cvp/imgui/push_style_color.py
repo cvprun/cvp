@@ -2,7 +2,7 @@
 
 from contextlib import contextmanager
 
-import imgui
+from imgui_bundle import imgui
 
 
 @contextmanager

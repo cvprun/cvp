@@ -2,7 +2,7 @@
 
 from typing import Any, NamedTuple, Optional
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.dtypes.dtype import Dtype
 from cvp.imgui.input_text_disabled import input_text_disabled

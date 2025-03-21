@@ -2,9 +2,9 @@
 
 from typing import Callable, Dict
 
-import imgui
 import pygame
 from imgui.integrations.opengl import FixedPipelineRenderer
+from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.time import get_ticks
 

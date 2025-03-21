@@ -3,10 +3,9 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
-import imgui
-
 # noinspection PyProtectedMember
 from imgui.core import _Font
+from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.codepoint_info import CodepointInfo

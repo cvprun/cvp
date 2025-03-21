@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.imgui.color_edit3 import color_edit3

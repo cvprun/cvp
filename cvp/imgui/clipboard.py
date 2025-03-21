@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 
 def put_clipboard_text(text: str) -> None:

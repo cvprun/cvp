@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 

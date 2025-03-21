@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.keyring.keyring import list_keyring_names, load_keyring, set_keyring
 from cvp.logging.logging import logger

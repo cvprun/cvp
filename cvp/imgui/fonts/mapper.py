@@ -5,7 +5,7 @@ from collections import OrderedDict
 from os import PathLike
 from typing import Final, Optional, Union
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.fonts.size import FontSize
 from cvp.imgui.fonts.builder import FontBuilder

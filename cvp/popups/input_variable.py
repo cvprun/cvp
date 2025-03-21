@@ -2,8 +2,8 @@
 
 from typing import Any, Callable, Optional
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype

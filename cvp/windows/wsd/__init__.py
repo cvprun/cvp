@@ -2,7 +2,7 @@
 
 from typing import Final, Mapping
 
-import imgui
+from imgui_bundle import imgui
 from wsdiscovery import WSDiscovery
 
 from cvp.config.sections.onvif import OnvifConfig

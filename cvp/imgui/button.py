@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 
 def button(label: str, width=0.0, height=0.0, disabled=False) -> bool:

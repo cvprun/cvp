@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode

@@ -2,11 +2,11 @@
 
 from warnings import warn
 
-import imgui
 import pygame
 
 # noinspection PyProtectedMember
 from imgui.core import _ImGuiInputTextCallbackData
+from imgui_bundle import imgui
 from pygame.key import get_pressed
 
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.canvas import CanvasWindowConfig
 from cvp.imgui.menu_item_ex import menu_item

@@ -3,7 +3,7 @@
 from contextlib import contextmanager
 from typing import Union
 
-import imgui
+from imgui_bundle import imgui
 
 
 @contextmanager

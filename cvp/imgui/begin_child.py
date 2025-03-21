@@ -2,7 +2,7 @@
 
 from typing import Union
 
-import imgui
+from imgui_bundle import imgui
 
 
 def begin_child(

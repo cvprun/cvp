@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 BACKGROUND_WINDOW_FLAGS: Final[int] = (
     imgui.WINDOW_NO_DECORATION

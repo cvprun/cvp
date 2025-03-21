@@ -5,8 +5,8 @@ from io import StringIO
 from typing import Optional, Tuple
 from warnings import catch_warnings
 
-import imgui
 import pygame
+from imgui_bundle import imgui
 from OpenGL import GL
 from OpenGL.acceleratesupport import ACCELERATE_AVAILABLE
 from OpenGL.error import Error

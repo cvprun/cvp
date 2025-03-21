@@ -3,7 +3,7 @@
 from collections import OrderedDict
 from typing import Generic, Optional, TypeVar
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.context.context import Context
 from cvp.renderer.widget.interface import WidgetInterface

@@ -3,8 +3,8 @@
 from random import choice
 from typing import Final, Sequence, Tuple
 
-import imgui
 import numpy as np
+from imgui_bundle import imgui
 
 from cvp.config.sections.games.tetrix import (
     DEFAULT_BOARD_COLS,

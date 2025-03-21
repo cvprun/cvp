@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.catalog import CatalogManagerConfig
 from cvp.imgui.input_text_disabled import input_text_disabled

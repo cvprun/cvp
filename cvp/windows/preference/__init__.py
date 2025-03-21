@@ -3,7 +3,7 @@
 from collections import OrderedDict
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.preference import PreferenceManagerConfig
 from cvp.renderer.context import RendererContext

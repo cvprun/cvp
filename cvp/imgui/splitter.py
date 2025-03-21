@@ -3,7 +3,7 @@
 from enum import Enum, auto, unique
 from typing import Final, NamedTuple, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 

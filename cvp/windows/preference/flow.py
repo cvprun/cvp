@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.canvas.axis import Axis
 from cvp.config.sections.canvas.grid import Grid

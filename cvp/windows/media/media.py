@@ -3,7 +3,7 @@
 from ctypes import addressof, c_void_p, create_string_buffer, memmove
 from typing import Final, Tuple
 
-import imgui
+from imgui_bundle import imgui
 from OpenGL import GL
 
 from cvp.config.sections.media import MediaWindowConfig

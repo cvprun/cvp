@@ -3,7 +3,7 @@
 import os
 from typing import Mapping
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
 from cvp.config.sections.media import Mode as MediaSectionMode

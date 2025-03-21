@@ -3,7 +3,7 @@
 from math import isqrt
 from typing import Mapping, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.font import FontManagerConfig
 from cvp.imgui.begin_child import begin_child

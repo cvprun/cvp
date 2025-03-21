@@ -4,7 +4,7 @@ import json
 from traceback import format_exc
 from typing import Any, Dict, Final, Sequence, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.imgui.begin_child import begin_child

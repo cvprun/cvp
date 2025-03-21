@@ -3,7 +3,7 @@
 from enum import IntEnum, unique
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 
 @unique

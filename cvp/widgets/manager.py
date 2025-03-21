@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from enum import StrEnum, unique
 from typing import Generic, Mapping, Optional, TypeVar
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.bases.manager import ManagerWindowConfig
 from cvp.imgui.text_centered import text_centered

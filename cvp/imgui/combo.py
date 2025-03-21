@@ -2,7 +2,7 @@
 
 from typing import NamedTuple, Sequence
 
-import imgui
+from imgui_bundle import imgui
 
 
 class ComboResult(NamedTuple):

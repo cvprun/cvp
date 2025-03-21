@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.draw_list.types import DrawList
 from cvp.types.shapes import Rect

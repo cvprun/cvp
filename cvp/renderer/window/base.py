@@ -2,7 +2,7 @@
 
 from typing import Any, Callable, Dict, Generic, Optional, Tuple, TypeVar
 
-import imgui
+from imgui_bundle import imgui
 from pygame.event import Event
 
 from cvp.config.sections.bases.window import WindowConfig

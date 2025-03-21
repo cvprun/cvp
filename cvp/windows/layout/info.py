@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.layout import LayoutConfig
 from cvp.imgui.button import button

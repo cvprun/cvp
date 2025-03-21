@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.media import MediaWindowConfig
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size

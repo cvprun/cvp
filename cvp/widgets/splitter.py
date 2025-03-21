@@ -2,7 +2,7 @@
 
 from typing import Optional, Union
 
-import imgui
+from imgui_bundle import imgui
 from pygame import SYSTEM_CURSOR_SIZENS, SYSTEM_CURSOR_SIZEWE
 from pygame.cursors import Cursor
 from pygame.mouse import get_cursor, set_cursor

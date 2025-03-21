@@ -2,7 +2,7 @@
 
 from typing import Callable, Final, Sequence, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.proxies.flow import SplitTreeProxy

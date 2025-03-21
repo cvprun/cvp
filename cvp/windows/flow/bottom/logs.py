@@ -5,7 +5,7 @@ from logging import CRITICAL, DEBUG, ERROR, INFO, NOTSET, WARNING, Handler, LogR
 from typing import Callable, Deque, NamedTuple
 from weakref import finalize
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.checkbox import checkbox

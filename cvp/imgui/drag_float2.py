@@ -2,7 +2,7 @@
 
 from typing import NamedTuple, Tuple
 
-import imgui
+from imgui_bundle import imgui
 
 
 class DragFloat2Result(NamedTuple):

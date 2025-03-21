@@ -3,7 +3,7 @@
 from typing import List, Optional
 from weakref import ReferenceType, ref
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.flow.anchor import FlowAnchor

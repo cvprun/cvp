@@ -2,7 +2,7 @@
 
 from typing import NamedTuple, Optional
 
-import imgui
+from imgui_bundle import imgui
 
 
 class MenuItemResult(NamedTuple):

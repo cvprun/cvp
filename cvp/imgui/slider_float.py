@@ -2,7 +2,7 @@
 
 from typing import NamedTuple
 
-import imgui
+from imgui_bundle import imgui
 
 
 class SliderFloatResult(NamedTuple):

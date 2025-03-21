@@ -2,7 +2,7 @@
 
 from typing import Final
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.config.sections.stitching import StitchingAuiConfig
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list

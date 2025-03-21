@@ -2,7 +2,7 @@
 
 from typing import Any, Sequence, Union
 
-import imgui
+from imgui_bundle import imgui
 
 from cvp.palette import find_named_color
 
