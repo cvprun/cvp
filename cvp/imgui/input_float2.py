@@ -42,11 +42,6 @@ def input_float2(
     fmt="%.3f",
     flags=0,
 ):
-    result = imgui.input_float2(
-        label,
-        value0,
-        value1,
-        fmt,
-        flags,
-    )
+    values = [value0, value1]
+    result = imgui.input_float2(label, values, fmt, flags)
     return InputFloat2Result.from_raw(result)

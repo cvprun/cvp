@@ -2,6 +2,8 @@
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags import focused, hovered
+
 
 class WindowQuery:
     def __init__(self):
@@ -19,9 +21,9 @@ class WindowQuery:
         self._expanded = expanded
         self._opened = opened
         self._appearing = imgui.is_window_appearing()
-        self._focused = imgui.is_window_focused(imgui.FOCUS_ROOT_AND_CHILD_WINDOWS)
-        self._hovered = imgui.is_window_hovered(imgui.HOVERED_ROOT_AND_CHILD_WINDOWS)
-        self._x, self._y = imgui.get_window_position()
+        self._focused = imgui.is_window_focused(focused.ROOT_AND_CHILD_WINDOWS)
+        self._hovered = imgui.is_window_hovered(hovered.ROOT_AND_CHILD_WINDOWS)
+        self._x, self._y = imgui.get_window_pos()
         self._w, self._h = imgui.get_window_size()
 
     @property

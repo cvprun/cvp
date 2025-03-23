@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.config.sections.canvas import CanvasWindowConfig
+from cvp.imgui.flags.input_text import InputTextFlags
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
@@ -21,19 +22,15 @@ class CanvasWindow(WindowBase[CanvasWindowConfig]):
         )
         self._label = "##CanvasEditor"
         self._content = ""
-        self._length = -1
-        self._width = 0
-        self._height = 0
-        self._flags = imgui.INPUT_TEXT_ALLOW_TAB_INPUT
+        self._size = 0, 0
+        self._flags = InputTextFlags.allow_tab_input
 
     @override
     def on_process(self) -> None:
         changed, text_content = imgui.input_text_multiline(
             self._label,
             self._content,
-            self._length,
-            self._width,
-            self._height,
+            self._size,
             self._flags,
         )
         assert isinstance(changed, bool)
@@ -43,7 +40,7 @@ class CanvasWindow(WindowBase[CanvasWindowConfig]):
         self.on_popup_menu()
 
     def on_popup_menu(self):
-        if not imgui.begin_popup_context_window().opened:
+        if not imgui.begin_popup_context_window():
             return
 
         try:

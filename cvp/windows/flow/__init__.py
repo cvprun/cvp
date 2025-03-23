@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, Sequence, Tuple
+from typing import Callable, Sequence, Tuple
 
 from imgui_bundle import imgui
 
@@ -16,8 +16,12 @@ from cvp.fonts.glyphs.mdi import (
     PLAY,
     STOP,
 )
-from cvp.imgui.begin_child import begin_child
+from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
+from cvp.imgui.flags.child import BORDERS
+from cvp.imgui.flags.color_var import CHILD_BG
+from cvp.imgui.flags.style_var import WINDOW_PADDING
+from cvp.imgui.flags.window import CANVAS_FLAGS, MENU_BAR
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_item_spacing
 from cvp.imgui.text_centered import text_centered
@@ -37,11 +41,6 @@ from cvp.windows.flow.catalog import Catalog
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
 
-_WINDOW_NO_MOVE: Final[int] = imgui.WINDOW_NO_MOVE
-_WINDOW_NO_SCROLLBAR: Final[int] = imgui.WINDOW_NO_SCROLLBAR
-_WINDOW_NO_RESIZE: Final[int] = imgui.WINDOW_NO_RESIZE
-_CANVAS_FLAGS: Final[int] = _WINDOW_NO_MOVE | _WINDOW_NO_SCROLLBAR | _WINDOW_NO_RESIZE
-
 
 class FlowWindow(AuiWindow[FlowAuiConfig]):
     _menus: Sequence[Tuple[str, Callable[[], None]]]
@@ -52,7 +51,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             window_config=context.config.flow_aui,
             title="Flow",
             closable=True,
-            flags=imgui.WINDOW_MENU_BAR,
+            flags=MENU_BAR,
             min_width=MIN_WINDOW_WIDTH,
             min_height=MIN_WINDOW_HEIGHT,
             modifiable_title=False,
@@ -294,7 +293,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         nodes = canvas.graph.selection.nodes
         multiple_item = 2 <= len(nodes)
 
-        if imgui.begin_menu("Align", enabled=multiple_item).opened:
+        if imgui.begin_menu("Align", enabled=multiple_item):
             pivot = nodes[-1]
             try:
                 if menu_item("Left"):
@@ -331,7 +330,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         nodes = canvas.graph.selection.nodes
         multiple_item = 2 <= len(nodes)
 
-        if imgui.begin_menu("Distribute", enabled=multiple_item).opened:
+        if imgui.begin_menu("Distribute", enabled=multiple_item):
             assert canvas is not None
             if menu_item("Horizontal"):
                 canvas.graph.nodes_distribute_horizontal(nodes)
@@ -348,8 +347,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def _process_enabled_run_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
 
-        with imgui.begin_menu(f"{PLAY} Run") as run_menu:
-            if run_menu.opened:
+        if imgui.begin_menu(f"{PLAY} Run"):
+            try:
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
                     for node in begin_nodes:
@@ -357,9 +356,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                             self.context.start_flow_thread(canvas.graph, node)
                 else:
                     menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
 
-        with imgui.begin_menu(f"{BUG} Debug") as debug_menu:
-            if debug_menu.opened:
+        if imgui.begin_menu(f"{BUG} Debug"):
+            try:
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
                     for node in begin_nodes:
@@ -367,6 +368,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                             pass
                 else:
                     menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
 
         imgui.separator()
 
@@ -418,36 +421,42 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             canvas.save_history("Add getter variable node", self._variable_key)
 
     def on_menu(self) -> None:
-        with imgui.begin_menu_bar() as menu_bar:
-            if not menu_bar.opened:
-                return
-
-            for name, func in self._menus:
-                with imgui.begin_menu(name) as menu:
-                    if menu.opened:
-                        func()
+        if imgui.begin_menu_bar():
+            try:
+                for name, func in self._menus:
+                    if imgui.begin_menu(name):
+                        try:
+                            func()
+                        finally:
+                            imgui.end_menu()
+            finally:
+                imgui.end_menu_bar()
 
     def on_file_menu(self) -> None:
         if menu_item("New graph"):
             self._new_graph_popup.show()
 
-        with imgui.begin_menu("Open graph") as open_menu:
-            if open_menu.opened:
+        if imgui.begin_menu("Open graph"):
+            try:
                 if self.context.fm.graphs:
                     for uuid, graph in self.context.fm.graphs.items():
                         if menu_item(graph.name):
                             self._canvases.open(graph)
                 else:
                     menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
 
-        with imgui.begin_menu("Recent graphs") as recent_menu:
-            if recent_menu.opened:
+        if imgui.begin_menu("Recent graphs"):
+            try:
                 if self.window_config.recent:
                     for recent in self.window_config.recent:
                         if menu_item(recent):
                             pass
                 else:
                     menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
 
         imgui.separator()
         has_opened_graph = self._canvases.opened
@@ -561,16 +570,22 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     @override
     def on_process_sidebar_left(self):
-        with begin_child("## ChildLeftTop", 0, -self.split_tree):
-            self._left_tabs.do_process(self._canvases)
+        if begin_child("## ChildLeftTop", 0, -self.split_tree):
+            try:
+                self._left_tabs.do_process(self._canvases)
+            finally:
+                end_child()
 
         with style_item_spacing(0, -1):
             self._tree_splitter.do_process()
 
-        with begin_child("## ChildLeftBottom"):
-            with style_item_spacing(0, 0):
-                imgui.dummy(0, self.padding_height)
-            self._catalog.on_process()
+        if begin_child("## ChildLeftBottom"):
+            try:
+                with style_item_spacing(0, 0):
+                    imgui.dummy((0, self.padding_height))
+                self._catalog.on_process()
+            finally:
+                end_child()
 
     @override
     def on_process_sidebar_right(self):
@@ -602,10 +617,14 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     @staticmethod
     def begin_child_canvas() -> None:
-        imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0, 0))
-        imgui.push_style_color(imgui.COLOR_CHILD_BACKGROUND, 0.5, 0.5, 0.5)
+        imgui.push_style_var(WINDOW_PADDING, (0, 0))
+        imgui.push_style_color(CHILD_BG, (0.5, 0.5, 0.5))
         try:
-            return begin_child("##Canvas", border=True, flags=_CANVAS_FLAGS)
+            return begin_child(
+                "##Canvas",
+                child_flags=BORDERS,
+                window_flags=CANVAS_FLAGS,
+            )
         finally:
             imgui.pop_style_color()
             imgui.pop_style_var()
@@ -684,17 +703,17 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with imgui.begin_drag_drop_target() as target:
             if target.hovered:
-                if payload := imgui.accept_drag_drop_payload(DRAG_FLOW_DTYPE):
-                    dtype_path = str(payload, encoding="utf-8")
-                    self._drag_dtype = self.context.fm.dtypes[dtype_path]
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
+                    self._drag_dtype = self.context.fm.dtypes[payload.type]
                     self._add_variable_popup.show()
-                elif payload := imgui.accept_drag_drop_payload(DRAG_FLOW_NODE):
-                    node_path = str(payload, encoding="utf-8")
-                    node = self.context.fm.add_node(canvas.graph, node_path)
+
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
+                    node = self.context.fm.add_node(canvas.graph, payload.type)
                     canvas.update_node_roi(node)
-                    canvas.save_history("Add a new node", node_path)
-                elif payload := imgui.accept_drag_drop_payload(DRAG_FLOW_VARIABLE):
-                    self._variable_key = str(payload, encoding="utf-8")
+                    canvas.save_history("Add a new node", payload.type)
+
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_VARIABLE):
+                    self._variable_key = payload.type
                     imgui.open_popup("AddVariableNodeMenus")
 
         with imgui.begin_popup_context_window("AddVariableNodeMenus") as context_window:

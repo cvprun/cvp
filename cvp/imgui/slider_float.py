@@ -30,7 +30,6 @@ def slider_float(
     max_value: float,
     fmt="%.3f",
     flags=0,
-    power=1.0,
 ):
-    result = imgui.slider_float(label, value, min_value, max_value, fmt, flags, power)
+    result = imgui.slider_float(label, value, min_value, max_value, fmt, flags)
     return SliderFloatResult.from_raw(result)

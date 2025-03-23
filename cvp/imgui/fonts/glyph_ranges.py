@@ -2,12 +2,10 @@
 
 from typing import List
 
-from imgui import GlyphRanges
-
 from cvp.fonts.ranges import CodepointRange, flatten_ranges
 
 
-def create_glyph_ranges(ranges: List[CodepointRange]) -> GlyphRanges:
+def create_glyph_ranges(ranges: List[CodepointRange]) -> List[int]:
     if ranges:
         # [IMPORTANT]
         # The NULL character is a special character used as a termination character
@@ -27,4 +25,4 @@ def create_glyph_ranges(ranges: List[CodepointRange]) -> GlyphRanges:
     # GlyphRanges must be terminated with a NULL (0) element.
     glyph_ranges.append(0)
 
-    return GlyphRanges(glyph_ranges)
+    return glyph_ranges

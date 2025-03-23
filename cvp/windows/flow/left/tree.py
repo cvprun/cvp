@@ -7,26 +7,19 @@ from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
 from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
+from cvp.imgui.flags.tree_node import (
+    ARC_FLAGS,
+    CATEGORY_FLAGS,
+    NODE_FLAGS,
+    PIN_FLAGS,
+    SELECTED,
+    VARIABLE_FLAGS,
+)
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-
-_LEAF = imgui.TREE_NODE_LEAF
-_NO_TREE_PUSH_ON_OPEN = imgui.TREE_NODE_NO_TREE_PUSH_ON_OPEN
-_OPEN_ON_ARROW = imgui.TREE_NODE_OPEN_ON_ARROW
-_OPEN_ON_DOUBLE_CLICK = imgui.TREE_NODE_OPEN_ON_DOUBLE_CLICK
-_SPAN_AVAILABLE_WIDTH = imgui.TREE_NODE_SPAN_AVAILABLE_WIDTH
-_DEFAULT_OPEN = imgui.TREE_NODE_DEFAULT_OPEN
-
-_COMMON_FLAGS = _OPEN_ON_ARROW | _OPEN_ON_DOUBLE_CLICK | _SPAN_AVAILABLE_WIDTH
-
-CATEGORY_FLAGS = _COMMON_FLAGS | _DEFAULT_OPEN
-NODE_FLAGS = _COMMON_FLAGS
-PIN_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
-ARC_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
-VARIABLE_FLAGS = _COMMON_FLAGS | _LEAF | _NO_TREE_PUSH_ON_OPEN
 
 
 class TreeTab(TabItem[FlowCanvasTabs]):
@@ -49,7 +42,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
             return
 
         graph_label = f"{graph.name}###{graph.key}"
-        if imgui.tree_node(graph_label, CATEGORY_FLAGS):
+        if imgui.tree_node_ex(graph_label, CATEGORY_FLAGS):
             try:
                 self.tree_nodes(graph)
                 self.tree_wires(graph)
@@ -58,7 +51,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
                 imgui.tree_pop()
 
     def tree_nodes(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Nodes", CATEGORY_FLAGS):
+        if imgui.tree_node_ex("Nodes", CATEGORY_FLAGS):
             try:
                 for node in graph.nodes:
                     self.tree_node(graph, node)
@@ -74,9 +67,9 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
         flags = NODE_FLAGS
         if node.selected:
-            flags |= imgui.TREE_NODE_SELECTED
+            flags |= SELECTED
 
-        node_opened = imgui.tree_node(f"{node.name}###{node.uuid}", flags)
+        node_opened = imgui.tree_node_ex(f"{node.name}###{node.uuid}", flags)
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
                 graph.unselect_all_items()
@@ -96,9 +89,9 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
                 flags = PIN_FLAGS
                 if pin.selected:
-                    flags |= imgui.TREE_NODE_SELECTED
+                    flags |= SELECTED
 
-                imgui.tree_node(pin.name, flags)
+                imgui.tree_node_ex(pin.name, flags)
                 if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
                     if not key_ctrl:
                         graph.unselect_all_items()
@@ -112,7 +105,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
             imgui.tree_pop()
 
     def tree_wires(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Wires", CATEGORY_FLAGS):
+        if imgui.tree_node_ex("Wires", CATEGORY_FLAGS):
             try:
                 for wire in graph.wires:
                     self.tree_wire(graph, wire)
@@ -127,9 +120,9 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
         flags = ARC_FLAGS
         if wire.selected:
-            flags |= imgui.TREE_NODE_SELECTED
+            flags |= SELECTED
 
-        imgui.tree_node(f"{wire.name}###{wire.uuid}", flags)
+        imgui.tree_node_ex(f"{wire.name}###{wire.uuid}", flags)
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
                 graph.unselect_all_items()
@@ -141,7 +134,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
             imgui.text(wire_icon)
 
     def tree_variables(self, graph: FlowGraph) -> None:
-        if imgui.tree_node("Variables", CATEGORY_FLAGS):
+        if imgui.tree_node_ex("Variables", CATEGORY_FLAGS):
             try:
                 for variable in graph.variables:
                     self.tree_variable(graph, variable)
@@ -154,10 +147,10 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
         flags = VARIABLE_FLAGS
         if variable.selected:
-            flags |= imgui.TREE_NODE_SELECTED
+            flags |= SELECTED
 
         label = f"({variable.dtype.class_name}) {variable.name}"
-        imgui.tree_node(label, flags)
+        imgui.tree_node_ex(label, flags)
 
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():
             if not key_ctrl:
@@ -167,7 +160,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
         with imgui.begin_drag_drop_source() as drag_drop_src:
             if drag_drop_src.dragging:
                 payload = variable.name.encode()
-                imgui.set_drag_drop_payload(DRAG_FLOW_VARIABLE, payload)
+                imgui.set_drag_drop_payload(DRAG_FLOW_VARIABLE, payload, len(payload))
                 imgui.text(variable.name)
 
         imgui.same_line(imgui.get_cursor_pos_x())

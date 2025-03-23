@@ -2,7 +2,6 @@
 
 from typing import TypeAlias
 
-# noinspection PyProtectedMember
-from imgui.core import _DrawList
+from imgui_bundle import imgui
 
-DrawList: TypeAlias = _DrawList
+DrawList: TypeAlias = imgui.ImDrawList

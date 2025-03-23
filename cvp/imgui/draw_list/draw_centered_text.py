@@ -20,5 +20,5 @@ def draw_centered_text(
     tw, th = imgui.calc_text_size(text)
     x = x1 + (w - tw) / 2.0
     y = y1 + (h - th) / 2.0
-    draw_list.add_text(x, y, color, text)
+    draw_list.add_text((x, y), color, text)
     return x, y, x + tw, y + th

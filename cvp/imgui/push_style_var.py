@@ -6,6 +6,7 @@ from typing import Final, Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags import color_var, style_var
 from cvp.types.colors import RGBA
 
 
@@ -47,7 +48,7 @@ def default_style_colors(
 
 @contextmanager
 def style_window_padding(x: float, y: float):
-    imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (x, y))
+    imgui.push_style_var(style_var.WINDOW_PADDING, (x, y))
     try:
         yield
     finally:
@@ -56,7 +57,7 @@ def style_window_padding(x: float, y: float):
 
 @contextmanager
 def style_item_spacing(x: float, y: float):
-    imgui.push_style_var(imgui.STYLE_ITEM_SPACING, (x, y))
+    imgui.push_style_var(style_var.ITEM_SPACING, (x, y))
     try:
         yield
     finally:
@@ -72,8 +73,8 @@ def style_disable_input(
     text_color=DEFAULT_DISABLE_TEXT_COLOR,
     background_color=DEFAULT_DISABLE_BACKGROUND_COLOR,
 ):
-    imgui.push_style_color(imgui.COLOR_TEXT, *text_color)
-    imgui.push_style_color(imgui.COLOR_FRAME_BACKGROUND, *background_color)
+    imgui.push_style_color(color_var.TEXT, *text_color)
+    imgui.push_style_color(color_var.FRAME_BG, *background_color)
     try:
         yield
     finally:

@@ -52,8 +52,10 @@ def get_window_roi(
     viewport = imgui.get_main_viewport()
     work_pos = viewport.work_pos  # Use work area to avoid menu-bar/task-bar, if any
     work_size = viewport.work_size
-    work_pos_x, work_pos_y = work_pos
-    work_size_x, work_size_y = work_size
+    work_pos_x = work_pos.x
+    work_pos_y = work_pos.y
+    work_size_x = work_size.x
+    work_size_y = work_size.y
     assert isinstance(work_pos_x, float)
     assert isinstance(work_pos_y, float)
     assert isinstance(work_size_x, float)

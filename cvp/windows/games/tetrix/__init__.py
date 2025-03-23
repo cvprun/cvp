@@ -94,7 +94,10 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
 
     @property
     def window_padding(self) -> Tuple[int, int]:
-        return imgui.get_style().window_padding
+        window_padding = imgui.get_style().window_padding
+        x = window_padding.x
+        y = window_padding.y
+        return int(x), int(y)
 
     @property
     def cell_pixels(self):
@@ -118,15 +121,21 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
 
     @property
     def current_block_color(self):
-        return imgui.get_color_u32_rgba(*self.window_config.current_block_color, 1.0)
+        r, g, b = self.window_config.current_block_color
+        color = r, g, b, 1.0
+        return imgui.get_color_u32(color)
 
     @property
     def fixed_block_color(self):
-        return imgui.get_color_u32_rgba(*self.window_config.fixed_block_color, 1.0)
+        r, g, b = self.window_config.fixed_block_color
+        color = r, g, b, 1.0
+        return imgui.get_color_u32(color)
 
     @property
     def outline_color(self):
-        return imgui.get_color_u32_rgba(*self.window_config.outline_color, 1.0)
+        r, g, b = self.window_config.outline_color
+        color = r, g, b, 1.0
+        return imgui.get_color_u32(color)
 
     @property
     def high_score(self):
@@ -265,7 +274,7 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
             return
 
         cx, cy = imgui.get_cursor_screen_pos()
-        cw, ch = imgui.get_content_region_available()
+        cw, ch = imgui.get_content_region_avail()
         assert isinstance(cx, float)
         assert isinstance(cy, float)
         assert isinstance(cw, float)
@@ -286,16 +295,15 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
             self._last_drop_time = self._current_time
 
     def process_key_events(self) -> None:
-        kmap = imgui.get_io().key_map
-        if imgui.is_key_pressed(kmap[imgui.KEY_LEFT_ARROW]):
+        if imgui.is_key_pressed(imgui.Key.left_arrow):
             self.move(-1)
-        if imgui.is_key_pressed(kmap[imgui.KEY_RIGHT_ARROW]):
+        if imgui.is_key_pressed(imgui.Key.right_arrow):
             self.move(1)
-        if imgui.is_key_pressed(kmap[imgui.KEY_DOWN_ARROW]):
+        if imgui.is_key_pressed(imgui.Key.down_arrow):
             self.soft_drop()
-        if imgui.is_key_pressed(kmap[imgui.KEY_UP_ARROW]):
+        if imgui.is_key_pressed(imgui.Key.up_arrow):
             self.rotate()
-        if imgui.is_key_pressed(kmap[imgui.KEY_SPACE]):
+        if imgui.is_key_pressed(imgui.Key.space):
             self.hard_drop()
 
     def draw_bord(self, draw_list: DrawList, canvas_roi: Rect) -> None:

@@ -19,7 +19,7 @@ class ConfirmPopup(PopupBase[bool]):
         ok: Optional[str] = None,
         cancel: Optional[str] = None,
         centered=True,
-        flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE,
+        flags=imgui.WindowFlags_.always_auto_resize,
         *,
         min_width=MIN_POPUP_CONFIRM_WIDTH,
         min_height=MIN_POPUP_CONFIRM_HEIGHT,

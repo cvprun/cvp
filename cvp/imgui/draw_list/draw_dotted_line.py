@@ -24,4 +24,4 @@ def draw_dotted_line(
     for start, end in lines:
         sx, sy = start
         ex, ey = end
-        draw_list.add_line(sx, sy, ex, ey, color, thickness)
+        draw_list.add_line((sx, sy), (ex, ey), color, thickness)

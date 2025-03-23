@@ -8,11 +8,11 @@ from imgui_bundle import imgui
 
 @unique
 class MouseButtonIndex(IntEnum):
-    LEFT = imgui.MOUSE_BUTTON_LEFT
-    MIDDLE = imgui.MOUSE_BUTTON_MIDDLE
-    RIGHT = imgui.MOUSE_BUTTON_RIGHT
+    LEFT = imgui.MouseButton_.left.value
+    MIDDLE = imgui.MouseButton_.middle.value
+    RIGHT = imgui.MouseButton_.right.value
 
 
-MOUSE_LEFT: Final[MouseButtonIndex] = MouseButtonIndex.LEFT
-MOUSE_MIDDLE: Final[MouseButtonIndex] = MouseButtonIndex.MIDDLE
-MOUSE_RIGHT: Final[MouseButtonIndex] = MouseButtonIndex.RIGHT
+MOUSE_LEFT: Final[int] = int(MouseButtonIndex.LEFT)
+MOUSE_MIDDLE: Final[int] = int(MouseButtonIndex.MIDDLE)
+MOUSE_RIGHT: Final[int] = int(MouseButtonIndex.RIGHT)

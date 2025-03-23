@@ -3,12 +3,12 @@
 from typing import Callable, Dict
 
 import pygame
-from imgui.integrations.opengl import FixedPipelineRenderer
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.time import get_ticks
 
 from cvp.logging.logging import logger
+from cvp.renderer.opengl import FixedPipelineRenderer
 from cvp.renderer.remapper import KeycodeRemapper
 
 
@@ -22,28 +22,28 @@ class PygameRenderer(FixedPipelineRenderer):
         self._remapper = KeycodeRemapper()
 
         kmap = self.io.key_map
-        kmap[imgui.KEY_TAB] = self._remapper(pygame.K_TAB)
-        kmap[imgui.KEY_LEFT_ARROW] = self._remapper(pygame.K_LEFT)
-        kmap[imgui.KEY_RIGHT_ARROW] = self._remapper(pygame.K_RIGHT)
-        kmap[imgui.KEY_UP_ARROW] = self._remapper(pygame.K_UP)
-        kmap[imgui.KEY_DOWN_ARROW] = self._remapper(pygame.K_DOWN)
-        kmap[imgui.KEY_PAGE_UP] = self._remapper(pygame.K_PAGEUP)
-        kmap[imgui.KEY_PAGE_DOWN] = self._remapper(pygame.K_PAGEDOWN)
-        kmap[imgui.KEY_HOME] = self._remapper(pygame.K_HOME)
-        kmap[imgui.KEY_END] = self._remapper(pygame.K_END)
-        kmap[imgui.KEY_INSERT] = self._remapper(pygame.K_INSERT)
-        kmap[imgui.KEY_DELETE] = self._remapper(pygame.K_DELETE)
-        kmap[imgui.KEY_BACKSPACE] = self._remapper(pygame.K_BACKSPACE)
-        kmap[imgui.KEY_SPACE] = self._remapper(pygame.K_SPACE)
-        kmap[imgui.KEY_ENTER] = self._remapper(pygame.K_RETURN)
-        kmap[imgui.KEY_ESCAPE] = self._remapper(pygame.K_ESCAPE)
-        kmap[imgui.KEY_PAD_ENTER] = self._remapper(pygame.K_KP_ENTER)
-        kmap[imgui.KEY_A] = self._remapper(pygame.K_a)
-        kmap[imgui.KEY_C] = self._remapper(pygame.K_c)
-        kmap[imgui.KEY_V] = self._remapper(pygame.K_v)
-        kmap[imgui.KEY_X] = self._remapper(pygame.K_x)
-        kmap[imgui.KEY_Y] = self._remapper(pygame.K_y)
-        kmap[imgui.KEY_Z] = self._remapper(pygame.K_z)
+        kmap[imgui.Key.tab.value] = self._remapper(pygame.K_TAB)
+        kmap[imgui.Key.left_arrow.value] = self._remapper(pygame.K_LEFT)
+        kmap[imgui.Key.right_arrow.value] = self._remapper(pygame.K_RIGHT)
+        kmap[imgui.Key.up_arrow.value] = self._remapper(pygame.K_UP)
+        kmap[imgui.Key.down_arrow.value] = self._remapper(pygame.K_DOWN)
+        kmap[imgui.Key.page_up.value] = self._remapper(pygame.K_PAGEUP)
+        kmap[imgui.Key.page_down.value] = self._remapper(pygame.K_PAGEDOWN)
+        kmap[imgui.Key.home.value] = self._remapper(pygame.K_HOME)
+        kmap[imgui.Key.end.value] = self._remapper(pygame.K_END)
+        kmap[imgui.Key.insert.value] = self._remapper(pygame.K_INSERT)
+        kmap[imgui.Key.delete.value] = self._remapper(pygame.K_DELETE)
+        kmap[imgui.Key.backspace.value] = self._remapper(pygame.K_BACKSPACE)
+        kmap[imgui.Key.space.value] = self._remapper(pygame.K_SPACE)
+        kmap[imgui.Key.enter.value] = self._remapper(pygame.K_RETURN)
+        kmap[imgui.Key.escape.value] = self._remapper(pygame.K_ESCAPE)
+        kmap[imgui.Key.keypad_enter.value] = self._remapper(pygame.K_KP_ENTER)
+        kmap[imgui.Key.a.value] = self._remapper(pygame.K_a)
+        kmap[imgui.Key.c.value] = self._remapper(pygame.K_c)
+        kmap[imgui.Key.v.value] = self._remapper(pygame.K_v)
+        kmap[imgui.Key.x.value] = self._remapper(pygame.K_x)
+        kmap[imgui.Key.y.value] = self._remapper(pygame.K_y)
+        kmap[imgui.Key.z.value] = self._remapper(pygame.K_z)
 
         self._events = dict()
         self._events[pygame.MOUSEMOTION] = self.on_mouse_motion
@@ -64,20 +64,20 @@ class PygameRenderer(FixedPipelineRenderer):
 
     def on_mouse_button_down(self, event: Event) -> bool:
         if event.button == pygame.BUTTON_LEFT:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_LEFT] = 1
+            self.io.mouse_down[imgui.MouseButton_.left.value] = 1
         elif event.button == pygame.BUTTON_RIGHT:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_RIGHT] = 1
+            self.io.mouse_down[imgui.MouseButton_.right.value] = 1
         elif event.button == pygame.BUTTON_MIDDLE:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_MIDDLE] = 1
+            self.io.mouse_down[imgui.MouseButton_.middle.value] = 1
         return True
 
     def on_mouse_button_up(self, event: Event) -> bool:
         if event.button == pygame.BUTTON_LEFT:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_LEFT] = 0
+            self.io.mouse_down[imgui.MouseButton_.left.value] = 0
         elif event.button == pygame.BUTTON_RIGHT:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_RIGHT] = 0
+            self.io.mouse_down[imgui.MouseButton_.right.value] = 0
         elif event.button == pygame.BUTTON_MIDDLE:
-            self.io.mouse_down[imgui.MOUSE_BUTTON_MIDDLE] = 0
+            self.io.mouse_down[imgui.MouseButton_.middle.value] = 0
         elif event.button == pygame.BUTTON_WHEELUP:
             self.io.mouse_wheel = 0.5
         elif event.button == pygame.BUTTON_WHEELDOWN:

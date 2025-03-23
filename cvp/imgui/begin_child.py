@@ -4,15 +4,18 @@ from typing import Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.child import ChildFlags
+from cvp.imgui.flags.window import WindowFlags
+
 
 def begin_child(
     label: Union[str, int],
     width=0.0,
     height=0.0,
-    border=False,
-    flags=0,
+    child_flags: Union[ChildFlags, int] = 0,
+    window_flags: Union[WindowFlags, int] = 0,
 ):
-    return imgui.begin_child(label, width, height, border, flags)  # noqa
+    return imgui.begin_child(label, (width, height), child_flags, window_flags)
 
 
 def end_child() -> None:

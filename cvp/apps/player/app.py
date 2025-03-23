@@ -19,7 +19,9 @@ from cvp.assets.icons import get_default_icon_path
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
+from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import default_style_colors
+from cvp.imgui.separator import separator
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
@@ -380,112 +382,112 @@ class PlayerApplication:
         self._context.windows.do_next()
 
     def on_file_menu(self) -> None:
-        # imgui.separator()
-        if imgui.menu_item("Quit", "Ctrl+Q")[0]:
+        if menu_item("Quit", shortcut="Ctrl+Q"):
             self._confirm_quit.show()
 
     def on_tools_menu(self) -> None:
-        imgui.menu_item("Computer Vision", None, False, False)
-        if imgui.menu_item("Flow", None, self._flow.opened)[0]:
+        menu_item("Computer Vision", enabled=False)
+        if menu_item("Flow", self._flow.opened):
             self._flow.flip_opened()
-        if imgui.menu_item("Dtype", None, self._dtype_manager.opened)[0]:
+        if menu_item("Dtype", self._dtype_manager.opened):
             self._dtype_manager.flip_opened()
-        if imgui.menu_item("Catalog", None, self._catalog_manager.opened)[0]:
+        if menu_item("Catalog", self._catalog_manager.opened):
             self._catalog_manager.flip_opened()
 
         if self.debug:
-            if imgui.menu_item("Stitching", None, self._stitching.opened)[0]:
+            if menu_item("Stitching", self._stitching.opened):
                 self._stitching.flip_opened()
-            if imgui.menu_item("Labeling", None, self._labeling_manager.opened)[0]:
+            if menu_item("Labeling", self._labeling_manager.opened):
                 self._labeling_manager.flip_opened()
 
         if self.debug:
-            imgui.separator()
-            imgui.menu_item("Editors", None, False, False)
-            if imgui.menu_item("Text", None, self._text.opened)[0]:
+            separator()
+            menu_item("Editors", enabled=False)
+            if menu_item("Text", self._text.opened):
                 self._text.flip_opened()
-            if imgui.menu_item("Canvas", None, self._canvas.opened)[0]:
+            if menu_item("Canvas", self._canvas.opened):
                 self._canvas.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Network Device", None, False, False)
-        if imgui.menu_item("Media", None, self._media_manager.opened)[0]:
+        separator()
+        menu_item("Network Device", enabled=False)
+        if menu_item("Media", self._media_manager.opened):
             self._media_manager.flip_opened()
-        if imgui.menu_item("ONVIF", None, self._onvif_manager.opened)[0]:
+        if menu_item("ONVIF", self._onvif_manager.opened):
             self._onvif_manager.flip_opened()
-        if imgui.menu_item("WsDiscovery", None, self._wsd_manager.opened)[0]:
+        if menu_item("WsDiscovery", self._wsd_manager.opened):
             self._wsd_manager.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Information", None, False, False)
-        if imgui.menu_item("Overlay", None, self._overlay.opened)[0]:
+        separator()
+        menu_item("Information", enabled=False)
+        if menu_item("Overlay", self._overlay.opened):
             self._overlay.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Management", None, False, False)
-        if imgui.menu_item("Layout", None, self._layout_manager.opened)[0]:
+        separator()
+        menu_item("Management", enabled=False)
+        if menu_item("Layout", self._layout_manager.opened):
             self._layout_manager.flip_opened()
-        if imgui.menu_item("Process", None, self._process_manager.opened)[0]:
+        if menu_item("Process", self._process_manager.opened):
             self._process_manager.flip_opened()
-        if imgui.menu_item("Window", None, self._window_manager.opened)[0]:
+        if menu_item("Window", self._window_manager.opened):
             self._window_manager.flip_opened()
 
         if self.debug:
-            if imgui.menu_item("Worker", None, self._worker_manager.opened)[0]:
+            if menu_item("Worker", self._worker_manager.opened):
                 self._worker_manager.flip_opened()
-            if imgui.menu_item("Files", None, self._files.opened)[0]:
+            if menu_item("Files", self._files.opened):
                 self._files.flip_opened()
 
         if self.debug:
-            imgui.separator()
-            imgui.menu_item("Development", None, False, False)
-            if imgui.menu_item("Terminal", None, self._terminal.opened)[0]:
+            separator()
+            menu_item("Development", enabled=False)
+            if menu_item("Terminal", self._terminal.opened):
                 self._terminal.flip_opened()
 
-        imgui.separator()
-        imgui.menu_item("Game", None, False, False)
-        if imgui.menu_item("TetriX", None, self._tetrix.opened)[0]:
+        separator()
+        menu_item("Game", enabled=False)
+        if menu_item("TetriX", self._tetrix.opened):
             self._tetrix.flip_opened()
 
         if self.debug:
-            if imgui.menu_item("GlyphWorld", None, self._glyph_hack.opened)[0]:
+            if menu_item("GlyphWorld", self._glyph_hack.opened):
                 self._glyph_hack.flip_opened()
 
-        imgui.separator()
-        if imgui.menu_item("Font", None, self._font_manager.opened)[0]:
+        separator()
+        if menu_item("Font", self._font_manager.opened):
             self._font_manager.flip_opened()
-        if imgui.menu_item("Preference", "Ctrl+Alt+S", self._pref_manager.opened)[0]:
+        if menu_item("Preference", self._pref_manager.opened, shortcut="Ctrl+Alt+S"):
             self._pref_manager.opened = not self._pref_manager.opened
 
     def on_windows_menu(self) -> None:
         for key, win in self._context.windows.items():
-            if imgui.menu_item(key, None, win.opened)[0]:
+            if menu_item(key, win.opened):
                 win.opened = not win.opened
 
         if self.debug:
-            imgui.separator()
-            if imgui.menu_item("Metrics", None, self.config.developer.show_metrics)[0]:
+            separator()
+            if menu_item("Metrics", self.config.developer.show_metrics):
                 self.config.developer.flip_show_metrics()
-            if imgui.menu_item("Style", None, self.config.developer.show_style)[0]:
+            if menu_item("Style", self.config.developer.show_style):
                 self.config.developer.flip_show_style()
-            if imgui.menu_item("Demo", None, self.config.developer.show_demo)[0]:
+            if menu_item("Demo", self.config.developer.show_demo):
                 self.config.developer.flip_show_demo()
 
     def on_main_menu(self) -> None:
-        with imgui.begin_main_menu_bar() as main_menu_bar:
-            if not main_menu_bar.opened:
-                return
-
-            menus = (
-                ("File", self.on_file_menu),
-                ("Tools", self.on_tools_menu),
-                ("Windows", self.on_windows_menu),
-            )
-
-            for name, func in menus:
-                with imgui.begin_menu(name) as menu:
-                    if menu.opened:
-                        func()
+        if imgui.begin_main_menu_bar():
+            try:
+                menus = (
+                    ("File", self.on_file_menu),
+                    ("Tools", self.on_tools_menu),
+                    ("Windows", self.on_windows_menu),
+                )
+                for name, func in menus:
+                    if imgui.begin_menu(name):
+                        try:
+                            func()
+                        finally:
+                            imgui.end_menu()
+            finally:
+                imgui.end_main_menu_bar()
 
     def on_popups(self) -> None:
         if self._confirm_quit.do_process():

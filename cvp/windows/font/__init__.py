@@ -6,9 +6,10 @@ from typing import Mapping, Tuple
 from imgui_bundle import imgui
 
 from cvp.config.sections.font import FontManagerConfig
-from cvp.imgui.begin_child import begin_child
+from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.fonts.font import Font
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
@@ -90,18 +91,25 @@ class FontManager(Manager[FontManagerConfig, Font]):
         input_text_disabled("Font family", item.family)
         input_text_disabled("Font pixel size", str(item.size))
 
-        with begin_child("Planes", width=self.range_select_width):
-            with item_width(-1):
-                self.slider_range_select_width()
-                list_box = imgui.begin_list_box("##Planes", width=-1, height=-1)
-                if list_box.opened:
-                    with list_box:
-                        self.selectable_blocks(item)
+        if begin_child("Planes", width=self.range_select_width):
+            try:
+                with item_width(-1):
+                    self.slider_range_select_width()
+                    if imgui.begin_list_box("##Planes", (-1, -1)):
+                        try:
+                            self.selectable_blocks(item)
+                        finally:
+                            imgui.end_list_box()
+            finally:
+                end_child()
 
         imgui.same_line()
 
-        with begin_child("Codepoints", width=-1, height=-1, border=True):
-            self.draw_codepoint_matrix(item)
+        if begin_child("Codepoints", width=-1, height=-1, child_flags=BORDERS):
+            try:
+                self.draw_codepoint_matrix(item)
+            finally:
+                end_child()
 
     def slider_range_select_width(self) -> None:
         result = slider_float(
@@ -127,9 +135,9 @@ class FontManager(Manager[FontManagerConfig, Font]):
             return
 
         codepoint_begin = self.selected_begin
-        normal_stroke_color = imgui.get_color_u32_rgba(*self.normal_stroke_color)
-        error_stroke_color = imgui.get_color_u32_rgba(*self.error_stroke_color)
-        text_color = imgui.get_color_u32_rgba(*self.text_color)
+        normal_stroke_color = imgui.get_color_u32(self.normal_stroke_color)
+        error_stroke_color = imgui.get_color_u32(self.error_stroke_color)
+        text_color = imgui.get_color_u32(self.text_color)
         padding = self.window_config.padding
         rounding = self.window_config.rounding
         rect_flags = self.window_config.rect_flags

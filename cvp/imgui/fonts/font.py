@@ -3,8 +3,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
-# noinspection PyProtectedMember
-from imgui.core import _Font
 from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
@@ -14,7 +12,7 @@ from cvp.gl.texture import Texture
 
 @dataclass
 class Font:
-    font: _Font
+    font: imgui.ImFont
     family: str
     size: int
     block_step: int

@@ -10,15 +10,16 @@ from imgui_bundle import imgui
 
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
+from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
+from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
+from cvp.imgui.input_text import input_text
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.logging.logging import logger
 from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_OPEN_FILE_HEIGHT, MIN_POPUP_OPEN_FILE_WIDTH
-
-ENTER_RETURN = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
-DOUBLE_CLICK = imgui.SELECTABLE_ALLOW_DOUBLE_CLICK
 
 
 class OpenFilePopup(PopupBase[str]):
@@ -30,7 +31,7 @@ class OpenFilePopup(PopupBase[str]):
         directory: Optional[Union[str, PathLike]] = None,
         show_hidden=False,
         centered=True,
-        flags=0,
+        flags: Union[WindowFlags, int] = 0,
         *,
         min_width=MIN_POPUP_OPEN_FILE_WIDTH,
         min_height=MIN_POPUP_OPEN_FILE_HEIGHT,
@@ -101,10 +102,11 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.same_line()
 
+        loc_label = self._location_input_label
         loc_text = self._location_text
-        loc_changed, loc_text = imgui.input_text(
-            self._location_input_label, loc_text, -1, ENTER_RETURN
-        )
+        loc_result = input_text(loc_label, loc_text, ENTER_RETURNS_TRUE)
+        loc_changed = loc_result.changed
+        loc_text = loc_result.value
 
         if loc_changed:
             if os.path.isfile(loc_text):
@@ -127,13 +129,13 @@ class OpenFilePopup(PopupBase[str]):
                 selected = item_path == self._selected
 
                 if os.path.isfile(item_path):
-                    if imgui.selectable(item, selected, DOUBLE_CLICK)[0]:
+                    if imgui.selectable(item, selected, ALLOW_DOUBLE_CLICK)[0]:
                         self._selected = item_path
                         if imgui.is_mouse_double_clicked(0):
                             imgui.close_current_popup()
                             return item_path
                 elif os.path.isdir(item_path):
-                    if imgui.selectable(item + "/", selected, DOUBLE_CLICK)[0]:
+                    if imgui.selectable(item + "/", selected, ALLOW_DOUBLE_CLICK)[0]:
                         self._selected = item_path
                         if imgui.is_mouse_double_clicked(0):
                             self._location_text = item_path

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 from imgui_bundle import imgui
+
+from cvp.imgui.flags.input_text import InputTextFlags
 
 
 class InputTextResult(NamedTuple):
@@ -23,6 +25,9 @@ class InputTextResult(NamedTuple):
         return self.changed
 
 
-def input_text(label: str, value: str, buffer_length=-1, flags=0):
-    result = imgui.input_text(label, value, buffer_length, flags)
+def input_text(label: str, value: str, flags: Union[InputTextFlags, int] = 0):
+    if isinstance(flags, InputTextFlags):
+        flags = int(flags)
+    assert isinstance(flags, int)
+    result = imgui.input_text(label, value, flags)
     return InputTextResult.from_raw(result)

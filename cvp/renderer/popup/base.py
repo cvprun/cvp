@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Callable, Generic, Optional, TypeVar
+from typing import Callable, Generic, Optional, TypeVar, Union
 from uuid import uuid4
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.variables import MIN_POPUP_HEIGHT, MIN_POPUP_WIDTH
 
@@ -20,7 +21,7 @@ class PopupBase(Generic[ResultT], ABC):
         self,
         title: Optional[str] = None,
         centered=True,
-        flags=0,
+        flags: Union[WindowFlags, int] = 0,
         *,
         identifier: Optional[str] = None,
         min_width=MIN_POPUP_WIDTH,
@@ -28,8 +29,11 @@ class PopupBase(Generic[ResultT], ABC):
         target: Optional[Callable[[ResultT], None]] = None,
         oneshot: Optional[bool] = None,
     ):
-        self._title = title if title else type(self).__name__
+        if isinstance(flags, WindowFlags):
+            flags = int(flags)
+        assert isinstance(flags, int)
 
+        self._title = title if title else type(self).__name__
         self._visible = False
         self._centered = centered
         self._flags = flags

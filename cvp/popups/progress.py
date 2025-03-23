@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from threading import Thread
-from typing import Any, Callable, Iterable, Mapping, Optional
+from typing import Any, Callable, Iterable, Mapping, Optional, Union
 
 import pygame
 from imgui_bundle import imgui
 
 from cvp.imgui.button import button
+from cvp.imgui.flags.window import WindowFlags
 from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 
@@ -22,7 +23,7 @@ class ProgressPopup(PopupBase[None]):
         cancel: Optional[str] = None,
         close: Optional[str] = None,
         centered=True,
-        flags=0,
+        flags: Union[WindowFlags, int] = 0,
     ):
         super().__init__(title, centered, flags)
         self.label = label if label else str()

@@ -8,6 +8,7 @@ from OpenGL import GL
 
 from cvp.config.sections.media import MediaWindowConfig
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.flags.window import NO_MOVE
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase

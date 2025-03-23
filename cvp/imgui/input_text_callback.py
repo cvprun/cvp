@@ -3,22 +3,22 @@
 from warnings import warn
 
 import pygame
-
-# noinspection PyProtectedMember
-from imgui.core import _ImGuiInputTextCallbackData
 from imgui_bundle import imgui
 from pygame.key import get_pressed
 
+from cvp.imgui.flags.input_text import CALLBACK_ALWAYS
+from cvp.imgui.version import version
 
-def _copy_selection(data: _ImGuiInputTextCallbackData) -> None:
+
+def _copy_selection(data: imgui.InputTextCallbackData) -> None:
     if not data.has_selection():
         return
 
-    if imgui.VERSION <= (2, 0, 0):
+    if version() <= (2, 0, 0):
         message = "Segfault occurs when accessing 'data.buffer' in pyimgui 2.0.0"
         warn(message, RuntimeWarning)
 
-    buffer = data.buffer
+    buffer = data.buf
     """
     [WARNING] Segmentation Fault
     """
@@ -30,14 +30,14 @@ def _copy_selection(data: _ImGuiInputTextCallbackData) -> None:
     pygame.scrap.put_text(selected_text)
 
 
-def _remove_selection(data: _ImGuiInputTextCallbackData) -> None:
+def _remove_selection(data: imgui.InputTextCallbackData) -> None:
     begin = data.selection_start
     end = data.selection_end
     data.delete_chars(begin, end - begin)
     data.cursor_pos = begin
 
 
-def _cut_selection(data: _ImGuiInputTextCallbackData) -> None:
+def _cut_selection(data: imgui.InputTextCallbackData) -> None:
     if not data.has_selection():
         return
 
@@ -45,7 +45,7 @@ def _cut_selection(data: _ImGuiInputTextCallbackData) -> None:
     _remove_selection(data)
 
 
-def _paste_selection(data: _ImGuiInputTextCallbackData) -> None:
+def _paste_selection(data: imgui.InputTextCallbackData) -> None:
     clipboard_text = pygame.scrap.get_text()
     if not clipboard_text:
         return
@@ -56,8 +56,8 @@ def _paste_selection(data: _ImGuiInputTextCallbackData) -> None:
     data.insert_chars(data.cursor_pos, clipboard_text)
 
 
-def input_text_resize_callback(data: _ImGuiInputTextCallbackData) -> int:
-    assert data.flags & imgui.INPUT_TEXT_CALLBACK_ALWAYS
+def input_text_resize_callback(data: imgui.InputTextCallbackData) -> int:
+    assert data.flags & CALLBACK_ALWAYS
     keys = get_pressed()
 
     if keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]:

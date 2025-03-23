@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 import pygame
 from imgui_bundle import imgui
@@ -9,6 +9,7 @@ from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.variable import FlowVariable
 from cvp.imgui.button import button
+from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
 from cvp.renderer.popup.base import PopupBase
@@ -24,7 +25,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         ok: Optional[str] = None,
         cancel: Optional[str] = None,
         centered=True,
-        flags=imgui.WINDOW_ALWAYS_AUTO_RESIZE,
+        flags: Union[WindowFlags, int] = WindowFlags.always_auto_resize,
         *,
         min_width=MIN_POPUP_VARIABLE_WIDTH,
         min_height=MIN_POPUP_VARIABLE_HEIGHT,

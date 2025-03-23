@@ -32,9 +32,6 @@ from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
 
-INPUT_BUFFER: Final[int] = 256
-ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
-
 
 class PropsTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):

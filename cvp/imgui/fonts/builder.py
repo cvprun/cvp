@@ -3,8 +3,6 @@
 from os import PathLike
 from typing import List, Optional, Tuple, Union
 
-# noinspection PyProtectedMember
-from imgui.core import FontConfig, _Font
 from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
@@ -16,15 +14,18 @@ from cvp.imgui.fonts.glyph_ranges import create_glyph_ranges
 
 
 class FontBuilder:
-    _font: Optional[_Font]
+    _font: Optional[imgui.ImFont]
     _ttfs: List[CachedTTF]
 
     def __init__(self, name: str, size: int):
-        self._font = None
         self._name = name
         self._size = size
-        self._merge = FontConfig(merge_mode=True)
+
+        self._font = None
         self._ttfs = list()
+
+        self._merge = imgui.ImFontConfig()
+        self._merge.merge_mode = True
 
     @property
     def name(self):
@@ -64,14 +65,20 @@ class FontBuilder:
         filename = str(ttf.path)
         config = None if self._font is None else self._merge
         glyph_ranges = create_glyph_ranges(ranges)
-        self._font = fonts.add_font_from_file_ttf(filename, size, config, glyph_ranges)
+        self._font = fonts.add_font_from_file_ttf(
+            filename, size, config, glyph_ranges,
+        )
         self._ttfs.append(CachedTTF(ttf, ranges, size))
         return self
 
     @staticmethod
     def _create_font_texture() -> Texture:
+        fonts = imgui.get_io().fonts
+
+        # noinspection PyUnresolvedReferences
+        width, height, pixels = fonts.get_tex_data_as_alpha8()
+
         texture = Texture()
-        width, height, pixels = imgui.get_io().fonts.get_tex_data_as_alpha8()
         texture.open(width, height)
         with texture:
             texture.update_alpha_texture(pixels)

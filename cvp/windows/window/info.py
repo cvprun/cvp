@@ -4,6 +4,7 @@ from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
+from cvp.imgui.flags.condition import ALWAYS
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
@@ -46,14 +47,14 @@ class WindowInfoTab(TabItem[WindowBase]):
             pos_value = pos_result[1]
             x = pos_value[0]
             y = pos_value[1]
-            imgui.set_window_position_labeled(item.label, x, y, imgui.ALWAYS)
+            imgui.set_window_pos(item.label, (x, y), ALWAYS)
 
         size_result = imgui.drag_float2("Size", w, h)
         if size_result[0]:
             size_value = size_result[1]
             w = size_value[0]
             h = size_value[1]
-            imgui.set_window_size_named(item.label, w, h, imgui.ALWAYS)
+            imgui.set_window_size(item.label, (w, h), ALWAYS)
 
         imgui.separator()
         imgui.text("Fullscreen:")
@@ -61,15 +62,15 @@ class WindowInfoTab(TabItem[WindowBase]):
             viewport = imgui.get_main_viewport()
             wx, wy = viewport.work_pos
             ww, wh = viewport.work_size
-            imgui.set_window_position_labeled(item.label, wx, wy, imgui.ALWAYS)
-            imgui.set_window_size_named(item.label, ww, wh, imgui.ALWAYS)
+            imgui.set_window_pos(item.label, (wx, wy), ALWAYS)
+            imgui.set_window_size(item.label, (ww, wh), ALWAYS)
         imgui.same_line()
         if imgui.button("Main Area"):
             viewport = imgui.get_main_viewport()
             mx, my = viewport.pos
             mw, mh = viewport.size
-            imgui.set_window_position_labeled(item.label, mx, my, imgui.ALWAYS)
-            imgui.set_window_size_named(item.label, mw, mh, imgui.ALWAYS)
+            imgui.set_window_pos(item.label, (mx, my), ALWAYS)
+            imgui.set_window_size(item.label, (mw, mh), ALWAYS)
 
         imgui.separator()
         imgui.text("Options:")

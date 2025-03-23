@@ -6,13 +6,12 @@ from imgui_bundle import imgui
 
 from cvp.config.sections.layout import LayoutConfig
 from cvp.imgui.button import button
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-
-ENTER_RETURNS: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
 
 
 class LayoutInfoTab(TabItem[LayoutConfig]):
@@ -44,7 +43,7 @@ class LayoutInfoTab(TabItem[LayoutConfig]):
             changed_name, value_name = imgui.input_text(
                 "## Name",
                 item.name,
-                ENTER_RETURNS,
+                ENTER_RETURNS_TRUE,
             )
             assert isinstance(changed_name, bool)
             assert isinstance(value_name, str)
