@@ -317,7 +317,9 @@ class FlowCanvas(CanvasController):
 
         color = imgui.get_color_u32(grid_x.color)
         for line in self.vertical_grid_lines(grid_x.step):
-            self._draw_list.add_line(*line, color, grid_x.thickness)
+            p1 = line[0], line[1]
+            p2 = line[2], line[3]
+            self._draw_list.add_line(p1, p2, color, grid_x.thickness)
 
     def draw_grid_y(self) -> None:
         grid_y = self.config.grid_y
@@ -326,7 +328,9 @@ class FlowCanvas(CanvasController):
 
         color = imgui.get_color_u32(grid_y.color)
         for line in self.horizontal_grid_lines(grid_y.step):
-            self._draw_list.add_line(*line, color, grid_y.thickness)
+            p1 = line[0], line[1]
+            p2 = line[2], line[3]
+            self._draw_list.add_line(p1, p2, color, grid_y.thickness)
 
     def draw_axis_x(self) -> None:
         axis_x = self.config.axis_x
@@ -340,7 +344,7 @@ class FlowCanvas(CanvasController):
         y1 = origin_y
         x2 = self.cx + self.cw
         y2 = origin_y
-        self._draw_list.add_line(x1, y1, x2, y2, color, axis_x.thickness)
+        self._draw_list.add_line((x1, y1), (x2, y2), color, axis_x.thickness)
 
     def draw_axis_y(self) -> None:
         axis_y = self.config.axis_y
@@ -354,7 +358,7 @@ class FlowCanvas(CanvasController):
         y1 = self.cy
         x2 = origin_x
         y2 = self.cy + self.ch
-        self._draw_list.add_line(x1, y1, x2, y2, color, axis_y.thickness)
+        self._draw_list.add_line((x1, y1), (x2, y2), color, axis_y.thickness)
 
     # ==================================================================================
     # Update state
@@ -885,7 +889,7 @@ class FlowCanvas(CanvasController):
 
         color = imgui.get_color_u32(self.config.pins.connection_color)
         thickness = self.config.pins.connection_thickness
-        self._draw_list.add_line(x1, y1, mx, my, color, thickness)
+        self._draw_list.add_line((x1, y1), (mx, my), color, thickness)
 
     def draw_pin_connects(self) -> None:
         if not self.is_pin_connecting_mode:

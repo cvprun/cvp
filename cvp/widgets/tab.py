@@ -42,23 +42,14 @@ class TabItem(Generic[ItemT], WidgetInterface):
     def item(self):
         return self._item
 
-    def begin(self):
-        return imgui.begin_tab_item(self._label, self._opened, self._flags)
-
-    def end(self) -> None:
-        assert self
-        imgui.end_tab_item()
-
     def do_process(self, item: Optional[ItemT] = None) -> None:
-        if not self.begin().selected:
-            return
-
-        self._item = item
-        try:
-            self.on_process()
-        finally:
-            self._item = None
-            self.end()
+        if imgui.begin_tab_item(self._label, self._opened, self._flags)[0]:
+            self._item = item
+            try:
+                self.on_process()
+            finally:
+                self._item = None
+                imgui.end_tab_item()
 
     @override
     def on_process(self) -> None:
@@ -105,23 +96,14 @@ class TabBar(Generic[ItemT], WidgetInterface):
     def register(self, item: TabItem) -> None:
         self._items[item.label] = item
 
-    def begin(self):
-        return imgui.begin_tab_bar(self._identifier, self._flags)
-
-    def end(self) -> None:
-        assert self
-        imgui.end_tab_bar()
-
     def do_process(self, item: Optional[ItemT] = None) -> None:
-        if not self.begin().opened:
-            return
-
-        self._item = item
-        try:
-            self.on_process()
-        finally:
-            self._item = None
-            self.end()
+        if imgui.begin_tab_bar(self._identifier, self._flags):
+            self._item = item
+            try:
+                self.on_process()
+            finally:
+                self._item = None
+                imgui.end_tab_bar()
 
     @override
     def on_process(self) -> None:

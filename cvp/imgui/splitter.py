@@ -82,7 +82,7 @@ def splitter(
     stroke_color = imgui.get_color_u32(color)
 
     draw_list = get_window_draw_list()
-    draw_list.add_line(begin[0], begin[1], end[0], end[1], stroke_color, thickness)
+    draw_list.add_line(begin, end, stroke_color, thickness)
     roi = begin[0], begin[1], end[0], end[1]
 
     if item_active:
