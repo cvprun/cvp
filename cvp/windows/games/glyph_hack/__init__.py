@@ -40,8 +40,9 @@ class GlyphHackWindow(WindowBase[GlyphHackWindowConfig]):
         self._game_over = True
 
     @property
-    def window_padding(self) -> Tuple[int, int]:
-        return imgui.get_style().window_padding
+    def window_padding(self) -> Tuple[float, float]:
+        padding = imgui.get_style().window_padding
+        return padding.x, padding.y
 
     @property
     def cell_pixels(self):

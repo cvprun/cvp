@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
-
 from imgui_bundle import imgui
 
 from cvp.config.sections.layout import LayoutConfig

@@ -23,8 +23,11 @@ class WindowQuery:
         self._appearing = imgui.is_window_appearing()
         self._focused = imgui.is_window_focused(focused.ROOT_AND_CHILD_WINDOWS)
         self._hovered = imgui.is_window_hovered(hovered.ROOT_AND_CHILD_WINDOWS)
-        self._x, self._y = imgui.get_window_pos()
-        self._w, self._h = imgui.get_window_size()
+
+        win_pos = imgui.get_window_pos()
+        win_size = imgui.get_window_size()
+        self._x, self._y = win_pos.x, win_pos.y
+        self._w, self._h = win_size.x, win_size.y
 
     @property
     def expanded(self):

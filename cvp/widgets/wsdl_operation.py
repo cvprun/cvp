@@ -30,7 +30,7 @@ class WsdlOperationWidget(WidgetInterface):
     ):
         self._operation = operation
         self._element_separator = element_separator
-        self._error_color = error_color if error_color else 1.0, 0.0, 0.0, 1.0
+        self._error_color = error_color if error_color else (1.0, 0.0, 0.0, 1.0)
 
     def value_key(self, name: str, parent: str) -> str:
         return f"{parent}{self._element_separator}{name}" if parent else name
@@ -46,11 +46,14 @@ class WsdlOperationWidget(WidgetInterface):
             return
 
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text(argument.doc)
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text(argument.doc)
+                finally:
+                    imgui.end_tooltip()
 
     def text_error(self, text: str) -> None:
-        text_colored(text, *self._error_color)
+        text_colored(text, self._error_color)
 
     def do_root_argument(self, argument: Argument) -> bool:
         cls = argument.type_deduction()
@@ -221,7 +224,7 @@ class WsdlOperationWidget(WidgetInterface):
         parent: str,
     ) -> object:
         tree_label, tree_key = self.label_key(element.attr_name, parent)
-        if imgui.tree_node(tree_label, imgui.TREE_NODE_DEFAULT_OPEN):
+        if imgui.tree_node(tree_label):
             try:
                 assert isinstance(element.type.elements, list)
                 for element_name, child_element in element.type.elements:

@@ -66,9 +66,7 @@ class FontBuilder:
         filename = str(ttf.path)
         config = None if self._font is None else self._merge
         glyph_ranges = create_glyph_ranges(ranges)
-        self._font = fonts.add_font_from_file_ttf(
-            filename, size, config, glyph_ranges,
-        )
+        self._font = fonts.add_font_from_file_ttf(filename, size, config, glyph_ranges)
         self._ttfs.append(CachedTTF(ttf, ranges, size))
         return self
 
@@ -93,6 +91,9 @@ class FontBuilder:
         return list(sorted(result, key=lambda x: x[0]))
 
     def done(self, block_step=UNICODE_SINGLE_BLOCK_SIZE, *, use_texture=False) -> Font:
+        if self._font is None:
+            raise ValueError("No font was created")
+
         return Font(
             self._font,
             self._name,

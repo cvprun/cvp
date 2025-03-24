@@ -137,7 +137,8 @@ class OpenFilePopup(PopupBase[str]):
                                 imgui.close_current_popup()
                                 return item_path
                     elif os.path.isdir(item_path):
-                        if imgui.selectable(item + "/", selected, ALLOW_DOUBLE_CLICK)[0]:
+                        label = item + "/"
+                        if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
                             if imgui.is_mouse_double_clicked(0):
                                 self._location_text = item_path

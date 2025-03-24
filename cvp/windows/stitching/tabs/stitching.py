@@ -55,8 +55,11 @@ class StitchingTab:
 
     def _hovered_tooltip(self, key: str):
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text(self._tooltips[key])
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text(self._tooltips[key])
+                finally:
+                    imgui.end_tooltip()
 
     def _main(self) -> None:
         self.changed_stitcher_mode, self._props.stitcher_mode_index = imgui.combo(

@@ -29,5 +29,10 @@ def menu_item(
     shortcut: Optional[str] = None,
     enabled=True,
 ):
-    result = imgui.menu_item(label, shortcut, selected, enabled)
+    result = imgui.menu_item(
+        label=label,
+        shortcut=shortcut if shortcut else str(),
+        p_selected=selected,
+        enabled=enabled,
+    )
     return MenuItemResult.from_raw(result)

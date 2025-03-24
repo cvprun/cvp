@@ -2,7 +2,7 @@
 
 import json
 from traceback import format_exc
-from typing import Any, Dict, Final, Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 from imgui_bundle import imgui
 
@@ -275,7 +275,9 @@ class OnvifApisTab(TabItem[OnvifConfig]):
                             finally:
                                 end_child()
 
-                    raise StepDone("An error occurred in the operation request") from error
+                    raise StepDone(
+                        "An error occurred in the operation request"
+                    ) from error
 
                 if has_latest or has_cache:
                     imgui.text("Response result:")

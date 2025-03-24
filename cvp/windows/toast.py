@@ -7,6 +7,7 @@ from typing import Deque, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
+from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.flags.window import TOAST_WINDOW_FLAGS
@@ -80,7 +81,7 @@ class ToastWindow(WindowBase[ToastWindowConfig]):
         return measure_fade_ratio(elapsed, self.fadein, self.waiting, self.fadeout)
 
     def get_window_roi(self, message: str):
-        text_width, text_height = imgui.calc_text_size(message)
+        text_width, text_height = calc_text_size(message)
         assert isinstance(text_width, float)
         assert isinstance(text_height, float)
         return get_window_roi(

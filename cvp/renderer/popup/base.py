@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.condition import APPEARING
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.variables import MIN_POPUP_HEIGHT, MIN_POPUP_WIDTH
@@ -101,12 +102,13 @@ class PopupBase(Generic[ResultT], ABC):
             self._visible = False
 
         if self._centered:
-            x, y = imgui.get_main_viewport().get_center()
+            center = imgui.get_main_viewport().get_center()
+            x, y = center.x, center.y
             px, py = 0.5, 0.5
-            imgui.set_next_window_position(x, y, imgui.APPEARING, px, py)
+            imgui.set_next_window_pos((x, y), APPEARING, (px, py))
 
         modal = imgui.begin_popup_modal(self.popup_label, None, self._flags)  # noqa
-        if not modal.opened:
+        if not modal[0]:
             self._result = None
             return None
 

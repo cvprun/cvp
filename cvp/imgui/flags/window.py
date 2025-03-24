@@ -107,4 +107,3 @@ TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_focus_on_appearing,
     WindowFlags.no_inputs,
 )
-

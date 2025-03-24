@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-from typing import Final, Sequence
+from typing import Sequence
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.logging.logging import (
     SEVERITIES,
     convert_level_number,
@@ -17,9 +18,8 @@ from cvp.renderer.context import RendererContext
 from cvp.renderer.popup.base import PopupBase
 from cvp.renderer.popup.propagator import PopupPropagator
 from cvp.types.override import override
+from cvp.variables import NOT_FOUND_INDEX
 from cvp.windows.preference._base import PreferenceWidget
-
-NOT_FOUND_INDEX: Final[int] = -1
 
 
 class LoggingPreference(PopupPropagator, PreferenceWidget):
@@ -74,8 +74,7 @@ class LoggingPreference(PopupPropagator, PreferenceWidget):
         logging_path_result = imgui.input_text(
             "##LoggingPath",
             self.config_path,
-            -1,
-            imgui.INPUT_TEXT_ENTER_RETURNS_TRUE,
+            ENTER_RETURNS_TRUE,
         )
 
         logging_path_changed = logging_path_result[0]

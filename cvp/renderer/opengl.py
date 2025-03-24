@@ -224,7 +224,7 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
             1.0,
             0.0,
             1.0,
-            )
+        )
 
         GL.glUseProgram(self._shader_handle)
         GL.glUniform1i(self._attrib_location_tex, 0)
@@ -240,7 +240,7 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
                 commands.vtx_buffer.size() * imgui.VERTEX_SIZE,
                 ctypes.c_void_p(commands.vtx_buffer.data_address()),
                 GL.GL_STREAM_DRAW,
-                )
+            )
 
             GL.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, self._elements_handle)
             # todo: check this (sizes)
@@ -249,14 +249,17 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
                 commands.idx_buffer.size() * imgui.INDEX_SIZE,
                 ctypes.c_void_p(commands.idx_buffer.data_address()),
                 GL.GL_STREAM_DRAW,
-                )
+            )
 
             # todo: allow to iterate over _CmdList
             for command in commands.cmd_buffer:
                 GL.glBindTexture(GL.GL_TEXTURE_2D, command.texture_id)
 
                 # todo: use named tuple
-                x, y, z, w = command.clip_rect
+                x = command.clip_rect.x
+                y = command.clip_rect.y
+                z = command.clip_rect.z
+                w = command.clip_rect.w
                 GL.glScissor(int(x), int(fb_height - w), int(z - x), int(w - y))
 
                 if imgui.INDEX_SIZE == 2:
@@ -270,7 +273,6 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
                     gltype,
                     ctypes.c_void_p(command.idx_offset * imgui.INDEX_SIZE),
                 )
-
 
         # restore modified GL state
         restore_common_gl_state(common_gl_state_tuple)
@@ -422,7 +424,6 @@ class FixedPipelineRenderer(BaseOpenGLRenderer):
                     gltype,
                     ctypes.c_void_p(command.idx_offset * imgui.INDEX_SIZE),
                 )
-
 
         restore_common_gl_state(common_gl_state_tuple)
 

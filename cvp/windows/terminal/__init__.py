@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.config.sections.terminal import TerminalWindowConfig
+from cvp.imgui.flags.input_text import ALLOW_TAB_INPUT
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
@@ -21,19 +22,15 @@ class TerminalWindow(WindowBase[TerminalWindowConfig]):
         )
         self._label = "##TerminalEditor"
         self._content = ""
-        self._length = -1
-        self._width = 0
-        self._height = 0
-        self._flags = imgui.INPUT_TEXT_ALLOW_TAB_INPUT
+        self._size = 0, 0
+        self._flags = ALLOW_TAB_INPUT
 
     @override
     def on_process(self) -> None:
         changed, text_content = imgui.input_text_multiline(
             self._label,
             self._content,
-            self._length,
-            self._width,
-            self._height,
+            self._size,
             self._flags,
         )
         assert isinstance(changed, bool)
@@ -43,12 +40,10 @@ class TerminalWindow(WindowBase[TerminalWindowConfig]):
         self.on_popup_menu()
 
     def on_popup_menu(self):
-        if not imgui.begin_popup_context_window().opened:
-            return
-
-        try:
-            imgui.separator()
-            if menu_item("Close"):
-                self.opened = False
-        finally:
-            imgui.end_popup()
+        if imgui.begin_popup_context_window():
+            try:
+                imgui.separator()
+                if menu_item("Close"):
+                    self.opened = False
+            finally:
+                imgui.end_popup()

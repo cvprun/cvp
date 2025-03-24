@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.color_edit import ColorEditFlags
 from cvp.types.colors import RGB
 
 
@@ -18,7 +19,7 @@ class ColorEdit3Result(NamedTuple):
         changed = result[0]
         color = result[1]
         assert isinstance(changed, bool)
-        assert isinstance(color, tuple)
+        assert isinstance(color, (tuple, list))
         assert len(color) == 3
         r, g, b = color
         assert isinstance(r, float)
@@ -47,7 +48,10 @@ def color_edit3(
     r: float,
     g: float,
     b: float,
-    flags=0,
+    flags: Union[ColorEditFlags, int] = 0,
 ):
-    result = imgui.color_edit3(label, r, g, b, flags)
+    if isinstance(flags, ColorEditFlags):
+        flags = int(flags)
+    assert isinstance(flags, int)
+    result = imgui.color_edit3(label, [r, g, b], flags)
     return ColorEdit3Result.from_raw(result)

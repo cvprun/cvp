@@ -14,29 +14,35 @@ class Catalog(WidgetInterface):
 
     @override
     def on_process(self) -> None:
-        if imgui.collapsing_header("Dtypes")[0]:
+        if imgui.collapsing_header("Dtypes"):
             for dtype in self._context.fm.dtypes.values():
-                imgui.selectable(dtype.path)
-                with imgui.begin_drag_drop_source() as drag_drop_src:
-                    if drag_drop_src.dragging:
-                        payload = dtype.path.encode()
-                        imgui.set_drag_drop_payload(DRAG_FLOW_DTYPE, payload)
+                imgui.selectable(dtype.path, p_selected=False)
+                if imgui.begin_drag_drop_source():
+                    try:
+                        data = dtype.path.encode()
+                        imgui.set_drag_drop_payload(DRAG_FLOW_DTYPE, data, len(data))
                         imgui.text(dtype.path)
+                    finally:
+                        imgui.end_drag_drop_source()
 
-        if imgui.collapsing_header("Nodes")[0]:
+        if imgui.collapsing_header("Nodes"):
             for node in self._context.fm.nodes.values():
-                imgui.selectable(node.path)
-                with imgui.begin_drag_drop_source() as drag_drop_src:
-                    if drag_drop_src.dragging:
-                        payload = node.path.encode()
-                        imgui.set_drag_drop_payload(DRAG_FLOW_NODE, payload)
+                imgui.selectable(node.path, p_selected=False)
+                if imgui.begin_drag_drop_source():
+                    try:
+                        data = node.path.encode()
+                        imgui.set_drag_drop_payload(DRAG_FLOW_NODE, data, len(data))
                         imgui.text(node.path)
+                    finally:
+                        imgui.end_drag_drop_source()
 
-        if imgui.collapsing_header("Graphs")[0]:
+        if imgui.collapsing_header("Graphs"):
             for graph in self._context.fm.graphs.values():
-                imgui.selectable(f"{graph.name}##{graph.key}")
-                with imgui.begin_drag_drop_source() as drag_drop_src:
-                    if drag_drop_src.dragging:
-                        payload = graph.key.encode()
-                        imgui.set_drag_drop_payload(DRAG_FLOW_GRAPH, payload)
+                imgui.selectable(f"{graph.name}##{graph.key}", p_selected=False)
+                if imgui.begin_drag_drop_source():
+                    try:
+                        data = graph.key.encode()
+                        imgui.set_drag_drop_payload(DRAG_FLOW_GRAPH, data, len(data))
                         imgui.text(graph.name)
+                    finally:
+                        imgui.end_drag_drop_source()

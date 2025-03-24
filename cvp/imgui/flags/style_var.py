@@ -8,6 +8,7 @@ from imgui_bundle import imgui
 
 @unique
 class StyleVar(IntEnum):
+    # fmt: off
     alpha = imgui.StyleVar_.alpha.value
     disabled_alpha = imgui.StyleVar_.disabled_alpha.value
     window_padding = imgui.StyleVar_.window_padding.value
@@ -36,7 +37,7 @@ class StyleVar(IntEnum):
     tab_bar_border_size = imgui.StyleVar_.tab_bar_border_size.value
     tab_bar_overline_size = imgui.StyleVar_.tab_bar_overline_size.value
     table_angled_headers_angle = imgui.StyleVar_.table_angled_headers_angle.value
-    table_angled_headers_text_align = imgui.StyleVar_.table_angled_headers_text_align.value
+    table_angled_headers_text_align = imgui.StyleVar_.table_angled_headers_text_align.value  # noqa: E501
     button_text_align = imgui.StyleVar_.button_text_align.value
     selectable_text_align = imgui.StyleVar_.selectable_text_align.value
     separator_text_border_size = imgui.StyleVar_.separator_text_border_size.value
@@ -44,6 +45,7 @@ class StyleVar(IntEnum):
     separator_text_padding = imgui.StyleVar_.separator_text_padding.value
     docking_separator_size = imgui.StyleVar_.docking_separator_size.value
     count = imgui.StyleVar_.count.value
+    # fmt: on
 
 
 # fmt: off

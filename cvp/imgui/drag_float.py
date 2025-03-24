@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 from imgui_bundle import imgui
+
+from cvp.imgui.flags.slider import SliderFlags
 
 
 class DragFloatResult(NamedTuple):
@@ -30,10 +32,18 @@ def drag_float(
     min_value=0.0,
     max_value=0.0,
     fmt="%.3f",
-    flags=0,
-    power=1.0,
+    flags: Union[SliderFlags, int] = 0,
 ):
+    if isinstance(flags, SliderFlags):
+        flags = int(flags)
+    assert isinstance(flags, int)
     result = imgui.drag_float(
-        label, value, change_speed, min_value, max_value, fmt, flags, power
+        label=label,
+        v=value,
+        v_speed=change_speed,
+        v_min=min_value,
+        v_max=max_value,
+        format=fmt,
+        flags=flags,
     )
     return DragFloatResult.from_raw(result)

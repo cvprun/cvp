@@ -24,7 +24,8 @@ def color_normalize_u32(color: ColorLike, *, validate=False) -> int:
         rgb = find_named_color(color)
         if rgb is None:
             raise ValueError(f"Could not find named color: '{color}'")
-        return imgui.get_color_u32_rgba(*rgb, 1.0)
+        r, g, b = rgb
+        return imgui.get_color_u32((r, g, b, 1.0))
     elif isinstance(color, Sequence):
         match len(color):
             case 3:
@@ -32,14 +33,14 @@ def color_normalize_u32(color: ColorLike, *, validate=False) -> int:
                     validate_color_element(color, 0)
                     validate_color_element(color, 1)
                     validate_color_element(color, 2)
-                return imgui.get_color_u32_rgba(*color, 1.0)
+                return imgui.get_color_u32((*color, 1.0))
             case 4:
                 if validate:
                     validate_color_element(color, 0)
                     validate_color_element(color, 1)
                     validate_color_element(color, 2)
                     validate_color_element(color, 3)
-                return imgui.get_color_u32_rgba(*color)
+                return imgui.get_color_u32((*color,))
             case _:
                 raise ValueError("The number of color elements must be 3 or 4")
     else:

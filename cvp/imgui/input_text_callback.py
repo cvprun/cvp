@@ -25,7 +25,7 @@ def _copy_selection(data: imgui.InputTextCallbackData) -> None:
 
     begin = data.selection_start
     end = data.selection_end
-    selected_text = buffer[begin:end]
+    selected_text = buffer[begin:end]  # type: ignore[index]
     assert isinstance(selected_text, str)
     pygame.scrap.put_text(selected_text)
 

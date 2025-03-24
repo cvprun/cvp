@@ -44,9 +44,9 @@ def input_dtype(
             raise TypeError("The type of the value must be bool type")
 
         b_index = 1 if value else 0
-        result = imgui.combo(label, b_index, ["False", "True"])
-        result_changed = result[0]
-        result_value = bool(result[1])
+        b_result = imgui.combo(label, b_index, ["False", "True"])
+        result_changed = b_result[0]
+        result_value = bool(b_result[1])
     elif dtype.type is int:
         if value is None:
             value = 0
@@ -57,9 +57,9 @@ def input_dtype(
         i_fast = int(constraints.step_fast)
         i_flags = constraints.flags
 
-        result = imgui.input_int(label, value, i_step, i_fast, i_flags)
-        result_changed = result[0]
-        result_value = result[1]
+        i_result = imgui.input_int(label, value, i_step, i_fast, i_flags)
+        result_changed = i_result[0]
+        result_value = i_result[1]
     elif dtype.type is float:
         if value is None:
             value = 0.0
@@ -70,9 +70,9 @@ def input_dtype(
         f_fmt = constraints.float_format
         f_flags = constraints.flags
 
-        result = imgui.input_float(label, value, f_step, f_fast, f_fmt, f_flags)
-        result_changed = result[0]
-        result_value = result[1]
+        f_result = imgui.input_float(label, value, f_step, f_fast, f_fmt, f_flags)
+        result_changed = f_result[0]
+        result_value = f_result[1]
     elif dtype.type is complex:
         raise NotImplementedError
     elif dtype.type is tuple:
@@ -90,12 +90,11 @@ def input_dtype(
             value = ""
         if not isinstance(value, str):
             raise TypeError("The type of the value must be str type")
-        s_maxlen = -1
         s_flags = 0
 
-        result = imgui.input_text(label, value, s_maxlen, s_flags)
-        result_changed = result[0]
-        result_value = result[1]
+        s_result = imgui.input_text(label, value, s_flags)
+        result_changed = s_result[0]
+        result_value = s_result[1]
     elif dtype.type is object:
         raise NotImplementedError
     else:
