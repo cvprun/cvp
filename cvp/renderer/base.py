@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from typing import Dict
+
 from imgui_bundle import imgui
 
 from cvp.renderer.interface import RendererInterface
@@ -18,6 +20,14 @@ class BaseOpenGLRenderer(RendererInterface):
         self._font_texture = None
         self._create_device_objects()
         self.refresh_font_texture()
+        self._keymap = dict()
+
+    @property
+    def keymap(self) -> Dict[int, int]:
+        if hasattr(self.io, "key_map"):
+            return self.io.key_map
+        else:
+            return self._keymap
 
     @override
     def render(self, draw_data):

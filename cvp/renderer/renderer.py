@@ -21,7 +21,7 @@ class PygameRenderer(FixedPipelineRenderer):
         self._running_seconds = 0.0
         self._remapper = KeycodeRemapper()
 
-        kmap = self.io.key_map
+        kmap = self.keymap
         kmap[imgui.Key.tab.value] = self._remapper(pygame.K_TAB)
         kmap[imgui.Key.left_arrow.value] = self._remapper(pygame.K_LEFT)
         kmap[imgui.Key.right_arrow.value] = self._remapper(pygame.K_RIGHT)
