@@ -6,6 +6,7 @@ from typing import Final, NamedTuple, Tuple
 from imgui_bundle import imgui
 
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.flags import color_var
 
 DEFAULT_VERTICAL_SPLITTER_IDENTIFIER: Final[str] = "## VSplitter"
 DEFAULT_HORIZONTAL_SPLITTER_IDENTIFIER: Final[str] = "## HSplitter"
@@ -38,8 +39,11 @@ def splitter(
     flags=0,
     thickness=DEFAULT_SPLITTER_THICKNESS,
 ):
-    cx, cy = imgui.get_cursor_screen_pos()
-    cw, ch = imgui.get_content_region_available()
+    screen_pos = imgui.get_cursor_screen_pos()
+    region_size = imgui.get_content_region_avail()
+
+    cx, cy = screen_pos.x, screen_pos.y
+    cw, ch = region_size.x, region_size.y
 
     begin: Tuple[float, float]
     end: Tuple[float, float]
@@ -63,19 +67,19 @@ def splitter(
     width = width if width != 0.0 else -1.0
     height = height if height != 0.0 else -1.0
 
-    imgui.invisible_button(identifier, width, height, flags)
+    imgui.invisible_button(identifier, (width, height), flags)
     item_active = imgui.is_item_active()
     item_hovered = imgui.is_item_hovered()
 
     if item_active:
-        style = imgui.COLOR_SEPARATOR_ACTIVE
+        style = color_var.SEPARATOR_ACTIVE
     elif item_hovered:
-        style = imgui.COLOR_SEPARATOR_HOVERED
+        style = color_var.SEPARATOR_HOVERED
     else:
-        style = imgui.COLOR_SEPARATOR
+        style = color_var.SEPARATOR
 
-    color = imgui.get_style_color_vec_4(style)
-    stroke_color = imgui.get_color_u32_rgba(*color)
+    color = imgui.get_style_color_vec4(style)
+    stroke_color = imgui.get_color_u32(color)
 
     draw_list = get_window_draw_list()
     draw_list.add_line(begin[0], begin[1], end[0], end[1], stroke_color, thickness)

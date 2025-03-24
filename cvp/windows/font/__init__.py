@@ -143,7 +143,9 @@ class FontManager(Manager[FontManagerConfig, Font]):
         rect_flags = self.window_config.rect_flags
         thickness = self.window_config.thickness
 
-        cx, cy = imgui.get_cursor_screen_pos()
+        cp = imgui.get_cursor_screen_pos()
+        cx = cp.x
+        cy = cp.y
         draw_list = get_window_draw_list()
         cell_size = item.size
         block_step = item.block_step
@@ -169,11 +171,16 @@ class FontManager(Manager[FontManagerConfig, Font]):
                 with item:
                     draw_list.add_text(x1, y1, text_color, cp_detail.character)
 
-            if self.focused and imgui.is_mouse_hovering_rect(*roi):
+            r_min = roi[0], roi[1]
+            r_max = roi[2], roi[3]
+            if self.focused and imgui.is_mouse_hovering_rect(r_min, r_max):
                 if self.is_mouse_left_button_clicked():
                     put_clipboard_text(cp_detail.as_printable_unicode())
                     self.toast("Copied to clipboard")
 
-                with imgui.begin_tooltip():
-                    message = cp_detail.as_unformatted_text()
-                    imgui.text_unformatted(message.strip())
+                if imgui.begin_tooltip():
+                    try:
+                        message = cp_detail.as_unformatted_text()
+                        imgui.text_unformatted(message.strip())
+                    finally:
+                        imgui.end_tooltip()

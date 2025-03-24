@@ -16,6 +16,7 @@ from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
+from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
@@ -306,7 +307,7 @@ class FlowCanvas(CanvasController):
             self.draw_roi_box()
 
     def fill(self) -> None:
-        color = imgui.get_color_u32_rgba(*self.config.background_color)
+        color = imgui.get_color_u32(self.config.background_color)
         self._draw_list.add_rect_filled(*self.canvas_roi, color)
 
     def draw_grid_x(self) -> None:
@@ -314,7 +315,7 @@ class FlowCanvas(CanvasController):
         if not grid_x.visible:
             return
 
-        color = imgui.get_color_u32_rgba(*grid_x.color)
+        color = imgui.get_color_u32(grid_x.color)
         for line in self.vertical_grid_lines(grid_x.step):
             self._draw_list.add_line(*line, color, grid_x.thickness)
 
@@ -323,7 +324,7 @@ class FlowCanvas(CanvasController):
         if not grid_y.visible:
             return
 
-        color = imgui.get_color_u32_rgba(*grid_y.color)
+        color = imgui.get_color_u32(grid_y.color)
         for line in self.horizontal_grid_lines(grid_y.step):
             self._draw_list.add_line(*line, color, grid_y.thickness)
 
@@ -333,7 +334,7 @@ class FlowCanvas(CanvasController):
             return
 
         origin_y = self.local_origin_to_screen_coords()[1]
-        color = imgui.get_color_u32_rgba(*axis_x.color)
+        color = imgui.get_color_u32(axis_x.color)
 
         x1 = self.cx
         y1 = origin_y
@@ -347,7 +348,7 @@ class FlowCanvas(CanvasController):
             return
 
         origin_x = self.local_origin_to_screen_coords()[0]
-        color = imgui.get_color_u32_rgba(*axis_y.color)
+        color = imgui.get_color_u32(axis_y.color)
 
         x1 = origin_x
         y1 = self.cy
@@ -508,7 +509,7 @@ class FlowCanvas(CanvasController):
 
     @staticmethod
     def get_node_color_u32(node: FlowNode) -> int:
-        return imgui.get_color_u32_rgba(*node.color)
+        return imgui.get_color_u32(node.color)
 
     def get_node_line_color(self, node: FlowNode) -> RGBA:
         if node.selected:
@@ -519,19 +520,19 @@ class FlowCanvas(CanvasController):
             return self.config.nodes.normal_color
 
     def get_node_line_color_u32(self, node: FlowNode) -> int:
-        return imgui.get_color_u32_rgba(*self.get_node_line_color(node))
+        return imgui.get_color_u32(self.get_node_line_color(node))
 
     @property
     def node_label_color_u32(self) -> int:
-        return imgui.get_color_u32_rgba(*self.config.nodes.label_color)
+        return imgui.get_color_u32(self.config.nodes.label_color)
 
     @property
     def node_layout_color_u32(self) -> int:
-        return imgui.get_color_u32_rgba(*self.config.nodes.layout_color)
+        return imgui.get_color_u32(self.config.nodes.layout_color)
 
     @property
     def node_background_color_u32(self) -> int:
-        return imgui.get_color_u32_rgba(*self.config.nodes.background_color)
+        return imgui.get_color_u32(self.config.nodes.background_color)
 
     def get_node_line_thickness(self, node: FlowNode) -> float:
         if node.selected:
@@ -588,7 +589,7 @@ class FlowCanvas(CanvasController):
             return self.config.wires.normal_color
 
     def get_wire_color_u32(self, wire: FlowWire) -> int:
-        return imgui.get_color_u32_rgba(*self.get_wire_color(wire))
+        return imgui.get_color_u32(self.get_wire_color(wire))
 
     def get_wire_thickness(self, wire: FlowWire) -> float:
         if wire.selected:
@@ -607,7 +608,7 @@ class FlowCanvas(CanvasController):
             return self.config.anchors.normal_color
 
     def get_anchor_color_u32(self, anchor: FlowAnchor) -> int:
-        return imgui.get_color_u32_rgba(*self.get_anchor_color(anchor))
+        return imgui.get_color_u32(self.get_anchor_color(anchor))
 
     # ==================================================================================
     # Node Operations
@@ -619,20 +620,20 @@ class FlowCanvas(CanvasController):
 
     def update_node_roi(self, node: FlowNode) -> None:
         with self.icon_font:
-            node_icon_w, node_icon_h = imgui.calc_text_size(node.icon)
+            node_icon_w, node_icon_h = calc_text_size(node.icon)
 
         with self.title_font:
-            node_name_w, node_name_h = imgui.calc_text_size(node.name)
+            node_name_w, node_name_h = calc_text_size(node.name)
 
         title_h = max(node_icon_h, node_name_h)
         icon_y_diff = title_h / 2 - node_icon_h / 2
         title_y_diff = title_h / 2 - node_name_h / 2
 
         with self.pin_font:
-            exec_n_w, exec_n_h = imgui.calc_text_size(self.config.pins.exec_n_icon)
-            exec_y_w, exec_y_h = imgui.calc_text_size(self.config.pins.exec_y_icon)
-            data_n_w, data_n_h = imgui.calc_text_size(self.config.pins.data_n_icon)
-            data_y_w, data_y_h = imgui.calc_text_size(self.config.pins.data_y_icon)
+            exec_n_w, exec_n_h = calc_text_size(self.config.pins.exec_n_icon)
+            exec_y_w, exec_y_h = calc_text_size(self.config.pins.exec_y_icon)
+            data_n_w, data_n_h = calc_text_size(self.config.pins.data_n_icon)
+            data_y_w, data_y_h = calc_text_size(self.config.pins.data_y_icon)
 
         iw = max(exec_y_w, exec_n_w, data_y_w, data_n_w)
         ih = max(exec_y_h, exec_n_h, data_y_h, data_n_h)
@@ -648,7 +649,7 @@ class FlowCanvas(CanvasController):
         with self.text_font:
             for pin in node.pins:
                 pin.icon_size = iw, ih
-                pin.name_size = imgui.calc_text_size(pin.name)
+                pin.name_size = calc_text_size(pin.name)
             input_name_sizes = [p.name_size for p in visible_inputs if not p.hidden]
             output_name_sizes = [p.name_size for p in visible_outputs if not p.hidden]
 
@@ -793,7 +794,7 @@ class FlowCanvas(CanvasController):
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = exec_pin_y_icon if pin.connected else exec_pin_n_icon
                 pin_rgba = self.get_pin_color(pin)
-                pin_color = imgui.get_color_u32_rgba(*pin_rgba)
+                pin_color = imgui.get_color_u32(pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
                 if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
@@ -808,7 +809,7 @@ class FlowCanvas(CanvasController):
                 y1 = ny1 + pin.icon_pos[1] * zoom
                 pin_icon = data_pin_y_icon if pin.connected else data_pin_n_icon
                 pin_rgba = self.get_pin_color(pin)
-                pin_color = imgui.get_color_u32_rgba(*pin_rgba)
+                pin_color = imgui.get_color_u32(pin_rgba)
                 self._draw_list.add_text(x1, y1, pin_color, pin_icon)
                 if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
@@ -882,7 +883,7 @@ class FlowCanvas(CanvasController):
         y1 = ny + pin.icon_pos[1] * zoom + pin.icon_size[1] * zoom / 2.0
         mx, my = self._mouse_pos
 
-        color = imgui.get_color_u32_rgba(*self.config.pins.connection_color)
+        color = imgui.get_color_u32(self.config.pins.connection_color)
         thickness = self.config.pins.connection_thickness
         self._draw_list.add_line(x1, y1, mx, my, color, thickness)
 
@@ -903,7 +904,7 @@ class FlowCanvas(CanvasController):
 
         assert self._roi is not None
         x1, y1, x2, y2 = self._roi
-        color = imgui.get_color_u32_rgba(*self.config.roi.color)
+        color = imgui.get_color_u32(self.config.roi.color)
         rounding = self.config.roi.rounding
         thickness = self.config.roi.thickness
         self._draw_list.add_rect_filled(x1, y1, x2, y2, color)

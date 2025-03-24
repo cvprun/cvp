@@ -2,7 +2,7 @@
 
 from enum import IntFlag, unique
 from functools import reduce
-from typing import Final
+from typing import Final, Union
 
 from imgui_bundle import imgui
 
@@ -73,5 +73,5 @@ CALLBACK_RESIZE: Final[int] = int(InputTextFlags.callback_resize)
 CALLBACK_EDIT: Final[int] = int(InputTextFlags.callback_edit)
 
 
-def merge_input_text_flags(*flags: InputTextFlags) -> int:
+def merge_input_text_flags(*flags: Union[InputTextFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))

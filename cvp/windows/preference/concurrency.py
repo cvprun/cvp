@@ -2,6 +2,7 @@
 
 from imgui_bundle import imgui
 
+from cvp.imgui.text_colored import text_colored
 from cvp.logging.logging import logger
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -69,4 +70,4 @@ class ConcurrencyPreference(PreferenceWidget):
 
         if self._show_restart:
             imgui.separator()
-            imgui.text_colored("The change is applied after the start", 1.0, 0.1, 0.1)
+            text_colored("The change is applied after the start", (1.0, 0.1, 0.1, 1.0))

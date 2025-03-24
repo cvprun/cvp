@@ -51,9 +51,16 @@ def canvas_context(
     try:
         draw_list = get_window_draw_list()
         if rect_filled:
-            cx, cy = imgui.get_cursor_screen_pos()
-            cw, ch = imgui.get_content_region_avail()
-            draw_list.add_rect_filled(cx, cy, cx + cw, cy + cy, clear_color_u32)
+            screen_pos = imgui.get_cursor_screen_pos()
+            region_size = imgui.get_content_region_avail()
+            cx, cy = screen_pos.x, screen_pos.y
+            cw, ch = region_size.x, region_size.y
+            assert isinstance(cx, float)
+            assert isinstance(cy, float)
+            assert isinstance(cw, float)
+            assert isinstance(ch, float)
+
+            draw_list.add_rect_filled(cx, cy, cx + cw, cy + ch, clear_color_u32)
         yield draw_list
     finally:
         imgui.end_child()

@@ -1,18 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
-
 from imgui_bundle import imgui
 
 from cvp.config.sections.onvif import HttpAuth, OnvifConfig
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE, PASSWORD
 from cvp.imgui.input_text_value import input_text_value
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-
-ENTER_RETURN: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
-INPUT_PASSWORD: Final[int] = imgui.INPUT_TEXT_PASSWORD
-INPUT_BUFFER_SIZE: Final[int] = 2048
 
 
 class OnvifAuthTab(TabItem[OnvifConfig]):
@@ -28,8 +23,11 @@ class OnvifAuthTab(TabItem[OnvifConfig]):
     def on_item(self, item: OnvifConfig) -> None:
         use_wsse = imgui.checkbox("Use WS-Security", item.use_wsse)
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text("Use <wsse:UsernameToken> in <soap:Header>")
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text("Use <wsse:UsernameToken> in <soap:Header>")
+                finally:
+                    imgui.end_tooltip()
         use_wsse_changed = use_wsse[0]
         use_wsse_value = use_wsse[1]
         assert isinstance(use_wsse_changed, bool)
@@ -40,18 +38,13 @@ class OnvifAuthTab(TabItem[OnvifConfig]):
         if not item.use_wsse:
             return
 
-        item.username = input_text_value(
-            "Username",
-            item.username,
-            INPUT_BUFFER_SIZE,
-        )
+        item.username = input_text_value("Username", item.username)
 
-        password_flags = ENTER_RETURN if self._show_password else INPUT_PASSWORD
+        password_flags = ENTER_RETURNS_TRUE if self._show_password else PASSWORD
         prev_password = self.keyrings.get_onvif_password(item.uuid, str())
         next_password = input_text_value(
             "Password",
             prev_password,
-            INPUT_BUFFER_SIZE,
             password_flags,
         )
         if prev_password != next_password:
@@ -69,14 +62,20 @@ class OnvifAuthTab(TabItem[OnvifConfig]):
         if imgui.radio_button("PasswordText", item.http_auth is None):
             item.encode_digest = False
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text('Use <wsse:Password Type="wsse:PasswordText">')
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text('Use <wsse:Password Type="wsse:PasswordText">')
+                finally:
+                    imgui.end_tooltip()
         imgui.same_line()
         if imgui.radio_button("PasswordDigest", item.http_auth == HttpAuth.basic):
             item.encode_digest = True
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text('Use <wsse:Password Type="wsse:PasswordDigest">')
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text('Use <wsse:Password Type="wsse:PasswordDigest">')
+                finally:
+                    imgui.end_tooltip()
 
         imgui.text("HTTP Authorization header:")
         if imgui.radio_button("None", item.http_auth is None):

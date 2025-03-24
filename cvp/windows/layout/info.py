@@ -9,6 +9,7 @@ from cvp.imgui.button import button
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
+from cvp.imgui.text_colored import text_colored
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
@@ -71,4 +72,4 @@ class LayoutInfoTab(TabItem[LayoutConfig]):
             status_text = "The layout file does not exist"
             status_color = 1.0, 0.0, 0.0, 1.0
 
-        imgui.text_colored(status_text, *status_color)
+        text_colored(status_text, status_color)

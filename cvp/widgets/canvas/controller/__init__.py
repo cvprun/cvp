@@ -6,10 +6,16 @@ from typing import Tuple, Union
 from imgui_bundle import imgui
 
 from cvp.imgui.drag_float2 import drag_float2
+from cvp.imgui.draw_list.create import create_draw_list_with_shared_data
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
-from cvp.imgui.draw_list.types import DrawList
 from cvp.imgui.flags.button import ALL_BUTTON_FLAGS
-from cvp.imgui.flags.mouse import MouseButtonIndex
+from cvp.imgui.flags.input_text import READ_ONLY
+from cvp.imgui.flags.mouse_button import (
+    MOUSE_LEFT,
+    MOUSE_MIDDLE,
+    MOUSE_RIGHT,
+    MouseButton,
+)
 from cvp.imgui.input_float2 import input_float2
 from cvp.imgui.push_style_var import style_disable_input
 from cvp.imgui.slider_float import slider_float
@@ -22,7 +28,7 @@ class CanvasController(ControllerProps):
     def __init__(self):
         super().__init__()
 
-        self._draw_list = DrawList()
+        self._draw_list = create_draw_list_with_shared_data()
 
         self._pan_label = "Pan"
         self._pan_speed = 0.1
@@ -42,13 +48,13 @@ class CanvasController(ControllerProps):
         self._local_pos_x = 0.0
         self._local_pos_y = 0.0
         self._local_pos_fmt = "%.3f"
-        self._local_pos_flags = imgui.INPUT_TEXT_READ_ONLY
+        self._local_pos_flags = READ_ONLY
 
         self._canvas_pos_label = "Canvas"
         self._canvas_pos_x = 0.0
         self._canvas_pos_y = 0.0
         self._canvas_pos_fmt = "%.3f"
-        self._canvas_pos_flags = imgui.INPUT_TEXT_READ_ONLY
+        self._canvas_pos_flags = READ_ONLY
 
         self._control_identifier = type(self).__name__
         self._control_flags = int(ALL_BUTTON_FLAGS)
@@ -57,19 +63,23 @@ class CanvasController(ControllerProps):
 
     @property
     def frame_padding(self) -> Tuple[int, int]:
-        return imgui.get_style().frame_padding
+        padding = imgui.get_style().frame_padding
+        return int(padding.x), int(padding.y)
 
     @property
     def window_padding(self) -> Tuple[int, int]:
-        return imgui.get_style().window_padding
+        padding = imgui.get_style().window_padding
+        return int(padding.x), int(padding.y)
 
     @property
     def item_spacing(self) -> Tuple[int, int]:
-        return imgui.get_style().item_spacing
+        spacing = imgui.get_style().item_spacing
+        return int(spacing.x), int(spacing.y)
 
     @property
     def item_inner_spacing(self) -> Tuple[int, int]:
-        return imgui.get_style().item_inner_spacing
+        spacing = imgui.get_style().item_inner_spacing
+        return int(spacing.x), int(spacing.y)
 
     def drag_pan(self, dryrun=False):
         retval = drag_float2(
@@ -172,8 +182,8 @@ class CanvasController(ControllerProps):
     def mouse_to_canvas_coords(self) -> Point:
         return self.screen_to_canvas_coords(self._mouse_pos)
 
-    def is_mouse_dragging(self, button: Union[int, MouseButtonIndex]) -> bool:
-        if isinstance(button, MouseButtonIndex):
+    def is_mouse_dragging(self, button: Union[MouseButton, int]) -> bool:
+        if isinstance(button, MouseButton):
             button = int(button)
         assert isinstance(button, int)
         assert self._mouse_dragging_threshold != 0.0
@@ -214,9 +224,14 @@ class CanvasController(ControllerProps):
         return retval
 
     def update_state(self) -> ControllerResult:
-        mx, my = imgui.get_mouse_pos()
-        cx, cy = imgui.get_cursor_screen_pos()
-        cw, ch = imgui.get_content_region_available()
+        mouse_pos = imgui.get_mouse_pos()
+        screen_pos = imgui.get_cursor_screen_pos()
+        region_size = imgui.get_content_region_avail()
+
+        mx, my = mouse_pos.x, mouse_pos.y
+        cx, cy = screen_pos.x, screen_pos.y
+        cw, ch = region_size.x, region_size.y
+
         assert isinstance(mx, float)
         assert isinstance(my, float)
         assert isinstance(cx, float)
@@ -231,7 +246,7 @@ class CanvasController(ControllerProps):
         # Using `imgui.invisible_button()` as a convenience
         # 1) it will advance the layout cursor and
         # 2) allows us to use `is_item_hovered()`/`is_item_active()`
-        imgui.invisible_button(self._control_identifier, cw, ch, self._control_flags)
+        imgui.invisible_button(self._control_identifier, (cw, ch), self._control_flags)
         self._activating.update(imgui.is_item_active())
         self._hovering.update(imgui.is_item_hovered())
         self._focusing.update(imgui.is_item_focused())
@@ -239,9 +254,9 @@ class CanvasController(ControllerProps):
         io = imgui.get_io()
 
         if self._focusing.value:
-            left_down = bool(io.mouse_down[imgui.MOUSE_BUTTON_LEFT])
-            middle_down = bool(io.mouse_down[imgui.MOUSE_BUTTON_MIDDLE])
-            right_down = bool(io.mouse_down[imgui.MOUSE_BUTTON_RIGHT])
+            left_down = bool(io.mouse_down[MOUSE_LEFT])
+            right_down = bool(io.mouse_down[MOUSE_RIGHT])
+            middle_down = bool(io.mouse_down[MOUSE_MIDDLE])
 
             self._left_button.update(left_down, self._mouse_pos)
             self._middle_button.update(middle_down, self._mouse_pos)

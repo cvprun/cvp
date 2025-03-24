@@ -18,5 +18,5 @@ class LabelingWindow(AuiWindow[LabelingAuiConfig]):
 
     @override
     def on_process_main(self) -> None:
-        with canvas_context():
+        with canvas_context("Canvas"):
             pass

@@ -1,23 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
-
 from imgui_bundle import imgui
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.imgui.button import button
+from cvp.imgui.flags import table_column
+from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
+from cvp.imgui.text_colored import text_colored
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
-
-TABLE_FLAGS: Final[int] = (
-    imgui.TABLE_SIZING_FIXED_FIT
-    | imgui.TABLE_ROW_BACKGROUND
-    | imgui.TABLE_BORDERS
-    | imgui.TABLE_RESIZABLE
-    | imgui.TABLE_REORDERABLE
-    | imgui.TABLE_HIDEABLE
-)
 
 
 class OnvifServiceTab(TabItem[OnvifConfig]):
@@ -52,19 +44,18 @@ class OnvifServiceTab(TabItem[OnvifConfig]):
             self.context.om.pop(item.uuid)
 
         if has_error:
-            imgui.text_colored(str(self._update_runner.error), *self._error_color)
+            text_colored(str(self._update_runner.error), self._error_color)
 
         onvif = self.context.om.get(item.uuid)
         if onvif is not None:
             imgui.text("Services:")
-            services_table = imgui.begin_table("ServicesTable", 3, TABLE_FLAGS)
-            if services_table.opened:
-                imgui.table_setup_column("Namespace", imgui.TABLE_COLUMN_WIDTH_STRETCH)
-                imgui.table_setup_column("Version", imgui.TABLE_COLUMN_WIDTH_FIXED)
-                imgui.table_setup_column("Address", imgui.TABLE_COLUMN_WIDTH_STRETCH)
-                imgui.table_headers_row()
+            if imgui.begin_table("ServicesTable", 3, ONVIF_TABLE_FLAGS):
+                try:
+                    imgui.table_setup_column("Namespace", table_column.WIDTH_STRETCH)
+                    imgui.table_setup_column("Version", table_column.WIDTH_FIXED)
+                    imgui.table_setup_column("Address", table_column.WIDTH_STRETCH)
+                    imgui.table_headers_row()
 
-                with services_table:
                     for service in onvif.services.values():
                         imgui.table_next_row()
                         imgui.table_set_column_index(0)
@@ -76,18 +67,21 @@ class OnvifServiceTab(TabItem[OnvifConfig]):
                         imgui.text(f"{major}.{minor}")
                         imgui.table_set_column_index(2)
                         imgui.text(service["XAddr"])
+                finally:
+                    imgui.end_table()
 
             imgui.text("ONVIF WSDL services:")
-            wsdl_table = imgui.begin_table("WsdlTable", 3, TABLE_FLAGS)
-            if wsdl_table.opened:
-                imgui.table_setup_column("Binding", imgui.TABLE_COLUMN_WIDTH_FIXED)
-                imgui.table_setup_column("Address", imgui.TABLE_COLUMN_WIDTH_STRETCH)
-                imgui.table_headers_row()
+            if imgui.begin_table("WsdlTable", 3, ONVIF_TABLE_FLAGS):
+                try:
+                    imgui.table_setup_column("Binding", table_column.WIDTH_FIXED)
+                    imgui.table_setup_column("Address", table_column.WIDTH_STRETCH)
+                    imgui.table_headers_row()
 
-                with wsdl_table:
                     for wsdl in onvif.wsdls:
                         imgui.table_next_row()
                         imgui.table_set_column_index(0)
                         imgui.text(wsdl.binding_name)
                         imgui.table_set_column_index(1)
                         imgui.text(wsdl.address if wsdl.address else str())
+                finally:
+                    imgui.end_table()

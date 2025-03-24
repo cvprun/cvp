@@ -157,11 +157,13 @@ class TreeTab(TabItem[FlowCanvasTabs]):
                 graph.unselect_all_items()
             graph.flip_select_item(variable)
 
-        with imgui.begin_drag_drop_source() as drag_drop_src:
-            if drag_drop_src.dragging:
+        if imgui.begin_drag_drop_source():
+            try:
                 payload = variable.name.encode()
                 imgui.set_drag_drop_payload(DRAG_FLOW_VARIABLE, payload, len(payload))
                 imgui.text(variable.name)
+            finally:
+                imgui.end_drag_drop_source()
 
         imgui.same_line(imgui.get_cursor_pos_x())
 

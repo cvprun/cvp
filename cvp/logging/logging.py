@@ -80,6 +80,16 @@ SEVERITIES: Final[Sequence[str]] = (
     SEVERITY_NAME_OFF,
 )
 
+LEVEL_NAMES: Final[Sequence[str]] = [
+    SEVERITY_NAME_CRITICAL,
+    SEVERITY_NAME_ERROR,
+    SEVERITY_NAME_WARNING,
+    SEVERITY_NAME_INFO,
+    SEVERITY_NAME_DEBUG,
+    SEVERITY_NAME_NOTSET,
+    SEVERITY_NAME_OFF,
+]
+
 
 def convert_level_number(level: Optional[Union[str, int]] = None) -> int:
     if level is None:

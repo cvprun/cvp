@@ -221,9 +221,9 @@ class PlayerApplication:
         imgui.set_clipboard_text(str())
 
         io = imgui.get_io()
-        io.display_size = size
-        io.ini_file_name = None
-        io.log_file_name = None
+        io.display_size = imgui.ImVec2(size[0], size[1])
+        io.set_ini_filename(str())
+        io.set_log_filename(str())
         imgui.load_ini_settings_from_disk(str(self.home.gui_ini))
 
         self._renderer = PygameRenderer()

@@ -11,8 +11,6 @@ from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
-INPUT_BUFFER_SIZE: Final[int] = 2048
-
 
 class OnvifInfoTab(TabItem[OnvifConfig]):
     def __init__(self, context: RendererContext):
@@ -21,16 +19,8 @@ class OnvifInfoTab(TabItem[OnvifConfig]):
     @override
     def on_item(self, item: OnvifConfig) -> None:
         input_text_disabled("UUID", item.uuid)
-        item.name = input_text_value(
-            "Name",
-            item.name,
-            INPUT_BUFFER_SIZE,
-        )
-        item.address = input_text_value(
-            "Address",
-            item.address,
-            INPUT_BUFFER_SIZE,
-        )
+        item.name = input_text_value("Name", item.name)
+        item.address = input_text_value("Address", item.address)
 
         ssl_verify = imgui.checkbox("No SSL Verify", item.no_verify)
         ssl_verify_changed = ssl_verify[0]
@@ -41,12 +31,15 @@ class OnvifInfoTab(TabItem[OnvifConfig]):
             item.no_verify = ssl_verify_value
 
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text(
-                    "Skip the certificate verification process."
-                    " This may be a temporary solution if you get a"
-                    " 'certificate verify failed' error."
-                )
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text(
+                        "Skip the certificate verification process."
+                        " This may be a temporary solution if you get a"
+                        " 'certificate verify failed' error."
+                    )
+                finally:
+                    imgui.end_tooltip()
 
         same_host = imgui.checkbox("Same host", item.same_host)
         same_host_changed = same_host[0]
@@ -57,8 +50,11 @@ class OnvifInfoTab(TabItem[OnvifConfig]):
             item.same_host = same_host_value
 
         if imgui.is_item_hovered():
-            with imgui.begin_tooltip():
-                imgui.text(
-                    "Prevents WSDL addresses from being incorrect when accessing"
-                    " ONVIF devices in environments such as proxy or tunneling."
-                )
+            if imgui.begin_tooltip():
+                try:
+                    imgui.text(
+                        "Prevents WSDL addresses from being incorrect when accessing"
+                        " ONVIF devices in environments such as proxy or tunneling."
+                    )
+                finally:
+                    imgui.end_tooltip()

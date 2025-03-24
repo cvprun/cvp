@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from imgui_bundle import imgui
 from numpy import ndarray, uint8

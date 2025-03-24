@@ -273,8 +273,12 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
             text_centered("Game Over")
             return
 
-        cx, cy = imgui.get_cursor_screen_pos()
-        cw, ch = imgui.get_content_region_avail()
+        screen_pos = imgui.get_cursor_screen_pos()
+        region_size = imgui.get_content_region_avail()
+        cx = screen_pos.x
+        cy = screen_pos.y
+        cw = region_size.x
+        ch = region_size.y
         assert isinstance(cx, float)
         assert isinstance(cy, float)
         assert isinstance(cw, float)

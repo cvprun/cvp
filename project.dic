@@ -83,6 +83,7 @@ greenblue
 greeny
 greyblue
 hexdigest
+hideable
 hline
 hqvga
 hsxga
@@ -180,6 +181,7 @@ rbutton
 rctrl
 redoable
 remapper
+reorderable
 requestable
 returncode
 rgbx

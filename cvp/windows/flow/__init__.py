@@ -618,7 +618,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     @staticmethod
     def begin_child_canvas() -> None:
         imgui.push_style_var(WINDOW_PADDING, (0, 0))
-        imgui.push_style_color(CHILD_BG, (0.5, 0.5, 0.5))
+        imgui.push_style_color(CHILD_BG, (0.5, 0.5, 0.5, 1.0))
         try:
             return begin_child(
                 "##Canvas",
@@ -701,8 +701,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         assert canvas.opened
         canvas.do_process_canvas()
 
-        with imgui.begin_drag_drop_target() as target:
-            if target.hovered:
+        if imgui.begin_drag_drop_target():
+            try:
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
                     self._drag_dtype = self.context.fm.dtypes[payload.type]
                     self._add_variable_popup.show()
@@ -715,18 +715,24 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_VARIABLE):
                     self._variable_key = payload.type
                     imgui.open_popup("AddVariableNodeMenus")
+            finally:
+                imgui.end_drag_drop_target()
 
-        with imgui.begin_popup_context_window("AddVariableNodeMenus") as context_window:
-            if context_window.opened:
+        if imgui.begin_popup_context_window("AddVariableNodeMenus"):
+            try:
                 self._process_add_variable_menu(canvas)
+            finally:
+                imgui.end_popup()
 
-        with imgui.begin_popup_context_window("CommonMenus") as context_window:
-            if context_window.opened:
+        if imgui.begin_popup_context_window("CommonMenus"):
+            try:
                 self._process_enabled_edit_menu(canvas)
                 imgui.separator()
                 self._process_enabled_layout_menu(canvas)
                 imgui.separator()
                 self._process_enabled_align_menu(canvas)
                 self._process_enabled_distribute_menu(canvas)
+            finally:
+                imgui.end_popup()
 
         canvas.draw()

@@ -8,8 +8,9 @@ from typing import Callable, List, Optional, Union
 import pygame
 from imgui_bundle import imgui
 
-from cvp.imgui.begin_child import begin_child
+from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.button import button
+from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.flags.window import WindowFlags
@@ -117,28 +118,31 @@ class OpenFilePopup(PopupBase[str]):
             else:
                 logger.warning(f"Invalid location: '{loc_text}'")
 
-        with begin_child("Files", 0, -footer_height_to_reserve(), border=True):
-            if self._current_dir != self._location_text:
-                # Update items
-                self._current_dir = self._location_text
-                self._selected = str()
-                self._items = self.list_items(self._current_dir, self._show_hidden)
+        if begin_child("Files", 0, -footer_height_to_reserve(), BORDERS):
+            try:
+                if self._current_dir != self._location_text:
+                    # Update items
+                    self._current_dir = self._location_text
+                    self._selected = str()
+                    self._items = self.list_items(self._current_dir, self._show_hidden)
 
-            for item in self._items:
-                item_path = os.path.join(self._location_text, item)
-                selected = item_path == self._selected
+                for item in self._items:
+                    item_path = os.path.join(self._location_text, item)
+                    selected = item_path == self._selected
 
-                if os.path.isfile(item_path):
-                    if imgui.selectable(item, selected, ALLOW_DOUBLE_CLICK)[0]:
-                        self._selected = item_path
-                        if imgui.is_mouse_double_clicked(0):
-                            imgui.close_current_popup()
-                            return item_path
-                elif os.path.isdir(item_path):
-                    if imgui.selectable(item + "/", selected, ALLOW_DOUBLE_CLICK)[0]:
-                        self._selected = item_path
-                        if imgui.is_mouse_double_clicked(0):
-                            self._location_text = item_path
+                    if os.path.isfile(item_path):
+                        if imgui.selectable(item, selected, ALLOW_DOUBLE_CLICK)[0]:
+                            self._selected = item_path
+                            if imgui.is_mouse_double_clicked(0):
+                                imgui.close_current_popup()
+                                return item_path
+                    elif os.path.isdir(item_path):
+                        if imgui.selectable(item + "/", selected, ALLOW_DOUBLE_CLICK)[0]:
+                            self._selected = item_path
+                            if imgui.is_mouse_double_clicked(0):
+                                self._location_text = item_path
+            finally:
+                end_child()
 
         imgui.separator()
 

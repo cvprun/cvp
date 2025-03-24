@@ -13,6 +13,7 @@ from cvp.fonts.glyphs.mdi import (
 )
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.button import button
+from cvp.imgui.flags.child import BORDERS
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
@@ -49,5 +50,5 @@ class RunTab(TabItem[FlowCanvasTabs]):
 
         imgui.separator()
         bottom_spacing = imgui.get_style().item_spacing.y
-        with begin_child("##Logging", 0, -bottom_spacing, border=False):
+        if begin_child("##Logging", 0, -bottom_spacing, BORDERS):
             pass

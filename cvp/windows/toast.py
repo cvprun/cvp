@@ -2,30 +2,20 @@
 
 from collections import deque
 from time import time
-from typing import Deque, Final, Optional, Union
+from typing import Deque, Optional, Union
 
 from imgui_bundle import imgui
 
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list
+from cvp.imgui.flags.mouse_button import MOUSE_LEFT
+from cvp.imgui.flags.window import TOAST_WINDOW_FLAGS
 from cvp.imgui.measure_window_roi import get_window_roi
 from cvp.logging.logging import INFO, convert_level_number
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.transitions.fade import measure_fade_ratio
 from cvp.types.override import override
-
-TOAST_WINDOW_FLAGS: Final[int] = (
-    imgui.WINDOW_NO_DECORATION
-    | imgui.WINDOW_ALWAYS_AUTO_RESIZE
-    | imgui.WINDOW_NO_SAVED_SETTINGS
-    | imgui.WINDOW_NO_MOVE
-    | imgui.WINDOW_NO_NAV
-    | imgui.WINDOW_UNSAVED_DOCUMENT
-    | imgui.WINDOW_NO_BRING_TO_FRONT_ON_FOCUS
-    | imgui.WINDOW_NO_FOCUS_ON_APPEARING
-    | imgui.WINDOW_NO_INPUTS
-)
 
 
 class ToastMessage:
@@ -130,13 +120,13 @@ class ToastWindow(WindowBase[ToastWindowConfig]):
         assert isinstance(br, float)
         assert isinstance(bg, float)
         assert isinstance(bb, float)
-        background_color = imgui.get_color_u32_rgba(br, bg, bb, alpha)
+        background_color = imgui.get_color_u32((br, bg, bb, alpha))
 
         fr, fg, fb = self._window_config.get_level_color(level)
         assert isinstance(fr, float)
         assert isinstance(fg, float)
         assert isinstance(fb, float)
-        foreground_color = imgui.get_color_u32_rgba(fr, fg, fb, alpha)
+        foreground_color = imgui.get_color_u32((fr, fg, fb, alpha))
 
         padding_x = self._window_config.padding_x
         padding_y = self._window_config.padding_y
@@ -150,12 +140,13 @@ class ToastWindow(WindowBase[ToastWindowConfig]):
         text_y = y1 + padding_y
         draw_list.add_text(text_x, text_y, foreground_color, message)
 
-        mx, my = imgui.get_mouse_pos()
+        mouse_pos = imgui.get_mouse_pos()
+        mx, my = mouse_pos.x, mouse_pos.y
         assert isinstance(mx, float)
         assert isinstance(my, float)
 
         hovering = x1 <= mx <= x2 and y1 <= my <= y2
-        clicked = imgui.is_mouse_clicked(imgui.MOUSE_BUTTON_LEFT)
+        clicked = imgui.is_mouse_clicked(MOUSE_LEFT)
 
         if hovering and clicked:
             self.pop_item()

@@ -14,6 +14,8 @@ LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
 GUI_THEME: Final[str] = "dark"
 
+NOT_FOUND_INDEX: Final[int] = -1
+
 FONT_SCALE: Final[float] = 1.0
 
 NORMAL_TEXT_FONT_SIZE: Final[int] = 14

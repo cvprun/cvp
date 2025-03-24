@@ -7,6 +7,8 @@ from imgui_bundle import imgui
 
 from cvp.config.sections.proxies.ffmpeg import FFmpegProxy, FFprobeProxy
 from cvp.imgui.button import button
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
+from cvp.imgui.text_colored import text_colored
 from cvp.patterns.proxy import ValueProxy
 from cvp.popups.open_file import OpenFilePopup
 from cvp.renderer.context import RendererContext
@@ -86,7 +88,7 @@ class ExeItem(TabItem, PopupPropagator):
         path_result = imgui.input_text(
             "##Path",
             self.exe_path,
-            imgui.INPUT_TEXT_ENTER_RETURNS_TRUE,
+            ENTER_RETURNS_TRUE,
         )
 
         path_changed = path_result[0]
@@ -124,11 +126,11 @@ class ExeItem(TabItem, PopupPropagator):
 
         down = self._downs.get(sys_mach)
         if down is None:
-            imgui.text_colored("This platform is not supported", 1.0, 0.1, 0.1)
+            text_colored("This platform is not supported", (1.0, 0.1, 0.1, 1.0))
             return
 
         if self._sms_index != self._current_sm_index:
-            imgui.text_colored("Does not match the current platform", 1.0, 1.0, 0.0)
+            text_colored("Does not match the current platform", (1.0, 1.0, 0.0, 1.0))
 
         imgui.text("URL:")
         imgui.text_unformatted(down.url)

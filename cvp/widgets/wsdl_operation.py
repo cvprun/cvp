@@ -2,25 +2,23 @@
 
 from argparse import Namespace
 from inspect import Parameter
-from typing import Any, Dict, Final, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from imgui_bundle import imgui
 from lxml.etree import QName as _EtreeQName
 from zeep.xsd import Attribute, Element
 from zeep.xsd.valueobjects import CompoundValue
 
+from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument
 from cvp.inspect.member import get_public_instance_attributes, is_private_member
 from cvp.renderer.widget.interface import WidgetInterface
 from cvp.types.colors import RGBA
 from cvp.types.override import override
-from cvp.variables import ZEEP_ELEMENT_SEPARATOR
+from cvp.variables import NOT_FOUND_INDEX, ZEEP_ELEMENT_SEPARATOR
 from cvp.wsdl.annotation import ElementAnnotation
 from cvp.wsdl.operation import WsdlOperationProxy
 from cvp.wsdl.schema import XsdSchema
-
-NOT_FOUND_INDEX: Final[int] = -1
-INPUT_BUFFER_SIZE: Final[int] = 2048
 
 
 class WsdlOperationWidget(WidgetInterface):
@@ -52,7 +50,7 @@ class WsdlOperationWidget(WidgetInterface):
                 imgui.text(argument.doc)
 
     def text_error(self, text: str) -> None:
-        imgui.text_colored(text, *self._error_color)
+        text_colored(text, *self._error_color)
 
     def do_root_argument(self, argument: Argument) -> bool:
         cls = argument.type_deduction()
@@ -130,7 +128,7 @@ class WsdlOperationWidget(WidgetInterface):
             value = str()
         assert isinstance(value, str)
         label, key = self.label_key(name, parent)
-        changed, value = imgui.input_text(label, value, INPUT_BUFFER_SIZE)
+        changed, value = imgui.input_text(label, value)
         assert isinstance(changed, bool)
         assert isinstance(value, str)
         return value

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from math import floor
-from typing import Final, Tuple
+from typing import Tuple
 
 from imgui_bundle import imgui
 
@@ -10,20 +10,15 @@ from cvp.imgui.begin_popup_context_window import (
     begin_popup_context_window,
     end_popup_context_window,
 )
+from cvp.imgui.flags.condition import ALWAYS
+from cvp.imgui.flags.window import OVERLAY_WINDOW_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.text_colored import text_colored
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.system.usage import SystemUsage
 from cvp.types.colors import RGBA
 from cvp.types.override import override
-
-OVERLAY_WINDOW_FLAGS: Final[int] = (
-    imgui.WINDOW_NO_DECORATION
-    | imgui.WINDOW_ALWAYS_AUTO_RESIZE
-    | imgui.WINDOW_NO_SAVED_SETTINGS
-    | imgui.WINDOW_NO_NAV
-    | imgui.WINDOW_NO_MOVE
-)
 
 
 class OverlayWindow(WindowBase[OverlayWindowConfig]):
@@ -50,8 +45,8 @@ class OverlayWindow(WindowBase[OverlayWindowConfig]):
         viewport = imgui.get_main_viewport()
         work_pos = viewport.work_pos  # Use work area to avoid menu-bar/task-bar, if any
         work_size = viewport.work_size
-        work_pos_x, work_pos_y = work_pos
-        work_size_x, work_size_y = work_size
+        work_pos_x, work_pos_y = work_pos.x, work_pos.y
+        work_size_x, work_size_y = work_size.x, work_size.y
         padding = self.window_config.padding
         x = work_pos_x + (padding if self.is_left_side else work_size_x - padding)
         y = work_pos_y + (padding if self.is_top_side else work_size_y - padding)
@@ -75,7 +70,7 @@ class OverlayWindow(WindowBase[OverlayWindowConfig]):
     def begin(self) -> Tuple[bool, bool]:
         pos_x, pos_y = self.window_position
         pivot_x, pivot_y = self.window_pivot
-        imgui.set_next_window_position(pos_x, pos_y, imgui.ALWAYS, pivot_x, pivot_y)
+        imgui.set_next_window_pos((pos_x, pos_y), ALWAYS, (pivot_x, pivot_y))
         imgui.set_next_window_bg_alpha(self.window_config.alpha)
         return super().begin()
 
@@ -83,7 +78,7 @@ class OverlayWindow(WindowBase[OverlayWindowConfig]):
     def on_process(self) -> None:
         io = imgui.get_io()
         framerate_color = self.get_framerate_color(io.framerate)
-        imgui.text_colored(f"FPS: {floor(io.framerate)}", *framerate_color)
+        text_colored(f"FPS: {floor(io.framerate)}", framerate_color)
 
         imgui.text(f"Vertices: {io.metrics_render_vertices}")
         imgui.text(f"Indices: {io.metrics_render_indices}")

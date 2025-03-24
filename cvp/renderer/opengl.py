@@ -2,9 +2,9 @@
 
 import ctypes
 
-from OpenGL import GL
 from imgui_bundle import imgui
 from numpy import ndarray
+from OpenGL import GL
 
 from cvp.renderer.base import BaseOpenGLRenderer
 

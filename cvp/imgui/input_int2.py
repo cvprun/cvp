@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple, Tuple
+from typing import NamedTuple, Tuple, Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.input_text import InputTextFlags
 
-class InputFloat2Result(NamedTuple):
+
+class InputInt2Result(NamedTuple):
     changed: bool
-    value: Tuple[float, float]
+    value: Tuple[int, int]
 
     @classmethod
     def from_raw(cls, result):
@@ -20,8 +22,8 @@ class InputFloat2Result(NamedTuple):
         assert len(value) == 2
         value0 = value[0]
         value1 = value[1]
-        assert isinstance(value0, float)
-        assert isinstance(value1, float)
+        assert isinstance(value0, int)
+        assert isinstance(value1, int)
         return cls(changed, (value0, value1))
 
     def __bool__(self):
@@ -36,13 +38,14 @@ class InputFloat2Result(NamedTuple):
         return self.value[1]
 
 
-def input_float2(
+def input_int2(
     label: str,
-    value0: float,
-    value1: float,
-    fmt="%.3f",
-    flags=0,
+    value0: int,
+    value1: int,
+    flags: Union[InputTextFlags, int] = 0,
 ):
-    values = [value0, value1]
-    result = imgui.input_float2(label, values, fmt, flags)
-    return InputFloat2Result.from_raw(result)
+    if isinstance(flags, InputTextFlags):
+        flags = int(flags)
+    assert isinstance(flags, int)
+    result = imgui.input_int2(label, [value0, value1], flags)
+    return InputInt2Result.from_raw(result)

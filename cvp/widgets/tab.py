@@ -6,6 +6,7 @@ from typing import Generic, Optional, TypeVar
 from imgui_bundle import imgui
 
 from cvp.context.context import Context
+from cvp.renderer.context import RendererContext
 from cvp.renderer.widget.interface import WidgetInterface
 from cvp.types.override import override
 
@@ -30,6 +31,7 @@ class TabItem(Generic[ItemT], WidgetInterface):
 
     @property
     def context(self):
+        assert isinstance(self._context, RendererContext)
         return self._context
 
     @property

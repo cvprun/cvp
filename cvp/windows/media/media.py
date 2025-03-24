@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from ctypes import addressof, c_void_p, create_string_buffer, memmove
-from typing import Final, Tuple
+from typing import Tuple
 
 from imgui_bundle import imgui
 from OpenGL import GL
 
 from cvp.config.sections.media import MediaWindowConfig
-from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
-from cvp.imgui.flags.window import NO_MOVE
+from cvp.imgui.canvas import canvas_context
+from cvp.imgui.draw_list.types import DrawList
+from cvp.imgui.flags.style_var import WINDOW_PADDING
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
-
-_WINDOW_NO_MOVE: Final[int] = imgui.WINDOW_NO_MOVE
-_WINDOW_NO_SCROLLBAR: Final[int] = imgui.WINDOW_NO_SCROLLBAR
-_WINDOW_NO_RESIZE: Final[int] = imgui.WINDOW_NO_RESIZE
 
 
 class MediaWindow(WindowBase[MediaWindowConfig]):
@@ -68,10 +65,13 @@ class MediaWindow(WindowBase[MediaWindowConfig]):
 
     @override
     def begin(self) -> Tuple[bool, bool]:
-        imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0, 0))
-        result = super().begin()
+        imgui.push_style_var(WINDOW_PADDING, (0, 0))
+        return super().begin()
+
+    @override
+    def end(self) -> None:
+        super().end()
         imgui.pop_style_var()
-        return result
 
     @override
     def on_destroy(self) -> None:
@@ -86,12 +86,13 @@ class MediaWindow(WindowBase[MediaWindowConfig]):
 
     @override
     def on_process(self) -> None:
-        self.begin_child_canvas()
-        try:
-            self.on_canvas()
+        with canvas_context(
+            "Canvas",
+            clear_color=self._clear_color,
+            rect_filled=True,
+        ) as draw_list:
+            self.on_canvas(draw_list)
             self.on_popup_menu()
-        finally:
-            imgui.end_child()
 
     def update_texture(self) -> None:
         if not self._texture:
@@ -176,36 +177,25 @@ class MediaWindow(WindowBase[MediaWindowConfig]):
 
         GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, 0)
 
-    @staticmethod
-    def begin_child_canvas() -> None:
-        imgui.push_style_var(imgui.STYLE_WINDOW_PADDING, (0, 0))
-        imgui.push_style_color(imgui.COLOR_CHILD_BACKGROUND, 0.5, 0.5, 0.5)
-        child_flags = _WINDOW_NO_MOVE | _WINDOW_NO_SCROLLBAR | _WINDOW_NO_RESIZE
-        imgui.begin_child("Canvas", 0, 0, border=True, flags=child_flags)  # noqa
-        imgui.pop_style_color()
-        imgui.pop_style_var()
-
-    def on_canvas(self):
-        cx, cy = imgui.get_cursor_screen_pos()
-        cw, ch = imgui.get_content_region_available()
-
-        draw_list = get_window_draw_list()
-        filled_color = imgui.get_color_u32_rgba(*self._clear_color)
-        draw_list.add_rect_filled(cx, cy, cx + cw, cy + cy, filled_color)
-
+    def on_canvas(self, draw_list: DrawList):
         self.update_texture()
+
+        screen_pos = imgui.get_cursor_screen_pos()
+        region_size = imgui.get_content_region_avail()
+        cx = screen_pos.x
+        cy = screen_pos.y
+        cw = region_size.x
+        ch = region_size.y
 
         p1 = cx, cy
         p2 = cx + cw, cy + ch
         draw_list.add_image(self._texture, p1, p2, (0, 0), (1, 1))
 
     def on_popup_menu(self):
-        if not imgui.begin_popup_context_window().opened:
-            return
-
-        try:
-            imgui.separator()
-            if menu_item("Close"):
-                self.opened = False
-        finally:
-            imgui.end_popup()
+        if imgui.begin_popup_context_window():
+            try:
+                imgui.separator()
+                if menu_item("Close"):
+                    self.opened = False
+            finally:
+                imgui.end_popup()

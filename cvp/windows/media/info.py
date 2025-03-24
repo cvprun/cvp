@@ -5,6 +5,7 @@ from imgui_bundle import imgui
 from cvp.config.sections.media import MediaWindowConfig
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size
 from cvp.imgui.button import button
+from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
@@ -37,7 +38,7 @@ class MediaInfoTab(TabItem[MediaWindowConfig]):
 
         imgui.separator()
         imgui.text("Frame:")
-        item.frame_size = imgui.input_int2("Size", *item.frame_size)[1]
+        item.frame_size = input_int2("Size", item.frame_size[0], item.frame_size[1])[1]
         if imgui.button("Reset"):
             item.frame_size = 0, 0
         imgui.same_line()

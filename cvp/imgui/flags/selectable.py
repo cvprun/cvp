@@ -2,7 +2,7 @@
 
 from enum import IntFlag, unique
 from functools import reduce
-from typing import Final
+from typing import Final, Union
 
 from imgui_bundle import imgui
 
@@ -27,5 +27,5 @@ ALLOW_OVERLAP: Final[int] = int(SelectableFlags.allow_overlap)
 HIGHLIGHT: Final[int] = int(SelectableFlags.highlight)
 
 
-def merge_selectable_flags(*flags: SelectableFlags) -> int:
+def merge_selectable_flags(*flags: Union[SelectableFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))

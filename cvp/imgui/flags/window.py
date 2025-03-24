@@ -2,7 +2,7 @@
 
 from enum import IntFlag, unique
 from functools import reduce
-from typing import Final
+from typing import Final, Union
 
 from imgui_bundle import imgui
 
@@ -69,7 +69,7 @@ NO_DECORATION: Final[int] = int(WindowFlags.no_decoration)
 NO_INPUTS: Final[int] = int(WindowFlags.no_inputs)
 
 
-def merge_window_flags(*flags: WindowFlags) -> int:
+def merge_window_flags(*flags: Union[WindowFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))
 
 
@@ -87,3 +87,24 @@ CANVAS_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_move,
     WindowFlags.no_scrollbar,
 )
+
+OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
+    WindowFlags.no_decoration,
+    WindowFlags.always_auto_resize,
+    WindowFlags.no_saved_settings,
+    WindowFlags.no_nav,
+    WindowFlags.no_move,
+)
+
+TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
+    WindowFlags.no_decoration,
+    WindowFlags.always_auto_resize,
+    WindowFlags.no_saved_settings,
+    WindowFlags.no_move,
+    WindowFlags.no_nav,
+    WindowFlags.unsaved_document,
+    WindowFlags.no_bring_to_front_on_focus,
+    WindowFlags.no_focus_on_appearing,
+    WindowFlags.no_inputs,
+)
+

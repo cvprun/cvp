@@ -8,6 +8,7 @@ from wsdiscovery import WSDiscovery
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.wsd import WsdConfig, WsdManagerConfig
 from cvp.imgui.button import button
+from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import item_width
 from cvp.logging.logging import logger
@@ -17,11 +18,8 @@ from cvp.types.override import override
 from cvp.variables import WSD_NAME_DEFAULT
 from cvp.widgets.manager import Manager
 
-NAME_BUFFER_SIZE: Final[int] = 2048
-ENTER_RETURNS: Final[int] = imgui.INPUT_TEXT_ENTER_RETURNS_TRUE
-
-WSD_NAME_SCOPE_PREFIX: Final[str] = "onvif://www.onvif.org/name/"
-WSD_NAME_SCOPE_PREFIX_LEN: Final[int] = len(WSD_NAME_SCOPE_PREFIX)
+ONVIF_WSD_SCOPE_PREFIX: Final[str] = "onvif://www.onvif.org/name/"
+ONVIF_WSD_SCOPE_PREFIX_LEN: Final[int] = len(ONVIF_WSD_SCOPE_PREFIX)
 
 
 class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
@@ -69,8 +67,8 @@ class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
 
                     for scope in config.scopes:
                         assert isinstance(scope, str)
-                        if scope.startswith(WSD_NAME_SCOPE_PREFIX):
-                            config.name = scope[WSD_NAME_SCOPE_PREFIX_LEN:]
+                        if scope.startswith(ONVIF_WSD_SCOPE_PREFIX):
+                            config.name = scope[ONVIF_WSD_SCOPE_PREFIX_LEN:]
 
                     if not config.name:
                         config.name = config.epr
@@ -111,8 +109,7 @@ class WsdManager(Manager[WsdManagerConfig, WsdConfig]):
             changed_name, value_name = imgui.input_text(
                 "## Name",
                 item.name,
-                NAME_BUFFER_SIZE,
-                ENTER_RETURNS,
+                ENTER_RETURNS_TRUE,
             )
             assert isinstance(changed_name, bool)
             assert isinstance(value_name, str)

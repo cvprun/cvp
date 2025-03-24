@@ -8,6 +8,7 @@ from imgui_bundle import imgui
 from cvp.config.sections.bases.sidebar import SidebarWindowConfig
 from cvp.config.sections.proxies.sidebar import SidebarWidthProxy
 from cvp.imgui.begin_child import begin_child
+from cvp.imgui.flags.child import BORDERS
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
@@ -79,10 +80,11 @@ class SidebarWindow(WindowBase[SidebarWidthT], SidebarWindowInterface):
 
     @override
     def on_process(self) -> None:
-        with begin_child(
-            "## ChildSidebar",
-            self.sidebar_width,
-            border=self._sidebar_border,
+        child_flags = BORDERS if self._sidebar_border else 0
+        if begin_child(
+            label="## ChildSidebar",
+            width=self.sidebar_width,
+            child_flags=child_flags,
         ):
             self.on_process_sidebar()
 

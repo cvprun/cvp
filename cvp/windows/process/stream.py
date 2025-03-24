@@ -5,6 +5,7 @@ from enum import StrEnum, auto, unique
 from imgui_bundle import imgui
 
 from cvp.imgui.begin_child import begin_child
+from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.text_centered import text_centered
 from cvp.process.process import Process
 from cvp.renderer.context import RendererContext
@@ -50,7 +51,7 @@ class ProcessStreamTab(TabItem[Process]):
 
         self._auto_scroll = imgui.checkbox("Auto Scroll", self._auto_scroll)[1]
 
-        with begin_child("## Logging", border=True):
+        with begin_child("## Logging", child_flags=BORDERS):
             imgui.text_unformatted(buffer.getvalue())
 
             if self._auto_scroll:

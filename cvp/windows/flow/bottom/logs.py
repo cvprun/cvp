@@ -10,14 +10,13 @@ from imgui_bundle import imgui
 from cvp.imgui.begin_child import begin_child
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
+from cvp.imgui.flags import color_var
+from cvp.imgui.flags.child import BORDERS
+from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
+from cvp.imgui.text_colored import text_colored
 from cvp.logging.logging import (
+    LEVEL_NAMES,
     SEVERITY_NAME_CRITICAL,
-    SEVERITY_NAME_DEBUG,
-    SEVERITY_NAME_ERROR,
-    SEVERITY_NAME_INFO,
-    SEVERITY_NAME_NOTSET,
-    SEVERITY_NAME_OFF,
-    SEVERITY_NAME_WARNING,
     convert_level_number,
 )
 from cvp.logging.logging import flow_logger as logger
@@ -27,16 +26,6 @@ from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabItem
-
-LEVEL_NAMES = [
-    SEVERITY_NAME_CRITICAL,
-    SEVERITY_NAME_ERROR,
-    SEVERITY_NAME_WARNING,
-    SEVERITY_NAME_INFO,
-    SEVERITY_NAME_DEBUG,
-    SEVERITY_NAME_NOTSET,
-    SEVERITY_NAME_OFF,
-]
 
 
 class _LoggingHandler(Handler):
@@ -119,7 +108,8 @@ class LogsTab(TabItem[FlowCanvasTabs]):
         elif NOTSET < level <= DEBUG:
             return logging_config.debug_color
         else:
-            return imgui.get_style().colors[imgui.COLOR_TEXT]
+            vec4 = imgui.get_style().color_(color_var.TEXT)
+            return vec4.x, vec4.y, vec4.z, vec4.w
 
     def on_logging(self, record: LogRecord, message: str) -> None:
         self._records.append(_LineRecord(record.levelno, record.levelname, message))
@@ -151,8 +141,8 @@ class LogsTab(TabItem[FlowCanvasTabs]):
         imgui.separator()
 
         bottom_spacing = imgui.get_style().item_spacing.y
-        with begin_child("##Logging", 0, -bottom_spacing, border=False):
-            if imgui.is_window_hovered(imgui.HOVERED_ROOT_AND_CHILD_WINDOWS):
+        with begin_child("##Logging", 0, -bottom_spacing, BORDERS):
+            if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
                 if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
                     if 0 < self._mouse_wheel.value:
                         # Drag Up
@@ -174,7 +164,7 @@ class LogsTab(TabItem[FlowCanvasTabs]):
                     continue
 
                 color = self.get_level_color(line.level)
-                imgui.text_colored(f"[{line.levelname}] {line.message}", *color)
+                text_colored(f"[{line.levelname}] {line.message}", color)
 
             if self.autoscroll:
                 imgui.set_scroll_here_y(1.0)

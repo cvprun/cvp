@@ -126,16 +126,19 @@ class Manager(SidebarWindow[ManagerWindowConfigT], ManagerInterface[MenuItemT]):
 
     @override
     def on_process_sidebar_bottom(self) -> None:
-        content_width = imgui.get_content_region_available_width()
+        content_region = imgui.get_content_region_avail()
+        content_width = content_region.x
         imgui.set_next_item_width(content_width)
 
-        if imgui.begin_list_box("## SideList", width=-1, height=-1).opened:
-            for key, menu in self._latest_menus.items():
-                title = self.query_menu_title(key, menu)
-                label = f"{title}##{key}"
-                if imgui.selectable(label, key == self.selected)[1]:
-                    self.selected = key
-            imgui.end_list_box()
+        if imgui.begin_list_box("## SideList", (-1, -1)):
+            try:
+                for key, menu in self._latest_menus.items():
+                    title = self.query_menu_title(key, menu)
+                    label = f"{title}##{key}"
+                    if imgui.selectable(label, key == self.selected)[1]:
+                        self.selected = key
+            finally:
+                imgui.end_list_box()
 
     @override
     def on_process_main(self) -> None:
