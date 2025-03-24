@@ -11,6 +11,7 @@ from cvp.fonts.ttf import TTF
 from cvp.gl.texture import Texture
 from cvp.imgui.fonts.font import Font
 from cvp.imgui.fonts.glyph_ranges import create_glyph_ranges
+from cvp.imgui.fonts.get_fonts import get_tex_data_as_raw_rgba32
 
 
 class FontBuilder:
@@ -75,8 +76,7 @@ class FontBuilder:
     def _create_font_texture() -> Texture:
         fonts = imgui.get_io().fonts
 
-        # noinspection PyUnresolvedReferences
-        width, height, pixels = fonts.get_tex_data_as_alpha8()
+        width, height, pixels = get_tex_data_as_raw_rgba32(fonts)
 
         texture = Texture()
         texture.open(width, height)
