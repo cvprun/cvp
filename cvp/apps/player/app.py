@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+from collections import OrderedDict
 from io import StringIO
-from typing import Optional, Tuple
+from typing import Callable, Optional, Tuple
 from warnings import catch_warnings
 
 import pygame
@@ -30,62 +31,68 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.renderer.context import RendererContext
 from cvp.renderer.renderer import PygameRenderer
 from cvp.renderer.world.world import World
-from cvp.windows.canvas import CanvasWindow
-from cvp.windows.catalog import CatalogManager
-from cvp.windows.dtype import DtypeManager
-from cvp.windows.files import FilesWindow
-from cvp.windows.flow import FlowWindow
-from cvp.windows.font import FontManager
-from cvp.windows.games.glyph_hack import GlyphHackWindow
-from cvp.windows.games.tetrix import TetrixWindow
-from cvp.windows.labeling import LabelingWindow
-from cvp.windows.layout import LayoutManager
-from cvp.windows.media import MediaManager
-from cvp.windows.onvif import OnvifManager
-from cvp.windows.overlay import OverlayWindow
-from cvp.windows.plot import PlotWindow
-from cvp.windows.preference import PreferenceManager
-from cvp.windows.process import ProcessManager
-from cvp.windows.stitching import StitchingWindow
-from cvp.windows.terminal import TerminalWindow
-from cvp.windows.text import TextWindow
+
+# TODO: You will need to restore it later.
+# from cvp.renderer.window.base import WindowBase
+# from cvp.windows.canvas import CanvasWindow
+# from cvp.windows.catalog import CatalogManager
+# from cvp.windows.dtype import DtypeManager
+# from cvp.windows.files import FilesWindow
+# from cvp.windows.flow import FlowWindow
+# from cvp.windows.font import FontManager
+# from cvp.windows.games.glyph_hack import GlyphHackWindow
+# from cvp.windows.games.tetrix import TetrixWindow
+# from cvp.windows.labeling import LabelingWindow
+# from cvp.windows.layout import LayoutManager
+# from cvp.windows.media import MediaManager
+# from cvp.windows.onvif import OnvifManager
+# from cvp.windows.overlay import OverlayWindow
+# from cvp.windows.plot import PlotWindow
+# from cvp.windows.preference import PreferenceManager
+# from cvp.windows.process import ProcessManager
+# from cvp.windows.stitching import StitchingWindow
+# from cvp.windows.terminal import TerminalWindow
+# from cvp.windows.text import TextWindow
 from cvp.windows.toast import ToastWindow
-from cvp.windows.window import WindowManager
-from cvp.windows.worker import WorkerManager
-from cvp.windows.wsd import WsdManager
+
+# from cvp.windows.window import WindowManager
+# from cvp.windows.worker import WorkerManager
+# from cvp.windows.wsd import WsdManager
 
 
 class PlayerApplication:
     _renderer: PygameRenderer
+    _menus: OrderedDict[str, Callable[[], None]]
 
     def __init__(self, context: Context):
         self._context = RendererContext.from_context(context, with_init=True)
         self._profiler = ProfileLogging(profile_logger)
         self._world = World(self._context)
 
-        self._canvas = CanvasWindow(self._context)
-        self._catalog_manager = CatalogManager(self._context)
-        self._dtype_manager = DtypeManager(self._context)
-        self._files = FilesWindow(self._context)
-        self._flow = FlowWindow(self._context)
-        self._font_manager = FontManager(self._context)
-        self._glyph_hack = GlyphHackWindow(self._context)
-        self._labeling_manager = LabelingWindow(self._context)
-        self._layout_manager = LayoutManager(self._context)
-        self._media_manager = MediaManager(self._context)
-        self._onvif_manager = OnvifManager(self._context)
-        self._overlay = OverlayWindow(self._context)
-        self._plot = PlotWindow(self._context)
-        self._pref_manager = PreferenceManager(self._context)
-        self._process_manager = ProcessManager(self._context)
-        self._stitching = StitchingWindow(self._context)
-        self._terminal = TerminalWindow(self._context)
-        self._tetrix = TetrixWindow(self._context)
-        self._text = TextWindow(self._context)
+        # TODO: You will need to restore it later.
+        # self._canvas = CanvasWindow(self._context)
+        # self._catalog_manager = CatalogManager(self._context)
+        # self._dtype_manager = DtypeManager(self._context)
+        # self._files = FilesWindow(self._context)
+        # self._flow = FlowWindow(self._context)
+        # self._font_manager = FontManager(self._context)
+        # self._glyph_hack = GlyphHackWindow(self._context)
+        # self._labeling_manager = LabelingWindow(self._context)
+        # self._layout_manager = LayoutManager(self._context)
+        # self._media_manager = MediaManager(self._context)
+        # self._onvif_manager = OnvifManager(self._context)
+        # self._overlay = OverlayWindow(self._context)
+        # self._plot = PlotWindow(self._context)
+        # self._pref_manager = PreferenceManager(self._context)
+        # self._process_manager = ProcessManager(self._context)
+        # self._stitching = StitchingWindow(self._context)
+        # self._terminal = TerminalWindow(self._context)
+        # self._tetrix = TetrixWindow(self._context)
+        # self._text = TextWindow(self._context)
         self._toast = ToastWindow(self._context)
-        self._window_manager = WindowManager(self._context)
-        self._worker_manager = WorkerManager(self._context)
-        self._wsd_manager = WsdManager(self._context)
+        # self._window_manager = WindowManager(self._context)
+        # self._worker_manager = WorkerManager(self._context)
+        # self._wsd_manager = WsdManager(self._context)
 
         self._confirm_quit = ConfirmPopup(
             title="Exit",
@@ -93,6 +100,11 @@ class PlayerApplication:
             ok="Exit",
             cancel="No",
         )
+
+        self._menus = OrderedDict()
+        self._menus["File"] = self.on_file_menu
+        self._menus["Tools"] = self.on_tools_menu
+        self._menus["Windows"] = self.on_windows_menu
 
     @property
     def home(self):
@@ -168,9 +180,13 @@ class PlayerApplication:
         fixer.run(error)
 
     def start(self) -> None:
+        """
+        The first entry point that should be called immediately after object creation.
+        """
+
         self.on_init()
         try:
-            self.on_process()
+            self.on_main()
         except Error as e:
             if str(e) == "Attempt to retrieve context when no valid context":
                 self._raise_force_egl_error(e)
@@ -184,25 +200,33 @@ class PlayerApplication:
             self._validate_accelerate_available()
 
         pygame.init()
+        logger.info("Initialized all pygame modules.")
 
         icon_path = get_default_icon_path()
         if os.path.isfile(icon_path):
             icon_image = load_image(icon_path)
             pygame.display.set_icon(icon_image)
+            logger.info(f"The program icon has been set: '{icon_path}'")
 
         try:
+            logger.debug("Testing Texture API...")
             GL.glDeleteTextures(1, GL.glGenTextures(1))
         except ValueError as e:
             self._raise_use_accelerate_error(e)
 
         size = self.pygame_display_size
         flags = self.pygame_display_flags
+        depth = 0
+        display = 0
+        vsync = 0
+        logger.info(f"Display size: {size[0]}x{size[1]}")
+        logger.info(f"Display flags: {flags}")
 
         with catch_warnings(record=True) as wms:
             # [Warning]
             # PyGame seems to be running through X11 on top of wayland,
             # instead of wayland directly `pygame.display.set_mode(size, flags)`
-            pygame.display.set_mode(size, flags)
+            pygame.display.set_mode(size, flags, depth, display, vsync)
 
             for wm in wms:
                 buffer = StringIO()
@@ -215,6 +239,7 @@ class PlayerApplication:
                 logger.warning(buffer.getvalue())
 
         imgui.create_context()
+        logger.info("Created an imgui context.")
 
         # When the clipboard is empty,
         # calling get_clipboard_text can cause a 'Segmentation Fault'.
@@ -224,51 +249,62 @@ class PlayerApplication:
         io.display_size = imgui.ImVec2(size[0], size[1])
         io.set_ini_filename(str())
         io.set_log_filename(str())
-        imgui.load_ini_settings_from_disk(str(self.home.gui_ini))
+
+        gui_ini_path = str(self.home.gui_ini)
+        imgui.load_ini_settings_from_disk(gui_ini_path)
+        logger.info(f"Loaded imgui configuration information: '{gui_ini_path}'")
 
         self._renderer = PygameRenderer()
+        logger.info("Created a Pygame renderer object.")
 
         io.fonts.clear()
         self._context.add_default_fonts()
+        logger.info("Added default fonts.")
 
         io.font_global_scale = self.config.font.scale
         self._renderer.refresh_font_texture()
+        logger.info("Refresh font textures.")
 
         theme = self.config.appearance.theme
         default_style_colors(theme)
+        logger.info(f"Apply theme: '{theme}'")
 
-        GL.glClearColor(0, 0, 0, 1)
+        clear_color = self.config.appearance.clear_color
+        GL.glClearColor(*clear_color)
+        logger.info(f"Apply clear color: {clear_color}")
 
         self._world.on_create()
         self._world.on_window_resized(size[0], size[1])
+        logger.info("Initialized world object.")
 
-        begin_order = self._context.config.window_manager.begin_order
         self._context.windows.add_windows(
-            self._canvas,
-            self._catalog_manager,
-            self._dtype_manager,
-            self._files,
-            self._flow,
-            self._font_manager,
-            self._glyph_hack,
-            self._labeling_manager,
-            self._layout_manager,
-            self._media_manager,
-            self._onvif_manager,
-            self._overlay,
-            self._plot,
-            self._pref_manager,
-            self._process_manager,
-            self._stitching,
-            self._terminal,
-            self._tetrix,
-            self._text,
+            # TODO: You will need to restore it later.
+            # self._canvas,
+            # self._catalog_manager,
+            # self._dtype_manager,
+            # self._files,
+            # self._flow,
+            # self._font_manager,
+            # self._glyph_hack,
+            # self._labeling_manager,
+            # self._layout_manager,
+            # self._media_manager,
+            # self._onvif_manager,
+            # self._overlay,
+            # self._plot,
+            # self._pref_manager,
+            # self._process_manager,
+            # self._stitching,
+            # self._terminal,
+            # self._tetrix,
+            # self._text,
             self._toast,
-            self._window_manager,
-            self._worker_manager,
-            self._wsd_manager,
-            begin_order=begin_order,
+            # self._window_manager,
+            # self._worker_manager,
+            # self._wsd_manager,
+            begin_order=self._context.config.window_manager.begin_order,
         )
+        logger.info("Initialized all windows.")
 
     def on_exit(self) -> None:
         self._context.stop_all_flow_runners()
@@ -288,26 +324,22 @@ class PlayerApplication:
         del self._renderer
         pygame.quit()
 
-    def on_process(self) -> None:
+    def on_main(self) -> None:
         while not self._context.is_done():
             with self._profiler:
                 try:
                     for event in pygame.event.get():
                         self.on_event(event)
-
                     for msg in self._context.mq.get():
                         self.on_msg(msg)
 
                     self.on_keyboard_shortcut(get_pressed())
-                    self.on_tick()
+                    self._renderer.do_tick()
                     self.on_frame()
 
                     self.on_next()
                 finally:
-                    self.on_after()
-
-    def on_after(self) -> None:
-        self._renderer.do_after()
+                    self._renderer.do_after()
 
     def on_event(self, event: Event) -> None:
         assert NOEVENT < event.type < NUMEVENTS
@@ -350,11 +382,10 @@ class PlayerApplication:
     def on_keyboard_shortcut(self, keys: ScancodeWrapper) -> None:
         if keys[pygame.K_LCTRL] and keys[pygame.K_q]:
             self._confirm_quit.show()
-        if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
-            self._pref_manager.opened = True
 
-    def on_tick(self) -> None:
-        self._renderer.do_tick()
+        # TODO: You will need to restore it later.
+        # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
+        #     self._pref_manager.opened = True
 
     def on_frame(self) -> None:
         imgui.new_frame()
@@ -362,7 +393,7 @@ class PlayerApplication:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             self.on_main_menu()
-            self.on_popups()
+            self.on_popups_process()
             self._context.windows.do_process()
 
             if self.debug:
@@ -386,77 +417,79 @@ class PlayerApplication:
             self._confirm_quit.show()
 
     def on_tools_menu(self) -> None:
-        menu_item("Computer Vision", enabled=False)
-        if menu_item("Flow", self._flow.opened):
-            self._flow.flip_opened()
-        if menu_item("Dtype", self._dtype_manager.opened):
-            self._dtype_manager.flip_opened()
-        if menu_item("Catalog", self._catalog_manager.opened):
-            self._catalog_manager.flip_opened()
-
-        if self.debug:
-            if menu_item("Stitching", self._stitching.opened):
-                self._stitching.flip_opened()
-            if menu_item("Labeling", self._labeling_manager.opened):
-                self._labeling_manager.flip_opened()
-
-        if self.debug:
-            separator()
-            menu_item("Editors", enabled=False)
-            if menu_item("Text", self._text.opened):
-                self._text.flip_opened()
-            if menu_item("Canvas", self._canvas.opened):
-                self._canvas.flip_opened()
-
-        separator()
-        menu_item("Network Device", enabled=False)
-        if menu_item("Media", self._media_manager.opened):
-            self._media_manager.flip_opened()
-        if menu_item("ONVIF", self._onvif_manager.opened):
-            self._onvif_manager.flip_opened()
-        if menu_item("WsDiscovery", self._wsd_manager.opened):
-            self._wsd_manager.flip_opened()
-
-        separator()
-        menu_item("Information", enabled=False)
-        if menu_item("Overlay", self._overlay.opened):
-            self._overlay.flip_opened()
-
-        separator()
-        menu_item("Management", enabled=False)
-        if menu_item("Layout", self._layout_manager.opened):
-            self._layout_manager.flip_opened()
-        if menu_item("Process", self._process_manager.opened):
-            self._process_manager.flip_opened()
-        if menu_item("Window", self._window_manager.opened):
-            self._window_manager.flip_opened()
-
-        if self.debug:
-            if menu_item("Worker", self._worker_manager.opened):
-                self._worker_manager.flip_opened()
-            if menu_item("Files", self._files.opened):
-                self._files.flip_opened()
-
-        if self.debug:
-            separator()
-            menu_item("Development", enabled=False)
-            if menu_item("Terminal", self._terminal.opened):
-                self._terminal.flip_opened()
-
-        separator()
-        menu_item("Game", enabled=False)
-        if menu_item("TetriX", self._tetrix.opened):
-            self._tetrix.flip_opened()
-
-        if self.debug:
-            if menu_item("GlyphWorld", self._glyph_hack.opened):
-                self._glyph_hack.flip_opened()
-
-        separator()
-        if menu_item("Font", self._font_manager.opened):
-            self._font_manager.flip_opened()
-        if menu_item("Preference", self._pref_manager.opened, shortcut="Ctrl+Alt+S"):
-            self._pref_manager.opened = not self._pref_manager.opened
+        # TODO: You will need to restore it later.
+        # menu_item("Computer Vision", enabled=False)
+        # if menu_item("Flow", self._flow.opened):
+        #     self._flow.flip_opened()
+        # if menu_item("Dtype", self._dtype_manager.opened):
+        #     self._dtype_manager.flip_opened()
+        # if menu_item("Catalog", self._catalog_manager.opened):
+        #     self._catalog_manager.flip_opened()
+        #
+        # if self.debug:
+        #     if menu_item("Stitching", self._stitching.opened):
+        #         self._stitching.flip_opened()
+        #     if menu_item("Labeling", self._labeling_manager.opened):
+        #         self._labeling_manager.flip_opened()
+        #
+        # if self.debug:
+        #     separator()
+        #     menu_item("Editors", enabled=False)
+        #     if menu_item("Text", self._text.opened):
+        #         self._text.flip_opened()
+        #     if menu_item("Canvas", self._canvas.opened):
+        #         self._canvas.flip_opened()
+        #
+        # separator()
+        # menu_item("Network Device", enabled=False)
+        # if menu_item("Media", self._media_manager.opened):
+        #     self._media_manager.flip_opened()
+        # if menu_item("ONVIF", self._onvif_manager.opened):
+        #     self._onvif_manager.flip_opened()
+        # if menu_item("WsDiscovery", self._wsd_manager.opened):
+        #     self._wsd_manager.flip_opened()
+        #
+        # separator()
+        # menu_item("Information", enabled=False)
+        # if menu_item("Overlay", self._overlay.opened):
+        #     self._overlay.flip_opened()
+        #
+        # separator()
+        # menu_item("Management", enabled=False)
+        # if menu_item("Layout", self._layout_manager.opened):
+        #     self._layout_manager.flip_opened()
+        # if menu_item("Process", self._process_manager.opened):
+        #     self._process_manager.flip_opened()
+        # if menu_item("Window", self._window_manager.opened):
+        #     self._window_manager.flip_opened()
+        #
+        # if self.debug:
+        #     if menu_item("Worker", self._worker_manager.opened):
+        #         self._worker_manager.flip_opened()
+        #     if menu_item("Files", self._files.opened):
+        #         self._files.flip_opened()
+        #
+        # if self.debug:
+        #     separator()
+        #     menu_item("Development", enabled=False)
+        #     if menu_item("Terminal", self._terminal.opened):
+        #         self._terminal.flip_opened()
+        #
+        # separator()
+        # menu_item("Game", enabled=False)
+        # if menu_item("TetriX", self._tetrix.opened):
+        #     self._tetrix.flip_opened()
+        #
+        # if self.debug:
+        #     if menu_item("GlyphWorld", self._glyph_hack.opened):
+        #         self._glyph_hack.flip_opened()
+        #
+        # separator()
+        # if menu_item("Font", self._font_manager.opened):
+        #     self._font_manager.flip_opened()
+        # if menu_item("Preference", self._pref_manager.opened, shortcut="Ctrl+Alt+S"):
+        #     self._pref_manager.opened = not self._pref_manager.opened
+        pass
 
     def on_windows_menu(self) -> None:
         for key, win in self._context.windows.items():
@@ -475,12 +508,7 @@ class PlayerApplication:
     def on_main_menu(self) -> None:
         if imgui.begin_main_menu_bar():
             try:
-                menus = (
-                    ("File", self.on_file_menu),
-                    ("Tools", self.on_tools_menu),
-                    ("Windows", self.on_windows_menu),
-                )
-                for name, func in menus:
+                for name, func in self._menus.items():
                     if imgui.begin_menu(name):
                         try:
                             func()
@@ -489,7 +517,9 @@ class PlayerApplication:
             finally:
                 imgui.end_main_menu_bar()
 
-    def on_popups(self) -> None:
+    def on_popups_process(self) -> None:
+        """Where to render the popup object."""
+
         if self._confirm_quit.do_process():
             self._context.quit()
 
