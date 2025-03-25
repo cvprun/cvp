@@ -2,24 +2,26 @@
 
 from abc import ABC, abstractmethod
 
+from imgui_bundle import imgui
+
 
 class RendererInterface(ABC):
     @abstractmethod
-    def render(self, draw_data):
+    def _create_device_objects(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def refresh_font_texture(self):
+    def _invalidate_device_objects(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def shutdown(self):
-        self._invalidate_device_objects()
-
-    @abstractmethod
-    def _create_device_objects(self):
+    def render(self, draw_data: imgui.ImDrawData) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def _invalidate_device_objects(self):
+    def refresh_font_texture(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def shutdown(self) -> None:
         raise NotImplementedError

@@ -6,7 +6,7 @@ from imgui_bundle import imgui
 from numpy import ndarray
 from OpenGL import GL
 
-from cvp.renderer.base import BaseOpenGLRenderer
+from cvp.renderer.base.base import BaseRenderer
 
 VERTEX_SHADER_SRC = """
 #version 330
@@ -40,7 +40,7 @@ void main() {
 """
 
 
-class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
+class ProgrammablePipelineRenderer(BaseRenderer):
     """Basic OpenGL integration base class."""
 
     def __init__(self):
@@ -232,6 +232,7 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
         GL.glBindVertexArray(self._vao_handle)
 
         for commands in draw_data.cmd_lists:
+            idx_buffer_offset = 0
 
             GL.glBindBuffer(GL.GL_ARRAY_BUFFER, self._vbo_handle)
             # todo: check this (sizes)
@@ -271,8 +272,10 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
                     GL.GL_TRIANGLES,
                     command.elem_count,
                     gltype,
-                    ctypes.c_void_p(command.idx_offset * imgui.INDEX_SIZE),
+                    ctypes.c_void_p(idx_buffer_offset),
                 )
+
+                idx_buffer_offset += command.elem_count * imgui.INDEX_SIZE
 
         # restore modified GL state
         restore_common_gl_state(common_gl_state_tuple)
@@ -301,7 +304,7 @@ class ProgrammablePipelineRenderer(BaseOpenGLRenderer):
         self._font_texture = 0
 
 
-class FixedPipelineRenderer(BaseOpenGLRenderer):
+class FixedPipelineRenderer(BaseRenderer):
     """Basic OpenGL integration base class."""
 
     def refresh_font_texture(self):
@@ -340,7 +343,7 @@ class FixedPipelineRenderer(BaseOpenGLRenderer):
     def _create_device_objects(self):
         pass
 
-    def render(self, draw_data):
+    def render(self, draw_data: imgui.ImDrawData):
         # perf: local for faster access
         io = self.io
 
@@ -381,6 +384,7 @@ class FixedPipelineRenderer(BaseOpenGLRenderer):
         GL.glLoadIdentity()
 
         for commands in draw_data.cmd_lists:
+            idx_buffer = commands.idx_buffer.data_address()
 
             GL.glVertexPointer(
                 2,
@@ -410,7 +414,10 @@ class FixedPipelineRenderer(BaseOpenGLRenderer):
             for command in commands.cmd_buffer:
                 GL.glBindTexture(GL.GL_TEXTURE_2D, command.texture_id)
 
-                x, y, z, w = command.clip_rect
+                x = command.clip_rect.x
+                y = command.clip_rect.y
+                z = command.clip_rect.z
+                w = command.clip_rect.w
                 GL.glScissor(int(x), int(fb_height - w), int(z - x), int(w - y))
 
                 if imgui.INDEX_SIZE == 2:
@@ -422,8 +429,9 @@ class FixedPipelineRenderer(BaseOpenGLRenderer):
                     GL.GL_TRIANGLES,
                     command.elem_count,
                     gltype,
-                    ctypes.c_void_p(command.idx_offset * imgui.INDEX_SIZE),
+                    ctypes.c_void_p(idx_buffer),
                 )
+                idx_buffer += command.elem_count * imgui.INDEX_SIZE
 
         restore_common_gl_state(common_gl_state_tuple)
 
