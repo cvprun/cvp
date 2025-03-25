@@ -8,7 +8,7 @@ from pygame.event import Event
 from pygame.time import get_ticks
 
 from cvp.logging.logging import logger
-from cvp.renderer.opengl import FixedPipelineRenderer
+from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.remapper import KeycodeRemapper
 
 

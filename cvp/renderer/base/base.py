@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Optional
+from typing import Dict
 
 from imgui_bundle import imgui
 
@@ -9,7 +9,7 @@ from cvp.types.override import override
 
 
 class BaseRenderer(RendererInterface):
-    _font_texture: Optional[int]
+    _font_texture: int
     _keymap: Dict[int, int]
 
     def __init__(self):
@@ -22,7 +22,7 @@ class BaseRenderer(RendererInterface):
         self.io = imgui.get_io()
         self.io.delta_time = 1.0 / 60.0
 
-        self._font_texture = None
+        self._font_texture = 0
         self._keymap = dict()
 
         self._create_device_objects()
