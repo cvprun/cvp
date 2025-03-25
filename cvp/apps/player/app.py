@@ -31,7 +31,7 @@ from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
 from cvp.popups.confirm import ConfirmPopup
 from cvp.renderer.context import RendererContext
-from cvp.renderer.renderer import PygameRenderer
+from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
 
 # TODO: You will need to restore it later.

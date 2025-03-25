@@ -9,7 +9,7 @@ from pygame.time import get_ticks
 
 from cvp.logging.logging import logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
-from cvp.renderer.remapper import KeycodeRemapper
+from cvp.renderer.pygame.remapper import KeycodeRemapper
 
 
 class PygameRenderer(FixedPipelineRenderer):
