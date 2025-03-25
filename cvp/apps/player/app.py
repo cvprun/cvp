@@ -16,7 +16,9 @@ from pygame.event import Event, event_name
 from pygame.image import load as load_image
 from pygame.key import ScancodeWrapper, get_pressed
 
+from cvp.apps.player.modes import create_modes
 from cvp.assets.icons import get_default_icon_path
+from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
@@ -62,7 +64,8 @@ from cvp.windows.toast import ToastWindow
 
 class PlayerApplication:
     _renderer: PygameRenderer
-    _menus: OrderedDict[str, Callable[[], None]]
+    _prefix_menus: OrderedDict[str, Callable[[], None]]
+    _suffix_menus: OrderedDict[str, Callable[[], None]]
 
     def __init__(self, context: Context):
         self._context = RendererContext.from_context(context, with_init=True)
@@ -101,10 +104,14 @@ class PlayerApplication:
             cancel="No",
         )
 
-        self._menus = OrderedDict()
-        self._menus["File"] = self.on_file_menu
-        self._menus["Tools"] = self.on_tools_menu
-        self._menus["Windows"] = self.on_windows_menu
+        prefix_menus = {"File": self.on_file_menu, "Mode": self.on_mode_menu}
+        self._prefix_menus = OrderedDict(prefix_menus)
+
+        suffix_menus = {"Tools": self.on_tools_menu, "Windows": self.on_windows_menu}
+        self._suffix_menus = OrderedDict(suffix_menus)
+
+        self._modes = create_modes(self._context)
+        self._default_mode = self._modes[AppMode.none]
 
     @property
     def home(self):
@@ -121,6 +128,10 @@ class PlayerApplication:
     @property
     def verbose(self):
         return self._context.verbose
+
+    @property
+    def mode(self):
+        return self._modes.get(self._context.config.appearance.mode, self._default_mode)
 
     @property
     def pygame_display_size(self) -> Tuple[int, int]:
@@ -333,11 +344,11 @@ class PlayerApplication:
                     for msg in self._context.mq.get():
                         self.on_msg(msg)
 
-                    self.on_keyboard_shortcut(get_pressed())
+                    self.on_keyboard(get_pressed())
                     self._renderer.do_tick()
                     self.on_frame()
 
-                    self.on_next()
+                    self._context.windows.do_next()
                 finally:
                     self._renderer.do_after()
 
@@ -346,6 +357,8 @@ class PlayerApplication:
         event_logger.debug(f"Event {event_name(event.type)}: {event.dict}")
 
         consumed_event = self._context.windows.do_event(event)
+        if not consumed_event:
+            consumed_event = self.mode.do_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -362,7 +375,6 @@ class PlayerApplication:
             logger.debug(f"Drop TEXT: {event.text}")
         elif event.type == pygame.WINDOWRESIZED:
             self._world.on_window_resized(event.x, event.y)
-
         self._renderer.do_event(event)
 
     def on_msg(self, msg: Msg) -> None:
@@ -373,19 +385,27 @@ class PlayerApplication:
 
         consumed_msg = self._context.windows.do_msg(msg)
         if not consumed_msg:
+            consumed_msg = self.mode.do_msg(msg)
+        if not consumed_msg:
             self.on_msg_fallback(msg)
 
     def on_msg_fallback(self, msg: Msg) -> None:
         if msg.mtype == MsgType.toast:
             self._toast.show_simple(msg.message)
+            return
 
-    def on_keyboard_shortcut(self, keys: ScancodeWrapper) -> None:
+    def on_keyboard(self, keys: ScancodeWrapper) -> None:
+        """This is where keyboard shortcuts are processed."""
+
         if keys[pygame.K_LCTRL] and keys[pygame.K_q]:
             self._confirm_quit.show()
+            return
 
         # TODO: You will need to restore it later.
         # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
         #     self._pref_manager.opened = True
+
+        self.mode.on_keyboard(keys)
 
     def on_frame(self) -> None:
         imgui.new_frame()
@@ -394,6 +414,7 @@ class PlayerApplication:
 
             self.on_main_menu()
             self.on_popups_process()
+            self.mode.do_process()
             self._context.windows.do_process()
 
             if self.debug:
@@ -409,12 +430,15 @@ class PlayerApplication:
             self._renderer.render(imgui.get_draw_data())
             pygame.display.flip()
 
-    def on_next(self) -> None:
-        self._context.windows.do_next()
-
     def on_file_menu(self) -> None:
         if menu_item("Quit", shortcut="Ctrl+Q"):
             self._confirm_quit.show()
+
+    def on_mode_menu(self) -> None:
+        mode = self.config.appearance.mode
+        enabled_none = mode == AppMode.none
+        if menu_item("None", selected=True, shortcut="Alt+1", enabled=enabled_none):
+            self.config.appearance.mode = AppMode.none
 
     def on_tools_menu(self) -> None:
         # TODO: You will need to restore it later.
@@ -493,7 +517,7 @@ class PlayerApplication:
 
     def on_windows_menu(self) -> None:
         for key, win in self._context.windows.items():
-            if menu_item(key, win.opened):
+            if menu_item(f"{win.title}###{key}", win.opened):
                 win.opened = not win.opened
 
         if self.debug:
@@ -508,7 +532,16 @@ class PlayerApplication:
     def on_main_menu(self) -> None:
         if imgui.begin_main_menu_bar():
             try:
-                for name, func in self._menus.items():
+                for name, func in self._prefix_menus.items():
+                    if imgui.begin_menu(name):
+                        try:
+                            func()
+                        finally:
+                            imgui.end_menu()
+
+                self.mode.on_main_menu()
+
+                for name, func in self._suffix_menus.items():
                     if imgui.begin_menu(name):
                         try:
                             func()
