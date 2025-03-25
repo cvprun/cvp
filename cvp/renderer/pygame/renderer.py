@@ -9,7 +9,7 @@ from pygame.time import get_ticks
 
 from cvp.logging.logging import logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
-from cvp.renderer.pygame.remapper import KeycodeRemapper
+from cvp.renderer.pygame.keycode.pyimgui import KeycodeRemapper
 
 
 class PygameRenderer(FixedPipelineRenderer):
@@ -22,28 +22,29 @@ class PygameRenderer(FixedPipelineRenderer):
         self._remapper = KeycodeRemapper()
 
         kmap = self.keymap
-        kmap[imgui.Key.tab.value] = self._remapper(pygame.K_TAB)
-        kmap[imgui.Key.left_arrow.value] = self._remapper(pygame.K_LEFT)
-        kmap[imgui.Key.right_arrow.value] = self._remapper(pygame.K_RIGHT)
-        kmap[imgui.Key.up_arrow.value] = self._remapper(pygame.K_UP)
-        kmap[imgui.Key.down_arrow.value] = self._remapper(pygame.K_DOWN)
-        kmap[imgui.Key.page_up.value] = self._remapper(pygame.K_PAGEUP)
-        kmap[imgui.Key.page_down.value] = self._remapper(pygame.K_PAGEDOWN)
-        kmap[imgui.Key.home.value] = self._remapper(pygame.K_HOME)
-        kmap[imgui.Key.end.value] = self._remapper(pygame.K_END)
-        kmap[imgui.Key.insert.value] = self._remapper(pygame.K_INSERT)
-        kmap[imgui.Key.delete.value] = self._remapper(pygame.K_DELETE)
-        kmap[imgui.Key.backspace.value] = self._remapper(pygame.K_BACKSPACE)
-        kmap[imgui.Key.space.value] = self._remapper(pygame.K_SPACE)
-        kmap[imgui.Key.enter.value] = self._remapper(pygame.K_RETURN)
-        kmap[imgui.Key.escape.value] = self._remapper(pygame.K_ESCAPE)
-        kmap[imgui.Key.keypad_enter.value] = self._remapper(pygame.K_KP_ENTER)
-        kmap[imgui.Key.a.value] = self._remapper(pygame.K_a)
-        kmap[imgui.Key.c.value] = self._remapper(pygame.K_c)
-        kmap[imgui.Key.v.value] = self._remapper(pygame.K_v)
-        kmap[imgui.Key.x.value] = self._remapper(pygame.K_x)
-        kmap[imgui.Key.y.value] = self._remapper(pygame.K_y)
-        kmap[imgui.Key.z.value] = self._remapper(pygame.K_z)
+        self._keymap[imgui.Key.tab.value] = self._remapper(pygame.K_TAB)
+        self._keymap[imgui.Key.left_arrow.value] = self._remapper(pygame.K_LEFT)
+        self._keymap[imgui.Key.right_arrow.value] = self._remapper(pygame.K_RIGHT)
+        self._keymap[imgui.Key.up_arrow.value] = self._remapper(pygame.K_UP)
+        self._keymap[imgui.Key.down_arrow.value] = self._remapper(pygame.K_DOWN)
+        self._keymap[imgui.Key.page_up.value] = self._remapper(pygame.K_PAGEUP)
+        self._keymap[imgui.Key.page_down.value] = self._remapper(pygame.K_PAGEDOWN)
+        self._keymap[imgui.Key.home.value] = self._remapper(pygame.K_HOME)
+        self._keymap[imgui.Key.end.value] = self._remapper(pygame.K_END)
+        self._keymap[imgui.Key.insert.value] = self._remapper(pygame.K_INSERT)
+        self._keymap[imgui.Key.delete.value] = self._remapper(pygame.K_DELETE)
+        self._keymap[imgui.Key.backspace.value] = self._remapper(pygame.K_BACKSPACE)
+        self._keymap[imgui.Key.space.value] = self._remapper(pygame.K_SPACE)
+        self._keymap[imgui.Key.enter.value] = self._remapper(pygame.K_RETURN)
+        self._keymap[imgui.Key.escape.value] = self._remapper(pygame.K_ESCAPE)
+        self._keymap[imgui.Key.keypad_enter.value] = self._remapper(pygame.K_KP_ENTER)
+        self._keymap[imgui.Key.a.value] = self._remapper(pygame.K_a)
+        self._keymap[imgui.Key.c.value] = self._remapper(pygame.K_c)
+        self._keymap[imgui.Key.v.value] = self._remapper(pygame.K_v)
+        self._keymap[imgui.Key.x.value] = self._remapper(pygame.K_x)
+        self._keymap[imgui.Key.y.value] = self._remapper(pygame.K_y)
+        self._keymap[imgui.Key.z.value] = self._remapper(pygame.K_z)
+        self._keymap.update()
 
         self._events = dict()
         self._events[pygame.MOUSEMOTION] = self.on_mouse_motion

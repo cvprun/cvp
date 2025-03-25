@@ -10,7 +10,7 @@ from cvp.types.override import override
 
 class BaseRenderer(RendererInterface):
     _font_texture: int
-    _keymap: Dict[int, int]
+    _keymap: Dict[imgui.Key, int]
 
     def __init__(self):
         if not imgui.get_current_context():
@@ -27,13 +27,6 @@ class BaseRenderer(RendererInterface):
 
         self._create_device_objects()
         self.refresh_font_texture()
-
-    @property
-    def keymap(self) -> Dict[int, int]:
-        if hasattr(self.io, "key_map"):
-            return self.io.key_map
-        else:
-            return self._keymap
 
     @override
     def _create_device_objects(self) -> None:

@@ -11,6 +11,8 @@ MAX_IMGUI_KEYCODE: Final[int] = 512
 class KeycodeRemapper:
     """
     We need to go to custom keycode since imgui only support keycode from 0..512 or -1
+
+    Note: It is unnecessary in imgui_bundle.
     """
 
     _pygame_to_imgui: Dict[int, int]
@@ -222,7 +224,6 @@ class KeycodeRemapper:
         self.space = self._at(pygame.K_SPACE)
         self.enter = self._at(pygame.K_RETURN)
         self.escape = self._at(pygame.K_ESCAPE)
-        self.pad_enter = self._at(pygame.K_KP_ENTER)
 
         self.l_ctrl = self._at(pygame.K_LCTRL)
         self.r_ctrl = self._at(pygame.K_RCTRL)
