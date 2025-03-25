@@ -338,19 +338,15 @@ class PlayerApplication:
     def on_main(self) -> None:
         while not self._context.is_done():
             with self._profiler:
-                try:
-                    for event in pygame.event.get():
-                        self.on_event(event)
-                    for msg in self._context.mq.get():
-                        self.on_msg(msg)
+                for event in pygame.event.get():
+                    self.on_event(event)
+                for msg in self._context.mq.get():
+                    self.on_msg(msg)
 
-                    self.on_keyboard(get_pressed())
-                    self._renderer.do_tick()
-                    self.on_frame()
-
-                    self._context.windows.do_next()
-                finally:
-                    self._renderer.do_after()
+                self.on_keyboard(get_pressed())
+                self._renderer.do_tick()
+                self.on_frame()
+                self._context.windows.do_next()
 
     def on_event(self, event: Event) -> None:
         assert NOEVENT < event.type < NUMEVENTS

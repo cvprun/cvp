@@ -44,6 +44,11 @@ MAX_PROCESS_WORKERS: Final[int] = 5
 
 THREAD_POOL_PREFIX: Final[str] = "cvp.threadpool"
 
+ASCII_RANGE: Final[int] = 127
+MAX_IMGUI_KEYCODE: Final[int] = 512
+
+MOUSE_WHEEL_OFFSET_SCALE: Final[float] = 0.5
+
 LOGGING_STEP: Final[int] = 1000
 SLOW_CALLBACK_DURATION: Final[float] = 0.05
 

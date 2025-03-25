@@ -5,9 +5,14 @@ from typing import Dict
 import pygame
 from imgui_bundle import imgui
 
+from cvp.renderer.pygame.keycode.base import BaseKeycodeRemapper
+from cvp.types.override import override
+
 
 def create_keycode_mapping() -> Dict[imgui.Key, int]:
+    # noinspection PyProtectedMember
     return {
+        imgui.Key.none: 0,
         imgui.Key.tab: pygame.K_TAB,
         imgui.Key.left_arrow: pygame.K_LEFT,
         imgui.Key.right_arrow: pygame.K_RIGHT,
@@ -83,15 +88,15 @@ def create_keycode_mapping() -> Dict[imgui.Key, int]:
         imgui.Key.f13: pygame.K_F13,
         imgui.Key.f14: pygame.K_F14,
         imgui.Key.f15: pygame.K_F15,
-        imgui.Key.f16: 0,
-        imgui.Key.f17: 0,
-        imgui.Key.f18: 0,
-        imgui.Key.f19: 0,
-        imgui.Key.f20: 0,
-        imgui.Key.f21: 0,
-        imgui.Key.f22: 0,
-        imgui.Key.f23: 0,
-        imgui.Key.f24: 0,
+        # imgui.Key.f16: ?,
+        # imgui.Key.f17: ?,
+        # imgui.Key.f18: ?,
+        # imgui.Key.f19: ?,
+        # imgui.Key.f20: ?,
+        # imgui.Key.f21: ?,
+        # imgui.Key.f22: ?,
+        # imgui.Key.f23: ?,
+        # imgui.Key.f24: ?,
         imgui.Key.apostrophe: pygame.K_QUOTE,
         imgui.Key.comma: pygame.K_COMMA,
         imgui.Key.minus: pygame.K_MINUS,
@@ -125,6 +130,17 @@ def create_keycode_mapping() -> Dict[imgui.Key, int]:
         imgui.Key.keypad_add: pygame.K_KP_PLUS,
         imgui.Key.keypad_enter: pygame.K_KP_ENTER,
         imgui.Key.keypad_equal: pygame.K_KP_EQUALS,
-        imgui.Key.app_back: 0,
-        imgui.Key.app_forward: 0,
+        # imgui.Key.app_back: ?,
+        # imgui.Key.app_forward: ?,
     }
+
+
+class ImguiBundleKeycodeRemapper(BaseKeycodeRemapper):
+    def __init__(self):
+        imgui_to_pygame = create_keycode_mapping()
+        self._pygame_to_imgui = {v: int(k.value) for k, v in imgui_to_pygame.items()}
+        super().__init__()
+
+    @override
+    def _at(self, pygame_keycode: int) -> int:
+        return self._pygame_to_imgui[pygame_keycode]

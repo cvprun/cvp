@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Dict
+from typing import Any, Callable, Dict
 
 import pygame
 from imgui_bundle import imgui
@@ -9,7 +9,8 @@ from pygame.time import get_ticks
 
 from cvp.logging.logging import logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
-from cvp.renderer.pygame.keycode.pyimgui import KeycodeRemapper
+from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
+from cvp.variables import MOUSE_WHEEL_OFFSET_SCALE
 
 
 class PygameRenderer(FixedPipelineRenderer):
@@ -18,95 +19,104 @@ class PygameRenderer(FixedPipelineRenderer):
     def __init__(self):
         super().__init__()
 
+        display_info = pygame.display.Info()
+        assert display_info.current_w == self.io.display_size.x
+        assert display_info.current_h == self.io.display_size.y
+
+        def get_clipboard_text(_imgui_context: Any) -> str:
+            text = pygame.scrap.get_text()
+            logger.debug(f"Pygame scrap get text: '{text}'")
+            return text
+
+        def set_clipboard_text(_imgui_context: Any, text: str) -> None:
+            logger.debug(f"Pygame scrap put text: '{text}'")
+            pygame.scrap.put_text(text)
+
+        imgui.get_platform_io().platform_get_clipboard_text_fn = get_clipboard_text
+        imgui.get_platform_io().platform_set_clipboard_text_fn = set_clipboard_text
+
         self._running_seconds = 0.0
-        self._remapper = KeycodeRemapper()
-
-        kmap = self.keymap
-        self._keymap[imgui.Key.tab.value] = self._remapper(pygame.K_TAB)
-        self._keymap[imgui.Key.left_arrow.value] = self._remapper(pygame.K_LEFT)
-        self._keymap[imgui.Key.right_arrow.value] = self._remapper(pygame.K_RIGHT)
-        self._keymap[imgui.Key.up_arrow.value] = self._remapper(pygame.K_UP)
-        self._keymap[imgui.Key.down_arrow.value] = self._remapper(pygame.K_DOWN)
-        self._keymap[imgui.Key.page_up.value] = self._remapper(pygame.K_PAGEUP)
-        self._keymap[imgui.Key.page_down.value] = self._remapper(pygame.K_PAGEDOWN)
-        self._keymap[imgui.Key.home.value] = self._remapper(pygame.K_HOME)
-        self._keymap[imgui.Key.end.value] = self._remapper(pygame.K_END)
-        self._keymap[imgui.Key.insert.value] = self._remapper(pygame.K_INSERT)
-        self._keymap[imgui.Key.delete.value] = self._remapper(pygame.K_DELETE)
-        self._keymap[imgui.Key.backspace.value] = self._remapper(pygame.K_BACKSPACE)
-        self._keymap[imgui.Key.space.value] = self._remapper(pygame.K_SPACE)
-        self._keymap[imgui.Key.enter.value] = self._remapper(pygame.K_RETURN)
-        self._keymap[imgui.Key.escape.value] = self._remapper(pygame.K_ESCAPE)
-        self._keymap[imgui.Key.keypad_enter.value] = self._remapper(pygame.K_KP_ENTER)
-        self._keymap[imgui.Key.a.value] = self._remapper(pygame.K_a)
-        self._keymap[imgui.Key.c.value] = self._remapper(pygame.K_c)
-        self._keymap[imgui.Key.v.value] = self._remapper(pygame.K_v)
-        self._keymap[imgui.Key.x.value] = self._remapper(pygame.K_x)
-        self._keymap[imgui.Key.y.value] = self._remapper(pygame.K_y)
-        self._keymap[imgui.Key.z.value] = self._remapper(pygame.K_z)
-        self._keymap.update()
-
-        self._events = dict()
-        self._events[pygame.MOUSEMOTION] = self.on_mouse_motion
-        self._events[pygame.MOUSEBUTTONDOWN] = self.on_mouse_button_down
-        self._events[pygame.MOUSEBUTTONUP] = self.on_mouse_button_up
-        self._events[pygame.KEYDOWN] = self.on_key_down
-        self._events[pygame.KEYUP] = self.on_key_up
-        self._events[pygame.WINDOWRESIZED] = self.on_window_resized
-        self._clipboard_copy = False
+        self._mouse_wheel_scale = MOUSE_WHEEL_OFFSET_SCALE
+        self._remapper = ImguiBundleKeycodeRemapper()
+        self._events = {
+            pygame.MOUSEMOTION: self.on_mouse_motion,
+            pygame.MOUSEBUTTONDOWN: self.on_mouse_button_down,
+            pygame.MOUSEBUTTONUP: self.on_mouse_button_up,
+            pygame.KEYDOWN: self.on_key_down,
+            pygame.KEYUP: self.on_key_up,
+            pygame.WINDOWRESIZED: self.on_window_resized,
+            pygame.JOYBUTTONDOWN: self.on_joy_button_down,
+            pygame.JOYBUTTONUP: self.on_joy_button_up,
+            pygame.TEXTEDITING: self.on_text_editing,
+            pygame.TEXTINPUT: self.on_text_input,
+        }
 
     @property
     def running_seconds(self):
         return self._running_seconds
 
     def on_mouse_motion(self, event: Event) -> bool:
-        self.io.mouse_pos = event.pos
+        assert isinstance(event.pos, tuple)
+        assert 2 == len(event.pos)
+        self.io.mouse_pos = imgui.ImVec2(event.pos[0], event.pos[1])
         return True
 
     def on_mouse_button_down(self, event: Event) -> bool:
         if event.button == pygame.BUTTON_LEFT:
-            self.io.mouse_down[imgui.MouseButton_.left.value] = 1
+            self.io.add_mouse_button_event(imgui.MouseButton_.left.value, down=True)
         elif event.button == pygame.BUTTON_RIGHT:
-            self.io.mouse_down[imgui.MouseButton_.right.value] = 1
+            self.io.add_mouse_button_event(imgui.MouseButton_.right.value, down=True)
         elif event.button == pygame.BUTTON_MIDDLE:
-            self.io.mouse_down[imgui.MouseButton_.middle.value] = 1
+            self.io.add_mouse_button_event(imgui.MouseButton_.middle.value, down=True)
         return True
 
     def on_mouse_button_up(self, event: Event) -> bool:
         if event.button == pygame.BUTTON_LEFT:
-            self.io.mouse_down[imgui.MouseButton_.left.value] = 0
+            self.io.add_mouse_button_event(imgui.MouseButton_.left.value, down=False)
         elif event.button == pygame.BUTTON_RIGHT:
-            self.io.mouse_down[imgui.MouseButton_.right.value] = 0
+            self.io.add_mouse_button_event(imgui.MouseButton_.right.value, down=False)
         elif event.button == pygame.BUTTON_MIDDLE:
-            self.io.mouse_down[imgui.MouseButton_.middle.value] = 0
+            self.io.add_mouse_button_event(imgui.MouseButton_.middle.value, down=False)
         elif event.button == pygame.BUTTON_WHEELUP:
-            self.io.mouse_wheel = 0.5
+            k = self._mouse_wheel_scale
+            x, y = event.x, event.y
+            self.io.add_mouse_wheel_event(x * k, y * k)
         elif event.button == pygame.BUTTON_WHEELDOWN:
-            self.io.mouse_wheel = -0.5
+            k = -1 * self._mouse_wheel_scale
+            x, y = event.x, event.y
+            self.io.add_mouse_wheel_event(x * k, y * k)
         return True
 
-    def update_key_state(self, pygame_keycode: int, state: bool) -> None:
-        self.io.keys_down[self._remapper(pygame_keycode)] = state
+    def update_key_state(self, pygame_keycode: int, down: bool) -> None:
+        imgui_keycode = imgui.Key(self._remapper(pygame_keycode))
+        self.io.add_key_event(imgui_keycode, down=down)
 
         if pygame_keycode in (pygame.K_LCTRL, pygame.K_RCTRL):
-            l_ctrl = self.io.keys_down[self._remapper.l_ctrl]
-            r_ctrl = self.io.keys_down[self._remapper.r_ctrl]
-            self.io.key_ctrl = bool(l_ctrl or r_ctrl)
+            self.io.add_key_event(imgui.Key.mod_ctrl, down=down)
         elif pygame_keycode in (pygame.K_LALT, pygame.K_RALT):
-            l_alt = self.io.keys_down[self._remapper.l_alt]
-            r_alt = self.io.keys_down[self._remapper.r_alt]
-            self.io.key_alt = bool(l_alt or r_alt)
+            self.io.add_key_event(imgui.Key.mod_alt, down=down)
         elif pygame_keycode in (pygame.K_LSHIFT, pygame.K_RSHIFT):
-            l_shift = self.io.keys_down[self._remapper.l_shift]
-            r_shift = self.io.keys_down[self._remapper.r_shift]
-            self.io.key_shift = bool(l_shift or r_shift)
+            self.io.add_key_event(imgui.Key.mod_shift, down=down)
         elif pygame_keycode in (pygame.K_LSUPER, pygame.K_RSUPER):
-            l_super = self.io.keys_down[self._remapper.l_super]
-            r_super = self.io.keys_down[self._remapper.r_super]
-            self.io.key_super = bool(l_super or r_super)
+            self.io.add_key_event(imgui.Key.mod_super, down=down)
 
-        if self.io.key_ctrl and pygame_keycode == pygame.K_v and state:
-            imgui.set_clipboard_text(pygame.scrap.get_text())
+    def update_joy_state(self, pygame_joy_button: int, down: bool) -> None:
+        if pygame_joy_button == pygame.CONTROLLER_BUTTON_A:
+            self.io.add_key_event(imgui.Key.gamepad_face_down, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_B:
+            self.io.add_key_event(imgui.Key.gamepad_face_right, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_X:
+            self.io.add_key_event(imgui.Key.gamepad_face_left, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_Y:
+            self.io.add_key_event(imgui.Key.gamepad_face_up, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_DPAD_UP:
+            self.io.add_key_event(imgui.Key.gamepad_dpad_up, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_DPAD_DOWN:
+            self.io.add_key_event(imgui.Key.gamepad_dpad_down, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_DPAD_LEFT:
+            self.io.add_key_event(imgui.Key.gamepad_dpad_left, down=down)
+        elif pygame_joy_button == pygame.CONTROLLER_BUTTON_DPAD_RIGHT:
+            self.io.add_key_event(imgui.Key.gamepad_dpad_right, down=down)
 
     @staticmethod
     def is_copy_shortcut_pressed() -> bool:
@@ -123,31 +133,49 @@ class PygameRenderer(FixedPipelineRenderer):
             if 0 < code < 0x10000:
                 self.io.add_input_character(code)
 
-        self.update_key_state(event.key, True)
-
-        if self.is_copy_shortcut_pressed():
-            self._clipboard_copy = True
-
+        self.update_key_state(event.key, down=True)
         return True
 
     def on_key_up(self, event: Event) -> bool:
-        self.update_key_state(event.key, False)
+        self.update_key_state(event.key, down=False)
         return True
 
     def on_window_resized(self, event: Event) -> bool:
+        # surface = pygame.display.get_surface()
+        # NOTE: pygame does not modify existing surface upon resize,
+        #       we need to do it ourselves.
+        # pygame.display.set_mode((event.w, event.h), flags=surface.get_flags())
+
         # existing font texture is no longer valid, so we need to refresh it
         self.refresh_font_texture()
-        self.io.display_size = event.x, event.y
+
+        self.io.display_size = imgui.ImVec2(event.x, event.y)
+        # self.io.display_framebuffer_scale = imgui.ImVec2(1, 1)
+
+        # delete old surface, it is no longer needed
+        # del surface
+
         return True
 
-    def do_after(self) -> None:
-        if not self._clipboard_copy:
-            return
+    def on_joy_button_down(self, event: Event) -> bool:
+        self.update_joy_state(event.button, down=True)
+        return True
 
-        self._clipboard_copy = False
-        clipboard_text = imgui.get_clipboard_text()
-        logger.debug(f"Pygame scrap put text: '{clipboard_text}'")
-        pygame.scrap.put_text(clipboard_text)
+    def on_joy_button_up(self, event: Event) -> bool:
+        self.update_joy_state(event.button, down=False)
+        return True
+
+    def on_text_editing(self, event: Event) -> bool:
+        assert isinstance(event.text, str)
+        assert isinstance(event.start, int)
+        assert isinstance(event.length, int)
+        assert self.io is not None
+        return True
+
+    def on_text_input(self, event: Event) -> bool:
+        assert isinstance(event.text, str)
+        assert self.io is not None
+        return True
 
     def do_event(self, event: Event) -> bool:
         if event.type in self._events:
