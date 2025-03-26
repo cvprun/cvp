@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.codepoint_info import CodepointInfo
-from cvp.gl.texture import Texture
+from cvp.gl.textures.texture import Texture
 
 
 @dataclass

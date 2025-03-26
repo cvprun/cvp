@@ -3,10 +3,11 @@
 from ctypes import c_void_p
 
 from imgui_bundle import imgui
-from numpy import ndarray
 from OpenGL import GL
 
 from cvp.gl.common_state import get_common_gl_state, restore_common_gl_state
+from cvp.gl.textures.stash import stash_current_texture
+from cvp.imgui.fonts.get_fonts import get_tex_data_as_raw_rgba32
 from cvp.renderer.base.base import BaseRenderer
 from cvp.types.override import override
 
@@ -16,37 +17,30 @@ class FixedPipelineRenderer(BaseRenderer):
 
     @override
     def refresh_font_texture(self) -> None:
-        # save texture state
-        # last_texture = GL.glGetIntegerv(GL.GL_TEXTURE_BINDING_2D)
-        # width, height, pixels = self.io.fonts.get_tex_data_as_alpha8()
-        font_matrix = self.io.fonts.get_tex_data_as_rgba32()
-        assert isinstance(font_matrix, ndarray)
-        width = font_matrix.shape[1]
-        height = font_matrix.shape[0]
-        pixels = font_matrix.data
+        with stash_current_texture():
+            width, height, pixels = get_tex_data_as_raw_rgba32(self.io.fonts)
 
-        if self._font_texture:
-            GL.glDeleteTextures([self._font_texture])
+            if self._font_texture:
+                GL.glDeleteTextures([self._font_texture])
 
-        self._font_texture = GL.glGenTextures(1)
-        GL.glBindTexture(GL.GL_TEXTURE_2D, self._font_texture)
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
-        GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
-        GL.glTexImage2D(
-            GL.GL_TEXTURE_2D,
-            0,
-            GL.GL_RGBA,
-            width,
-            height,
-            0,
-            GL.GL_RGBA,
-            GL.GL_UNSIGNED_BYTE,
-            pixels,
-        )
+            self._font_texture = GL.glGenTextures(1)
+            GL.glBindTexture(GL.GL_TEXTURE_2D, self._font_texture)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_LINEAR)
+            GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_LINEAR)
+            GL.glTexImage2D(
+                GL.GL_TEXTURE_2D,
+                0,
+                GL.GL_RGBA,
+                width,
+                height,
+                0,
+                GL.GL_RGBA,
+                GL.GL_UNSIGNED_BYTE,
+                pixels,
+            )
 
-        self.io.fonts.tex_id = self._font_texture
-        # GL.glBindTexture(GL.GL_TEXTURE_2D, last_texture)
-        self.io.fonts.clear_tex_data()
+            self.io.fonts.tex_id = self._font_texture
+            self.io.fonts.clear_tex_data()
 
     @override
     def render(self, draw_data: imgui.ImDrawData) -> None:
