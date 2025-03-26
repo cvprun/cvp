@@ -5,8 +5,8 @@ from cvp.config.sections.appearance import AppMode
 from cvp.types.override import override
 
 
-class NoneMode(BaseMode):
+class PreferenceMode(BaseMode):
     @staticmethod
     @override
     def get_mode() -> AppMode:
-        return AppMode.none
+        return AppMode.preference

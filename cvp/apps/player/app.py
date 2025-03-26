@@ -393,13 +393,55 @@ class PlayerApplication:
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
 
-        if keys[pygame.K_LCTRL] and keys[pygame.K_q]:
+        l_ctrl = keys[pygame.K_LCTRL]
+        r_ctrl = keys[pygame.K_RCTRL]
+        l_shift = keys[pygame.K_LSHIFT]
+        r_shift = keys[pygame.K_RSHIFT]
+        l_alt = keys[pygame.K_LALT]
+        r_alt = keys[pygame.K_RALT]
+
+        m_ctrl = l_ctrl or r_ctrl
+        m_shift = l_shift or r_shift
+        m_alt = l_alt or r_alt
+
+        only_ctrl = m_ctrl and not m_shift and not m_alt
+        only_shift = not m_ctrl and m_shift and not m_alt  # noqa: F841
+        only_alt = not m_ctrl and not m_shift and m_alt
+
+        if only_ctrl and keys[pygame.K_q]:
             self._confirm_quit.show()
             return
 
         # TODO: You will need to restore it later.
         # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
         #     self._pref_manager.opened = True
+
+        if only_alt:
+            mode_index: Optional[int] = None
+            if keys[pygame.K_1]:
+                mode_index = 1
+            elif keys[pygame.K_2]:
+                mode_index = 2
+            elif keys[pygame.K_3]:
+                mode_index = 3
+            elif keys[pygame.K_4]:
+                mode_index = 4
+            elif keys[pygame.K_5]:
+                mode_index = 5
+            elif keys[pygame.K_6]:
+                mode_index = 6
+            elif keys[pygame.K_7]:
+                mode_index = 7
+            elif keys[pygame.K_8]:
+                mode_index = 8
+            elif keys[pygame.K_9]:
+                mode_index = 9
+            elif keys[pygame.K_0]:
+                mode_index = 0
+
+            if mode_index is not None:
+                if mode_index < len(self._modes):
+                    self.config.appearance.mode = list(self._modes.keys())[mode_index]
 
         self.mode.on_keyboard(keys)
 
@@ -431,10 +473,13 @@ class PlayerApplication:
             self._confirm_quit.show()
 
     def on_mode_menu(self) -> None:
-        mode = self.config.appearance.mode
-        enabled_none = mode == AppMode.none
-        if menu_item("None", selected=True, shortcut="Alt+1", enabled=enabled_none):
-            self.config.appearance.mode = AppMode.none
+        for index, mode in enumerate(self._modes.keys()):
+            title = str(mode).capitalize()
+            selected = mode == self.config.appearance.mode
+            shortcut = f"Alt+{index}" if index <= 9 else str()
+            enabled = not selected
+            if menu_item(title, selected=selected, shortcut=shortcut, enabled=enabled):
+                self.config.appearance.mode = mode
 
     def on_tools_menu(self) -> None:
         # TODO: You will need to restore it later.

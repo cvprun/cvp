@@ -5,12 +5,18 @@ from abc import ABC, abstractmethod
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
+from cvp.config.sections.appearance import AppMode
 from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 
 
 class ModeInterface(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_mode() -> AppMode:
+        raise NotImplementedError
+
     @abstractmethod
     def on_main_menu(self) -> None:
         raise NotImplementedError
@@ -32,7 +38,7 @@ class ModeInterface(ABC):
         raise NotImplementedError
 
 
-class BaseMode(ModeInterface):
+class BaseMode(ModeInterface, ABC):
     def __init__(self, context: RendererContext):
         self._context = context
 

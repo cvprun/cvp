@@ -10,6 +10,7 @@ from cvp.variables import GUI_THEME
 @unique
 class AppMode(StrEnum):
     none = auto()
+    preference = auto()
 
 
 @dataclass
