@@ -64,9 +64,14 @@ NO_NAV_INPUTS: Final[int] = int(WindowFlags.no_nav_inputs)
 NO_NAV_FOCUS: Final[int] = int(WindowFlags.no_nav_focus)
 UNSAVED_DOCUMENT: Final[int] = int(WindowFlags.unsaved_document)
 NO_DOCKING: Final[int] = int(WindowFlags.no_docking)
+
 NO_NAV: Final[int] = int(WindowFlags.no_nav)
 NO_DECORATION: Final[int] = int(WindowFlags.no_decoration)
 NO_INPUTS: Final[int] = int(WindowFlags.no_inputs)
+
+assert NO_NAV == NO_NAV_INPUTS | NO_NAV_FOCUS
+assert NO_DECORATION == NO_TITLE_BAR | NO_RESIZE | NO_SCROLLBAR | NO_COLLAPSE
+assert NO_INPUTS == NO_MOUSE_INPUTS | NO_NAV_INPUTS | NO_NAV_FOCUS
 
 
 def merge_window_flags(*flags: Union[WindowFlags, int]) -> int:
@@ -74,12 +79,12 @@ def merge_window_flags(*flags: Union[WindowFlags, int]) -> int:
 
 
 BACKGROUND_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_decoration,
+    WindowFlags.no_move,
     WindowFlags.no_saved_settings,
     WindowFlags.no_focus_on_appearing,
     WindowFlags.no_bring_to_front_on_focus,
-    WindowFlags.no_nav,
-    WindowFlags.no_move,
+    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
+    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
 )
 
 CANVAS_FLAGS: Final[int] = merge_window_flags(
@@ -89,35 +94,36 @@ CANVAS_FLAGS: Final[int] = merge_window_flags(
 )
 
 OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_decoration,
+    WindowFlags.no_move,
     WindowFlags.always_auto_resize,
     WindowFlags.no_saved_settings,
-    WindowFlags.no_nav,
-    WindowFlags.no_move,
+    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
+    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
 )
 
 TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_decoration,
+    WindowFlags.no_move,
     WindowFlags.always_auto_resize,
     WindowFlags.no_saved_settings,
-    WindowFlags.no_move,
-    WindowFlags.no_nav,
-    WindowFlags.unsaved_document,
-    WindowFlags.no_bring_to_front_on_focus,
     WindowFlags.no_focus_on_appearing,
-    WindowFlags.no_inputs,
+    WindowFlags.no_bring_to_front_on_focus,
+    WindowFlags.unsaved_document,
     WindowFlags.no_docking,
+    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
+    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
+    WindowFlags.no_inputs,  # no_mouse_inputs | no_nav_inputs | no_nav_focus
 )
 
-ROOT_DOCK_SPACE_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_decoration,
-    WindowFlags.no_saved_settings,
+ROOT_DOCKSPACE_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_move,
-    WindowFlags.no_nav,
-    WindowFlags.unsaved_document,
-    WindowFlags.no_bring_to_front_on_focus,
-    WindowFlags.no_focus_on_appearing,
-    WindowFlags.no_inputs,
-    WindowFlags.no_docking,
+    WindowFlags.always_auto_resize,
     WindowFlags.no_background,
+    WindowFlags.no_saved_settings,
+    WindowFlags.no_focus_on_appearing,
+    WindowFlags.no_bring_to_front_on_focus,
+    WindowFlags.unsaved_document,
+    WindowFlags.no_docking,
+    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
+    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
+    WindowFlags.no_inputs,  # no_mouse_inputs | no_nav_inputs | no_nav_focus
 )

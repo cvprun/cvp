@@ -58,6 +58,7 @@ discardcorrupt
 dnow
 dnowext
 dockerignore
+dockspace
 doreturn
 dostr
 doublebuf

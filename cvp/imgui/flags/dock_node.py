@@ -35,3 +35,9 @@ NO_UNDOCKING: Final[int] = int(DockNodeFlags.no_undocking)
 
 def merge_dock_node_flags(*flags: Union[DockNodeFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))
+
+
+DOCKSPACE_FLAGS: Final[int] = merge_dock_node_flags(
+    PASSTHRU_CENTRAL_NODE,
+    NO_DOCKING_OVER_CENTRAL_NODE,
+)
