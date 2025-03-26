@@ -257,6 +257,7 @@ class PlayerApplication:
         imgui.set_clipboard_text(str())
 
         io = imgui.get_io()
+        io.config_flags |= imgui.ConfigFlags_.docking_enable.value
         io.display_size = imgui.ImVec2(size[0], size[1])
         io.set_ini_filename(str())
         io.set_log_filename(str())

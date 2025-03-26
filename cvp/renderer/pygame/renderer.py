@@ -78,13 +78,9 @@ class PygameRenderer(FixedPipelineRenderer):
         elif event.button == pygame.BUTTON_MIDDLE:
             self.io.add_mouse_button_event(imgui.MouseButton_.middle.value, down=False)
         elif event.button == pygame.BUTTON_WHEELUP:
-            k = self._mouse_wheel_scale
-            x, y = event.x, event.y
-            self.io.add_mouse_wheel_event(x * k, y * k)
+            self.io.add_mouse_wheel_event(0, +1 * self._mouse_wheel_scale)
         elif event.button == pygame.BUTTON_WHEELDOWN:
-            k = -1 * self._mouse_wheel_scale
-            x, y = event.x, event.y
-            self.io.add_mouse_wheel_event(x * k, y * k)
+            self.io.add_mouse_wheel_event(0, -1 * self._mouse_wheel_scale)
         return True
 
     def update_key_state(self, pygame_keycode: int, down: bool) -> None:

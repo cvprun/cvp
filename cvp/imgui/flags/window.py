@@ -106,4 +106,18 @@ TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_bring_to_front_on_focus,
     WindowFlags.no_focus_on_appearing,
     WindowFlags.no_inputs,
+    WindowFlags.no_docking,
+)
+
+ROOT_DOCK_SPACE_FLAGS: Final[int] = merge_window_flags(
+    WindowFlags.no_decoration,
+    WindowFlags.no_saved_settings,
+    WindowFlags.no_move,
+    WindowFlags.no_nav,
+    WindowFlags.unsaved_document,
+    WindowFlags.no_bring_to_front_on_focus,
+    WindowFlags.no_focus_on_appearing,
+    WindowFlags.no_inputs,
+    WindowFlags.no_docking,
+    WindowFlags.no_background,
 )
