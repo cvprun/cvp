@@ -8,7 +8,7 @@ from cvp.imgui.flags.input_text import READ_ONLY, InputTextFlags
 from cvp.imgui.push_style_var import (
     DEFAULT_DISABLE_BACKGROUND_COLOR,
     DEFAULT_DISABLE_TEXT_COLOR,
-    style_disable_input,
+    style_disable_input_context,
 )
 
 
@@ -24,5 +24,5 @@ def input_text_disabled(
         flags = int(flags)
     assert isinstance(flags, int)
 
-    with style_disable_input(text_color, background_color):
+    with style_disable_input_context(text_color, background_color):
         imgui.input_text(label, value, flags | READ_ONLY)

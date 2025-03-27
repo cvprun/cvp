@@ -9,7 +9,10 @@ from cvp.config.sections.bases.aui import AuiWindowConfig
 from cvp.config.sections.proxies.aui import AuiBottomProxy, AuiLeftProxy, AuiRightProxy
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.cursor import cursor_pos_y
-from cvp.imgui.push_style_var import style_item_spacing, style_window_padding
+from cvp.imgui.push_style_var import (
+    style_item_spacing_context,
+    style_window_padding_context,
+)
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
@@ -135,7 +138,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
 
     @override
     def begin(self) -> Tuple[bool, bool]:
-        with style_window_padding(0, 0):
+        with style_window_padding_context(0, 0):
             return super().begin()
 
     @override
@@ -147,19 +150,19 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
         imgui.set_cursor_pos_x(imgui.get_cursor_pos_x() + pw)
         if begin_child(f"##{self._left_child_id}", self.split_left):
             try:
-                with style_item_spacing(0, 0):
+                with style_item_spacing_context(0, 0):
                     imgui.dummy((0, ph))
                 self.on_process_sidebar_left()
             finally:
                 end_child()
 
-        with style_item_spacing(pw, 0):
+        with style_item_spacing_context(pw, 0):
             imgui.same_line()
 
         with cursor_pos_y(top):
             self._left_splitter.do_process()
 
-        with style_item_spacing(-1, 0):
+        with style_item_spacing_context(-1, 0):
             imgui.same_line()
 
         main_x: float
@@ -169,7 +172,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
 
         if begin_child(f"##{self._center_child_id}", -self.split_right - pw):
             try:
-                with style_item_spacing(0, -1):
+                with style_item_spacing_context(0, -1):
                     if begin_child(f"##{self._main_child_id}", 0.0, -self.split_bottom):
                         try:
                             main_pos = imgui.get_window_pos()
@@ -184,30 +187,30 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
             finally:
                 end_child()
 
-            with style_item_spacing(0, -1):
+            with style_item_spacing_context(0, -1):
                 self._bottom_splitter.do_process()
 
             imgui.set_cursor_pos_x(imgui.get_cursor_pos_x() + pw)
             if begin_child(f"##{self._bottom_child_id}", -pw):
                 try:
-                    with style_item_spacing(0, 0):
+                    with style_item_spacing_context(0, 0):
                         imgui.dummy((0, ph))
                     self.on_process_bottom()
                 finally:
                     end_child()
 
-        with style_item_spacing(-1, 0):
+        with style_item_spacing_context(-1, 0):
             imgui.same_line()
 
         with cursor_pos_y(top):
             self._right_splitter.do_process()
 
-        with style_item_spacing(pw, 0):
+        with style_item_spacing_context(pw, 0):
             imgui.same_line()
 
         if begin_child(f"##{self._right_child_id}", -pw):
             try:
-                with style_item_spacing(0, 0):
+                with style_item_spacing_context(0, 0):
                     imgui.dummy((0, ph))
                 self.on_process_sidebar_right()
             finally:

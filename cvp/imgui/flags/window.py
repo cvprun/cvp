@@ -113,11 +113,10 @@ TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_inputs,  # no_mouse_inputs | no_nav_inputs | no_nav_focus
 )
 
-ROOT_DOCKSPACE_FLAGS: Final[int] = merge_window_flags(
+ROOT_STATIC_VIEWPORT_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_resize,
     WindowFlags.no_move,
     WindowFlags.always_auto_resize,
-    WindowFlags.no_background,
     WindowFlags.no_saved_settings,
     WindowFlags.no_focus_on_appearing,
     WindowFlags.no_bring_to_front_on_focus,

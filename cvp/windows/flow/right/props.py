@@ -23,7 +23,7 @@ from cvp.imgui.input_dtype import input_dtype
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
-from cvp.imgui.push_style_var import style_disable_input
+from cvp.imgui.push_style_var import style_disable_input_context
 from cvp.nodes.node import NodeName
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -158,7 +158,7 @@ class PropsTab(TabItem[FlowCanvasTabs]):
         input_text_disabled("Docs", pin.docs)
         input_text_disabled("Dtype", pin.dtype.path)
 
-        with style_disable_input():
+        with style_disable_input_context():
             same_vertical_x = 90.0
 
             imgui.radio_button("Flow", pin.is_exec_action)

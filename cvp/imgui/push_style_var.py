@@ -47,7 +47,7 @@ def default_style_colors(
 
 
 @contextmanager
-def style_window_padding(x: float, y: float):
+def style_window_padding_context(x: float, y: float):
     imgui.push_style_var(style_var.WINDOW_PADDING, (x, y))
     try:
         yield
@@ -56,7 +56,7 @@ def style_window_padding(x: float, y: float):
 
 
 @contextmanager
-def style_item_spacing(x: float, y: float):
+def style_item_spacing_context(x: float, y: float):
     imgui.push_style_var(style_var.ITEM_SPACING, (x, y))
     try:
         yield
@@ -69,7 +69,7 @@ DEFAULT_DISABLE_BACKGROUND_COLOR: Final[RGBA] = 0.2, 0.2, 0.2, 1.0
 
 
 @contextmanager
-def style_disable_input(
+def style_disable_input_context(
     text_color=DEFAULT_DISABLE_TEXT_COLOR,
     background_color=DEFAULT_DISABLE_BACKGROUND_COLOR,
 ):

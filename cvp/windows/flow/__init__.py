@@ -23,7 +23,7 @@ from cvp.imgui.flags.color_var import CHILD_BG
 from cvp.imgui.flags.style_var import WINDOW_PADDING
 from cvp.imgui.flags.window import CANVAS_FLAGS, MENU_BAR
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.imgui.push_style_var import style_item_spacing
+from cvp.imgui.push_style_var import style_item_spacing_context
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.logging import flow_logger as logger
 from cvp.popups.confirm import ConfirmPopup
@@ -576,12 +576,12 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             finally:
                 end_child()
 
-        with style_item_spacing(0, -1):
+        with style_item_spacing_context(0, -1):
             self._tree_splitter.do_process()
 
         if begin_child("## ChildLeftBottom"):
             try:
-                with style_item_spacing(0, 0):
+                with style_item_spacing_context(0, 0):
                     imgui.dummy((0, self.padding_height))
                 self._catalog.on_process()
             finally:

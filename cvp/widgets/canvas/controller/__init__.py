@@ -17,7 +17,7 @@ from cvp.imgui.flags.mouse_button import (
     MouseButton,
 )
 from cvp.imgui.input_float2 import input_float2
-from cvp.imgui.push_style_var import style_disable_input
+from cvp.imgui.push_style_var import style_disable_input_context
 from cvp.imgui.slider_float import slider_float
 from cvp.types.shapes import Point, Rect
 from cvp.widgets.canvas.controller.props import ControllerProps
@@ -140,7 +140,7 @@ class CanvasController(ControllerProps):
         pan = self.drag_pan(dryrun=dryrun)
         zoom = self.slider_zoom(dryrun=dryrun)
 
-        with style_disable_input():
+        with style_disable_input_context():
             self.input_local_pos()
             self.input_canvas_pos()
 
