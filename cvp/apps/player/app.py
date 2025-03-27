@@ -7,7 +7,7 @@ from typing import Callable, Optional, Tuple
 from warnings import catch_warnings
 
 import pygame
-from imgui_bundle import hello_imgui, imgui
+from imgui_bundle import imgui
 from OpenGL import GL
 from OpenGL.acceleratesupport import ACCELERATE_AVAILABLE
 from OpenGL.error import Error
@@ -24,6 +24,7 @@ from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.separator import separator
+from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
@@ -278,16 +279,9 @@ class PlayerApplication:
         self._renderer.refresh_font_texture()
         logger.info("Refresh font textures.")
 
-        theme_count = int(hello_imgui.ImGuiTheme_.count.value)
-        theme_names = [hello_imgui.ImGuiTheme_(i).name for i in range(theme_count)]
         theme_name = self.config.appearance.theme
-        try:
-            theme_index = theme_names.index(theme_name)
-            logger.info(f"Apply theme: '{theme_name}'")
-            theme = hello_imgui.ImGuiTheme_(theme_index)
-            hello_imgui.apply_theme(theme)
-        except ValueError:
-            pass
+        apply_theme_with_name(theme_name, default=DEFAULT_THEME_NAME)
+        logger.info(f"Apply theme: '{theme_name}'")
 
         clear_color = self.config.appearance.clear_color
         GL.glClearColor(*clear_color)
