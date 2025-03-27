@@ -6,11 +6,13 @@ from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.base import BaseMode
 from cvp.config.sections.appearance import AppMode
-from cvp.imgui.dockspace import dockspace_context
+from cvp.imgui.begin import begin_context
+from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.window import ROOT_DOCKSPACE_FLAGS
+from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
-from cvp.imgui.flags.dock_node import PASSTHRU_CENTRAL_NODE, AUTO_HIDE_TAB_BAR
-from cvp.imgui.flags.child import RESIZE_X, BORDERS
 
 
 class PreferenceMode(BaseMode):
@@ -37,35 +39,15 @@ class PreferenceMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        # dockspace = imgui.dock_space_over_viewport(flags=PASSTHRU_CENTRAL_NODE | AUTO_HIDE_TAB_BAR)
-        # imgui.set_next_window_dock_id(dockspace)
+        set_next_window_as_viewport()
+        with begin_context(type(self).__name__, flags=ROOT_DOCKSPACE_FLAGS):
+            self.do_child_process()
 
-        # if (!ImGui::DockBuilderGetNode(dockspace_id)) {
-        # ImGui::DockBuilderRemoveNode(dockspace_id); // reset
-        # ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
-        # ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
-        #
-        # ImGuiID dock_main_id = dockspace_id;
-        # ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.3f, nullptr, &dock_main_id);
-        # ImGuiID dock_right_id = dock_main_id;
-        #
-        # ImGui::DockBuilderDockWindow("Panel 1", dock_left_id);
-        # ImGui::DockBuilderDockWindow("Panel 2", dock_right_id);
-        # ImGui::DockBuilderFinish(dockspace_id);
-        # }
-
-        imgui.begin("Main")
-
-        height = -imgui.get_frame_height_with_spacing()
-
-        imgui.begin_child("Left", (150, height), child_flags=RESIZE_X | BORDERS)
-        imgui.text("Content")
-        imgui.end_child()
+    def do_child_process(self, menu_label="Manu", main_label="Main", split_x=150.0):
+        with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
+            imgui.text("Content")
 
         imgui.same_line()
 
-        imgui.begin_child("Right", (0, height))
-        imgui.text("Content")
-        imgui.end_child()
-
-        imgui.end()
+        with begin_child_context(main_label):
+            imgui.text("Content")

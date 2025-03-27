@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 
 from cvp.config.sections.bases.sidebar import SidebarWindowConfig
 from cvp.config.sections.proxies.sidebar import SidebarWidthProxy
-from cvp.imgui.begin_child import begin_child
+from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.flags.child import BORDERS
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
@@ -92,8 +92,11 @@ class SidebarWindow(WindowBase[SidebarWidthT], SidebarWindowInterface):
         self._sidebar_splitter.do_process()
         imgui.same_line()
 
-        with begin_child("## ChildMain"):
-            self.on_process_main()
+        if begin_child("## ChildMain"):
+            try:
+                self.on_process_main()
+            finally:
+                end_child()
 
     @override
     def on_process_sidebar(self) -> None:

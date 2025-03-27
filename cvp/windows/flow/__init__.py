@@ -620,7 +620,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.push_style_var(WINDOW_PADDING, (0, 0))
         imgui.push_style_color(CHILD_BG, (0.5, 0.5, 0.5, 1.0))
         try:
-            return begin_child(
+            begin_child(
                 "##Canvas",
                 child_flags=BORDERS,
                 window_flags=CANVAS_FLAGS,
@@ -628,6 +628,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         finally:
             imgui.pop_style_color()
             imgui.pop_style_var()
+            end_child()
 
     def on_canvas_events(self, canvas: FlowCanvas) -> None:
         assert canvas.opened

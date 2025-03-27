@@ -88,7 +88,6 @@ BACKGROUND_FLAGS: Final[int] = merge_window_flags(
 )
 
 CANVAS_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_resize,
     WindowFlags.no_move,
     WindowFlags.no_scrollbar,
 )
@@ -115,6 +114,7 @@ TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
 )
 
 ROOT_DOCKSPACE_FLAGS: Final[int] = merge_window_flags(
+    WindowFlags.no_resize,
     WindowFlags.no_move,
     WindowFlags.always_auto_resize,
     WindowFlags.no_background,

@@ -7,7 +7,7 @@ from weakref import finalize
 
 from imgui_bundle import imgui
 
-from cvp.imgui.begin_child import begin_child
+from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
 from cvp.imgui.flags import color_var
@@ -141,30 +141,33 @@ class LogsTab(TabItem[FlowCanvasTabs]):
         imgui.separator()
 
         bottom_spacing = imgui.get_style().item_spacing.y
-        with begin_child("##Logging", 0, -bottom_spacing, BORDERS):
-            if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
-                if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
-                    if 0 < self._mouse_wheel.value:
-                        # Drag Up
-                        if imgui.get_scroll_y() < imgui.get_scroll_max_y():
-                            self.autoscroll = False
-                    elif self._mouse_wheel.value < 0:
-                        # Drag Down
-                        if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
-                            self.autoscroll = True
-                    else:
-                        assert 0 == self._mouse_wheel.value
+        if begin_child("##Logging", 0, -bottom_spacing, BORDERS):
+            try:
+                if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
+                    if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
+                        if 0 < self._mouse_wheel.value:
+                            # Drag Up
+                            if imgui.get_scroll_y() < imgui.get_scroll_max_y():
+                                self.autoscroll = False
+                        elif self._mouse_wheel.value < 0:
+                            # Drag Down
+                            if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
+                                self.autoscroll = True
+                        else:
+                            assert 0 == self._mouse_wheel.value
 
-            filter_level = self.get_level_number()
+                filter_level = self.get_level_number()
 
-            for line in self._records:
-                if line.level < filter_level:
-                    continue
-                if line.message.find(self.filter) == -1:
-                    continue
+                for line in self._records:
+                    if line.level < filter_level:
+                        continue
+                    if line.message.find(self.filter) == -1:
+                        continue
 
-                color = self.get_level_color(line.level)
-                text_colored(f"[{line.levelname}] {line.message}", color)
+                    color = self.get_level_color(line.level)
+                    text_colored(f"[{line.levelname}] {line.message}", color)
 
-            if self.autoscroll:
-                imgui.set_scroll_here_y(1.0)
+                if self.autoscroll:
+                    imgui.set_scroll_here_y(1.0)
+            finally:
+                end_child()

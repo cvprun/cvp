@@ -1,29 +1,34 @@
 # -*- coding: utf-8 -*-
 
 from contextlib import contextmanager
+from typing import Optional, Union
 
 from imgui_bundle import imgui
 
-from cvp.imgui.flags import dock_node
+from cvp.imgui.flags.dock_node import PASSTHRU_CENTRAL_NODE, DockNodeFlags
+from cvp.imgui.get_id import get_id
 
 
 @contextmanager
-def dockspace_context(name: str):
-    # viewport = imgui.get_main_viewport()
-    # imgui.set_next_window_pos(viewport.work_pos)
-    # imgui.set_next_window_size(viewport.work_size)
+def dockspace_over_viewport_context(
+    dock_space_id: Optional[Union[str, int]] = None,
+    viewport: Optional[imgui.Viewport] = None,
+    flags: Union[DockNodeFlags, int] = PASSTHRU_CENTRAL_NODE,
+    window_class: Optional[imgui.WindowClass] = None,
+):
+    if isinstance(flags, DockNodeFlags):
+        flags = int(flags)
+    assert isinstance(flags, int)
 
-    # imgui.begin(name, None, dock_node.DOCKSPACE_FLAGS)
-    # imgui.dock_space(dock_space_id, None, dock_node.DOCKSPACE_FLAGS)
-
-    dock_space_id = imgui.get_id(name)
-    imgui.dock_space_over_viewport(
-        dock_space_id,
-        imgui.get_main_viewport(),
-        dock_node.PASSTHRU_CENTRAL_NODE,
+    id_ = imgui.dock_space_over_viewport(
+        get_id(dock_space_id),
+        viewport if viewport is not None else imgui.get_main_viewport(),
+        flags,
+        window_class,
     )
 
+    imgui.push_id(id_)
     try:
-        yield dock_space_id
+        yield id_
     finally:
-        imgui.end()
+        imgui.pop_id()
