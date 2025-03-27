@@ -3,7 +3,7 @@
 import os
 from os import PathLike
 from threading import Event
-from typing import Optional, ParamSpec, TypeVar, Union
+from typing import Optional, Union
 
 from cvp.config.config import Config
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
@@ -26,9 +26,6 @@ from cvp.resources.download.links.tuples import LinkInfo
 from cvp.resources.download.runner import DownloadRunner
 from cvp.resources.home import HomeDir
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
-
-_P = ParamSpec("_P")
-_T = TypeVar("_T")
 
 
 class Context:

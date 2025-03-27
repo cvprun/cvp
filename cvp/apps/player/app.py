@@ -7,7 +7,7 @@ from typing import Callable, Optional, Tuple
 from warnings import catch_warnings
 
 import pygame
-from imgui_bundle import imgui
+from imgui_bundle import hello_imgui, imgui
 from OpenGL import GL
 from OpenGL.acceleratesupport import ACCELERATE_AVAILABLE
 from OpenGL.error import Error
@@ -23,7 +23,6 @@ from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProx
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.imgui.push_style_var import default_style_colors
 from cvp.imgui.separator import separator
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
@@ -252,15 +251,15 @@ class PlayerApplication:
         imgui.create_context()
         logger.info("Created an imgui context.")
 
-        # When the clipboard is empty,
-        # calling get_clipboard_text can cause a 'Segmentation Fault'.
-        imgui.set_clipboard_text(str())
-
         io = imgui.get_io()
         io.config_flags |= imgui.ConfigFlags_.docking_enable.value
         io.display_size = imgui.ImVec2(size[0], size[1])
         io.set_ini_filename(str())
         io.set_log_filename(str())
+
+        # When the clipboard is empty,
+        # calling get_clipboard_text can cause a 'Segmentation Fault'.
+        imgui.set_clipboard_text(str())
 
         gui_ini_path = str(self.home.gui_ini)
         imgui.load_ini_settings_from_disk(gui_ini_path)
@@ -274,12 +273,21 @@ class PlayerApplication:
         logger.info("Added default fonts.")
 
         io.font_global_scale = self.config.font.scale
+        logger.info(f"Global font scale: {io.font_global_scale}")
+
         self._renderer.refresh_font_texture()
         logger.info("Refresh font textures.")
 
-        theme = self.config.appearance.theme
-        default_style_colors(theme)
-        logger.info(f"Apply theme: '{theme}'")
+        theme_count = int(hello_imgui.ImGuiTheme_.count.value)
+        theme_names = [hello_imgui.ImGuiTheme_(i).name for i in range(theme_count)]
+        theme_name = self.config.appearance.theme
+        try:
+            theme_index = theme_names.index(theme_name)
+            logger.info(f"Apply theme: '{theme_name}'")
+            theme = hello_imgui.ImGuiTheme_(theme_index)
+            hello_imgui.apply_theme(theme)
+        except ValueError:
+            pass
 
         clear_color = self.config.appearance.clear_color
         GL.glClearColor(*clear_color)

@@ -3,7 +3,7 @@
 from collections import OrderedDict
 from typing import Callable
 
-from imgui_bundle import imgui
+from imgui_bundle import hello_imgui, imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
@@ -16,9 +16,11 @@ from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
+from cvp.logging.logging import logger
 from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
+from cvp.variables import NOT_FOUND_INDEX
 
 
 class PreferenceMode(BaseMode):
@@ -26,6 +28,9 @@ class PreferenceMode(BaseMode):
 
     def __init__(self, context: RendererContext):
         super().__init__(context)
+
+        count = int(hello_imgui.ImGuiTheme_.count.value)
+        self._theme_names = [hello_imgui.ImGuiTheme_(i).name for i in range(count)]
 
         self._menus = OrderedDict()
         self._menus["Appearance"] = self.on_appearance
@@ -80,9 +85,42 @@ class PreferenceMode(BaseMode):
 
         with begin_child_context(main_label):
             if main_callback := self._menus.get(self.selected):
+                imgui.text(self.selected)
+                imgui.separator()
+
                 main_callback()
             else:
                 text_centered("Please select a item")
 
+    @property
+    def theme(self) -> str:
+        return self.context.config.appearance.theme
+
+    @theme.setter
+    def theme(self, value: str) -> None:
+        self.context.config.appearance.theme = value
+
+    @property
+    def theme_index(self) -> int:
+        try:
+            return self._theme_names.index(self.theme)
+        except ValueError:
+            return NOT_FOUND_INDEX
+
     def on_appearance(self) -> None:
-        text_centered("Appearance")
+        theme_result = imgui.combo("Theme", self.theme_index, self._theme_names)
+        theme_changed, theme_index = theme_result
+        assert isinstance(theme_changed, bool)
+        assert isinstance(theme_index, int)
+
+        if theme_changed and 0 <= theme_index < len(self._theme_names):
+            theme_name = self._theme_names[theme_index]
+            try:
+                hello_imgui.apply_theme(hello_imgui.ImGuiTheme_(theme_index))
+            except BaseException as e:
+                logger.error(f"Changed theme error: {e}")
+            else:
+                logger.info(f"Changed theme: '{theme_name}'")
+                self.theme = theme_name
+
+        imgui.show_font_selector("Font")

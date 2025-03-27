@@ -12,8 +12,6 @@ CVP_ROOT_INFO_FILENAME: Final[str] = "info.yml"
 GUI_INI_FILENAME: Final[str] = "gui.ini"
 LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
-GUI_THEME: Final[str] = "dark"
-
 NOT_FOUND_INDEX: Final[int] = -1
 
 FONT_SCALE: Final[float] = 1.0
