@@ -111,7 +111,7 @@ class PlayerApplication:
         self._suffix_menus = OrderedDict(suffix_menus)
 
         self._modes = create_modes(self._context)
-        self._default_mode = self._modes[AppMode.none]
+        self._default_mode = self._modes[AppMode.default]
 
     @property
     def home(self):

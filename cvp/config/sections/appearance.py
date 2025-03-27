@@ -9,12 +9,12 @@ from cvp.variables import GUI_THEME
 
 @unique
 class AppMode(StrEnum):
-    none = auto()
+    default = auto()
     preference = auto()
 
 
 @dataclass
 class AppearanceConfig:
     theme: str = GUI_THEME
-    mode: AppMode = field(default_factory=lambda: AppMode.none)
+    mode: AppMode = field(default_factory=lambda: AppMode.default)
     clear_color: RGBA = BLACK_RGBA
