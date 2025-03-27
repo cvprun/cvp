@@ -554,22 +554,6 @@ class FlowCanvas(CanvasController):
     def anchor_radius(self):
         return self.config.anchors.radius
 
-    @property
-    def title_font(self):
-        return self.fonts.get_scaled_text(self.config.nodes.title_size)
-
-    @property
-    def text_font(self):
-        return self.fonts.get_scaled_text(self.config.nodes.text_size)
-
-    @property
-    def icon_font(self):
-        return self.fonts.get_scaled_icon(self.config.nodes.icon_size)
-
-    @property
-    def pin_font(self):
-        return self.fonts.get_scaled_icon(self.config.pins.icon_size)
-
     def get_pin_color(self, pin: FlowPin) -> RGBA:
         if self.is_pin_connecting_mode:
             if pin.hovering and pin.connectable:
@@ -623,17 +607,17 @@ class FlowCanvas(CanvasController):
             self.update_node_roi(node)
 
     def update_node_roi(self, node: FlowNode) -> None:
-        with self.icon_font:
+        if True:  # with self.icon_font:
             node_icon_w, node_icon_h = calc_text_size(node.icon)
 
-        with self.title_font:
+        if True:  # with self.title_font:
             node_name_w, node_name_h = calc_text_size(node.name)
 
         title_h = max(node_icon_h, node_name_h)
         icon_y_diff = title_h / 2 - node_icon_h / 2
         title_y_diff = title_h / 2 - node_name_h / 2
 
-        with self.pin_font:
+        if True:  # with self.pin_font:
             exec_n_w, exec_n_h = calc_text_size(self.config.pins.exec_n_icon)
             exec_y_w, exec_y_h = calc_text_size(self.config.pins.exec_y_icon)
             data_n_w, data_n_h = calc_text_size(self.config.pins.data_n_icon)
@@ -650,7 +634,7 @@ class FlowCanvas(CanvasController):
         visible_inputs = visible_exec_inputs + visible_data_inputs
         visible_outputs = visible_exec_outputs + visible_data_outputs
 
-        with self.text_font:
+        if True:  # with self.text_font:
             for pin in node.pins:
                 pin.icon_size = iw, ih
                 pin.name_size = calc_text_size(pin.name)
@@ -758,7 +742,7 @@ class FlowCanvas(CanvasController):
         self._draw_list.add_rect_filled(*header_roi, node_color, rounding)
         self._draw_list.add_rect(*node_roi, line_color, rounding, 0, thickness)
 
-        with self.icon_font:
+        if True:  # with self.icon_font:
             x1 = nx1 + node.icon_pos[0] * zoom
             y1 = ny1 + node.icon_pos[1] * zoom
             self._draw_list.add_text(x1, y1, label_color, node.icon)
@@ -767,7 +751,7 @@ class FlowCanvas(CanvasController):
                 y2 = y1 + node.icon_size[1] * zoom
                 self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
-        with self.title_font:
+        if True:  # with self.title_font:
             x1 = nx1 + node.name_pos[0] * zoom
             y1 = ny1 + node.name_pos[1] * zoom
             self._draw_list.add_text(x1, y1, label_color, node.name)
@@ -789,7 +773,7 @@ class FlowCanvas(CanvasController):
         # visible_inputs = visible_exec_inputs + visible_data_inputs
         # visible_outputs = visible_exec_outputs + visible_data_outputs
 
-        with self.pin_font:
+        if True:  # with self.pin_font:
             exec_pin_n_icon = self.config.pins.exec_n_icon
             exec_pin_y_icon = self.config.pins.exec_y_icon
 
@@ -820,7 +804,7 @@ class FlowCanvas(CanvasController):
                     y2 = y1 + pin.icon_size[1] * zoom
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
-        with self.text_font:
+        if True:  # with self.text_font:
             for pin in visible_pins:
                 x1 = nx1 + pin.name_pos[0] * zoom
                 y1 = ny1 + pin.name_pos[1] * zoom

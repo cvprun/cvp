@@ -82,7 +82,7 @@ class PropsTab(TabItem[FlowCanvasTabs]):
             self.on_multiple_items(graph, selected_items)
 
     def input_icon(self, label: str, icon: str) -> None:
-        with self.context.fonts.normal_icon:
+        if True:  # with self.context.fonts.normal_icon:
             input_text_disabled(f"##{label}", icon)
         imgui.same_line(0.0, imgui.get_style().item_inner_spacing[0])
         imgui.text(label)

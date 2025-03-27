@@ -9,13 +9,10 @@ from cvp.types.colors import RGBA
 from cvp.variables import (
     API_SELECT_WIDTH,
     FONT_SCALE,
-    LARGE_ICON_FONT_SIZE,
     LARGE_TEXT_FONT_SIZE,
     MAX_API_SELECT_WIDTH,
-    MEDIUM_ICON_FONT_SIZE,
     MEDIUM_TEXT_FONT_SIZE,
     MIN_API_SELECT_WIDTH,
-    NORMAL_ICON_FONT_SIZE,
     NORMAL_TEXT_FONT_SIZE,
 )
 
@@ -27,9 +24,6 @@ class FontConfig:
     normal_text_size: int = NORMAL_TEXT_FONT_SIZE
     medium_text_size: int = MEDIUM_TEXT_FONT_SIZE
     large_text_size: int = LARGE_TEXT_FONT_SIZE
-    normal_icon_size: int = NORMAL_ICON_FONT_SIZE
-    medium_icon_size: int = MEDIUM_ICON_FONT_SIZE
-    large_icon_size: int = LARGE_ICON_FONT_SIZE
     load_all: bool = False
 
     @property
@@ -43,18 +37,6 @@ class FontConfig:
     @property
     def large_text_size_pixels(self):
         return self.large_text_size * self.scale
-
-    @property
-    def normal_icon_size_pixels(self):
-        return self.normal_icon_size * self.scale
-
-    @property
-    def medium_icon_size_pixels(self):
-        return self.medium_icon_size * self.scale
-
-    @property
-    def large_icon_size_pixels(self):
-        return self.large_icon_size * self.scale
 
 
 @dataclass

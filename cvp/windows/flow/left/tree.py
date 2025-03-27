@@ -26,10 +26,6 @@ class TreeTab(TabItem[FlowCanvasTabs]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Tree")
 
-    @property
-    def normal_icon(self):
-        return self.context.fonts.normal_icon
-
     @override
     def on_none(self) -> None:
         text_centered("Please select a graph")
@@ -99,7 +95,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
                 imgui.same_line(imgui.get_cursor_pos_x())
 
-                with self.normal_icon:
+                if True:  # with self.normal_icon:
                     imgui.text(pin_icon)
         finally:
             imgui.tree_pop()
@@ -130,7 +126,7 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
         imgui.same_line(imgui.get_cursor_pos_x())
 
-        with self.normal_icon:
+        if True:  # with self.normal_icon:
             imgui.text(wire_icon)
 
     def tree_variables(self, graph: FlowGraph) -> None:
@@ -167,5 +163,5 @@ class TreeTab(TabItem[FlowCanvasTabs]):
 
         imgui.same_line(imgui.get_cursor_pos_x())
 
-        with self.normal_icon:
+        if True:  # with self.normal_icon:
             imgui.text(variable_icon)

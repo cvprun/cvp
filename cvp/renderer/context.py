@@ -50,13 +50,5 @@ class RendererContext(Context):
             self.fonts.add_mixed_medium_text_font(medium_text_size_pixels)
             self.fonts.add_mixed_large_text_font(large_text_size_pixels)
 
-        normal_icon_size_pixels = self.config.font.normal_icon_size_pixels
-        medium_icon_size_pixels = self.config.font.medium_icon_size_pixels
-        large_icon_size_pixels = self.config.font.large_icon_size_pixels
-
-        self.fonts.add_mdi_normal_icon_font(normal_icon_size_pixels)
-        self.fonts.add_mdi_medium_icon_font(medium_icon_size_pixels)
-        self.fonts.add_mdi_large_icon_font(large_icon_size_pixels)
-
     def delete_fonts(self):
         self.fonts.close()

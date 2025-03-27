@@ -20,10 +20,6 @@ NORMAL_TEXT_FONT_SIZE: Final[int] = 14
 MEDIUM_TEXT_FONT_SIZE: Final[int] = 18
 LARGE_TEXT_FONT_SIZE: Final[int] = 24
 
-NORMAL_ICON_FONT_SIZE: Final[int] = 14
-MEDIUM_ICON_FONT_SIZE: Final[int] = 18
-LARGE_ICON_FONT_SIZE: Final[int] = 24
-
 CONFIG_VALUE_SEPARATOR: Final[str] = ","
 CHECKSUM_DELIMITER: Final[str] = ":"
 

@@ -14,13 +14,9 @@ from cvp.imgui.fonts.font import Font
 
 
 class FontMapper(OrderedDict[str, Font]):
-    __normal_text_font_name__: Final[str] = "NormalText"
-    __medium_text_font_name__: Final[str] = "MediumText"
-    __large_text_font_name__: Final[str] = "LargeText"
-
-    __normal_icon_font_name__: Final[str] = "NormalIcon"
-    __medium_icon_font_name__: Final[str] = "MediumIcon"
-    __large_icon_font_name__: Final[str] = "LargeIcon"
+    __normal_text_font_name__: Final[str] = "__normal_text__"
+    __medium_text_font_name__: Final[str] = "__medium_text__"
+    __large_text_font_name__: Final[str] = "__large_text__"
 
     def close(self):
         for font in self.values():
@@ -78,39 +74,6 @@ class FontMapper(OrderedDict[str, Font]):
         font = add_mdi_font(name, size, use_texture=use_texture)
         self.__setitem__(name, font)
         return font
-
-    def add_mdi_normal_icon_font(self, size: int, *, use_texture=False):
-        return self.add_mdi_font(
-            name=self.__normal_icon_font_name__,
-            size=size,
-            use_texture=use_texture,
-        )
-
-    def add_mdi_medium_icon_font(self, size: int, *, use_texture=False):
-        return self.add_mdi_font(
-            name=self.__medium_icon_font_name__,
-            size=size,
-            use_texture=use_texture,
-        )
-
-    def add_mdi_large_icon_font(self, size: int, *, use_texture=False):
-        return self.add_mdi_font(
-            name=self.__large_icon_font_name__,
-            size=size,
-            use_texture=use_texture,
-        )
-
-    @property
-    def normal_icon(self):
-        return self.__getitem__(self.__normal_icon_font_name__)
-
-    @property
-    def medium_icon(self):
-        return self.__getitem__(self.__medium_icon_font_name__)
-
-    @property
-    def large_icon(self):
-        return self.__getitem__(self.__large_icon_font_name__)
 
     def add_ttf(
         self,
@@ -200,15 +163,5 @@ class FontMapper(OrderedDict[str, Font]):
             return self.medium_text
         elif scale == FontSize.large:
             return self.large_text
-        else:
-            assert False, "Inaccessible section"
-
-    def get_scaled_icon(self, scale: FontSize) -> Font:
-        if scale == FontSize.normal:
-            return self.normal_icon
-        elif scale == FontSize.medium:
-            return self.medium_icon
-        elif scale == FontSize.large:
-            return self.large_icon
         else:
             assert False, "Inaccessible section"
