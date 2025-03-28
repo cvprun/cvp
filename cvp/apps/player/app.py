@@ -66,7 +66,7 @@ class PlayerApplication:
         self._suffix_menus = OrderedDict(suffix_menus)
 
         self._modes = create_modes(self._context)
-        self._default_mode = self._modes[AppMode.default]
+        self._default_mode = self._modes[AppMode.dashboard]
 
     @property
     def home(self):

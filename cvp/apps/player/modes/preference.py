@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
-from cvp.apps.player.modes.base import BaseMode
+from cvp.apps.player.modes._base import BaseMode
 from cvp.config.sections.appearance import AppMode
 from cvp.containers.immutable_list import ImmutableList
 from cvp.imgui.begin import begin_context
@@ -15,7 +15,6 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
-from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.theme import THEME_NAMES, apply_theme_with_name

@@ -4,8 +4,8 @@ from collections import OrderedDict
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.apps.player.modes.base import BaseMode
-from cvp.apps.player.modes.default import DefaultMode
+from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.dashboard import DashboardMode
 from cvp.apps.player.modes.preference import PreferenceMode
 from cvp.config.sections.appearance import AppMode
 from cvp.context.context import Context
@@ -15,7 +15,7 @@ from cvp.context.context import Context
 def all_mode_types() -> Sequence[Type[BaseMode]]:
     return (
         PreferenceMode,  # Num.0
-        DefaultMode,  # Num.1
+        DashboardMode,  # Num.1
     )
 
 
