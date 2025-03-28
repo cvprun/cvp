@@ -9,7 +9,7 @@ from imgui_bundle import imgui
 
 from cvp.fonts.size import FontSize
 from cvp.imgui.fonts.builder import FontBuilder
-from cvp.imgui.fonts.defaults import add_mdi_font, add_mixed_font
+from cvp.imgui.fonts.defaults import add_mixed_font
 from cvp.imgui.fonts.font import Font
 
 
@@ -66,14 +66,6 @@ class FontMapper(OrderedDict[str, Font]):
     @property
     def large_text(self):
         return self.__getitem__(self.__large_text_font_name__)
-
-    def add_mdi_font(self, name: str, size: int, *, use_texture=False):
-        if self.__contains__(name):
-            raise KeyError(f"Already exists font key: {name}")
-
-        font = add_mdi_font(name, size, use_texture=use_texture)
-        self.__setitem__(name, font)
-        return font
 
     def add_ttf(
         self,

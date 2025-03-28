@@ -19,7 +19,7 @@ class FlowCanvasTabs:
         self._ref = None
 
     def _create_canvas(self, graph: FlowGraph) -> FlowCanvas:
-        canvas = FlowCanvas(graph, self._context.fonts, self._context.config.flow_aui)
+        canvas = FlowCanvas(graph, self._context.config.flow_aui)
         self._canvases[graph.key] = canvas
         return canvas
 

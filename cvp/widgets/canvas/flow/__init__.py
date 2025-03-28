@@ -18,7 +18,6 @@ from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
-from cvp.imgui.fonts.mapper import FontMapper
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
@@ -30,11 +29,9 @@ from cvp.widgets.canvas.controller import CanvasController
 
 class FlowCanvas(CanvasController):
     _graph_ref: ReferenceType[FlowGraph]
-    _fonts_ref: ReferenceType[FontMapper]
     _config_ref: ReferenceType[FlowAuiConfig]
 
     _graph: Optional[FlowGraph]
-    _fonts: Optional[FontMapper]
     _config: Optional[FlowAuiConfig]
 
     _mode: FlowMode
@@ -42,7 +39,7 @@ class FlowCanvas(CanvasController):
     _roi: Optional[Rect]
     _selection_stash: Optional[FlowSelection]
 
-    def __init__(self, graph: FlowGraph, fonts: FontMapper, config: FlowAuiConfig):
+    def __init__(self, graph: FlowGraph, config: FlowAuiConfig):
         super().__init__()
 
         self._pan_x.update(graph.control.pan_x, no_emit=True)
@@ -50,11 +47,9 @@ class FlowCanvas(CanvasController):
         self._zoom.update(graph.control.zoom, no_emit=True)
 
         self._graph_ref = ref(graph)
-        self._fonts_ref = ref(fonts)
         self._config_ref = ref(config)
 
         self._graph = None
-        self._fonts = None
         self._config = None
 
         graph.clear_state()
@@ -120,69 +115,49 @@ class FlowCanvas(CanvasController):
         return self._graph
 
     @property
-    def fonts(self) -> FontMapper:
-        if self._fonts is None:
-            raise ReferenceError("The fonts instance has expired")
-        return self._fonts
-
-    @property
     def config(self) -> FlowAuiConfig:
         if self._config is None:
-            raise ReferenceError("The fonts instance has expired")
+            raise ReferenceError("The config instance has expired")
         return self._config
 
     @property
     def opened(self) -> bool:
         if self._graph is not None:
-            assert self._fonts is not None
             assert self._config is not None
             return True
         else:
-            assert self._fonts is None
             assert self._config is None
             return False
 
     def _clear_refs(self) -> None:
         self._graph = None
-        self._fonts = None
         self._config = None
 
     def open(self) -> None:
         if self._graph is not None:
             raise ValueError("Graph already open")
-        if self._fonts is not None:
-            raise ValueError("Fonts already open")
         if self._config is not None:
             raise ValueError("Config already open")
 
         assert self._graph is None
-        assert self._fonts is None
         assert self._config is None
         self._graph = self._graph_ref()
-        self._fonts = self._fonts_ref()
         self._config = self._config_ref()
 
         if self._graph is None:
             self._clear_refs()
             raise ReferenceError("The graph instance has expired")
 
-        if self._fonts is None:
-            self._clear_refs()
-            raise ReferenceError("The fonts instance has expired")
-
         if self._config is None:
             self._clear_refs()
             raise ReferenceError("The config instance has expired")
 
         assert self._graph is not None
-        assert self._fonts is not None
         assert self._config is not None
 
     def close(self) -> None:
         if self._graph is None:
             raise ValueError("Graph instance has expired")
-        if self._fonts is None:
-            raise ValueError("Fonts instance has expired")
         if self._config is None:
             raise ValueError("Config instance has expired")
 
@@ -251,7 +226,6 @@ class FlowCanvas(CanvasController):
 
     def reset_controllers(self):
         assert self._graph is not None
-        assert self._fonts is not None
         assert self._config is not None
 
         logger.info("Reset controllers")
@@ -266,7 +240,6 @@ class FlowCanvas(CanvasController):
 
     def do_process_controllers(self, debugging=False) -> None:
         assert self._graph is not None
-        assert self._fonts is not None
         assert self._config is not None
 
         if result := self.render_controllers(debugging=debugging):
@@ -276,7 +249,6 @@ class FlowCanvas(CanvasController):
 
     def do_process_canvas(self) -> None:
         assert self._graph is not None
-        assert self._fonts is not None
         assert self._config is not None
 
         if result := self.update_state():

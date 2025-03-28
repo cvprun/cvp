@@ -22,6 +22,8 @@ from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
+from cvp.imgui.fonts.defaults import add_mixed_font, add_ttf_file
+from cvp.imgui.fonts.font import Font
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.separator import separator
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
@@ -30,20 +32,25 @@ from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
 from cvp.popups.confirm import ConfirmPopup
-from cvp.renderer.context import RendererContext
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
+from cvp.variables import DEFAULT_FONT_NAME
 
 
 class PlayerApplication:
-    _renderer: PygameRenderer
+    _renderer: Optional[PygameRenderer]
+    _font_normal: Optional[Font]
+
     _prefix_menus: OrderedDict[str, Callable[[], None]]
     _suffix_menus: OrderedDict[str, Callable[[], None]]
 
     def __init__(self, context: Context):
-        self._context = RendererContext.from_context(context, with_init=True)
+        self._context = context
         self._profiler = ProfileLogging(profile_logger)
         self._world = World(self._context)
+
+        self._renderer = None
+        self._font_normal = None
 
         self._confirm_quit = ConfirmPopup(
             title="Exit",
@@ -80,6 +87,11 @@ class PlayerApplication:
     @property
     def mode(self):
         return self._modes.get(self._context.config.appearance.mode, self._default_mode)
+
+    @property
+    def renderer(self) -> PygameRenderer:
+        assert self._renderer is not None
+        return self._renderer
 
     @property
     def pygame_display_size(self) -> Tuple[int, int]:
@@ -218,8 +230,14 @@ class PlayerApplication:
         logger.info("Created a Pygame renderer object.")
 
         io.fonts.clear()
-        self._context.add_default_fonts()
-        logger.info("Added default fonts.")
+        default_font_pixels = self.config.font.size_pixels
+        user_font = self.config.font.user_font
+        if os.path.isfile(user_font):
+            self._font_normal = add_ttf_file(user_font, default_font_pixels)
+            logger.info(f"Create user font: '{user_font}', {default_font_pixels}pixels")
+        else:
+            self._font_normal = add_mixed_font(DEFAULT_FONT_NAME, default_font_pixels)
+            logger.info(f"Create default font: {default_font_pixels}pixels")
 
         io.font_global_scale = self.config.font.scale
         logger.info(f"Global font scale: {io.font_global_scale}")
@@ -242,9 +260,10 @@ class PlayerApplication:
     def on_exit(self) -> None:
         self._context.stop_all_flow_runners()
         self._context.teardown_process_manager()
-        self._context.windows.do_destroy()
         self._world.on_destroy()
-        self._context.delete_fonts()
+
+        assert self._font_normal is not None
+        self._font_normal.close()
 
         self.config.display.fullscreen = pygame.display.is_fullscreen()
         self.config.display.size = pygame.display.get_window_size()
@@ -254,7 +273,10 @@ class PlayerApplication:
 
         self._context.save_graphs()
 
+        assert self._renderer is not None
         del self._renderer
+
+        imgui.destroy_context()
         pygame.quit()
 
     def on_main(self) -> None:
@@ -266,17 +288,14 @@ class PlayerApplication:
                     self.on_msg(msg)
 
                 self.on_keyboard(get_pressed())
-                self._renderer.do_tick()
+                self.renderer.do_tick()
                 self.on_frame()
-                self._context.windows.do_next()
 
     def on_event(self, event: Event) -> None:
         assert NOEVENT < event.type < NUMEVENTS
-        event_logger.debug(f"Event {event_name(event.type)}: {event.dict}")
+        event_logger.debug(f"<Event {event_name(event.type)}> {event.dict}")
 
-        consumed_event = self._context.windows.do_event(event)
-        if not consumed_event:
-            consumed_event = self.mode.do_event(event)
+        consumed_event = self.mode.do_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -293,7 +312,7 @@ class PlayerApplication:
             logger.debug(f"Drop TEXT: {event.text}")
         elif event.type == pygame.WINDOWRESIZED:
             self._world.on_window_resized(event.x, event.y)
-        self._renderer.do_event(event)
+        self.renderer.do_event(event)
 
     def on_msg(self, msg: Msg) -> None:
         name = msg.get_type_name()
@@ -301,9 +320,7 @@ class PlayerApplication:
         args = msg.as_args()
         msg_logger.debug(f"<Msg {name} {uuid}> {args}")
 
-        consumed_msg = self._context.windows.do_msg(msg)
-        if not consumed_msg:
-            consumed_msg = self.mode.do_msg(msg)
+        consumed_msg = self.mode.do_msg(msg)
         if not consumed_msg:
             self.on_msg_fallback(msg)
 
@@ -375,7 +392,6 @@ class PlayerApplication:
             self.on_main_menu()
             self.on_popups_process()
             self.mode.do_process()
-            self._context.windows.do_process()
 
             if self.debug:
                 self.on_metrics_window()
@@ -387,7 +403,7 @@ class PlayerApplication:
             # Cannot use `screen.fill((1, 1, 1))` because pygame's screen does not
             # support fill() on OpenGL surfaces
             imgui.render()
-            self._renderer.render(imgui.get_draw_data())
+            self.renderer.render(imgui.get_draw_data())
             pygame.display.flip()
 
     def on_file_menu(self) -> None:
@@ -479,10 +495,6 @@ class PlayerApplication:
         pass
 
     def on_windows_menu(self) -> None:
-        for key, win in self._context.windows.items():
-            if menu_item(f"{win.title}###{key}", win.opened):
-                win.opened = not win.opened
-
         if self.debug:
             separator()
             if menu_item("Metrics", self.config.developer.show_metrics):

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
 from os import PathLike
 from typing import Union
 
@@ -30,25 +29,3 @@ class RendererContext(Context):
 
         self.windows = WindowMapper()
         self.fonts = FontMapper()
-
-    def add_default_fonts(self):
-        """
-        Must be called after Pygame and Imgui have been initialized.
-        """
-
-        normal_text_size_pixels = self.config.font.normal_text_size_pixels
-        medium_text_size_pixels = self.config.font.medium_text_size_pixels
-        large_text_size_pixels = self.config.font.large_text_size_pixels
-        user_font = self.config.font.user_font
-
-        if os.path.isfile(user_font):
-            self.fonts.add_normal_ttf(user_font, normal_text_size_pixels)
-            self.fonts.add_medium_ttf(user_font, medium_text_size_pixels)
-            self.fonts.add_large_ttf(user_font, large_text_size_pixels)
-        else:
-            self.fonts.add_mixed_normal_text_font(normal_text_size_pixels)
-            self.fonts.add_mixed_medium_text_font(medium_text_size_pixels)
-            self.fonts.add_mixed_large_text_font(large_text_size_pixels)
-
-    def delete_fonts(self):
-        self.fonts.close()

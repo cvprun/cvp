@@ -6,8 +6,8 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.config.sections.appearance import AppMode
+from cvp.context.context import Context
 from cvp.msgs.msg import Msg
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 
 
@@ -39,11 +39,11 @@ class ModeInterface(ABC):
 
 
 class BaseMode(ModeInterface, ABC):
-    def __init__(self, context: RendererContext):
+    def __init__(self, context: Context):
         self._context = context
 
     @property
-    def context(self) -> RendererContext:
+    def context(self) -> Context:
         return self._context
 
     @override

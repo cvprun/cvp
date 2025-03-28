@@ -13,6 +13,7 @@ from cvp.containers.immutable_list import ImmutableList
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
@@ -73,10 +74,13 @@ class PreferenceMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        set_next_window_as_viewport()
-        with style_window_padding_context(0, 0):
+        imgui.push_style_var(StyleVar.window_border_size, 0)
+        try:
+            set_next_window_as_viewport()
             with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
                 self.do_child_process()
+        finally:
+            imgui.pop_style_var()
 
     def do_child_process(
         self,

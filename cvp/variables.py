@@ -17,11 +17,9 @@ FULL_WIDTH: Final[float] = -1.0
 FULL_HEIGHT: Final[float] = -1.0
 FULL_SIZE: Final[Size] = FULL_WIDTH, FULL_HEIGHT
 
-FONT_SCALE: Final[float] = 1.0
-
-NORMAL_TEXT_FONT_SIZE: Final[int] = 14
-MEDIUM_TEXT_FONT_SIZE: Final[int] = 18
-LARGE_TEXT_FONT_SIZE: Final[int] = 24
+DEFAULT_FONT_SIZE: Final[int] = 14
+DEFAULT_FONT_SCALE: Final[float] = 1.0
+DEFAULT_FONT_NAME: Final[str] = "Default"
 
 CONFIG_VALUE_SEPARATOR: Final[str] = ","
 CHECKSUM_DELIMITER: Final[str] = ":"
