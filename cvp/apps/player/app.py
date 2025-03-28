@@ -410,14 +410,25 @@ class PlayerApplication:
         if menu_item("Quit", shortcut="Ctrl+Q"):
             self._confirm_quit.show()
 
+    def _mode_menu_item(self, mode_name: str, index: int) -> None:
+        title = str(mode_name).capitalize()
+        selected = mode_name == self.config.appearance.mode
+        shortcut = f"Alt+{index}" if index <= 9 else str()
+        enabled = not selected
+        if menu_item(title, selected=selected, shortcut=shortcut, enabled=enabled):
+            self.config.appearance.mode = mode_name
+
     def on_mode_menu(self) -> None:
-        for index, mode in enumerate(self._modes.keys()):
-            title = str(mode).capitalize()
-            selected = mode == self.config.appearance.mode
-            shortcut = f"Alt+{index}" if index <= 9 else str()
-            enabled = not selected
-            if menu_item(title, selected=selected, shortcut=shortcut, enabled=enabled):
-                self.config.appearance.mode = mode
+        keys = list(self._modes.keys())
+        assert 1 <= len(keys)
+
+        for index, mode_name in enumerate(keys[1:], start=1):
+            self._mode_menu_item(mode_name, index)
+
+        imgui.separator()
+
+        # According to the keyboard number order, 1..9 is followed by 0.
+        self._mode_menu_item(keys[0], 0)
 
     def on_tools_menu(self) -> None:
         # TODO: You will need to restore it later.
