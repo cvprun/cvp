@@ -34,33 +34,6 @@ from cvp.renderer.context import RendererContext
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
 
-# TODO: You will need to restore it later.
-# from cvp.renderer.window.base import WindowBase
-# from cvp.windows.canvas import CanvasWindow
-# from cvp.windows.catalog import CatalogManager
-# from cvp.windows.dtype import DtypeManager
-# from cvp.windows.files import FilesWindow
-# from cvp.windows.flow import FlowWindow
-# from cvp.windows.font import FontManager
-# from cvp.windows.games.glyph_hack import GlyphHackWindow
-# from cvp.windows.games.tetrix import TetrixWindow
-# from cvp.windows.labeling import LabelingWindow
-# from cvp.windows.layout import LayoutManager
-# from cvp.windows.media import MediaManager
-# from cvp.windows.onvif import OnvifManager
-# from cvp.windows.overlay import OverlayWindow
-# from cvp.windows.plot import PlotWindow
-# from cvp.windows.preference import PreferenceManager
-# from cvp.windows.process import ProcessManager
-# from cvp.windows.stitching import StitchingWindow
-# from cvp.windows.terminal import TerminalWindow
-# from cvp.windows.text import TextWindow
-from cvp.windows.toast import ToastWindow
-
-# from cvp.windows.window import WindowManager
-# from cvp.windows.worker import WorkerManager
-# from cvp.windows.wsd import WsdManager
-
 
 class PlayerApplication:
     _renderer: PygameRenderer
@@ -71,31 +44,6 @@ class PlayerApplication:
         self._context = RendererContext.from_context(context, with_init=True)
         self._profiler = ProfileLogging(profile_logger)
         self._world = World(self._context)
-
-        # TODO: You will need to restore it later.
-        # self._canvas = CanvasWindow(self._context)
-        # self._catalog_manager = CatalogManager(self._context)
-        # self._dtype_manager = DtypeManager(self._context)
-        # self._files = FilesWindow(self._context)
-        # self._flow = FlowWindow(self._context)
-        # self._font_manager = FontManager(self._context)
-        # self._glyph_hack = GlyphHackWindow(self._context)
-        # self._labeling_manager = LabelingWindow(self._context)
-        # self._layout_manager = LayoutManager(self._context)
-        # self._media_manager = MediaManager(self._context)
-        # self._onvif_manager = OnvifManager(self._context)
-        # self._overlay = OverlayWindow(self._context)
-        # self._plot = PlotWindow(self._context)
-        # self._pref_manager = PreferenceManager(self._context)
-        # self._process_manager = ProcessManager(self._context)
-        # self._stitching = StitchingWindow(self._context)
-        # self._terminal = TerminalWindow(self._context)
-        # self._tetrix = TetrixWindow(self._context)
-        # self._text = TextWindow(self._context)
-        self._toast = ToastWindow(self._context)
-        # self._window_manager = WindowManager(self._context)
-        # self._worker_manager = WorkerManager(self._context)
-        # self._wsd_manager = WsdManager(self._context)
 
         self._confirm_quit = ConfirmPopup(
             title="Exit",
@@ -291,35 +239,6 @@ class PlayerApplication:
         self._world.on_window_resized(size[0], size[1])
         logger.info("Initialized world object.")
 
-        self._context.windows.add_windows(
-            # TODO: You will need to restore it later.
-            # self._canvas,
-            # self._catalog_manager,
-            # self._dtype_manager,
-            # self._files,
-            # self._flow,
-            # self._font_manager,
-            # self._glyph_hack,
-            # self._labeling_manager,
-            # self._layout_manager,
-            # self._media_manager,
-            # self._onvif_manager,
-            # self._overlay,
-            # self._plot,
-            # self._pref_manager,
-            # self._process_manager,
-            # self._stitching,
-            # self._terminal,
-            # self._tetrix,
-            # self._text,
-            self._toast,
-            # self._window_manager,
-            # self._worker_manager,
-            # self._wsd_manager,
-            begin_order=self._context.config.window_manager.begin_order,
-        )
-        logger.info("Initialized all windows.")
-
     def on_exit(self) -> None:
         self._context.stop_all_flow_runners()
         self._context.teardown_process_manager()
@@ -389,9 +308,9 @@ class PlayerApplication:
             self.on_msg_fallback(msg)
 
     def on_msg_fallback(self, msg: Msg) -> None:
+        assert self
         if msg.mtype == MsgType.toast:
-            self._toast.show_simple(msg.message)
-            return
+            pass
 
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""

@@ -3,12 +3,13 @@
 from collections import OrderedDict
 from typing import Callable
 
-from imgui_bundle import hello_imgui, imgui
+from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.base import BaseMode
 from cvp.config.sections.appearance import AppMode
+from cvp.containers.immutable_list import ImmutableList
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
@@ -16,11 +17,18 @@ from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.theme import THEME_NAMES, apply_theme_with_name
 from cvp.logging.logging import logger
 from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
-from cvp.variables import NOT_FOUND_INDEX
+from cvp.variables import (
+    DEFAULT_MAIN_LABEL,
+    DEFAULT_MENU_LABEL,
+    DEFAULT_MENU_WIDTH,
+    FULL_SIZE,
+    NOT_FOUND_INDEX,
+)
 
 
 class PreferenceMode(BaseMode):
@@ -29,8 +37,7 @@ class PreferenceMode(BaseMode):
     def __init__(self, context: RendererContext):
         super().__init__(context)
 
-        count = int(hello_imgui.ImGuiTheme_.count.value)
-        self._theme_names = [hello_imgui.ImGuiTheme_(i).name for i in range(count)]
+        self._theme_names = ImmutableList(THEME_NAMES)
 
         self._menus = OrderedDict()
         self._menus["Appearance"] = self.on_appearance
@@ -71,9 +78,14 @@ class PreferenceMode(BaseMode):
             with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
                 self.do_child_process()
 
-    def do_child_process(self, menu_label="Manu", main_label="Main", split_x=150.0):
+    def do_child_process(
+        self,
+        menu_label=DEFAULT_MENU_LABEL,
+        main_label=DEFAULT_MAIN_LABEL,
+        split_x=DEFAULT_MENU_WIDTH,
+    ):
         with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
-            if imgui.begin_list_box("###MenuList", (-1, -1)):
+            if imgui.begin_list_box("###MenuList", FULL_SIZE):
                 try:
                     for key in self._menus.keys():
                         if imgui.selectable(key, key == self.selected)[1]:
@@ -91,6 +103,9 @@ class PreferenceMode(BaseMode):
                 main_callback()
             else:
                 text_centered("Please select a item")
+
+    # ----------------------------------------------------------------------------------
+    # [Appearance] ---------------------------------------------------------------------
 
     @property
     def theme(self) -> str:
@@ -114,9 +129,9 @@ class PreferenceMode(BaseMode):
         assert isinstance(theme_index, int)
 
         if theme_changed and 0 <= theme_index < len(self._theme_names):
-            theme_name = self._theme_names[theme_index]
             try:
-                hello_imgui.apply_theme(hello_imgui.ImGuiTheme_(theme_index))
+                theme_name = self._theme_names[theme_index]
+                apply_theme_with_name(theme_name)
             except BaseException as e:
                 logger.error(f"Changed theme error: {e}")
             else:

@@ -13,6 +13,9 @@ GUI_INI_FILENAME: Final[str] = "gui.ini"
 LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
 NOT_FOUND_INDEX: Final[int] = -1
+FULL_WIDTH: Final[float] = -1.0
+FULL_HEIGHT: Final[float] = -1.0
+FULL_SIZE: Final[Size] = FULL_WIDTH, FULL_HEIGHT
 
 FONT_SCALE: Final[float] = 1.0
 
@@ -45,6 +48,10 @@ MOUSE_WHEEL_OFFSET_SCALE: Final[float] = 0.5
 
 LOGGING_STEP: Final[int] = 1000
 SLOW_CALLBACK_DURATION: Final[float] = 0.05
+
+DEFAULT_MENU_LABEL: Final[str] = "Manu"
+DEFAULT_MAIN_LABEL: Final[str] = "Main"
+DEFAULT_MENU_WIDTH: Final[float] = 150.0
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0
 MAX_SIDEBAR_WIDTH: Final[float] = 480.0
