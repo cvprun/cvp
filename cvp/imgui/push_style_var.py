@@ -2,12 +2,11 @@
 
 from contextlib import contextmanager
 from enum import StrEnum, unique
-from typing import Final, Union
+from typing import Union
 
 from imgui_bundle import imgui
 
 from cvp.imgui.flags import color_var, style_var
-from cvp.types.colors import RGBA
 
 
 @unique
@@ -64,17 +63,13 @@ def style_item_spacing_context(x: float, y: float):
         imgui.pop_style_var()
 
 
-DEFAULT_DISABLE_TEXT_COLOR: Final[RGBA] = 0.8, 0.8, 0.8, 1.0
-DEFAULT_DISABLE_BACKGROUND_COLOR: Final[RGBA] = 0.2, 0.2, 0.2, 1.0
-
-
 @contextmanager
-def style_disable_input_context(
-    text_color=DEFAULT_DISABLE_TEXT_COLOR,
-    background_color=DEFAULT_DISABLE_BACKGROUND_COLOR,
-):
-    imgui.push_style_color(color_var.TEXT, *text_color)
-    imgui.push_style_color(color_var.FRAME_BG, *background_color)
+def style_disable_input_context():
+    text_disabled = imgui.get_style_color_vec4(color_var.TEXT_DISABLED)
+    child_bg = imgui.get_style_color_vec4(color_var.CHILD_BG)
+
+    imgui.push_style_color(color_var.TEXT, text_disabled)
+    imgui.push_style_color(color_var.FRAME_BG, child_bg)
     try:
         yield
     finally:

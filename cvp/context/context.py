@@ -6,6 +6,7 @@ from threading import Event
 from typing import Optional, Union
 
 from cvp.config.config import Config
+from cvp.context.mixins import ContextMixins
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
 from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
@@ -29,7 +30,7 @@ from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
 
 
-class Context:
+class Context(ContextMixins):
     def __init__(self, home: Union[str, PathLike[str]]):
         self._home = HomeDir(home)
         self._config = Config()
@@ -103,6 +104,24 @@ class Context:
         self._flow_manager.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
         self._supabase = Supabase()
+
+        self._create_supabase_client_runner = self.pm.create_thread_runner(
+            self._on_supabase_client_main,
+        )
+
+        supabase_url = self.supabase_url
+        supabase_key = self.supabase_key
+        if supabase_url and supabase_key:
+            self.create_supabase_client(
+                self.supabase_url,
+                self.supabase_key,
+                self.server_username,
+                self.server_password,
+            )
+
+        self._create_supabase_session_runner = self.pm.create_thread_runner(
+            self._on_supabase_session_main,
+        )
 
     @property
     def home(self):

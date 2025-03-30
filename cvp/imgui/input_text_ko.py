@@ -5,7 +5,6 @@ from typing import NamedTuple, Union
 from imgui_bundle import imgui
 
 from cvp.imgui.flags.input_text import CALLBACK_EDIT, InputTextFlags
-from cvp.logging.logging import logger
 
 
 class InputTextMultilingualResult(NamedTuple):

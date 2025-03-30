@@ -30,7 +30,7 @@ class ContextTestCase(TestCase):
             self.assertIsNotNone(attrs.pop("_onvif_manager"))
             self.assertIsNotNone(attrs.pop("_flow_manager"))
             self.assertIsNotNone(attrs.pop("_msg_queue"))
-            self.assertFalse(attrs)
+            self.assertIsNotNone(attrs.pop("_supabase"))
 
 
 if __name__ == "__main__":
