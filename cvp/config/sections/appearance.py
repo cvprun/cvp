@@ -9,6 +9,7 @@ from cvp.types.colors import BLACK_RGBA, RGBA
 @unique
 class AppMode(StrEnum):
     dashboard = auto()
+    chat = auto()
     flow = auto()
     preference = auto()
 

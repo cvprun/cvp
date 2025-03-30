@@ -17,6 +17,7 @@ from cvp.variables import KEYRING_EXTENSION
 @unique
 class ServiceName(StrEnum):
     onvif_password = auto()
+    server = auto()
 
 
 class Keyrings(PathFlavour):
@@ -25,6 +26,9 @@ class Keyrings(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]], extension=KEYRING_EXTENSION):
         super().__init__(path)
         self._onvif_password_service_name = ServiceName.onvif_password
+        self._server_service_name = ServiceName.server
+        self._server_password_key = "password"
+        self._server_supabase_key = "supabase_key"
         self._password_cache = dict()
         self._extension = extension
 
@@ -63,3 +67,29 @@ class Keyrings(PathFlavour):
 
     def delete_onvif_password(self, key: str) -> None:
         self.delete_password(self._onvif_password_service_name, key)
+
+    def get_server_supabase_key(self, default=None) -> Optional[str]:
+        return self.get_password(
+            self._server_service_name,
+            self._server_supabase_key,
+            default,
+        )
+
+    def set_server_supabase_key(self, value: str) -> None:
+        self.set_password(self._server_service_name, self._server_supabase_key, value)
+
+    def delete_server_supabase_key(self) -> None:
+        self.delete_password(self._server_service_name, self._server_supabase_key)
+
+    def get_server_password(self, default=None) -> Optional[str]:
+        return self.get_password(
+            self._server_service_name,
+            self._server_password_key,
+            default,
+        )
+
+    def set_server_password(self, value: str) -> None:
+        self.set_password(self._server_service_name, self._server_password_key, value)
+
+    def delete_server_password(self) -> None:
+        self.delete_password(self._server_service_name, self._server_password_key)

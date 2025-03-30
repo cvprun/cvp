@@ -25,6 +25,7 @@ from cvp.resources.download.archive import DownloadArchive
 from cvp.resources.download.links.tuples import LinkInfo
 from cvp.resources.download.runner import DownloadRunner
 from cvp.resources.home import HomeDir
+from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
 
 
@@ -101,6 +102,7 @@ class Context:
         self._flow_manager = FlowManager(self._home)
         self._flow_manager.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
+        self._supabase = Supabase()
 
     @property
     def home(self):
@@ -125,6 +127,10 @@ class Context:
     @property
     def om(self):
         return self._onvif_manager
+
+    @property
+    def supabase(self):
+        return self._supabase
 
     @property
     def debug(self) -> bool:

@@ -84,7 +84,12 @@ class PygameRenderer(FixedPipelineRenderer):
         return True
 
     def update_key_state(self, pygame_keycode: int, down: bool) -> None:
-        imgui_keycode = imgui.Key(self._remapper(pygame_keycode))
+        try:
+            imgui_key_value = self._remapper(pygame_keycode)
+        except KeyError:
+            return
+
+        imgui_keycode = imgui.Key(imgui_key_value)
         self.io.add_key_event(imgui_keycode, down=down)
 
         if pygame_keycode in (pygame.K_LCTRL, pygame.K_RCTRL):
@@ -166,11 +171,13 @@ class PygameRenderer(FixedPipelineRenderer):
         assert isinstance(event.start, int)
         assert isinstance(event.length, int)
         assert self.io is not None
+        # The 'TEXT_EDITING' event is no longer supported.
         return True
 
     def on_text_input(self, event: Event) -> bool:
         assert isinstance(event.text, str)
         assert self.io is not None
+        # The 'TEXT_INPUT' event is no longer supported.
         return True
 
     def do_event(self, event: Event) -> bool:

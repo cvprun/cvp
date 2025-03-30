@@ -10,6 +10,7 @@ from yaml import dump, full_load
 from cvp.config.sections.appearance import AppearanceConfig
 from cvp.config.sections.canvas import CanvasWindowConfig
 from cvp.config.sections.catalog import CatalogManagerConfig
+from cvp.config.sections.chat import ChatConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
@@ -32,6 +33,7 @@ from cvp.config.sections.overlay import OverlayWindowConfig
 from cvp.config.sections.plot import PlotWindowConfig
 from cvp.config.sections.preference import PreferenceManagerConfig as PrefManagerConfig
 from cvp.config.sections.process import ProcessManagerConfig
+from cvp.config.sections.server import ServerConfig
 from cvp.config.sections.stitching import StitchingAuiConfig
 from cvp.config.sections.terminal import TerminalWindowConfig
 from cvp.config.sections.text import TextWindowConfig
@@ -48,6 +50,7 @@ from cvp.yaml.dumpers import DefaultDumper
 @dataclass
 class Config:
     appearance: AppearanceConfig = field(default_factory=AppearanceConfig)
+    chat: ChatConfig = field(default_factory=ChatConfig)
     canvas_window: CanvasWindowConfig = field(default_factory=CanvasWindowConfig)
     catalog_manager: CatalogManagerConfig = field(default_factory=CatalogManagerConfig)
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
@@ -75,6 +78,7 @@ class Config:
     plot_window: PlotWindowConfig = field(default_factory=PlotWindowConfig)
     preference_manager: PrefManagerConfig = field(default_factory=PrefManagerConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
+    server: ServerConfig = field(default_factory=ServerConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
     terminal_window: TerminalWindowConfig = field(default_factory=TerminalWindowConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)

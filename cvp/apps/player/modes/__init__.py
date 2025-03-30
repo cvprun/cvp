@@ -5,6 +5,7 @@ from functools import lru_cache
 from typing import Sequence, Type
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.chat import ChatMode
 from cvp.apps.player.modes.dashboard import DashboardMode
 from cvp.apps.player.modes.flow import FlowMode
 from cvp.apps.player.modes.preference import PreferenceMode
@@ -16,8 +17,10 @@ from cvp.context.context import Context
 def all_mode_types() -> Sequence[Type[BaseMode]]:
     return (
         PreferenceMode,  # Num.0
+        # ----------------------
         DashboardMode,  # Num.1
-        FlowMode,  # Num.2
+        ChatMode,
+        FlowMode,
     )
 
 
