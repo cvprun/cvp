@@ -29,15 +29,15 @@ from cvp.variables import (
 @lru_cache
 def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import Appearance
-    from cvp.apps.player.modes.preference.chat import Chat
     from cvp.apps.player.modes.preference.keyring import Keyring
-    from cvp.apps.player.modes.preference.server import Server
+    from cvp.apps.player.modes.preference.ollama import Ollama
+    from cvp.apps.player.modes.preference.supabase import Supabase
 
     return (
         Appearance,
-        Chat,
         Keyring,
-        Server,
+        Ollama,
+        Supabase,
     )
 
 

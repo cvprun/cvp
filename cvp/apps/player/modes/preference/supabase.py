@@ -12,7 +12,7 @@ from cvp.renderer.context import Context
 from cvp.types.override import override
 
 
-class Server(BasePreference):
+class Supabase(BasePreference):
     def __init__(self, context: Context):
         super().__init__(context)
         self._show_supabase_key = False

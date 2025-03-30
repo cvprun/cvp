@@ -7,7 +7,7 @@ from cvp.context.context import Context
 from cvp.types.override import override
 
 
-class Chat(BasePreference):
+class Ollama(BasePreference):
     def __init__(self, context: Context):
         super().__init__(context)
 
