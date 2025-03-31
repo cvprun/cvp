@@ -15,8 +15,28 @@ class _SupabaseClientStatus(NamedTuple):
     disabled_remove: bool
 
 
+_ClientThreadRunner = ThreadRunnable[[str, str, Optional[str], Optional[str]], None]
+
+
 class SupabaseClientMixin(BaseContextMixin):
-    _create_supabase_client_runner: ThreadRunnable
+    _create_supabase_client_runner: _ClientThreadRunner
+
+    def _on_supabase_client_main(
+        self,
+        supabase_url: str,
+        supabase_key: str,
+        username: Optional[str] = None,
+        password: Optional[str] = None,
+    ) -> None:
+        has_client = self._supabase.create_client(supabase_url, supabase_key)
+        if not has_client:
+            return
+
+        if not username or not password:
+            return
+
+        assert self._supabase.has_client
+        self._supabase.sign_in_with_password(username, password)
 
     @property
     def supabase_url(self) -> str:
@@ -35,23 +55,6 @@ class SupabaseClientMixin(BaseContextMixin):
     @supabase_key.setter
     def supabase_key(self, value: str) -> None:
         self._home.keyrings.set_server_supabase_key(value)
-
-    def _on_supabase_client_main(
-        self,
-        supabase_url: str,
-        supabase_key: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-    ) -> None:
-        has_client = self._supabase.create_client(supabase_url, supabase_key)
-        if not has_client:
-            return
-
-        if not username or not password:
-            return
-
-        assert self._supabase.has_client
-        self._supabase.sign_in_with_password(username, password)
 
     def get_supabase_client_status(self):
         has_client = self._supabase.has_client

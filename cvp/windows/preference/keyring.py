@@ -2,7 +2,7 @@
 
 from imgui_bundle import imgui
 
-from cvp.keyring.keyring import list_keyring_names, load_keyring, set_keyring
+from cvp.keyring.details import list_keyring_names, load_keyring, set_keyring
 from cvp.logging.logging import logger
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override

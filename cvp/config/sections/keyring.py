@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from cvp.keyring.keyring import KEYRING_SAGECIPHER
+from cvp.keyring.details import KEYRING_SAGECIPHER
 
 
 @dataclass

@@ -4,7 +4,7 @@ from enum import StrEnum, auto, unique
 from os import PathLike
 from typing import Dict, Optional, Tuple, Union
 
-from cvp.keyring.keyring import (
+from cvp.keyring.details import (
     delete_password,
     get_password,
     set_all_filepath,

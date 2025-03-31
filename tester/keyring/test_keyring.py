@@ -4,7 +4,7 @@ import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase, main, skipIf
 
-from cvp.keyring.keyring import (
+from cvp.keyring.details import (
     KEYRING_PLAIN_TEXT,
     KEYRING_SAGECIPHER,
     delete_password,

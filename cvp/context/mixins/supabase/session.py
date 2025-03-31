@@ -15,8 +15,14 @@ class _SupabaseSessionStatus(NamedTuple):
     disabled_remove: bool
 
 
+_SessionThreadRunner = ThreadRunnable[[str, str], None]
+
+
 class SupabaseSessionMixin(BaseContextMixin):
-    _create_supabase_session_runner: ThreadRunnable
+    _create_supabase_session_runner: _SessionThreadRunner
+
+    def _on_supabase_session_main(self, username: str, password: str) -> None:
+        self._supabase.sign_in_with_password(username, password)
 
     @property
     def server_username(self) -> str:
@@ -35,9 +41,6 @@ class SupabaseSessionMixin(BaseContextMixin):
     @server_password.setter
     def server_password(self, value: str) -> None:
         self._home.keyrings.set_server_password(value)
-
-    def _on_supabase_session_main(self, username: str, password: str) -> None:
-        self._supabase.sign_in_with_password(username, password)
 
     def get_supabase_session_status(self):
         has_session = self._supabase.has_session
