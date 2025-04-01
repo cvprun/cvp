@@ -52,7 +52,7 @@ DEFAULT_MAIN_LABEL: Final[str] = "Main"
 DEFAULT_MENU_WIDTH: Final[float] = 150.0
 
 DEFAULT_OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
-DEFAULT_SUPABASE_ADDRESS: Final[str] = "http://localhost:8080/"
+DEFAULT_SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0
 MAX_SIDEBAR_WIDTH: Final[float] = 480.0

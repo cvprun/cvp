@@ -4,21 +4,21 @@ drop table public.chat_messages;
 create table
     public.chat_conversations
 (
-    id         uuid primary key         default gen_random_uuid(),
+    id         uuid primary key                                 default gen_random_uuid(),
     owner      uuid references auth.users (id) on delete set null on update cascade,
-    title      text not null check (length(title) < 256),
-    created_at timestamp with time zone default now(),
-    updated_at timestamp with time zone default now()
+    title      text        not null check (length(title) < 256) default '',
+    created_at timestamptz not null                             default now(),
+    updated_at timestamptz                                      default now()
 );
 
 create table
     public.chat_messages
 (
-    id              uuid primary key         default gen_random_uuid(),
+    id              uuid primary key     default gen_random_uuid(),
     conversation_id uuid references chat_conversations (id) on delete set null on update cascade,
-    request         jsonb,
-    response        jsonb,
-    created_at      timestamp with time zone default now()
+    request         jsonb       not null default '{}'::jsonb,
+    response        jsonb       not null default '{}'::jsonb,
+    created_at      timestamptz not null default now()
 );
 
 create index chat_conversations_owner_idx
