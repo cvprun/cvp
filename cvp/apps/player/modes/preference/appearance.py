@@ -4,6 +4,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.containers.immutable_list import ImmutableList
+from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.theme import THEME_NAMES, apply_theme_with_name
 from cvp.logging.logging import logger
 from cvp.renderer.context import Context
@@ -49,3 +50,21 @@ class Appearance(BasePreference):
                 self.appearance_theme = theme_name
 
         imgui.show_font_selector("Font")
+
+        if color_result := color_edit4("Clear Color", *self.context.clear_color):
+            self.context.clear_color = color_result.color
+
+        if color_result := color_edit4("Detail Color", *self.context.detail_color):
+            self.context.detail_color = color_result.color
+
+        if color_result := color_edit4("Success Color", *self.context.success_color):
+            self.context.success_color = color_result.color
+
+        if color_result := color_edit4("Normal Color", *self.context.normal_color):
+            self.context.normal_color = color_result.color
+
+        if color_result := color_edit4("Warning Color", *self.context.warning_color):
+            self.context.warning_color = color_result.color
+
+        if color_result := color_edit4("Error Color", *self.context.error_color):
+            self.context.error_color = color_result.color
