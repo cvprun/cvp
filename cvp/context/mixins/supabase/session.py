@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, NamedTuple
+from typing import NamedTuple
 
 from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
+from cvp.keyring.keys import SupabaseKey
 
 
 class _SupabaseSessionStatus(NamedTuple):
@@ -32,15 +33,13 @@ class SupabaseSessionMixin(BaseContextMixin):
     def server_username(self, value: str) -> None:
         self._config.server.username = value
 
-    __supabase_password__: Final[str] = "password"
-
     @property
     def server_password(self) -> str:
-        return self._keyring.supabase.get_or_empty(self.__supabase_password__)
+        return self._keyring.supabase.get_or_empty(SupabaseKey.password)
 
     @server_password.setter
     def server_password(self, value: str) -> None:
-        self._keyring.supabase.set(self.__supabase_password__, value)
+        self._keyring.supabase.set(SupabaseKey.password, value)
 
     def get_supabase_session_status(self):
         has_session = self._supabase.has_session

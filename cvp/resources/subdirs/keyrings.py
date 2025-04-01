@@ -60,6 +60,3 @@ class Keyrings(PathFlavour):
 
     def set_onvif_password(self, key: str, value: str) -> None:
         self.set_password(self._onvif_password_service_name, key, value)
-
-    def delete_onvif_password(self, key: str) -> None:
-        self.delete_password(self._onvif_password_service_name, key)

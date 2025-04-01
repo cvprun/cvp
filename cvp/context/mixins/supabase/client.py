@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, NamedTuple, Optional
+from typing import NamedTuple, Optional
 
 from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
+from cvp.keyring.keys import SupabaseKey
 
 
 class _SupabaseClientStatus(NamedTuple):
@@ -46,15 +47,13 @@ class SupabaseClientMixin(BaseContextMixin):
     def supabase_url(self, value: str) -> None:
         self._config.server.supabase_url = value
 
-    __supabase_supabase_key__: Final[str] = "supabase_key"
-
     @property
     def supabase_key(self) -> str:
-        return self._keyring.supabase.get_or_empty(self.__supabase_supabase_key__)
+        return self._keyring.supabase.get_or_empty(SupabaseKey.supabase_key)
 
     @supabase_key.setter
     def supabase_key(self, value: str) -> None:
-        self._keyring.supabase.set(self.__supabase_supabase_key__, value)
+        self._keyring.supabase.set(SupabaseKey.supabase_key, value)
 
     def get_supabase_client_status(self):
         has_client = self._supabase.has_client

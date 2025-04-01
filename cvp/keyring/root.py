@@ -1,38 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from enum import StrEnum, auto, unique
 from os import PathLike
-from typing import Dict, NamedTuple, Optional, Union, overload
+from typing import Dict, Generic, Optional, TypeVar, Union, overload
 from weakref import ReferenceType, ref
 
 from cvp.keyring import details
+from cvp.keyring.keys import KeyringBackendName, ServiceKey, ServiceName, SupabaseKey
 from cvp.patterns.singleton import singleton
 from cvp.variables import KEYRING_EXTENSION
-
-
-@unique
-class KeyringBackendName(StrEnum):
-    chainer = details.KEYRING_CHAINER
-    encrypted = details.KEYRING_ENCRYPTED
-    fail = details.KEYRING_FAIL
-    kwallet = details.KEYRING_KWALLET
-    macos = details.KEYRING_MACOS
-    null = details.KEYRING_NULL
-    plain_text = details.KEYRING_PLAIN_TEXT
-    sagecipher = details.KEYRING_SAGECIPHER
-    secret_service = details.KEYRING_SECRET_SERVICE
-    windows = details.KEYRING_WINDOWS
-
-
-@unique
-class PredefinedServiceName(StrEnum):
-    supabase = auto()
-    onvif = auto()
-
-
-class ServiceKey(NamedTuple):
-    service: str
-    key: str
 
 
 @singleton
@@ -126,22 +101,25 @@ class RootKeyring:
     def __delitem__(self, item: ServiceKey) -> None:
         self.remove(item.service, item.key)
 
-    def get_service(self, service: Union[PredefinedServiceName, str]):
-        if isinstance(service, PredefinedServiceName):
+    def get_service(self, service: Union[ServiceName, str]):
+        if isinstance(service, ServiceName):
             service = str(service)
         assert isinstance(service, str)
-        return RootKeyringService(self, service)
-
-    @property
-    def supabase(self):
-        return self.get_service(PredefinedServiceName.supabase)
+        return RootKeyringService[str](self, service)
 
     @property
     def onvif(self):
-        return self.get_service(PredefinedServiceName.onvif)
+        return self.get_service(ServiceName.onvif)
+
+    @property
+    def supabase(self):
+        return RootKeyringService[SupabaseKey](self, ServiceName.supabase)
 
 
-class RootKeyringService:
+_ServiceKeyT = TypeVar("_ServiceKeyT", bound=str)
+
+
+class RootKeyringService(Generic[_ServiceKeyT]):
     _parent: ReferenceType[RootKeyring]
     _service: str
 
@@ -156,31 +134,31 @@ class RootKeyringService:
             raise ReferenceError("Expired Keyring object")
         return result
 
-    def has(self, key: str) -> bool:
+    def has(self, key: _ServiceKeyT) -> bool:
         return self.parent.has(self._service, key)
 
-    def get(self, key: str) -> Optional[str]:
+    def get(self, key: _ServiceKeyT) -> Optional[str]:
         return self.parent.get(self._service, key)
 
-    def get_or_empty(self, key: str) -> str:
+    def get_or_empty(self, key: _ServiceKeyT) -> str:
         return self.parent.get_or_empty(self._service, key)
 
-    def set(self, key: str, value: str) -> None:
+    def set(self, key: _ServiceKeyT, value: str) -> None:
         self.parent.set(self._service, key, value)
 
-    def remove(self, key: str) -> None:
+    def remove(self, key: _ServiceKeyT) -> None:
         self.parent.remove(self._service, key)
 
-    def __contains__(self, key: str) -> bool:
+    def __contains__(self, key: _ServiceKeyT) -> bool:
         return self.has(key)
 
-    def __getitem__(self, key: str) -> Optional[str]:
+    def __getitem__(self, key: _ServiceKeyT) -> Optional[str]:
         return self.get(key)
 
-    def __setitem__(self, key: str, value: str) -> None:
+    def __setitem__(self, key: _ServiceKeyT, value: str) -> None:
         self.set(key, value)
 
-    def __delitem__(self, key: str) -> None:
+    def __delitem__(self, key: _ServiceKeyT) -> None:
         self.remove(key)
 
     def __enter__(self):
