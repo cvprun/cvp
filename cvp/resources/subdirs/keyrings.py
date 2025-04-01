@@ -90,6 +90,3 @@ class Keyrings(PathFlavour):
 
     def set_server_password(self, value: str) -> None:
         self.set_password(self._server_service_name, self._server_password_key, value)
-
-    def delete_server_password(self) -> None:
-        self.delete_password(self._server_service_name, self._server_password_key)

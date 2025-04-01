@@ -12,6 +12,7 @@ from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
 from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
+from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import (
     convert_level_number,
     dumps_default_logging_config,
@@ -92,6 +93,11 @@ class Context(ContextMixins):
         if self._config.onvif_manager.preload:
             logger.info("Preload ONVIF declarations")
             OnvifManager.preload_onvif_declarations()
+
+        self._keyring = RootKeyring()
+        if self._home.is_dir():
+            logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
+            self._keyring.update_default_filepath(self._home.keyrings)
 
         self._onvif_manager = OnvifManager(
             onvif_configs=self._config.onvifs,

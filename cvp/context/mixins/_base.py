@@ -5,6 +5,7 @@ from typing import Protocol, runtime_checkable
 
 from cvp.config.config import Config
 from cvp.flow.manager import FlowManager
+from cvp.keyring.root import RootKeyring
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.onvif.manager import OnvifManager
 from cvp.process.manager import ProcessManager
@@ -18,6 +19,7 @@ class BaseContextMixin(Protocol):
     _config: Config
     _done: Event
     _process_manager: ProcessManager
+    _keyring: RootKeyring
     _onvif_manager: OnvifManager
     _flow_manager: FlowManager
     _msg_queue: MsgQueue
