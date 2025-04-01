@@ -5,6 +5,7 @@ from typing import List
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.wsdl import WsdlConfig
+from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.client import OnvifClient
 from cvp.onvif.declarations import ONVIF_DECLARATIONS
@@ -17,6 +18,7 @@ class OnvifManager(OrderedDict[str, OnvifClient]):
         onvif_configs: List[OnvifConfig],
         wsdl_config: WsdlConfig,
         home: HomeDir,
+        keyring: RootKeyring,
         *,
         update=False,
     ):
@@ -24,13 +26,19 @@ class OnvifManager(OrderedDict[str, OnvifClient]):
         self._onvif_configs = onvif_configs
         self._wsdl_config = wsdl_config
         self._home = home
+        self._keyring = keyring
 
         if onvif_configs and update:
             for onvif_config in onvif_configs:
                 self.create_onvif_service(onvif_config, append=True)
 
     def create_onvif_service(self, onvif_config: OnvifConfig, *, append=False):
-        service = OnvifClient(onvif_config, self._wsdl_config, self._home)
+        service = OnvifClient(
+            onvif_config=onvif_config,
+            wsdl_config=self._wsdl_config,
+            home=self._home,
+            keyring=self._keyring,
+        )
         if append:
             self.__setitem__(onvif_config.uuid, service)
         return service

@@ -9,6 +9,7 @@ from zeep import Transport
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.wsdl import WsdlConfig
+from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.declarations import (
     ONVIF_ANALYTICS,
@@ -44,6 +45,7 @@ class OnvifClient:
         onvif_config: OnvifConfig,
         wsdl_config: WsdlConfig,
         home: HomeDir,
+        keyring: RootKeyring,
     ):
         self._onvif_config = deepcopy(onvif_config)
         self._wsdl_config = deepcopy(wsdl_config)
@@ -53,7 +55,7 @@ class OnvifClient:
             with_http_basic = onvif_config.is_http_basic
             with_http_digest = onvif_config.is_http_digest
             username = onvif_config.username
-            password = home.keyrings.get_onvif_password(onvif_config.uuid)
+            password = keyring.onvif.get(onvif_config.uuid)
             use_digest = onvif_config.encode_digest
         else:
             with_http_basic = False

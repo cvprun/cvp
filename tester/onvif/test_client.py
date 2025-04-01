@@ -7,6 +7,7 @@ from zeep.xsd import Element
 
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.wsdl import WsdlConfig
+from cvp.keyring.root import RootKeyring
 from cvp.onvif.client import OnvifClient
 from cvp.resources.home import HomeDir
 from cvp.wsdl.operation import WsdlOperationProxy
@@ -18,7 +19,13 @@ class ClientTestCase(TestCase):
         self.home = HomeDir(self.tmpdir.name)
         self.onvif_config = OnvifConfig()
         self.wsdl_config = WsdlConfig()
-        self.client = OnvifClient(self.onvif_config, self.wsdl_config, self.home)
+        self.keyring = RootKeyring()
+        self.client = OnvifClient(
+            self.onvif_config,
+            self.wsdl_config,
+            self.home,
+            self.keyring,
+        )
 
     def tearDown(self):
         self.tmpdir.cleanup()

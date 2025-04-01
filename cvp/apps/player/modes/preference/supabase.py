@@ -23,17 +23,6 @@ class Supabase(BasePreference):
         self._show_password = False
 
     @property
-    def keyrings(self):
-        return self.context.home.keyrings
-
-    @property
-    def supabase_key_input_flags(self) -> int:
-        flags = InputTextFlags.enter_returns_true
-        if not self._show_supabase_key:
-            flags |= InputTextFlags.password
-        return int(flags)
-
-    @property
     def supabase_url(self) -> str:
         return self.context.supabase_url
 
@@ -50,9 +39,9 @@ class Supabase(BasePreference):
         self.context.supabase_key = value
 
     @property
-    def password_input_flags(self) -> int:
+    def supabase_key_input_flags(self) -> int:
         flags = InputTextFlags.enter_returns_true
-        if not self._show_password:
+        if not self._show_supabase_key:
             flags |= InputTextFlags.password
         return int(flags)
 
@@ -71,6 +60,13 @@ class Supabase(BasePreference):
     @password.setter
     def password(self, value: str) -> None:
         self.context.server_password = value
+
+    @property
+    def password_input_flags(self) -> int:
+        flags = InputTextFlags.enter_returns_true
+        if not self._show_password:
+            flags |= InputTextFlags.password
+        return int(flags)
 
     @override
     def do_process(self) -> None:

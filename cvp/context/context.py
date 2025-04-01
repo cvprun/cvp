@@ -104,6 +104,7 @@ class Context(ContextMixins):
             onvif_configs=self._config.onvifs,
             wsdl_config=self._config.wsdl,
             home=self._home,
+            keyring=self._keyring,
             update=True,
         )
 
@@ -148,6 +149,10 @@ class Context(ContextMixins):
     @property
     def fm(self):
         return self._flow_manager
+
+    @property
+    def keyring(self):
+        return self._keyring
 
     @property
     def om(self):

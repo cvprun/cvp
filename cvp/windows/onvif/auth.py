@@ -15,10 +15,6 @@ class OnvifAuthTab(TabItem[OnvifConfig]):
         super().__init__(context, "Auth")
         self._show_password = False
 
-    @property
-    def keyrings(self):
-        return self.context.home.keyrings
-
     @override
     def on_item(self, item: OnvifConfig) -> None:
         use_wsse = imgui.checkbox("Use WS-Security", item.use_wsse)
@@ -41,14 +37,14 @@ class OnvifAuthTab(TabItem[OnvifConfig]):
         item.username = input_text_value("Username", item.username)
 
         password_flags = ENTER_RETURNS_TRUE if self._show_password else PASSWORD
-        prev_password = self.keyrings.get_onvif_password(item.uuid, str())
+        prev_password = self.context.keyring.onvif.get(item.uuid)
         next_password = input_text_value(
             "Password",
             prev_password,
             password_flags,
         )
         if prev_password != next_password:
-            self.keyrings.set_onvif_password(item.uuid, next_password)
+            self.context.keyring.onvif.set(item.uuid, next_password)
 
         show_password = imgui.checkbox("Show Password", self._show_password)
         show_password_changed = show_password[0]

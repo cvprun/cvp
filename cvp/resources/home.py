@@ -59,8 +59,5 @@ class HomeDir(PathFlavour):
                 logger.info(f"Create subdirectory: '{str(dir_path)}'")
                 dir_path.mkdir(parents=False, exist_ok=True)
 
-        logger.info("Update the default file location of keyrings")
-        self.keyrings.update_default_filepath()
-
         logger.info("Copy the WSDL files in the package assets")
         self.wsdl.copy_asset_files()

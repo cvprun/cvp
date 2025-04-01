@@ -35,8 +35,3 @@ class ServiceName(StrEnum):
 class SupabaseKey(StrEnum):
     supabase_key = auto()
     password = auto()
-
-
-@unique
-class OnvifKey(StrEnum):
-    password = auto()
