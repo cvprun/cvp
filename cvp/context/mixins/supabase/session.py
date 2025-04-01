@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple
+from typing import Final, NamedTuple
 
 from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
@@ -32,15 +32,15 @@ class SupabaseSessionMixin(BaseContextMixin):
     def server_username(self, value: str) -> None:
         self._config.server.username = value
 
+    __supabase_password__: Final[str] = "password"
+
     @property
     def server_password(self) -> str:
-        result = self._home.keyrings.get_server_password(str())
-        assert result is not None
-        return result
+        return self._keyring.supabase.get_or_empty(self.__supabase_password__)
 
     @server_password.setter
     def server_password(self, value: str) -> None:
-        self._home.keyrings.set_server_password(value)
+        self._keyring.supabase.set(self.__supabase_password__, value)
 
     def get_supabase_session_status(self):
         has_session = self._supabase.has_session

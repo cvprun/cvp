@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple, Optional
+from typing import Final, NamedTuple, Optional
 
 from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
@@ -46,15 +46,15 @@ class SupabaseClientMixin(BaseContextMixin):
     def supabase_url(self, value: str) -> None:
         self._config.server.supabase_url = value
 
+    __supabase_supabase_key__: Final[str] = "supabase_key"
+
     @property
     def supabase_key(self) -> str:
-        result = self._home.keyrings.get_server_supabase_key(str())
-        assert result is not None
-        return result
+        return self._keyring.supabase.get_or_empty(self.__supabase_supabase_key__)
 
     @supabase_key.setter
     def supabase_key(self, value: str) -> None:
-        self._home.keyrings.set_server_supabase_key(value)
+        self._keyring.supabase.set(self.__supabase_supabase_key__, value)
 
     def get_supabase_client_status(self):
         has_client = self._supabase.has_client

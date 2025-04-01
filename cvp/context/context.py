@@ -21,6 +21,7 @@ from cvp.logging.logging import (
     set_root_level,
 )
 from cvp.msgs.msg_queue import MsgQueue
+from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
 from cvp.process.manager import ProcessManager
 from cvp.resources.download.archive import DownloadArchive
@@ -110,15 +111,14 @@ class Context(ContextMixins):
         self._flow_manager.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
         self._supabase = Supabase()
+        self._ollamas = OllamaManager()
 
         pm = self._process_manager
 
         client_runner = pm.create_thread_runner(self._on_supabase_client_main)
         self._create_supabase_client_runner = client_runner
 
-        supabase_url = self.supabase_url
-        supabase_key = self.supabase_key
-        if supabase_url and supabase_key:
+        if self.supabase_url and self.supabase_key:
             self.create_supabase_client(
                 self.supabase_url,
                 self.supabase_key,

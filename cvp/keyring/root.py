@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from enum import StrEnum, unique
+from enum import StrEnum, auto, unique
 from os import PathLike
 from typing import Dict, NamedTuple, Optional, Union, overload
 from weakref import ReferenceType, ref
@@ -22,6 +22,12 @@ class KeyringBackendName(StrEnum):
     sagecipher = details.KEYRING_SAGECIPHER
     secret_service = details.KEYRING_SECRET_SERVICE
     windows = details.KEYRING_WINDOWS
+
+
+@unique
+class PredefinedServiceName(StrEnum):
+    supabase = auto()
+    onvif = auto()
 
 
 class ServiceKey(NamedTuple):
@@ -93,6 +99,9 @@ class RootKeyring:
         self._cache[cache_key] = result
         return result
 
+    def get_or_empty(self, service: str, key: str) -> str:
+        return self.get(service, key, str())
+
     def set(self, service: str, key: str, value: str) -> None:
         cache_key = self.gen_cache_key(service, key)
         details.set_password(service, key, value)
@@ -117,8 +126,19 @@ class RootKeyring:
     def __delitem__(self, item: ServiceKey) -> None:
         self.remove(item.service, item.key)
 
-    def get_service(self, service: str):
+    def get_service(self, service: Union[PredefinedServiceName, str]):
+        if isinstance(service, PredefinedServiceName):
+            service = str(service)
+        assert isinstance(service, str)
         return RootKeyringService(self, service)
+
+    @property
+    def supabase(self):
+        return self.get_service(PredefinedServiceName.supabase)
+
+    @property
+    def onvif(self):
+        return self.get_service(PredefinedServiceName.onvif)
 
 
 class RootKeyringService:
@@ -142,6 +162,9 @@ class RootKeyringService:
     def get(self, key: str) -> Optional[str]:
         return self.parent.get(self._service, key)
 
+    def get_or_empty(self, key: str) -> str:
+        return self.parent.get_or_empty(self._service, key)
+
     def set(self, key: str, value: str) -> None:
         self.parent.set(self._service, key, value)
 
@@ -159,3 +182,9 @@ class RootKeyringService:
 
     def __delitem__(self, key: str) -> None:
         self.remove(key)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
