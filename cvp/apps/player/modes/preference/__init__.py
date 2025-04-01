@@ -31,12 +31,14 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import Appearance
     from cvp.apps.player.modes.preference.keyring import Keyring
     from cvp.apps.player.modes.preference.ollama import Ollama
+    from cvp.apps.player.modes.preference.resource import Resource
     from cvp.apps.player.modes.preference.supabase import Supabase
 
     return (
         Appearance,
         Keyring,
         Ollama,
+        Resource,
         Supabase,
     )
 

@@ -5,7 +5,7 @@ from typing import Union
 from imgui_bundle import imgui
 
 from cvp.imgui.flags.input_text import READ_ONLY, InputTextFlags
-from cvp.imgui.push_style_var import style_disable_input_context
+from cvp.imgui.push_style_color import style_disable_input_context
 
 
 def input_text_disabled(

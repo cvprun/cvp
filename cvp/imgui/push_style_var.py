@@ -6,7 +6,7 @@ from typing import Union
 
 from imgui_bundle import imgui
 
-from cvp.imgui.flags import color_var, style_var
+from cvp.imgui.flags import style_var
 
 
 @unique
@@ -61,16 +61,3 @@ def style_item_spacing_context(x: float, y: float):
         yield
     finally:
         imgui.pop_style_var()
-
-
-@contextmanager
-def style_disable_input_context():
-    text_disabled = imgui.get_style_color_vec4(color_var.TEXT_DISABLED)
-    child_bg = imgui.get_style_color_vec4(color_var.CHILD_BG)
-
-    imgui.push_style_color(color_var.TEXT, text_disabled)
-    imgui.push_style_color(color_var.FRAME_BG, child_bg)
-    try:
-        yield
-    finally:
-        imgui.pop_style_color(2)

@@ -23,7 +23,7 @@ from cvp.imgui.input_dtype import input_dtype
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
-from cvp.imgui.push_style_var import style_disable_input_context
+from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.nodes.node import NodeName
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override

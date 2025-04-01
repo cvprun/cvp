@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from gotrue import User
-from imgui_bundle import imgui, imspinner
+from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.imgui.button import button
-from cvp.imgui.flags import color_var
+from cvp.imgui.checkbox import checkbox
 from cvp.imgui.flags.input_text import READ_ONLY, InputTextFlags
 from cvp.imgui.input_text_value import input_text_value
+from cvp.imgui.push_style_color import style_disable_input_context
+from cvp.imgui.spinner import spinner
 from cvp.renderer.context import Context
 from cvp.types.override import override
 
@@ -53,37 +57,20 @@ class Supabase(BasePreference):
         return int(flags)
 
     @property
-    def server_username(self) -> str:
+    def username(self) -> str:
         return self.context.server_username
 
-    @server_username.setter
-    def server_username(self, value: str) -> None:
+    @username.setter
+    def username(self, value: str) -> None:
         self.context.server_username = value
 
     @property
-    def server_password(self) -> str:
+    def password(self) -> str:
         return self.context.server_password
 
-    @server_password.setter
-    def server_password(self, value: str) -> None:
+    @password.setter
+    def password(self, value: str) -> None:
         self.context.server_password = value
-
-    @staticmethod
-    def spinner(label: str):
-        arc_radius = imgui.get_font_size() / 2.0
-        imspinner.spinner_arc_rotation(label, arc_radius, 2.0, arcs=2)
-
-    @staticmethod
-    def push_disable_style() -> None:
-        text_disabled = imgui.get_style_color_vec4(color_var.TEXT_DISABLED)
-        imgui.push_style_color(color_var.TEXT, text_disabled)
-
-        child_bg = imgui.get_style_color_vec4(color_var.CHILD_BG)
-        imgui.push_style_color(color_var.FRAME_BG, child_bg)
-
-    @staticmethod
-    def pop_disable_style() -> None:
-        imgui.pop_style_color(2)
 
     @override
     def do_process(self) -> None:
@@ -137,49 +124,33 @@ class Supabase(BasePreference):
         disabled_create: bool,
         disabled_remove: bool,
     ) -> None:
-        read_only_flag = READ_ONLY if has_client else 0
+        with style_disable_input_context(cancel=not has_client):
+            self.supabase_url = input_text_value(
+                label="Supabase URL",
+                value=self.supabase_url,
+                flags=READ_ONLY if has_client else 0,
+            )
 
-        if has_client:
-            self.push_disable_style()
+            next_supabase_key = input_text_value(
+                label="Supabase Key",
+                value=self.supabase_key,
+                flags=self.supabase_key_input_flags | (READ_ONLY if has_client else 0),
+            )
+            if self.supabase_key != next_supabase_key:
+                self.supabase_key = next_supabase_key
 
-        self.supabase_url = input_text_value(
-            "Supabase URL",
-            self.supabase_url,
-            read_only_flag,
-        )
-
-        prev_supabase_key = self.supabase_key
-        next_supabase_key = input_text_value(
-            "Supabase Key",
-            prev_supabase_key,
-            self.supabase_key_input_flags | read_only_flag,
-        )
-        if prev_supabase_key != next_supabase_key:
-            self.supabase_key = next_supabase_key
-
-        if has_client:
-            self.pop_disable_style()
-
-        show_supabase_key = imgui.checkbox("Show Supabase Key", self._show_supabase_key)
-        show_supabase_key_changed = show_supabase_key[0]
-        show_supabase_key_value = show_supabase_key[1]
-        assert isinstance(show_supabase_key_changed, bool)
-        assert isinstance(show_supabase_key_value, bool)
-        if show_supabase_key_changed:
-            self._show_supabase_key = show_supabase_key_value
+        if check_result := checkbox("Show Supabase Key", self._show_supabase_key):
+            self._show_supabase_key = check_result.state
 
         if button("Create client", disabled=disabled_create):
-            self.context.create_supabase_client(
-                self.supabase_url,
-                prev_supabase_key,
-            )
+            self.context.create_supabase_client(self.supabase_url, self.supabase_key)
         imgui.same_line()
         if button("Remove client", disabled=disabled_remove):
             self.context.remove_supabase_client()
 
         if running:
             imgui.same_line()
-            self.spinner("Create client running")
+            spinner("Create client running")
 
         if has_error:
             imgui.text_colored(self.context.error_color, error_message)
@@ -193,80 +164,87 @@ class Supabase(BasePreference):
         disabled_create: bool,
         disabled_remove: bool,
     ) -> None:
-        read_only_flag = READ_ONLY if has_session else 0
+        with style_disable_input_context(cancel=not has_session):
+            self.username = input_text_value(
+                label="Username",
+                value=self.username,
+                flags=READ_ONLY if has_session else 0,
+            )
 
-        if has_session:
-            self.push_disable_style()
+            next_server_password = input_text_value(
+                label="Password",
+                value=self.password,
+                flags=self.password_input_flags | (READ_ONLY if has_session else 0),
+            )
+            if self.password != next_server_password:
+                self.password = next_server_password
 
-        self.server_username = input_text_value(
-            "Username",
-            self.server_username,
-            read_only_flag,
-        )
-
-        prev_server_password = self.server_password
-        next_server_password = input_text_value(
-            "Password",
-            prev_server_password,
-            self.password_input_flags | read_only_flag,
-        )
-        if prev_server_password != next_server_password:
-            self.server_password = next_server_password
-
-        if has_session:
-            self.pop_disable_style()
-
-        show_password = imgui.checkbox("Show Password", self._show_password)
-        show_password_changed = show_password[0]
-        show_password_value = show_password[1]
-        assert isinstance(show_password_changed, bool)
-        assert isinstance(show_password_value, bool)
-        if show_password_changed:
-            self._show_password = show_password_value
+        if check_result := checkbox("Show Password", self._show_password):
+            self._show_password = check_result.state
 
         if button("Login", disabled=disabled_create):
-            self.context.create_supabase_session(
-                self.server_username,
-                prev_server_password,
-            )
+            self.context.create_supabase_session(self.username, self.password)
         imgui.same_line()
         if button("Force remove session", disabled=disabled_remove):
             self.context.remove_supabase_session()
 
         if running:
             imgui.same_line()
-            self.spinner("Create session running")
+            spinner("Create session running")
 
         if has_error:
             imgui.text_colored(self.context.error_color, error_message)
 
     def do_user_info_process(self, user: User) -> None:
-        self.push_disable_style()
-        try:
-            imgui.input_text("Email", str(user.email))
-            imgui.input_text("Phone", str(user.phone))
-            imgui.input_text("Created At", user.created_at.isoformat())
+        assert isinstance(user.id, str)
+        # app_metadata: Dict[str, Any]
+        # user_metadata: Dict[str, Any]
+        assert isinstance(user.aud, str)
+        # confirmation_sent_at: Optional[datetime] = None
+        # recovery_sent_at: Optional[datetime] = None
+        # email_change_sent_at: Optional[datetime] = None
+        # new_email: Optional[str] = None
+        # new_phone: Optional[str] = None
+        # invited_at: Optional[datetime] = None
+        # action_link: Optional[str] = None
 
-            confirmed_at = user.confirmed_at.isoformat() if user.confirmed_at else str()
+        email = user.email if user.email else str()
+        phone = user.phone if user.phone else str()
+
+        assert isinstance(user.created_at, datetime)
+        created_at = user.created_at.isoformat()
+
+        confirmed_at = user.confirmed_at.isoformat() if user.confirmed_at else str()
+
+        user_eca = user.email_confirmed_at
+        email_confirmed_at = user_eca.isoformat() if user_eca else str()
+
+        user_pca = user.phone_confirmed_at
+        phone_confirmed_at = user_pca.isoformat() if user_pca else str()
+
+        user_last = user.last_sign_in_at
+        last_sign_in_at = user_last.isoformat() if user_last else str()
+
+        role = user.role if user.role else str()
+        updated_at = user.updated_at.isoformat() if user.updated_at else str()
+
+        # identities: Optional[List[UserIdentity]] = None
+
+        assert isinstance(user.is_anonymous, bool)
+        is_anonymous = str(bool(user.is_anonymous))
+
+        # factors: Optional[List[Factor]] = None
+
+        with style_disable_input_context():
+            imgui.input_text("ID", user.id)
+            imgui.input_text("Audience", user.aud)
+            imgui.input_text("Email", email)
+            imgui.input_text("Phone", phone)
+            imgui.input_text("Created At", created_at)
             imgui.input_text("Confirmed At", confirmed_at)
-
-            e_confirmed_at = user.email_confirmed_at
-            email_confirmed_at = e_confirmed_at.isoformat() if e_confirmed_at else str()
             imgui.input_text("Email Confirmed At", email_confirmed_at)
-
-            p_confirmed_at = user.phone_confirmed_at
-            phone_confirmed_at = p_confirmed_at.isoformat() if p_confirmed_at else str()
             imgui.input_text("Phone Confirmed At", phone_confirmed_at)
-
-            l_sign_in_at = user.last_sign_in_at
-            last_sign_in_at = l_sign_in_at.isoformat() if l_sign_in_at else str()
             imgui.input_text("Last Sign In At", last_sign_in_at)
-
-            imgui.input_text("Role", str(user.role))
-
-            updated_at = user.updated_at.isoformat() if user.updated_at else str()
+            imgui.input_text("Role", role)
             imgui.input_text("Updated At", updated_at)
-
-            imgui.input_text("Is Anonymous", str(user.is_anonymous))
-        finally:
-            self.pop_disable_style()
+            imgui.input_text("Is Anonymous", is_anonymous)
