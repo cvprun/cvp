@@ -15,7 +15,7 @@ class Ollama(Serializable):
 
     @unique
     class _Keys(StrEnum):
-        name = auto()
+        name_ = auto()
         url = auto()
         headers = auto()
 
@@ -48,6 +48,7 @@ class Ollama(Serializable):
         result.name = copy(self.name)
         result.url = copy(self.url)
         result.headers = copy(self.headers)
+        result._model_names = copy(self._model_names)
         return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
@@ -58,13 +59,14 @@ class Ollama(Serializable):
         result.name = deepcopy(self.name, memo)
         result.url = deepcopy(self.url, memo)
         result.headers = deepcopy(self.headers, memo)
+        result._model_names = deepcopy(self._model_names, memo)
         memo[id(self)] = result
         return result
 
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.name): self.name,
+            str(self._Keys.name_): self.name,
             str(self._Keys.url): self.url,
             str(self._Keys.headers): self.headers,
         }
@@ -74,11 +76,13 @@ class Ollama(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.name = str(data.get(self._Keys.name, str()))
+        self.name = str(data.get(self._Keys.name_, str()))
         self.url = str(data.get(self._Keys.url, str()))
 
         headers = data.get(self._Keys.headers, {})
         self.headers = {str(k): str(v) for k, v in headers.items()}
+
+        self._model_names = list()
 
     @property
     def model_names(self):

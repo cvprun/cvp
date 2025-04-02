@@ -18,11 +18,15 @@ class OllamaManager(Dict[str, Ollama]):
         if reload:
             self.reload_all_files()
 
-    def read_serialized_object(self, *subpaths: str) -> Ollama:
-        return deserialize(self._path.read_object(*subpaths), Ollama)
+    @property
+    def path(self):
+        return self._path
 
-    def write_serialized_object(self, ollama: Ollama, *paths: str) -> int:
-        return self._path.write_object(serialize(ollama), *paths)
+    def read_serialized_object(self, filename: str) -> Ollama:
+        return deserialize(self._path.read_object(filename), Ollama)
+
+    def write_serialized_object(self, ollama: Ollama, filename: str) -> int:
+        return self._path.write_object(serialize(ollama), filename)
 
     def filenames(self) -> List[str]:
         return self._path.find_object_filenames()
@@ -33,6 +37,22 @@ class OllamaManager(Dict[str, Ollama]):
     def write_all_files(self) -> None:
         for filename, ollama in self.items():
             self.write_serialized_object(ollama, filename)
+
+    def write(self, filename: str) -> int:
+        ollama = self.__getitem__(filename)
+        return self.write_serialized_object(ollama, filename)
+
+    def read(self, filename: str):
+        ollama = self.read_serialized_object(filename)
+        self.__setattr__(filename, ollama)
+        return ollama
+
+    def remove(self, filename: str) -> None:
+        self.__delitem__(filename)
+        self._path.remove_object(filename)
+
+    def exists(self, filename: str) -> None:
+        return (self._path / filename).is_file()
 
     def reload_all_files(self) -> None:
         self.clear()

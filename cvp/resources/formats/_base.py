@@ -21,7 +21,12 @@ class FormatInterface(ABC):
 
 
 class BaseFormatPath(PathFlavour, FormatInterface):
-    def __init__(self, path: Union[str, PathLike[str]], extension: Optional[str] = None):
+    def __init__(
+        self,
+        path: Union[str, PathLike[str]],
+        *,
+        extension: Optional[str] = None,
+    ):
         super().__init__(path)
         self._extension = extension if extension else str()
 
@@ -40,7 +45,11 @@ class BaseFormatPath(PathFlavour, FormatInterface):
     def object_path(self, *subpaths: str):
         if not subpaths:
             raise ValueError("At least one path must be specified")
-        return Path(os.path.join(self, *subpaths) + self._extension)
+        path = os.path.join(self, *subpaths)
+        ext = os.path.splitext(path)[1]
+        if ext != self._extension:
+            path += self._extension
+        return Path(path)
 
     def has_object(self, *subpaths: str) -> bool:
         return self.object_path(*subpaths).is_file()
