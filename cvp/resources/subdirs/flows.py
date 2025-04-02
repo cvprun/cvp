@@ -13,13 +13,7 @@ class Flows(PathFlavour):
         super().__init__(path)
 
     def find_graph_files(self):
-        result = list()
-        for dirpath, dirnames, filenames in os.walk(self):
-            for filename in filenames:
-                extension = os.path.splitext(filename)[1].lower()
-                if extension in (".yml", ".yaml"):
-                    result.append(Path(os.path.join(dirpath, filename)))
-        return result
+        return self._find_files_with_extensions(".yml", ".yaml")
 
     def graph_filepath(self, uuid: str):
         return Path(self / f"{uuid}.yml")

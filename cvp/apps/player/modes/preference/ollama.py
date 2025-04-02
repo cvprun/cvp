@@ -1,50 +1,111 @@
 # -*- coding: utf-8 -*-
 
+from enum import StrEnum, auto, unique
 from typing import List
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
+from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.input_text_value import input_text_value
+from cvp.imgui.push_style_color import style_disable_input_context
+from cvp.imgui.text_centered import text_centered
+from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from ollama import Client, ListResponse
+from cvp.variables import (
+    DEFAULT_MAIN_LABEL,
+    DEFAULT_MENU_LABEL,
+    DEFAULT_MENU_WIDTH,
+    FULL_SIZE,
+)
 
 
-class Ollama(BasePreference):
-    _models: List[ListResponse.Model]
+class OllamaPreference(BasePreference):
+    @unique
+    class _OllamaCommand(StrEnum):
+        list_ = auto()
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._list_runner = context.pm.create_thread_runner(self._on_list_main)
-        self._models: List[ListResponse.Model] = list()
+        self._runner = context.pm.create_thread_runner(self._on_runner_main)
 
-    def _on_list_main(self, host: str):
-        client = Client(host=host)
-        response = client.list()
-        self._models = list(response.models)
+    @classmethod
+    @override
+    def get_menu_name(cls) -> str:
+        return "Ollama"
+
+    def _on_runner_main(self, ollama: Ollama, command: _OllamaCommand, *args: str):
+        match command:
+            case self._OllamaCommand.list_:
+                self.__on_list(ollama)
+            case _:
+                assert False, "Inaccessible section"
+
+    @staticmethod
+    def __on_list(ollama: Ollama):
+        response = ollama.client.list()
+        ollama.model_names = list(response.models)
 
     @property
-    def ollama_url(self) -> str:
-        return self.context.config.chat.ollama_url
+    def ollamas(self):
+        return self.context.ollamas
 
-    @ollama_url.setter
-    def ollama_url(self, value: str) -> None:
-        self.context.config.chat.ollama_url = value
+    @property
+    def selected(self) -> str:
+        return self.context.config.ollama.selected
+
+    @selected.setter
+    def selected(self, value: str) -> None:
+        self.context.config.ollama.selected = value
 
     @override
     def do_process(self) -> None:
-        list_running = self._list_runner.running
-        self.ollama_url = input_text_value("Ollama URL", self.ollama_url)
+        menu_label = DEFAULT_MENU_LABEL
+        main_label = DEFAULT_MAIN_LABEL
+        split_x = DEFAULT_MENU_WIDTH
 
-        if button("list", disabled=list_running):
-            assert not list_running
-            self._list_runner(self.ollama_url)
+        with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
+            if imgui.button("Reload"):
+                self.ollamas.reload_all_files()
+            imgui.same_line()
+            if imgui.button("New"):
+                self.selected = self.ollamas.add_new()[0]
+            imgui.same_line()
+            if button("Remove", disabled=self.selected not in self.ollamas):
+                del self.ollamas[self.selected]
 
-        if list_running:
-            return
+            if imgui.begin_list_box("###MenuList", FULL_SIZE):
+                try:
+                    for filename, ollama in self.ollamas.items():
+                        label = f"{ollama.name}###{filename}"
+                        if imgui.selectable(label, filename == self.selected)[1]:
+                            self.selected = filename
+                finally:
+                    imgui.end_list_box()
 
-        for model in self._models:
-            name = model.model if model.model else str()
-            imgui.text(name)
+        imgui.same_line()
+
+        with begin_child_context(main_label):
+            if ollama := self.ollamas.get(self.selected):
+                self.do_ollama_process(self.selected, ollama)
+            else:
+                text_centered("Please select a item")
+
+    def do_ollama_process(self, filename: str, ollama: Ollama) -> None:
+        running = self._runner.running
+        has_error = bool(self._runner.error)
+
+        imgui.text(ollama.name)
+        imgui.separator()
+
+        with style_disable_input_context():
+            input_text_value("Filename", filename)
+
+        ollama.name = input_text_value("Ollama Name", ollama.name)
+        ollama.url = input_text_value("Ollama URL", ollama.url)
+
+        for model_name in ollama.model_names:
+            imgui.text(model_name)

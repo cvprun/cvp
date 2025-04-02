@@ -108,11 +108,11 @@ class Context(ContextMixins):
             update=True,
         )
 
-        self._flow_manager = FlowManager(self._home)
-        self._flow_manager.refresh_flow_graphs()
+        self._ollamas = OllamaManager(self._home, reload=True)
+        self._flows = FlowManager(self._home)
+        self._flows.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
         self._supabase = Supabase()
-        self._ollamas = OllamaManager()
 
         pm = self._process_manager
 
@@ -147,8 +147,12 @@ class Context(ContextMixins):
         return self._msg_queue
 
     @property
+    def ollamas(self):
+        return self._ollamas
+
+    @property
     def fm(self):
-        return self._flow_manager
+        return self._flows
 
     @property
     def keyring(self):
@@ -207,11 +211,11 @@ class Context(ContextMixins):
             debug=self.debug,
             verbose=self.verbose,
         )
-        self._flow_manager.runners[graph.key] = runner
+        self._flows.runners[graph.key] = runner
         return runner
 
     def stop_all_flow_runners(self) -> None:
-        self._flow_manager.stop_all_runners()
+        self._flows.stop_all_runners()
 
     def teardown_process_manager(self) -> None:
         timeout = self._config.process_manager.teardown_timeout
@@ -223,9 +227,9 @@ class Context(ContextMixins):
 
     def save_graph(self, graph: FlowGraph) -> None:
         filepath = self._home.flows.graph_filepath(graph.key)
-        self._flow_manager.write_graph_yaml(filepath, graph)
+        self._flows.write_graph_yaml(filepath, graph)
         logger.info(f"Save the graph file: '{str(filepath)}'")
 
     def save_graphs(self) -> None:
-        for graph in self._flow_manager.graphs.values():
+        for graph in self._flows.graphs.values():
             self.save_graph(graph)

@@ -11,7 +11,7 @@ from cvp.types.override import override
 
 class JsonFormatPath(BaseFormatPath):
     def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path, suffix=".json")
+        super().__init__(path, extension=".json")
 
     @override
     def dumps(self, data: Any) -> bytes:

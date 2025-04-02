@@ -55,11 +55,11 @@ class ChatMode(BaseMode):
 
     @property
     def chat_ollama_url(self) -> str:
-        return self.context.config.chat.ollama_url
+        return self.context.config.ollama.ollama_url
 
     @chat_ollama_url.setter
     def chat_ollama_url(self, value: str) -> None:
-        self.context.config.chat.ollama_url = value
+        self.context.config.ollama.ollama_url = value
 
     @override
     def do_process(self) -> None:

@@ -5,6 +5,9 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 
 from cvp.context.context import Context
+
+# noinspection PyProtectedMember
+from cvp.context.mixins._base import BaseContextMixin
 from cvp.inspect.member import get_attribute_keys
 from cvp.logging.disable import disable_logging
 
@@ -22,15 +25,13 @@ class ContextTestCase(TestCase):
             self.assertTrue(os.path.isdir(tmpdir))
             with disable_logging():
                 context = Context(tmpdir)
+
+            self.assertIsInstance(context, BaseContextMixin)
+            member_names = list(BaseContextMixin.__annotations__.keys())
             attrs = {key: getattr(context, key) for key in get_attribute_keys(context)}
-            self.assertIsNotNone(attrs.pop("_home"))
-            self.assertIsNotNone(attrs.pop("_config"))
-            self.assertIsNotNone(attrs.pop("_done"))
-            self.assertIsNotNone(attrs.pop("_process_manager"))
-            self.assertIsNotNone(attrs.pop("_onvif_manager"))
-            self.assertIsNotNone(attrs.pop("_flow_manager"))
-            self.assertIsNotNone(attrs.pop("_msg_queue"))
-            self.assertIsNotNone(attrs.pop("_supabase"))
+            while member_names:
+                attrs.pop(member_names.pop())
+            self.assertFalse(member_names)
 
 
 if __name__ == "__main__":
