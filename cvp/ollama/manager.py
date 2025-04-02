@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from type_serialize import deserialize, serialize
 
+from cvp.logging.logging import logger
 from cvp.ollama.ollama import Ollama
 from cvp.resources.home import HomeDir
 from cvp.variables import DEFAULT_OLLAMA_ADDRESS, DEFAULT_OLLAMA_NAME
@@ -23,10 +24,14 @@ class OllamaManager(Dict[str, Ollama]):
         return self._path
 
     def read_serialized_object(self, filename: str) -> Ollama:
-        return deserialize(self._path.read_object(filename), Ollama)
+        result = deserialize(self._path.read_object(filename), Ollama)
+        logger.info(f"Read from ollama config file: '{filename}'")
+        return result
 
     def write_serialized_object(self, ollama: Ollama, filename: str) -> int:
-        return self._path.write_object(serialize(ollama), filename)
+        result = self._path.write_object(serialize(ollama), filename)
+        logger.info(f"Wrote to ollama config file: '{filename}'")
+        return result
 
     def filenames(self) -> List[str]:
         return self._path.find_object_filenames()
@@ -50,6 +55,7 @@ class OllamaManager(Dict[str, Ollama]):
     def remove(self, filename: str) -> None:
         self.__delitem__(filename)
         self._path.remove_object(filename)
+        logger.info(f"Removed ollama config file: '{filename}'")
 
     def exists(self, filename: str) -> None:
         return (self._path / filename).is_file()

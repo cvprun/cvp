@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Deque
+from typing import Deque, Optional, Union
 
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType, MsgTypeLike
@@ -27,5 +27,5 @@ class MsgQueue(Deque[Msg]):
         self.append(msg)
         return msg
 
-    def append_toast(self, message: str):
-        return self.append_msg(MsgType.toast, message=message)
+    def append_toast(self, message: str, level: Optional[Union[int, str]] = None):
+        return self.append_msg(MsgType.toast, message=message, level=level)

@@ -10,13 +10,14 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.input_text import InputTextFlags
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE
+from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE, NOT_FOUND_INDEX
 
 
 class OllamaPreference(BasePreference):
@@ -102,12 +103,18 @@ class OllamaPreference(BasePreference):
         exists_path = self.ollamas.exists(filename)
         if button("Save"):
             self.ollamas.write(filename)
+            self.context.mq.append_toast("Save ollama file")
+
         imgui.same_line()
         if button("Load", disabled=not exists_path):
             self.ollamas.read(filename)
+            self.context.mq.append_toast("Load ollama file")
+
         imgui.same_line()
         if button("Remove", disabled=not exists_path):
             self.ollamas.remove(filename)
+            self.context.mq.append_toast("Remove ollama file")
+
         if not exists_path:
             imgui.same_line()
             imgui.text_colored(self.context.warning_color, "The file does not exist")
@@ -116,18 +123,43 @@ class OllamaPreference(BasePreference):
         ollama.url = input_text_value("Ollama URL", ollama.url)
 
         imgui.text("Headers")
+        imgui.same_line()
+        if imgui.small_button("Add"):
+            ollama.headers.append((str(), str()))
 
-        if imgui.begin_table("Headers", 2, ONVIF_TABLE_FLAGS):
+        if imgui.begin_table("Headers", 3, ONVIF_TABLE_FLAGS):
             try:
-                imgui.table_setup_column("Key")
-                imgui.table_setup_column("Value")
+                imgui.table_setup_column("Key", table_column.WIDTH_STRETCH)
+                imgui.table_setup_column("Value", table_column.WIDTH_STRETCH)
+                imgui.table_setup_column("Action", table_column.WIDTH_FIXED)
                 imgui.table_headers_row()
-                for key, value in ollama.headers.items():
+
+                remove_index = NOT_FOUND_INDEX
+                for i in range(len(ollama.headers)):
+                    key, value = ollama.headers[i]
+
                     imgui.table_next_row()
+
                     imgui.table_set_column_index(0)
-                    imgui.text(key)
+                    imgui.set_next_item_width(-1)
+                    key_result = imgui.input_text(f"###HeaderKey{i}", key)
+                    if key_result[0]:
+                        ollama.headers[i] = key_result[1], value
+
                     imgui.table_set_column_index(1)
-                    imgui.text(value)
+                    imgui.set_next_item_width(-1)
+                    val_result = imgui.input_text(f"###HeaderValue{i}", value)
+                    if val_result[0]:
+                        ollama.headers[i] = key, val_result[1]
+
+                    imgui.table_set_column_index(2)
+                    if imgui.button(f"Remove###Remove{i}"):
+                        remove_index = i
+
+                if remove_index != NOT_FOUND_INDEX:
+                    ollama.headers.pop(remove_index)
+
+                imgui.get_column_width(0)
             finally:
                 imgui.end_table()
 
