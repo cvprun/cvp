@@ -18,7 +18,7 @@ class DragFloat2Result(NamedTuple):
         clicked = result[0]
         values = result[1]
         assert isinstance(clicked, bool)
-        assert isinstance(values, tuple)
+        assert isinstance(values, (tuple, list))
         assert len(values) == 2
         v0 = values[0]
         v1 = values[1]

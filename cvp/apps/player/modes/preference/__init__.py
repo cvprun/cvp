@@ -33,6 +33,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
     from cvp.apps.player.modes.preference.resource import Resource
     from cvp.apps.player.modes.preference.supabase import Supabase
+    from cvp.apps.player.modes.preference.toast import Toast
 
     return (
         Appearance,
@@ -40,6 +41,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         OllamaPreference,
         Resource,
         Supabase,
+        Toast,
     )
 
 

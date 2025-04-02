@@ -17,6 +17,7 @@ from pygame.image import load as load_image
 from pygame.key import ScancodeWrapper, get_pressed
 
 from cvp.apps.player.modes import create_modes
+from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
 from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
@@ -47,7 +48,9 @@ class PlayerApplication:
     def __init__(self, context: Context):
         self._context = context
         self._profiler = ProfileLogging(profile_logger)
-        self._world = World(self._context)
+
+        self._toast = ToastWindow(context)
+        self._world = World(context)
 
         self._renderer = None
         self._font_normal = None
@@ -65,7 +68,7 @@ class PlayerApplication:
         suffix_menus = {"Tools": self.on_tools_menu, "Windows": self.on_windows_menu}
         self._suffix_menus = OrderedDict(suffix_menus)
 
-        self._modes = create_modes(self._context)
+        self._modes = create_modes(context)
         self._default_mode = self._modes[AppMode.dashboard]
 
     @property
@@ -327,7 +330,7 @@ class PlayerApplication:
     def on_msg_fallback(self, msg: Msg) -> None:
         assert self
         if msg.mtype == MsgType.toast:
-            pass
+            self._toast.show(**msg.as_args())
 
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
@@ -398,6 +401,7 @@ class PlayerApplication:
                 self.on_style_editor_window()
                 self.on_demo_window()
 
+            self._toast.on_process()
             self._world.on_process(imgui.get_io().delta_time)
         finally:
             # Cannot use `screen.fill((1, 1, 1))` because pygame's screen does not

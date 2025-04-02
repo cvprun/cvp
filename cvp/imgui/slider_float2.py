@@ -16,7 +16,7 @@ class SliderFloat2Result(NamedTuple):
         changed = result[0]
         value = result[1]
         assert isinstance(changed, bool)
-        assert isinstance(value, tuple)
+        assert isinstance(value, (tuple, list))
         assert len(value) == 2
         value0, value1 = value
         assert isinstance(value0, float)
