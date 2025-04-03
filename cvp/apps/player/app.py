@@ -3,6 +3,8 @@
 import os
 from collections import OrderedDict
 from io import StringIO
+from os import PathLike
+from pathlib import Path
 from typing import Callable, Optional, Tuple
 from warnings import catch_warnings
 
@@ -19,6 +21,8 @@ from pygame.key import ScancodeWrapper, get_pressed
 from cvp.apps.player.modes import create_modes
 from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
+from cvp.chrono.filename import short_datetime_name
+from cvp.chrono.tznow import tznow
 from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
@@ -33,6 +37,7 @@ from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
 from cvp.popups.confirm import ConfirmPopup
+from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
 from cvp.variables import DEFAULT_FONT_NAME
@@ -65,7 +70,11 @@ class PlayerApplication:
         prefix_menus = {"File": self.on_file_menu, "Mode": self.on_mode_menu}
         self._prefix_menus = OrderedDict(prefix_menus)
 
-        suffix_menus = {"Tools": self.on_tools_menu, "Windows": self.on_windows_menu}
+        suffix_menus = {
+            "Tools": self.on_tools_menu,
+            "Windows": self.on_windows_menu,
+            "Help": self.on_help_menu,
+        }
         self._suffix_menus = OrderedDict(suffix_menus)
 
         self._modes = create_modes(context)
@@ -354,6 +363,10 @@ class PlayerApplication:
             self._confirm_quit.show()
             return
 
+        if not m_shift and m_ctrl and m_alt and keys[pygame.K_p]:
+            self.save_screenshot()
+            return
+
         # TODO: You will need to restore it later.
         # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
         #     self._pref_manager.opened = True
@@ -519,6 +532,11 @@ class PlayerApplication:
             if menu_item("Demo", self.config.developer.show_demo):
                 self.config.developer.flip_show_demo()
 
+    def on_help_menu(self) -> None:
+        assert self
+        if menu_item("Screenshot", shortcut="Ctrl+Alt+P"):
+            self.save_screenshot()
+
     def on_main_menu(self) -> None:
         if imgui.begin_main_menu_bar():
             try:
@@ -571,3 +589,15 @@ class PlayerApplication:
             return
         if not imgui.show_demo_window(True):
             self.config.developer.show_demo = False
+
+    def save_screenshot(self, filename: Optional[PathLike[str]] = None) -> None:
+        if filename is None:
+            filename = Path.home() / f"cvp-{short_datetime_name(tznow())}.png"
+        try:
+            save_screenshot(filename, channels=3)
+            message = f"Screenshot saved: {str(filename)}"
+            logger.info(message)
+            self._context.mq.append_toast(message)
+        except BaseException as e:
+            logger.error(f"Error saving screenshot: {e}")
+            self._context.mq.append_toast("Failed to save screenshot")

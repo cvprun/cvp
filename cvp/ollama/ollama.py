@@ -128,3 +128,7 @@ class Ollama(Serializable):
             # transport: BaseTransport | None = None,
             # default_encoding: str | typing.Callable[[bytes], str] = "utf-8",
         )
+
+    def update_model_names(self):
+        self.model_names = list(m.model for m in self.client.list().models if m.model)
+        return self.model_names.copy()

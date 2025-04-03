@@ -39,13 +39,9 @@ class OllamaPreference(BasePreference):
     def _on_runner_main(self, ollama: Ollama, command: _OllamaCommand, *args: str):
         match command:
             case self._OllamaCommand.list_:
-                self.__on_list(ollama)
+                ollama.update_model_names()
             case _:
                 assert False, "Inaccessible section"
-
-    @staticmethod
-    def __on_list(ollama: Ollama):
-        ollama.model_names = list(ollama.client.list().models)
 
     @property
     def ollamas(self):
@@ -104,12 +100,6 @@ class OllamaPreference(BasePreference):
         ollama.name = input_text_value("Ollama Name", ollama.name)
         ollama.url = input_text_value("Ollama URL", ollama.url)
 
-        if redirect_result := checkbox("Follow redirects", ollama.follow_redirects):
-            ollama.follow_redirects = redirect_result.state
-
-        if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
-            ollama.timeout = timeout_result.value
-
         imgui.text("Headers")
         imgui.same_line()
         if imgui.small_button("Add"):
@@ -123,6 +113,7 @@ class OllamaPreference(BasePreference):
                 imgui.table_headers_row()
 
                 remove_index = NOT_FOUND_INDEX
+
                 for i in range(len(ollama.headers)):
                     key, value = ollama.headers[i]
 
@@ -141,7 +132,7 @@ class OllamaPreference(BasePreference):
                         ollama.headers[i] = key, val_result[1]
 
                     imgui.table_set_column_index(2)
-                    if imgui.button(f"Remove###Remove{i}"):
+                    if imgui.button(f"Del###Del{i}"):
                         remove_index = i
 
                 if remove_index != NOT_FOUND_INDEX:
@@ -150,6 +141,12 @@ class OllamaPreference(BasePreference):
                 imgui.get_column_width(0)
             finally:
                 imgui.end_table()
+
+        if redirect_result := checkbox("Follow redirects", ollama.follow_redirects):
+            ollama.follow_redirects = redirect_result.state
+
+        if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
+            ollama.timeout = timeout_result.value
 
         imgui.separator()
 
