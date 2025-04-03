@@ -4,37 +4,44 @@ from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
+from httpx import Timeout
 from type_serialize import Serializable
 
 from cvp.types.override import override
+from cvp.variables import DEFAULT_OLLAMA_TIMEOUT
 from ollama import Client
 
 
 class Ollama(Serializable):
-    _model_names: List[str]
+    model_names: List[str]
 
     @unique
     class _Keys(StrEnum):
         name_ = "name"
         url = auto()
         headers = auto()
+        follow_redirects = auto()
+        timeout = auto()
+        model_names = auto()
 
     def __init__(
         self,
         name: Optional[str] = None,
         url: Optional[str] = None,
         headers: Optional[Sequence[Tuple[str, str]]] = None,
+        follow_redirects=True,
+        timeout=DEFAULT_OLLAMA_TIMEOUT,
+        model_names: Optional[Sequence[str]] = None,
     ):
         self.name = name if name else str()
         self.url = url if url else str()
         self.headers = list(headers if headers else ())
-        self._model_names = list()
+        self.follow_redirects = follow_redirects
+        self.timeout = timeout
+        self.model_names = list(model_names if model_names else ())
 
     def header_as_dict(self) -> Dict[str, str]:
         return {str(k): str(v) for k, v in self.headers}
-
-    def header_as_list(self) -> List[List[str]]:
-        return [[str(k), str(v)] for k, v in self.headers]
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
@@ -43,7 +50,9 @@ class Ollama(Serializable):
             self.name == other.name
             and self.url == other.url
             and self.headers == other.headers
-            and self._model_names == other._model_names
+            and self.follow_redirects == other.follow_redirects
+            and self.timeout == other.timeout
+            and self.model_names == other.model_names
         )
 
     def __copy__(self):
@@ -52,7 +61,9 @@ class Ollama(Serializable):
         result.name = copy(self.name)
         result.url = copy(self.url)
         result.headers = copy(self.headers)
-        result._model_names = copy(self._model_names)
+        result.follow_redirects = copy(self.follow_redirects)
+        result.timeout = copy(self.timeout)
+        result.model_names = copy(self.model_names)
         return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
@@ -63,7 +74,9 @@ class Ollama(Serializable):
         result.name = deepcopy(self.name, memo)
         result.url = deepcopy(self.url, memo)
         result.headers = deepcopy(self.headers, memo)
-        result._model_names = deepcopy(self._model_names, memo)
+        result.follow_redirects = deepcopy(self.follow_redirects, memo)
+        result.timeout = deepcopy(self.timeout, memo)
+        result.model_names = deepcopy(self.model_names, memo)
         memo[id(self)] = result
         return result
 
@@ -72,7 +85,10 @@ class Ollama(Serializable):
         return {
             str(self._Keys.name_): self.name,
             str(self._Keys.url): self.url,
-            str(self._Keys.headers): self.header_as_list(),
+            str(self._Keys.headers): self.header_as_dict(),
+            str(self._Keys.follow_redirects): self.follow_redirects,
+            str(self._Keys.timeout): self.timeout,
+            str(self._Keys.model_names): self.model_names,
         }
 
     @override
@@ -82,28 +98,19 @@ class Ollama(Serializable):
 
         self.name = str(data.get(self._Keys.name_, str()))
         self.url = str(data.get(self._Keys.url, str()))
-        self.headers = data.get(self._Keys.headers, list())
-
-        self._model_names = list()
-
-    @property
-    def model_names(self):
-        return self._model_names
-
-    @model_names.setter
-    def model_names(self, value: List[str]):
-        self._model_names = value
+        headers = data.get(self._Keys.headers, dict())
+        self.headers = list((str(k), str(v)) for k, v in headers.items())
+        self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
+        self.timeout = float(data.get(self._Keys.timeout, DEFAULT_OLLAMA_TIMEOUT))
+        self.model_names = data.get(self._Keys.model_names, list())
 
     @property
     def client(self):
         return Client(
             host=self.url,
-            headers=self.header_as_dict(),
-            follow_redirects=True,
-            timeout=None,
             # auth: AuthTypes | None = None,
             # params: QueryParamTypes | None = None,
-            # headers: HeaderTypes | None = None,
+            headers=self.header_as_dict(),
             # cookies: CookieTypes | None = None,
             # verify: ssl.SSLContext | str | bool = True,
             # cert: CertTypes | None = None,
@@ -112,8 +119,8 @@ class Ollama(Serializable):
             # http2: bool = False,
             # proxy: ProxyTypes | None = None,
             # mounts: None | (typing.Mapping[str, BaseTransport | None]) = None,
-            # timeout: TimeoutTypes = DEFAULT_TIMEOUT_CONFIG,
-            # follow_redirects: bool = False,
+            timeout=Timeout(self.timeout),
+            follow_redirects=self.follow_redirects,
             # limits: Limits = DEFAULT_LIMITS,
             # max_redirects: int = DEFAULT_MAX_REDIRECTS,
             # event_hooks: None | (typing.Mapping[str, list[EventHook]]) = None,

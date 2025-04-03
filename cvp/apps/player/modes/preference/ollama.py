@@ -8,10 +8,12 @@ from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
+from cvp.imgui.checkbox import checkbox
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import InputTextFlags
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
+from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
@@ -43,8 +45,7 @@ class OllamaPreference(BasePreference):
 
     @staticmethod
     def __on_list(ollama: Ollama):
-        response = ollama.client.list()
-        ollama.model_names = list(response.models)
+        ollama.model_names = list(ollama.client.list().models)
 
     @property
     def ollamas(self):
@@ -100,27 +101,14 @@ class OllamaPreference(BasePreference):
         with style_disable_input_context():
             input_text_value("Filename", filename)
 
-        exists_path = self.ollamas.exists(filename)
-        if button("Save"):
-            self.ollamas.write(filename)
-            self.context.mq.append_toast("Save ollama file")
-
-        imgui.same_line()
-        if button("Load", disabled=not exists_path):
-            self.ollamas.read(filename)
-            self.context.mq.append_toast("Load ollama file")
-
-        imgui.same_line()
-        if button("Remove", disabled=not exists_path):
-            self.ollamas.remove(filename)
-            self.context.mq.append_toast("Remove ollama file")
-
-        if not exists_path:
-            imgui.same_line()
-            imgui.text_colored(self.context.warning_color, "The file does not exist")
-
         ollama.name = input_text_value("Ollama Name", ollama.name)
         ollama.url = input_text_value("Ollama URL", ollama.url)
+
+        if redirect_result := checkbox("Follow redirects", ollama.follow_redirects):
+            ollama.follow_redirects = redirect_result.state
+
+        if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
+            ollama.timeout = timeout_result.value
 
         imgui.text("Headers")
         imgui.same_line()
@@ -162,6 +150,27 @@ class OllamaPreference(BasePreference):
                 imgui.get_column_width(0)
             finally:
                 imgui.end_table()
+
+        imgui.separator()
+
+        exists_path = self.ollamas.exists(filename)
+        if button("Save"):
+            self.ollamas.write(filename)
+            self.context.mq.append_toast("Save ollama file")
+
+        imgui.same_line()
+        if button("Load", disabled=not exists_path):
+            self.ollamas.read(filename)
+            self.context.mq.append_toast("Load ollama file")
+
+        imgui.same_line()
+        if button("Remove", disabled=not exists_path):
+            self.ollamas.remove(filename)
+            self.context.mq.append_toast("Remove ollama file")
+
+        if not exists_path:
+            imgui.same_line()
+            imgui.text_colored(self.context.warning_color, "The file does not exist")
 
         for model_name in ollama.model_names:
             imgui.text(model_name)
