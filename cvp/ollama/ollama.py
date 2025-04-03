@@ -32,6 +32,8 @@ class Ollama(Serializable):
         follow_redirects=True,
         timeout=DEFAULT_OLLAMA_TIMEOUT,
         model_names: Optional[Sequence[str]] = None,
+        *,
+        error: Optional[BaseException] = None,
     ):
         self.name = name if name else str()
         self.url = url if url else str()
@@ -39,6 +41,7 @@ class Ollama(Serializable):
         self.follow_redirects = follow_redirects
         self.timeout = timeout
         self.model_names = list(model_names if model_names else ())
+        self._error = error
 
     def header_as_dict(self) -> Dict[str, str]:
         return {str(k): str(v) for k, v in self.headers}
@@ -53,6 +56,7 @@ class Ollama(Serializable):
             and self.follow_redirects == other.follow_redirects
             and self.timeout == other.timeout
             and self.model_names == other.model_names
+            and self._error == other._error
         )
 
     def __copy__(self):
@@ -64,6 +68,7 @@ class Ollama(Serializable):
         result.follow_redirects = copy(self.follow_redirects)
         result.timeout = copy(self.timeout)
         result.model_names = copy(self.model_names)
+        result._error = copy(self._error)
         return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
@@ -77,6 +82,7 @@ class Ollama(Serializable):
         result.follow_redirects = deepcopy(self.follow_redirects, memo)
         result.timeout = deepcopy(self.timeout, memo)
         result.model_names = deepcopy(self.model_names, memo)
+        result._error = deepcopy(self._error, memo)
         memo[id(self)] = result
         return result
 
@@ -103,6 +109,15 @@ class Ollama(Serializable):
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
         self.timeout = float(data.get(self._Keys.timeout, DEFAULT_OLLAMA_TIMEOUT))
         self.model_names = data.get(self._Keys.model_names, list())
+        self._error = None
+
+    @property
+    def has_error(self) -> bool:
+        return self._error is not None
+
+    @property
+    def error(self) -> Optional[BaseException]:
+        return self._error
 
     @property
     def client(self):

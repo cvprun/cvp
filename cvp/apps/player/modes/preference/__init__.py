@@ -62,11 +62,11 @@ class PreferenceMode(BaseMode):
 
     @property
     def selected(self) -> str:
-        return self.context.config.preference_manager.selected
+        return self.context.config.preference_manager.selected_menu
 
     @selected.setter
     def selected(self, value: str) -> None:
-        self.context.config.preference_manager.selected = value
+        self.context.config.preference_manager.selected_menu = value
 
     @override
     def do_process(self) -> None:

@@ -284,6 +284,7 @@ class PlayerApplication:
         imgui.save_ini_settings_to_disk(str(self.home.gui_ini))
 
         self._context.save_graphs()
+        self._context.save_ollamas()
 
         assert self._renderer is not None
         del self._renderer
@@ -533,7 +534,6 @@ class PlayerApplication:
                 self.config.developer.flip_show_demo()
 
     def on_help_menu(self) -> None:
-        assert self
         if menu_item("Screenshot", shortcut="Ctrl+Alt+P"):
             self.save_screenshot()
 

@@ -233,3 +233,6 @@ class Context(ContextMixins):
     def save_graphs(self) -> None:
         for graph in self._flows.graphs.values():
             self.save_graph(graph)
+
+    def save_ollamas(self) -> None:
+        self._ollamas.write_all_files()

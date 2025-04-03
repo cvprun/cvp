@@ -7,4 +7,4 @@ from cvp.config.sections.bases.sidebar import SidebarWindowConfig
 
 @dataclass
 class ManagerWindowConfig(SidebarWindowConfig):
-    selected: str = field(default_factory=str)
+    pass

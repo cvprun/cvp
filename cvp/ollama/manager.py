@@ -12,12 +12,12 @@ from cvp.variables import DEFAULT_OLLAMA_ADDRESS, DEFAULT_OLLAMA_NAME
 
 
 class OllamaManager(Dict[str, Ollama]):
-    def __init__(self, home: HomeDir, *, reload=False):
+    def __init__(self, home: HomeDir, *, reload=False, raise_errors=False):
         super().__init__()
         self._path = home.ollamas
 
         if reload:
-            self.reload_all_files()
+            self.reload_all_files(raise_errors=raise_errors)
 
     @property
     def path(self):
@@ -36,11 +36,28 @@ class OllamaManager(Dict[str, Ollama]):
     def filenames(self) -> List[str]:
         return self._path.find_object_filenames()
 
-    def read_all_files(self) -> Dict[str, Ollama]:
-        return {name: self.read_serialized_object(name) for name in self.filenames()}
+    def read_all_files(self, *, raise_errors=False) -> Dict[str, Ollama]:
+        result = dict()
+        for filename in self.filenames():
+            try:
+                result[filename] = self.read_serialized_object(filename)
+            except BaseException as e:
+                if raise_errors:
+                    raise
+                else:
+                    logger.error(f"Failed to read ollama file: '{filename}'")
+                    result[filename] = Ollama(error=e)
+        return result
 
     def write_all_files(self) -> None:
         for filename, ollama in self.items():
+            if ollama.has_error:
+                logger.warning(
+                    f"Skip write ollama file: '{filename}'"
+                    f" because has error: {ollama.error}"
+                )
+                continue
+
             self.write_serialized_object(ollama, filename)
 
     def write(self, filename: str) -> int:
@@ -60,9 +77,9 @@ class OllamaManager(Dict[str, Ollama]):
     def exists(self, filename: str) -> None:
         return (self._path / filename).is_file()
 
-    def reload_all_files(self) -> None:
+    def reload_all_files(self, *, raise_errors=False) -> None:
         self.clear()
-        self.update(self.read_all_files())
+        self.update(self.read_all_files(raise_errors=raise_errors))
 
     def add_new(
         self,

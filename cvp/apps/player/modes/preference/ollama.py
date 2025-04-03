@@ -19,7 +19,7 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE, NOT_FOUND_INDEX
+from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE, NOT_FOUND_INDEX, FULL_HEIGHT, FULL_WIDTH
 
 
 class OllamaPreference(BasePreference):
@@ -47,13 +47,25 @@ class OllamaPreference(BasePreference):
     def ollamas(self):
         return self.context.ollamas
 
-    @property
-    def selected(self) -> str:
-        return self.context.config.ollama.selected
+    __selected_filename_key__ = "filename"
 
-    @selected.setter
-    def selected(self, value: str) -> None:
-        self.context.config.ollama.selected = value
+    @property
+    def selected_filename(self) -> str:
+        return self.get_selected(self.__selected_filename_key__)
+
+    @selected_filename.setter
+    def selected_filename(self, value: str) -> None:
+        self.set_selected(self.__selected_filename_key__, value)
+
+    __selected_api_key__ = "api"
+
+    @property
+    def selected_api(self) -> str:
+        return self.get_selected(self.__selected_api_key__)
+
+    @selected_api.setter
+    def selected_api(self, value: str) -> None:
+        self.set_selected(self.__selected_api_key__, value)
 
     @override
     def do_process(self) -> None:
@@ -64,38 +76,57 @@ class OllamaPreference(BasePreference):
             if imgui.button("Reload"):
                 self.ollamas.reload_all_files()
             imgui.same_line()
-            if imgui.button("New"):
-                self.selected = self.ollamas.add_new()[0]
+            if imgui.button("Add"):
+                self.selected_filename = self.ollamas.add_new()[0]
             imgui.same_line()
-            if button("Remove", disabled=self.selected not in self.ollamas):
-                del self.ollamas[self.selected]
+            if button("Del", disabled=self.selected_filename not in self.ollamas):
+                del self.ollamas[self.selected_filename]
 
             if imgui.begin_list_box("##List", FULL_SIZE):
                 try:
                     for filename, ollama in self.ollamas.items():
                         label = f"{ollama.name}###{filename}"
-                        if imgui.selectable(label, filename == self.selected)[1]:
-                            self.selected = filename
+                        selected = filename == self.selected_filename
+                        if imgui.selectable(label, selected)[1]:
+                            self.selected_filename = filename
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if ollama := self.ollamas.get(self.selected):
-                self.do_ollama_process(self.selected, ollama)
+            if ollama := self.ollamas.get(self.selected_filename):
+                if imgui.begin_tab_bar("MainTabBar"):
+                    try:
+                        if imgui.begin_tab_item("Config")[0]:
+                            try:
+                                self.do_ollama_config(self.selected_filename, ollama)
+                            finally:
+                                imgui.end_tab_item()
+
+                        if imgui.begin_tab_item("APIs")[0]:
+                            try:
+                                self.do_ollama_apis(self.selected_filename, ollama)
+                            finally:
+                                imgui.end_tab_item()
+                    finally:
+                        imgui.end_tab_bar()
             else:
                 text_centered("Please select a item")
 
-    def do_ollama_process(self, filename: str, ollama: Ollama) -> None:
-        running = self._runner.running
-        has_error = bool(self._runner.error)
-
+    def do_ollama_config(self, filename: str, ollama: Ollama) -> None:
         imgui.text(ollama.name)
         imgui.separator()
 
         with style_disable_input_context():
             input_text_value("Filename", filename)
+
+        if ollama.has_error:
+            imgui.text_colored(self.context.error_color, str(ollama.error))
+            if button("Remove"):
+                self.ollamas.remove(filename)
+                self.context.mq.append_toast("Remove ollama file")
+            return
 
         ollama.name = input_text_value("Ollama Name", ollama.name)
         ollama.url = input_text_value("Ollama URL", ollama.url)
@@ -171,3 +202,21 @@ class OllamaPreference(BasePreference):
 
         for model_name in ollama.model_names:
             imgui.text(model_name)
+
+    def do_ollama_apis(self, filename: str, ollama: Ollama) -> None:
+        running = self._runner.running
+        has_error = bool(self._runner.error)
+
+        if imgui.begin_list_box("##APIList", (DEFAULT_MENU_WIDTH, FULL_HEIGHT)):
+            try:
+                if imgui.selectable("list", self.selected_api == "list")[0]:
+                    self.selected_api = "list"
+                if imgui.selectable("ps", self.selected_api == "ps")[0]:
+                    self.selected_api = "ps"
+            finally:
+                imgui.end_list_box()
+
+        imgui.same_line()
+
+        with begin_child_context("APIMain", FULL_WIDTH, FULL_HEIGHT):
+            pass
