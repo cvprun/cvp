@@ -18,12 +18,7 @@ from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import Context
 from cvp.types.override import override
-from cvp.variables import (
-    DEFAULT_MAIN_LABEL,
-    DEFAULT_MENU_LABEL,
-    DEFAULT_MENU_WIDTH,
-    FULL_SIZE,
-)
+from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE
 
 
 @lru_cache
@@ -61,11 +56,11 @@ class PreferenceMode(BaseMode):
         return AppMode.preference
 
     @property
-    def selected(self) -> str:
+    def selected_menu(self) -> str:
         return self.context.config.preference_manager.selected_menu
 
-    @selected.setter
-    def selected(self, value: str) -> None:
+    @selected_menu.setter
+    def selected_menu(self, value: str) -> None:
         self.context.config.preference_manager.selected_menu = value
 
     @override
@@ -78,26 +73,24 @@ class PreferenceMode(BaseMode):
         finally:
             imgui.pop_style_var()
 
-    def do_child_process(
-        self,
-        menu_label=DEFAULT_MENU_LABEL,
-        main_label=DEFAULT_MAIN_LABEL,
-        split_x=DEFAULT_MENU_WIDTH,
-    ):
-        with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
+    def do_child_process(self):
+        width = DEFAULT_MENU_WIDTH
+        child_flags = RESIZE_X | BORDERS
+
+        with begin_child_context("Menu", width, child_flags=child_flags):
             if imgui.begin_list_box("###MenuList", FULL_SIZE):
                 try:
                     for key in self._menus.keys():
-                        if imgui.selectable(key, key == self.selected)[1]:
-                            self.selected = key
+                        if imgui.selectable(key, key == self.selected_menu)[1]:
+                            self.selected_menu = key
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
-        with begin_child_context(main_label):
-            if widget := self._menus.get(self.selected):
-                imgui.text(self.selected)
+        with begin_child_context("Main"):
+            if widget := self._menus.get(self.selected_menu):
+                imgui.text(self.selected_menu)
                 imgui.separator()
                 widget.do_process()
             else:

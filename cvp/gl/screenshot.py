@@ -5,7 +5,7 @@ from typing import Literal
 from numpy import flipud, frombuffer, uint8
 from numpy.typing import NDArray
 from OpenGL import GL
-from PIL import Image
+from PIL.Image import Image, fromarray
 
 
 def screenshot_as_pixels(
@@ -46,4 +46,4 @@ def screenshot_as_pillow(
     channels: Literal[3, 4] = 4,
 ) -> Image:
     array = screenshot_as_numpy(width, height, x=x, y=y, channels=channels)
-    return Image.fromarray(array)
+    return fromarray(array)

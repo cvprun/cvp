@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Type
+from typing import Any
 
 from cvp.context.context import Context
 from cvp.types.override import override
+from cvp.variables import MODULE_PATH_SEPARATOR
 
 
 class PreferenceInterface(ABC):
@@ -35,11 +36,18 @@ class BasePreference(PreferenceInterface, ABC):
     def selected_submenus(self):
         return self._context.config.preference_manager.selected_submenus
 
-    def gen_selected_key(self, key: str) -> str:
-        return type(self).__name__ + "." + key
+    def gen_selected_submenu_key(
+        self,
+        key: Any,
+        *,
+        separator=MODULE_PATH_SEPARATOR,
+    ) -> str:
+        return type(self).__name__ + separator + str(key)
 
-    def get_selected(self, key: str) -> str:
-        return self.selected_submenus.get(self.gen_selected_key(key), str())
+    def get_selected_submenu(self, key: Any) -> str:
+        submenu_key = self.gen_selected_submenu_key(key)
+        return self.selected_submenus.get(submenu_key, str())
 
-    def set_selected(self, key: str, value: str) -> None:
-        self.selected_submenus[self.gen_selected_key(key)] = value
+    def set_selected_submenu(self, key: Any, value: str) -> None:
+        submenu_key = self.gen_selected_submenu_key(key)
+        self.selected_submenus[submenu_key] = value

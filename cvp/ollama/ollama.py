@@ -5,11 +5,12 @@ from enum import StrEnum, auto, unique
 from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from httpx import Timeout
+from ollama import Client
 from type_serialize import Serializable
 
+from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
 from cvp.variables import DEFAULT_OLLAMA_TIMEOUT
-from ollama import Client
 
 
 class Ollama(Serializable):
@@ -23,6 +24,7 @@ class Ollama(Serializable):
         follow_redirects = auto()
         timeout = auto()
         model_names = auto()
+        details = auto()
 
     def __init__(
         self,
@@ -34,6 +36,7 @@ class Ollama(Serializable):
         model_names: Optional[Sequence[str]] = None,
         *,
         error: Optional[BaseException] = None,
+        details: Optional[Dict[str, ModelDetails]] = None,
     ):
         self.name = name if name else str()
         self.url = url if url else str()
@@ -41,6 +44,7 @@ class Ollama(Serializable):
         self.follow_redirects = follow_redirects
         self.timeout = timeout
         self.model_names = list(model_names if model_names else ())
+        self.details = dict(details if details else {})
         self._error = error
 
     def header_as_dict(self) -> Dict[str, str]:
@@ -56,6 +60,7 @@ class Ollama(Serializable):
             and self.follow_redirects == other.follow_redirects
             and self.timeout == other.timeout
             and self.model_names == other.model_names
+            and self.details == other.details
             and self._error == other._error
         )
 
@@ -68,6 +73,7 @@ class Ollama(Serializable):
         result.follow_redirects = copy(self.follow_redirects)
         result.timeout = copy(self.timeout)
         result.model_names = copy(self.model_names)
+        result.details = copy(self.details)
         result._error = copy(self._error)
         return result
 
@@ -82,6 +88,7 @@ class Ollama(Serializable):
         result.follow_redirects = deepcopy(self.follow_redirects, memo)
         result.timeout = deepcopy(self.timeout, memo)
         result.model_names = deepcopy(self.model_names, memo)
+        result.details = deepcopy(self.details, memo)
         result._error = deepcopy(self._error, memo)
         memo[id(self)] = result
         return result
@@ -95,6 +102,7 @@ class Ollama(Serializable):
             str(self._Keys.follow_redirects): self.follow_redirects,
             str(self._Keys.timeout): self.timeout,
             str(self._Keys.model_names): self.model_names,
+            str(self._Keys.details): self.details,
         }
 
     @override
@@ -109,6 +117,7 @@ class Ollama(Serializable):
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
         self.timeout = float(data.get(self._Keys.timeout, DEFAULT_OLLAMA_TIMEOUT))
         self.model_names = data.get(self._Keys.model_names, list())
+        self.details = dict(data.get(self._Keys.details, dict()))
         self._error = None
 
     @property
@@ -116,7 +125,7 @@ class Ollama(Serializable):
         return self._error is not None
 
     @property
-    def error(self) -> Optional[BaseException]:
+    def error(self):
         return self._error
 
     @property
@@ -147,3 +156,26 @@ class Ollama(Serializable):
     def update_model_names(self):
         self.model_names = list(m.model for m in self.client.list().models if m.model)
         return self.model_names.copy()
+
+    def show_model(self, model_name: str) -> ModelDetails:
+        model_name = model_name.split(":")[0]
+        response = self.client.show(model_name)
+        detail = self.details.get(model_name, ModelDetails())
+        try:
+            detail.modified_at = response.modified_at
+            detail.template = response.template
+            detail.model_file = response.modelfile
+            detail.license = response.license
+            detail.model_info = response.modelinfo
+            detail.parameters = response.parameters
+            detail.parameters = response.parameters
+            if response.details is not None:
+                detail.parent_model = response.details.parent_model
+                detail.format = response.details.format
+                detail.family = response.details.family
+                detail.families = response.details.families
+                detail.parameter_size = response.details.parameter_size
+                detail.quantization_level = response.details.quantization_level
+            return detail
+        finally:
+            self.details[model_name] = detail

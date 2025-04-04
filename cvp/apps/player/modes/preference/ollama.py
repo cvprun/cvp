@@ -11,7 +11,6 @@ from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.flags.input_text import InputTextFlags
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_value import input_text_value
@@ -19,13 +18,20 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from cvp.variables import DEFAULT_MENU_WIDTH, FULL_SIZE, NOT_FOUND_INDEX, FULL_HEIGHT, FULL_WIDTH
+from cvp.variables import (
+    DEFAULT_MENU_WIDTH,
+    FULL_HEIGHT,
+    FULL_SIZE,
+    FULL_WIDTH,
+    NOT_FOUND_INDEX,
+)
 
 
 class OllamaPreference(BasePreference):
     @unique
-    class _OllamaCommand(StrEnum):
-        list_ = auto()
+    class RunnerCommand(StrEnum):
+        list_ = "list"
+        show = auto()
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -36,10 +42,15 @@ class OllamaPreference(BasePreference):
     def get_menu_name(cls) -> str:
         return "Ollama"
 
-    def _on_runner_main(self, ollama: Ollama, command: _OllamaCommand, *args: str):
+    def _on_runner_main(self, ollama: Ollama, command: RunnerCommand, *args: str):
         match command:
-            case self._OllamaCommand.list_:
+            case self.RunnerCommand.list_:
                 ollama.update_model_names()
+            case self.RunnerCommand.show:
+                assert 1 == len(args)
+                assert isinstance(args[0], str)
+                model_name = args[0]
+                ollama.show_model(model_name)
             case _:
                 assert False, "Inaccessible section"
 
@@ -47,25 +58,25 @@ class OllamaPreference(BasePreference):
     def ollamas(self):
         return self.context.ollamas
 
-    __selected_filename_key__ = "filename"
+    __submenu_filename_key__ = "filename"
 
     @property
-    def selected_filename(self) -> str:
-        return self.get_selected(self.__selected_filename_key__)
+    def selected_submenu_filename(self) -> str:
+        return self.get_selected_submenu(self.__submenu_filename_key__)
 
-    @selected_filename.setter
-    def selected_filename(self, value: str) -> None:
-        self.set_selected(self.__selected_filename_key__, value)
+    @selected_submenu_filename.setter
+    def selected_submenu_filename(self, value: str) -> None:
+        self.set_selected_submenu(self.__submenu_filename_key__, value)
 
-    __selected_api_key__ = "api"
+    __submenu_model_key__ = "model"
 
     @property
-    def selected_api(self) -> str:
-        return self.get_selected(self.__selected_api_key__)
+    def selected_submenu_model(self) -> str:
+        return self.get_selected_submenu(self.__submenu_model_key__)
 
-    @selected_api.setter
-    def selected_api(self, value: str) -> None:
-        self.set_selected(self.__selected_api_key__, value)
+    @selected_submenu_model.setter
+    def selected_submenu_model(self, value: str) -> None:
+        self.set_selected_submenu(self.__submenu_model_key__, value)
 
     @override
     def do_process(self) -> None:
@@ -77,36 +88,40 @@ class OllamaPreference(BasePreference):
                 self.ollamas.reload_all_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected_filename = self.ollamas.add_new()[0]
+                self.selected_submenu_filename = self.ollamas.add_new()[0]
             imgui.same_line()
-            if button("Del", disabled=self.selected_filename not in self.ollamas):
-                del self.ollamas[self.selected_filename]
+            disabled_delete = self.selected_submenu_filename not in self.ollamas
+            if button("Del", disabled=disabled_delete):
+                del self.ollamas[self.selected_submenu_filename]
 
             if imgui.begin_list_box("##List", FULL_SIZE):
                 try:
                     for filename, ollama in self.ollamas.items():
                         label = f"{ollama.name}###{filename}"
-                        selected = filename == self.selected_filename
+                        selected = filename == self.selected_submenu_filename
                         if imgui.selectable(label, selected)[1]:
-                            self.selected_filename = filename
+                            self.selected_submenu_filename = filename
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if ollama := self.ollamas.get(self.selected_filename):
+            if ollama := self.ollamas.get(self.selected_submenu_filename):
                 if imgui.begin_tab_bar("MainTabBar"):
                     try:
                         if imgui.begin_tab_item("Config")[0]:
                             try:
-                                self.do_ollama_config(self.selected_filename, ollama)
+                                self.do_ollama_config(
+                                    self.selected_submenu_filename,
+                                    ollama,
+                                )
                             finally:
                                 imgui.end_tab_item()
 
                         if imgui.begin_tab_item("APIs")[0]:
                             try:
-                                self.do_ollama_apis(self.selected_filename, ollama)
+                                self.do_ollama_apis(ollama)
                             finally:
                                 imgui.end_tab_item()
                     finally:
@@ -203,20 +218,81 @@ class OllamaPreference(BasePreference):
         for model_name in ollama.model_names:
             imgui.text(model_name)
 
-    def do_ollama_apis(self, filename: str, ollama: Ollama) -> None:
+    def do_ollama_apis(self, ollama: Ollama) -> None:
         running = self._runner.running
         has_error = bool(self._runner.error)
 
         if imgui.begin_list_box("##APIList", (DEFAULT_MENU_WIDTH, FULL_HEIGHT)):
             try:
-                if imgui.selectable("list", self.selected_api == "list")[0]:
-                    self.selected_api = "list"
-                if imgui.selectable("ps", self.selected_api == "ps")[0]:
-                    self.selected_api = "ps"
+                if imgui.button("Reload"):
+                    self._runner(ollama, self.RunnerCommand.list_)
+                if not running and not has_error:
+                    for model_name in ollama.model_names:
+                        selected = model_name == self.selected_submenu_model
+                        if imgui.selectable(model_name, selected)[1]:
+                            self.selected_submenu_model = model_name
             finally:
                 imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("APIMain", FULL_WIDTH, FULL_HEIGHT):
-            pass
+            if running:
+                text_centered("Requesting a list of models...")
+            elif has_error:
+                assert not running
+                error_message = str(self._runner.error)
+                imgui.text_colored(self.context.error_color, error_message)
+            else:
+                assert not running
+                assert not has_error
+                try:
+                    index = ollama.model_names.index(self.selected_submenu_model)
+                    self.do_ollama_model_details(ollama, index)
+                except ValueError:
+                    text_centered("Please select a item")
+                    return
+
+    def do_ollama_model_details(self, ollama: Ollama, model_index: int) -> None:
+        model_name = ollama.model_names[model_index]
+
+        with style_disable_input_context():
+            input_text_value("Model Name", model_name)
+
+        imgui.separator()
+
+        if imgui.button("Show"):
+            self._runner(ollama, self.RunnerCommand.show, model_name)
+
+        imgui.separator()
+
+        detail = ollama.details.get(model_name)
+        if detail is None:
+            return
+
+        modified_at = detail.modified_at.isoformat() if detail.modified_at else str()
+        template = detail.template if detail.template else str()
+        model_file = detail.model_file if detail.model_file else str()
+        license_ = detail.license if detail.license else str()
+        # model_info = detail.model_info if detail.model_info else dict()
+        parameters = detail.parameters if detail.parameters else str()
+
+        parent_model = detail.parent_model if detail.parent_model else str()
+        format_ = detail.format if detail.format else str()
+        family = detail.family if detail.family else str()
+        # families = detail.families if detail.families else list()
+        parameter_size = detail.parameter_size if detail.parameter_size else str()
+        quantization = detail.quantization_level if detail.quantization_level else str()
+
+        with style_disable_input_context():
+            input_text_value("Modified At", modified_at)
+            input_text_value("Template", template)
+            input_text_value("Model File", model_file)
+            input_text_value("License", license_)
+            input_text_value("Parameters", parameters)
+
+            input_text_value("Parent Model", parent_model)
+            input_text_value("Format", format_)
+            input_text_value("Family", family)
+            input_text_value("Parameter Size", parameter_size)
+            input_text_value("Quantization Level", quantization)

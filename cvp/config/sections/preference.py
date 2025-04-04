@@ -8,5 +8,5 @@ from cvp.config.sections.bases.manager import ManagerWindowConfig
 
 @dataclass
 class PreferenceManagerConfig(ManagerWindowConfig):
-    selected_submenus: Dict[str, str] = field(default_factory=dict)
     selected_menu: str = field(default_factory=str)
+    selected_submenus: Dict[str, str] = field(default_factory=dict)
