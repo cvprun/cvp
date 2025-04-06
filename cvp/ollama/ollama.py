@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from httpx import Timeout
 from ollama import Client
-from type_serialize import Serializable
+from type_serialize import Serializable, deserialize, serialize
 
 from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
@@ -102,7 +102,7 @@ class Ollama(Serializable):
             str(self._Keys.follow_redirects): self.follow_redirects,
             str(self._Keys.timeout): self.timeout,
             str(self._Keys.model_names): self.model_names,
-            str(self._Keys.details): self.details,
+            str(self._Keys.details): {k: serialize(v) for k, v in self.details.items()},
         }
 
     @override
@@ -112,12 +112,17 @@ class Ollama(Serializable):
 
         self.name = str(data.get(self._Keys.name_, str()))
         self.url = str(data.get(self._Keys.url, str()))
+
         headers = data.get(self._Keys.headers, dict())
         self.headers = list((str(k), str(v)) for k, v in headers.items())
+
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
         self.timeout = float(data.get(self._Keys.timeout, DEFAULT_OLLAMA_TIMEOUT))
         self.model_names = data.get(self._Keys.model_names, list())
-        self.details = dict(data.get(self._Keys.details, dict()))
+
+        details = data.get(self._Keys.details, dict())
+        self.details = {k: deserialize(v, ModelDetails) for k, v in details.items()}
+
         self._error = None
 
     @property
@@ -158,7 +163,7 @@ class Ollama(Serializable):
         return self.model_names.copy()
 
     def show_model(self, model_name: str) -> ModelDetails:
-        model_name = model_name.split(":")[0]
+        # model_name = model_name.split(":")[0]
         response = self.client.show(model_name)
         detail = self.details.get(model_name, ModelDetails())
         try:
@@ -166,7 +171,9 @@ class Ollama(Serializable):
             detail.template = response.template
             detail.model_file = response.modelfile
             detail.license = response.license
-            detail.model_info = response.modelinfo
+
+            detail.model_info = {str(k): str(v) for k, v in response.modelinfo.items()}
+
             detail.parameters = response.parameters
             detail.parameters = response.parameters
             if response.details is not None:

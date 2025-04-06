@@ -215,9 +215,6 @@ class OllamaPreference(BasePreference):
             imgui.same_line()
             imgui.text_colored(self.context.warning_color, "The file does not exist")
 
-        for model_name in ollama.model_names:
-            imgui.text(model_name)
-
     def do_ollama_apis(self, ollama: Ollama) -> None:
         running = self._runner.running
         has_error = bool(self._runner.error)
@@ -226,11 +223,10 @@ class OllamaPreference(BasePreference):
             try:
                 if imgui.button("Reload"):
                     self._runner(ollama, self.RunnerCommand.list_)
-                if not running and not has_error:
-                    for model_name in ollama.model_names:
-                        selected = model_name == self.selected_submenu_model
-                        if imgui.selectable(model_name, selected)[1]:
-                            self.selected_submenu_model = model_name
+                for model_name in ollama.model_names:
+                    selected = model_name == self.selected_submenu_model
+                    if imgui.selectable(model_name, selected)[1]:
+                        self.selected_submenu_model = model_name
             finally:
                 imgui.end_list_box()
 
@@ -274,25 +270,40 @@ class OllamaPreference(BasePreference):
         template = detail.template if detail.template else str()
         model_file = detail.model_file if detail.model_file else str()
         license_ = detail.license if detail.license else str()
-        # model_info = detail.model_info if detail.model_info else dict()
+        model_info = detail.model_info if detail.model_info else dict()
         parameters = detail.parameters if detail.parameters else str()
 
         parent_model = detail.parent_model if detail.parent_model else str()
         format_ = detail.format if detail.format else str()
         family = detail.family if detail.family else str()
-        # families = detail.families if detail.families else list()
+        families = detail.families if detail.families else list()
         parameter_size = detail.parameter_size if detail.parameter_size else str()
         quantization = detail.quantization_level if detail.quantization_level else str()
 
         with style_disable_input_context():
             input_text_value("Modified At", modified_at)
-            input_text_value("Template", template)
-            input_text_value("Model File", model_file)
-            input_text_value("License", license_)
-            input_text_value("Parameters", parameters)
+            imgui.input_text_multiline("Template", template)
+            imgui.input_text_multiline("Model File", model_file)
+            imgui.input_text_multiline("License", license_)
 
+            if imgui.tree_node("Model info"):
+                try:
+                    for mk, mv in model_info.items():
+                        input_text_value(mk, mv)
+                finally:
+                    imgui.tree_pop()
+
+            imgui.input_text_multiline("Parameters", parameters)
             input_text_value("Parent Model", parent_model)
             input_text_value("Format", format_)
             input_text_value("Family", family)
+
+            if imgui.tree_node("Families"):
+                try:
+                    for fi, fv in enumerate(families):
+                        input_text_value(str(fi), fv)
+                finally:
+                    imgui.tree_pop()
+
             input_text_value("Parameter Size", parameter_size)
             input_text_value("Quantization Level", quantization)
