@@ -4,7 +4,6 @@ from os import PathLike
 from typing import Union
 
 from cvp.system.path import PathFlavour
-
 from cvp.variables import DEFAULT_CHAT_SQLITE_FILENAME
 
 
