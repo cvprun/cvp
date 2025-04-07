@@ -5,6 +5,7 @@ from os import PathLike
 from threading import Event
 from typing import Optional, Union
 
+from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context.mixins import ContextMixins
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
@@ -108,6 +109,7 @@ class Context(ContextMixins):
             update=True,
         )
 
+        self._chat = ChatManager(self._home, create_tables=True)
         self._ollamas = OllamaManager(self._home, reload=True)
         self._flows = FlowManager(self._home)
         self._flows.refresh_flow_graphs()
