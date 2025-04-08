@@ -100,7 +100,7 @@ class FlowManager:
         self._clipboard_pivot = None
 
     def refresh_flow_graphs(self):
-        for file in self._path.flows.find_graph_files():
+        for file in self._path.find_graph_files():
             self.update_graph_yaml(file)
 
     def create_graph(

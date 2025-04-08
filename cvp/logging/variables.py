@@ -38,20 +38,41 @@ SIMPLE_FORMAT: Final[str] = "{levelname[0]} {asctime} {name} {message}"
 SIMPLE_DATEFMT: Final[str] = "%Y%m%d %H%M%S"
 SIMPLE_STYLE: Final[LoggingStyleLiteral] = "{"
 
+EXPECTED_LOGS_DIRNAME: Final[str] = "logs"
 
-def _timed_rotating_file_handler_config(basename: str, backup_count=30):
+
+def _timed_rotating_file_handler(
+    basename: str,
+    logs_dirname=EXPECTED_LOGS_DIRNAME,
+    interval=1,
+    backup_count=30,
+):
     return {
         "class": "cvp.logging.handlers.file.TimedRotatingFileHandler",
         "level": "DEBUG",
         "formatter": "default",
-        "filename": f"${{{CVP_HOME}}}/logs/{basename}",
+        "filename": f"${{{CVP_HOME}}}/{logs_dirname}/{basename}",
         "when": "midnight",
-        "interval": 1,
+        "interval": interval,
         "backupCount": backup_count,
         "encoding": "utf-8",
         "delay": False,
         "utc": False,
         "suffix": "%Y%m%d_%H%M%S.log",
+    }
+
+
+def _rotating_file_handler(basename="cvp_rotating", logs_dirname=EXPECTED_LOGS_DIRNAME):
+    return {
+        "class": "logging.handlers.RotatingFileHandler",
+        "level": "DEBUG",
+        "formatter": "default",
+        "filename": f"${{{CVP_HOME}}}/{logs_dirname}/{basename}",
+        "mode": "a",
+        "maxBytes": 10 * 1024 * 1024,
+        "backupCount": 10,
+        "encoding": "utf-8",
+        "delay": False,
     }
 
 
@@ -85,73 +106,63 @@ _file_default = {
     "delay": False,
 }
 
-_rotating_file_default = {
-    "class": "logging.handlers.RotatingFileHandler",
-    "level": "DEBUG",
-    "formatter": "default",
-    "filename": f"${{{CVP_HOME}}}/logs/cvp_rotating",
-    "mode": "a",
-    "maxBytes": 10 * 1024 * 1024,
-    "backupCount": 10,
-    "encoding": "utf-8",
-    "delay": False,
-}
 
-DEFAULT_LOGGING_CONFIG: Final[Dict[str, Any]] = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "default": {
-            "format": DEFAULT_FORMAT,
-            "datefmt": DEFAULT_DATEFMT,
-            "style": DEFAULT_STYLE,
+def default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> Dict[str, Any]:
+    return {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format": DEFAULT_FORMAT,
+                "datefmt": DEFAULT_DATEFMT,
+                "style": DEFAULT_STYLE,
+            },
+            "colored": {
+                "class": "cvp.logging.formatters.colored.ColoredFormatter",
+                "format": DEFAULT_FORMAT,
+                "datefmt": DEFAULT_DATEFMT,
+                "style": DEFAULT_STYLE,
+            },
         },
-        "colored": {
-            "class": "cvp.logging.formatters.colored.ColoredFormatter",
-            "format": DEFAULT_FORMAT,
-            "datefmt": DEFAULT_DATEFMT,
-            "style": DEFAULT_STYLE,
+        "handlers": {
+            "stdout_colored": {
+                "class": "logging.StreamHandler",
+                "level": "DEBUG",
+                "formatter": "colored",
+                "stream": "ext://sys.stdout",
+            },
+            "root_file": _timed_rotating_file_handler("__root__", logs_dirname),
+            "cvp_file": _timed_rotating_file_handler("cvp", logs_dirname),
+            "cvp_worker_file": _timed_rotating_file_handler("cvp.worker", logs_dirname),
         },
-    },
-    "handlers": {
-        "stdout_colored": {
-            "class": "logging.StreamHandler",
-            "level": "DEBUG",
-            "formatter": "colored",
-            "stream": "ext://sys.stdout",
+        "loggers": {
+            # root logger
+            "": {
+                "handlers": ["root_file"],
+                "level": "DEBUG",
+            },
+            "OpenGL": {"level": "DEBUG"},
+            "asyncio": {"level": "DEBUG"},
+            "httpcore": {"level": "DEBUG"},
+            "httpx": {"level": "DEBUG"},
+            "zeep": {"level": "DEBUG"},
+            CVP_LOGGER_NAME: {
+                "handlers": ["stdout_colored", "cvp_file"],
+                "level": "DEBUG",
+                "propagate": 0,
+            },
+            CVP_DOWNLOAD_LOGGER_NAME: {"level": "DEBUG"},
+            CVP_EVENT_LOGGER_NAME: {"level": "INFO"},
+            CVP_FLOW_LOGGER_NAME: {"level": "INFO"},
+            CVP_MSG_LOGGER_NAME: {"level": "DEBUG"},
+            CVP_ONVIF_LOGGER_NAME: {"level": "INFO"},
+            CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
+            CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
+            CVP_WORKER_LOGGER_NAME: {
+                "handlers": ["stdout_colored", "cvp_worker_file"],
+                "level": "DEBUG",
+                "propagate": 0,
+            },
+            CVP_WSDL_LOGGER_NAME: {"level": "INFO"},
         },
-        "root_file": _timed_rotating_file_handler_config("__root__"),
-        "cvp_file": _timed_rotating_file_handler_config("cvp"),
-        "cvp_worker_file": _timed_rotating_file_handler_config("cvp.worker"),
-    },
-    "loggers": {
-        # root logger
-        "": {
-            "handlers": ["root_file"],
-            "level": "DEBUG",
-        },
-        "OpenGL": {"level": "DEBUG"},
-        "asyncio": {"level": "DEBUG"},
-        "httpcore": {"level": "DEBUG"},
-        "httpx": {"level": "DEBUG"},
-        "zeep": {"level": "DEBUG"},
-        CVP_LOGGER_NAME: {
-            "handlers": ["stdout_colored", "cvp_file"],
-            "level": "DEBUG",
-            "propagate": 0,
-        },
-        CVP_DOWNLOAD_LOGGER_NAME: {"level": "DEBUG"},
-        CVP_EVENT_LOGGER_NAME: {"level": "INFO"},
-        CVP_FLOW_LOGGER_NAME: {"level": "INFO"},
-        CVP_MSG_LOGGER_NAME: {"level": "DEBUG"},
-        CVP_ONVIF_LOGGER_NAME: {"level": "INFO"},
-        CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
-        CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
-        CVP_WORKER_LOGGER_NAME: {
-            "handlers": ["stdout_colored", "cvp_worker_file"],
-            "level": "DEBUG",
-            "propagate": 0,
-        },
-        CVP_WSDL_LOGGER_NAME: {"level": "INFO"},
-    },
-}
+    }

@@ -49,7 +49,10 @@ class Context(ContextMixins):
         if not self._home.logging_json.exists():
             logging_path = str(self._home.logging_json)
             logger.info(f"Save the default logging config file: '{logging_path}'")
-            logging_json_text = dumps_default_logging_config(cvp_home=self._home)
+            logging_json_text = dumps_default_logging_config(
+                cvp_home=self._home,
+                logs_dirname=self._home.logs.get_subdir_name(),
+            )
             self._home.logging_json.write_text(logging_json_text)
 
         if self._config.logging.config_path is None:

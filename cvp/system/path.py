@@ -4,10 +4,12 @@ import os
 import sys
 from os import PathLike
 from pathlib import Path
-from typing import List, Union
+from typing import Final, List, Union
 
 
 class PathFlavour(Path):
+    _SUBCLASS_NAME_SUFFIX: Final[str] = "Path"
+
     # noinspection PyProtectedMember
     _flavour = Path()._flavour  # type: ignore[attr-defined]
 
@@ -42,8 +44,20 @@ class PathFlavour(Path):
         return result
 
     @classmethod
+    def get_subdir_name(cls) -> str:
+        if not cls.__name__.endswith(cls._SUBCLASS_NAME_SUFFIX):
+            raise TypeError(
+                f"Class name must end with '{cls._SUBCLASS_NAME_SUFFIX}', "
+                f"got '{cls.__name__}'"
+            )
+
+        dirname = cls.__name__.removesuffix(cls._SUBCLASS_NAME_SUFFIX).lower()
+        assert not dirname.endswith(cls._SUBCLASS_NAME_SUFFIX.lower())
+        return dirname
+
+    @classmethod
     def classname_subdir(cls, parent: Union[str, PathLike[str]]):
-        return cls(Path(parent) / cls.__name__.lower())
+        return cls(Path(parent) / cls.get_subdir_name())
 
     if sys.version_info >= (3, 12):
 

@@ -35,12 +35,13 @@ from cvp.logging.variables import (
     CVP_WSDL_LOGGER_NAME,
     DEFAULT_DATEFMT,
     DEFAULT_FORMAT,
-    DEFAULT_LOGGING_CONFIG,
     DEFAULT_SIMPLE_LOGGING_FORMAT,
     DEFAULT_SIMPLE_LOGGING_STYLE,
     DEFAULT_STYLE,
     DEFAULT_TIMED_ROTATING_WHEN,
+    EXPECTED_LOGS_DIRNAME,
     TimedRotatingWhenLiteral,
+    default_logging_config,
 )
 from cvp.system.environ_keys import CVP_HOME
 
@@ -167,12 +168,15 @@ def set_asyncio_level(level: Union[str, int]) -> None:
     getLogger("asyncio").setLevel(convert_level_number(level))
 
 
-def set_default_logging_config() -> None:
-    logging_config.dictConfig(DEFAULT_LOGGING_CONFIG)
+def set_default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> None:
+    logging_config.dictConfig(default_logging_config(logs_dirname))
 
 
-def dumps_default_logging_config(cvp_home: Union[str, PathLike[str]]) -> str:
-    json = dumps(DEFAULT_LOGGING_CONFIG, indent=4)
+def dumps_default_logging_config(
+    cvp_home: Union[str, PathLike[str]],
+    logs_dirname=EXPECTED_LOGS_DIRNAME,
+) -> str:
+    json = dumps(default_logging_config(logs_dirname), indent=4)
     return json.replace(f"${{{CVP_HOME}}}", str(cvp_home))
 
 
