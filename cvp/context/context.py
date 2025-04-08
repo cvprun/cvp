@@ -152,6 +152,10 @@ class Context(ContextMixins):
         return self._msg_queue
 
     @property
+    def chat(self):
+        return self._chat
+
+    @property
     def ollamas(self):
         return self._ollamas
 

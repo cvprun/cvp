@@ -10,6 +10,7 @@ from yaml import dump, full_load
 from cvp.config.sections.appearance import AppearanceConfig
 from cvp.config.sections.canvas import CanvasWindowConfig
 from cvp.config.sections.catalog import CatalogManagerConfig
+from cvp.config.sections.chat import ChatConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
@@ -24,7 +25,6 @@ from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
 from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
-from cvp.config.sections.ollama import OllamaConfig
 from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
 from cvp.config.sections.overlay import OverlayWindowConfig
 from cvp.config.sections.plot import PlotWindowConfig
@@ -47,6 +47,7 @@ class Config:
     appearance: AppearanceConfig = field(default_factory=AppearanceConfig)
     canvas_window: CanvasWindowConfig = field(default_factory=CanvasWindowConfig)
     catalog_manager: CatalogManagerConfig = field(default_factory=CatalogManagerConfig)
+    chat: ChatConfig = field(default_factory=ChatConfig)
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
@@ -69,7 +70,6 @@ class Config:
     plot_window: PlotWindowConfig = field(default_factory=PlotWindowConfig)
     preference_manager: PrefManagerConfig = field(default_factory=PrefManagerConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
-    ollama: OllamaConfig = field(default_factory=OllamaConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)

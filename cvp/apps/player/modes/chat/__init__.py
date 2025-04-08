@@ -5,6 +5,7 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.chat.cache import ChatCache
 from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -13,7 +14,10 @@ from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
-from cvp.imgui.input_text_ko import input_text_ko
+from cvp.imgui.input_text_multilingual import input_text_multilingual
+from cvp.imgui.input_text_multilingual_with_button import (
+    input_text_multilingual_with_button,
+)
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.msgs.msg import Msg
@@ -24,6 +28,8 @@ from cvp.variables import (
     DEFAULT_MENU_LABEL,
     DEFAULT_MENU_WIDTH,
     FULL_SIZE,
+    FULL_WIDTH,
+    NOT_FOUND_INDEX,
 )
 
 
@@ -31,6 +37,8 @@ class ChatMode(BaseMode):
     def __init__(self, context: RendererContext):
         super().__init__(context)
         self._input_text = str()
+        self._search = str()
+        self._conversation_id = NOT_FOUND_INDEX
 
     @staticmethod
     @override
@@ -54,12 +62,22 @@ class ChatMode(BaseMode):
         pass
 
     @property
-    def chat_ollama_url(self) -> str:
-        return self.context.config.ollama.ollama_url
+    def chat_selected_index(self):
+        return self.context.config.chat.selected_index
 
-    @chat_ollama_url.setter
-    def chat_ollama_url(self, value: str) -> None:
-        self.context.config.ollama.ollama_url = value
+    @chat_selected_index.setter
+    def chat_selected_index(self, value: int) -> None:
+        self.context.config.chat.selected_index = value
+
+    @property
+    def chat_model_names(self):
+        return self.context.config.chat.model_names
+
+    def refresh_chat_models(self) -> None:
+        self.context.config.chat.clear_models()
+        for key, ollama in self.context.ollamas.items():
+            for model_name in ollama.model_names:
+                self.context.config.chat.append_models(key, ollama.name, model_name)
 
     @override
     def do_process(self) -> None:
@@ -80,40 +98,80 @@ class ChatMode(BaseMode):
         with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
             if imgui.begin_list_box("###MenuList", FULL_SIZE):
                 try:
-                    text_centered("Please select a item")
+                    if imgui.button("New chat", (FULL_WIDTH, 0)):
+                        self._conversation_id = NOT_FOUND_INDEX
+
+                    search_result = input_text_multilingual(
+                        label="###Search",
+                        value=self._search,
+                        size=(-1 * imgui.FLT_MIN, 0.0),
+                        hint="Search chats",
+                    )
+                    if search_result.changed:
+                        self._search = search_result.value
+
+                    imgui.separator()
+
+                    for conv_id, cache in self.context.chat.items():
+                        selected = conv_id == self._conversation_id
+                        if imgui.selectable(cache.label, selected)[1]:
+                            self._conversation_id = conv_id
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context(main_label):
-            history_bottom = -1 * footer_height_to_reserve()
+            models_result = imgui.combo(
+                "###Models",
+                self.chat_selected_index,
+                self.chat_model_names,
+            )
+            models_changed = models_result[0]
+            models_index = models_result[1]
+            if models_changed:
+                self.chat_selected_index = models_index
 
-            with begin_child_context(main_label, 0, history_bottom):
-                text_centered("Please select a item")
+            imgui.same_line()
+            if imgui.button("Refresh"):
+                self.refresh_chat_models()
 
             imgui.separator()
 
-            enter_text = "Enter"
-            enter_text_size = imgui.calc_text_size(enter_text)
-            enter_text_width = enter_text_size.x
-            frame_padding = imgui.get_style().frame_padding
-            frame_padding_x = frame_padding.x
-            item_spacing = imgui.get_style().item_spacing
-            item_spacing_x = item_spacing.x
+            history_bottom = -1 * footer_height_to_reserve()
 
-            input_text_right = enter_text_width + (frame_padding_x * 2) + item_spacing_x
-            imgui.set_next_item_width(-1 * input_text_right)
-            text_result = input_text_ko(
-                "###InputText",
-                self._input_text,
-                flags=ENTER_RETURNS_TRUE,
+            with begin_child_context(main_label, 0, history_bottom):
+                if self._conversation_id == NOT_FOUND_INDEX:
+                    text_centered("What can I help with?")
+                else:
+                    self.do_history(self.context.chat[self._conversation_id])
+
+            imgui.separator()
+
+            input_result, button_result = input_text_multilingual_with_button(
+                label="###InputText",
+                value=self._input_text,
+                button_label="Enter",
+                input_flags=ENTER_RETURNS_TRUE,
+                input_hint="Ask anything",
             )
-            text_changed = text_result[0]
-            self._input_text = text_result[1]
-            if text_changed:
+            self._input_text = input_result.value
+            if input_result.changed:
+                self._input_text = str()
+            if button_result:
                 self._input_text = str()
 
-            imgui.same_line()
-            if imgui.button(enter_text):
-                pass
+    def do_history(self, cache: ChatCache) -> None:
+        if cache.is_unrequested:
+            self.context.chat.refresh_messages(cache.id)
+
+        for msg in cache.messages:
+            request = msg.request if msg.request else str()
+            response = msg.response if msg.response else str()
+            error = msg.error if msg.error else str()
+            created_at = msg.created_at.isoformat()
+
+            imgui.bullet_text(request)
+            imgui.bullet_text(response)
+            imgui.bullet_text(error)
+            imgui.bullet_text(created_at)

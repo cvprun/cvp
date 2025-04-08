@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple, Union
+from typing import NamedTuple, Optional, Union
 
 from imgui_bundle import imgui
 
-from cvp.imgui.flags.input_text import CALLBACK_EDIT, InputTextFlags
+from cvp.imgui.flags.input_text import InputTextFlags
 
 
 class InputTextMultilingualResult(NamedTuple):
@@ -25,27 +25,30 @@ class InputTextMultilingualResult(NamedTuple):
         return self.changed
 
 
-def input_text_ko(
+def input_text_multilingual(
     label: str,
     value: str,
     flags: Union[InputTextFlags, int] = 0,
+    size: Optional[imgui.ImVec2Like] = None,
+    hint: Optional[str] = None,
 ):
     if isinstance(flags, InputTextFlags):
         flags = int(flags)
     assert isinstance(flags, int)
-    flags |= CALLBACK_EDIT
 
     # active = get_ime_active()
     # composing = get_ime_composing()
+    has_newline = 0 <= value.find("\n")
 
-    raw_result = imgui.input_text(label, value, flags)
-    result = InputTextMultilingualResult.from_raw(raw_result)
+    if has_newline:
+        raw_result = imgui.input_text_multiline(label, value, size, flags)
+    elif hint:
+        if size is not None:
+            imgui.set_next_item_width(size[0])
+        raw_result = imgui.input_text_with_hint(label, hint, value, flags)
+    else:
+        if size is not None:
+            imgui.set_next_item_width(size[0])
+        raw_result = imgui.input_text(label, value, flags)
 
-    # if imgui.is_item_active():
-    #     if not get_ime_active():
-    #         start_text_input()
-    # else:
-    #     if get_ime_active():
-    #         stop_text_input()
-
-    return result
+    return InputTextMultilingualResult.from_raw(raw_result)

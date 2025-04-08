@@ -74,7 +74,7 @@ class OllamaManager(Dict[str, Ollama]):
         self._path.remove_object(filename)
         logger.info(f"Removed ollama config file: '{filename}'")
 
-    def exists(self, filename: str) -> None:
+    def exists(self, filename: str) -> bool:
         return (self._path / filename).is_file()
 
     def reload_all_files(self, *, raise_errors=False) -> None:
