@@ -119,11 +119,6 @@ class Context(ContextMixins):
         self._msg_queue = MsgQueue()
         self._supabase = Supabase()
 
-        pm = self._process_manager
-
-        client_runner = pm.create_thread_runner(self._on_supabase_client_main)
-        self._create_supabase_client_runner = client_runner
-
         if self.supabase_url and self.supabase_key:
             self.create_supabase_client(
                 self.supabase_url,
@@ -131,9 +126,6 @@ class Context(ContextMixins):
                 self.server_username,
                 self.server_password,
             )
-
-        session_runner = pm.create_thread_runner(self._on_supabase_session_main)
-        self._create_supabase_session_runner = session_runner
 
     @property
     def home(self):

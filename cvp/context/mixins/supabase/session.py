@@ -2,27 +2,16 @@
 
 from typing import NamedTuple
 
-from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.keyring.keys import SupabaseKey
 
 
-class _SupabaseSessionStatus(NamedTuple):
-    has_session: bool
-    has_error: bool
-    error_message: str
-    running: bool
-    disabled_create: bool
-    disabled_remove: bool
-
-
-_SessionThreadRunner = ThreadRunnable[[str, str], None]
-
-
 class SupabaseSessionMixin(BaseContextMixin):
-    _create_supabase_session_runner: _SessionThreadRunner
+    @property
+    def _supabase_session_runner(self):
+        return self.get_thread_runner(self.__on_supabase_session_main)
 
-    def _on_supabase_session_main(self, username: str, password: str) -> None:
+    def __on_supabase_session_main(self, username: str, password: str) -> None:
         self._supabase.sign_in_with_password(username, password)
 
     @property
@@ -41,15 +30,23 @@ class SupabaseSessionMixin(BaseContextMixin):
     def server_password(self, value: str) -> None:
         self._keyring.supabase.set(SupabaseKey.password, value)
 
+    class _SupabaseSessionStatus(NamedTuple):
+        has_session: bool
+        has_error: bool
+        error_message: str
+        running: bool
+        disabled_create: bool
+        disabled_remove: bool
+
     def get_supabase_session_status(self):
         has_session = self._supabase.has_session
-        has_error = bool(self._create_supabase_session_runner.error)
-        error_message = str(self._create_supabase_session_runner.error)
-        running = self._create_supabase_session_runner.running
+        has_error = bool(self._supabase_session_runner.error)
+        error_message = str(self._supabase_session_runner.error)
+        running = self._supabase_session_runner.running
         disabled_create = running or has_session
         disabled_remove = running or not has_session
 
-        return _SupabaseSessionStatus(
+        return self._SupabaseSessionStatus(
             has_session=has_session,
             has_error=has_error,
             error_message=error_message,
@@ -61,14 +58,14 @@ class SupabaseSessionMixin(BaseContextMixin):
     def create_supabase_session(self, supabase_url: str, supabase_key: str) -> None:
         if self._supabase.has_session:
             raise ValueError("The Supabase session is already created")
-        if self._create_supabase_session_runner.running:
+        if self._supabase_session_runner.running:
             raise ValueError("The supabase session creation runner is running")
 
-        self._create_supabase_session_runner(supabase_url, supabase_key)
+        self._supabase_session_runner(supabase_url, supabase_key)
 
     def remove_supabase_session(self) -> None:
         if not self._supabase.has_session:
             raise ValueError("The Supabase session is not created")
-        if self._create_supabase_session_runner.running:
+        if self._supabase_session_runner.running:
             raise ValueError("The supabase session creation runner is running")
         self._supabase.remove_first_session()

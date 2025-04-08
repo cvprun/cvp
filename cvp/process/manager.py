@@ -150,5 +150,8 @@ class ProcessManager:
         self._processes[key] = process
         return process
 
-    def create_thread_runner(self, callback: Callable[SubmitParamT, SubmitResultT]):
-        return ThreadRunnable[SubmitParamT, SubmitResultT](self._thread_pool, callback)
+    def create_thread_runner(
+        self,
+        callback: SubmitCallable,
+    ) -> ThreadRunnable[SubmitParamT, SubmitResultT]:
+        return ThreadRunnable(self._thread_pool, callback)

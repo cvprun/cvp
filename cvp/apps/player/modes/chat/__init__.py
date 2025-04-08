@@ -69,16 +69,6 @@ class ChatMode(BaseMode):
     def chat_selected_index(self, value: int) -> None:
         self.context.config.chat.selected_index = value
 
-    @property
-    def chat_model_names(self):
-        return self.context.config.chat.model_names
-
-    def refresh_chat_models(self) -> None:
-        self.context.config.chat.clear_models()
-        for key, ollama in self.context.ollamas.items():
-            for model_name in ollama.model_names:
-                self.context.config.chat.append_models(key, ollama.name, model_name)
-
     @override
     def do_process(self) -> None:
         imgui.push_style_var(StyleVar.window_border_size, 0)
@@ -125,7 +115,7 @@ class ChatMode(BaseMode):
             models_result = imgui.combo(
                 "###Models",
                 self.chat_selected_index,
-                self.chat_model_names,
+                self.context.chat_model_names,
             )
             models_changed = models_result[0]
             models_index = models_result[1]
@@ -134,7 +124,7 @@ class ChatMode(BaseMode):
 
             imgui.same_line()
             if imgui.button("Refresh"):
-                self.refresh_chat_models()
+                self.context.refresh_chat_models()
 
             imgui.separator()
 

@@ -2,27 +2,16 @@
 
 from typing import NamedTuple, Optional
 
-from cvp.concurrency.threading.runnable import ThreadRunnable
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.keyring.keys import SupabaseKey
 
 
-class _SupabaseClientStatus(NamedTuple):
-    has_client: bool
-    has_error: bool
-    error_message: str
-    running: bool
-    disabled_create: bool
-    disabled_remove: bool
-
-
-_ClientThreadRunner = ThreadRunnable[[str, str, Optional[str], Optional[str]], None]
-
-
 class SupabaseClientMixin(BaseContextMixin):
-    _create_supabase_client_runner: _ClientThreadRunner
+    @property
+    def _create_supabase_client_runner(self):
+        return self.get_thread_runner(self.__on_supabase_client_main)
 
-    def _on_supabase_client_main(
+    def __on_supabase_client_main(
         self,
         supabase_url: str,
         supabase_key: str,
@@ -55,6 +44,14 @@ class SupabaseClientMixin(BaseContextMixin):
     def supabase_key(self, value: str) -> None:
         self._keyring.supabase.set(SupabaseKey.supabase_key, value)
 
+    class _SupabaseClientStatus(NamedTuple):
+        has_client: bool
+        has_error: bool
+        error_message: str
+        running: bool
+        disabled_create: bool
+        disabled_remove: bool
+
     def get_supabase_client_status(self):
         has_client = self._supabase.has_client
         has_error = bool(self._create_supabase_client_runner.error)
@@ -63,7 +60,7 @@ class SupabaseClientMixin(BaseContextMixin):
         disabled_create = running or has_client
         disabled_remove = running or not has_client
 
-        return _SupabaseClientStatus(
+        return self._SupabaseClientStatus(
             has_client=has_client,
             has_error=has_error,
             error_message=error_message,
