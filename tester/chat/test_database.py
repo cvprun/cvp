@@ -7,18 +7,19 @@ from time import sleep
 from unittest import TestCase, main
 from warnings import warn
 
-from cvp.chat.manager import ChatManager
+from cvp.chat.database import ChatDatabase
 from cvp.resources.home import HomeDir
 from cvp.variables import DEFAULT_CHAT_LIMIT
 
 
-class ManagerTestCase(TestCase):
+class DatabaseTestCase(TestCase):
     def setUp(self):
         self._tmpdir = TemporaryDirectory()
         self.assertTrue(os.path.isdir(self._tmpdir.name))
         self._home = HomeDir(self._tmpdir.name)
-        self._chat = ChatManager(self._home.chat, create_tables=True)
-        self.assertTrue(self._chat.database_path.exists())
+        self._path = self._home.chat.get_database_path()
+        self._chat = ChatDatabase(self._path, create_tables=True)
+        self.assertTrue(self._chat.path.exists())
 
     def tearDown(self):
         self._tmpdir.cleanup()
@@ -121,6 +122,11 @@ class ManagerTestCase(TestCase):
         rows3 = self._chat.select_message_latest_after_id(limit)
         self.assertEqual(1, len(rows3))
         self.assertEqual(limit + 1, rows3[0].id)
+
+    def test_mixin(self):
+        conv_id, msg_id = self._chat.insert_conversation_and_message()
+        self.assertEqual(1, conv_id)
+        self.assertEqual(1, msg_id)
 
 
 if __name__ == "__main__":

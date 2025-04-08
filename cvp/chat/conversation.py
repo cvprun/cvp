@@ -24,6 +24,6 @@ class ChatConversation:
         return cls(
             id_,
             title,
-            datetime.fromisoformat(created_at),
-            datetime.fromisoformat(updated_at) if updated_at else None,
+            datetime.fromisoformat(created_at).astimezone(),
+            datetime.fromisoformat(updated_at).astimezone() if updated_at else None,
         )

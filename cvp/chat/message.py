@@ -29,5 +29,5 @@ class ChatMessage:
             request,
             response,
             error,
-            datetime.fromisoformat(created_at),
+            datetime.fromisoformat(created_at).astimezone(),
         )
