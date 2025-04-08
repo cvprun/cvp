@@ -4,18 +4,18 @@ from os import PathLike
 from typing import Union
 
 from cvp.logging.logging import logger
-from cvp.resources.subdirs.bin import Bin
-from cvp.resources.subdirs.cache import Cache
+from cvp.resources.subdirs.bin import BinPath
+from cvp.resources.subdirs.cache import CachePath
 from cvp.resources.subdirs.chat import ChatPath
-from cvp.resources.subdirs.flows import Flows
-from cvp.resources.subdirs.keyrings import Keyrings
-from cvp.resources.subdirs.layouts import Layouts
-from cvp.resources.subdirs.logs import Logs
-from cvp.resources.subdirs.ollamas import Ollamas
-from cvp.resources.subdirs.onvifs import Onvifs
-from cvp.resources.subdirs.processes import Processes
-from cvp.resources.subdirs.temp import Temp
-from cvp.resources.subdirs.wsdl import Wsdl
+from cvp.resources.subdirs.flows import FlowsPath
+from cvp.resources.subdirs.keyrings import KeyringsPath
+from cvp.resources.subdirs.layouts import LayoutsPath
+from cvp.resources.subdirs.logs import LogsPath
+from cvp.resources.subdirs.ollamas import OllamasPath
+from cvp.resources.subdirs.onvifs import OnvifsPath
+from cvp.resources.subdirs.processes import ProcessesPath
+from cvp.resources.subdirs.temp import TempPath
+from cvp.resources.subdirs.wsdl import WsdlPath
 from cvp.system.path import PathFlavour
 from cvp.variables import CVP_YML_FILENAME, GUI_INI_FILENAME, LOGGING_JSON_FILENAME
 
@@ -28,18 +28,18 @@ class HomeDir(PathFlavour):
         self.gui_ini = self.as_path() / GUI_INI_FILENAME
         self.logging_json = self.as_path() / LOGGING_JSON_FILENAME
 
-        self.bin = Bin.classname_subdir(self)
-        self.cache = Cache.classname_subdir(self)
+        self.bin = BinPath.classname_subdir(self)
+        self.cache = CachePath.classname_subdir(self)
         self.chat = ChatPath.classname_subdir(self)
-        self.flows = Flows.classname_subdir(self)
-        self.keyrings = Keyrings.classname_subdir(self)
-        self.layouts = Layouts.classname_subdir(self)
-        self.logs = Logs.classname_subdir(self)
-        self.ollamas = Ollamas.classname_subdir(self)
-        self.onvifs = Onvifs.classname_subdir(self)
-        self.processes = Processes.classname_subdir(self)
-        self.temp = Temp.classname_subdir(self)
-        self.wsdl = Wsdl.classname_subdir(self)
+        self.flows = FlowsPath.classname_subdir(self)
+        self.keyrings = KeyringsPath.classname_subdir(self)
+        self.layouts = LayoutsPath.classname_subdir(self)
+        self.logs = LogsPath.classname_subdir(self)
+        self.ollamas = OllamasPath.classname_subdir(self)
+        self.onvifs = OnvifsPath.classname_subdir(self)
+        self.processes = ProcessesPath.classname_subdir(self)
+        self.temp = TempPath.classname_subdir(self)
+        self.wsdl = WsdlPath.classname_subdir(self)
 
         self._dirs = [
             self.bin,

@@ -7,14 +7,14 @@ from type_serialize import deserialize, serialize
 
 from cvp.logging.logging import logger
 from cvp.ollama.ollama import Ollama
-from cvp.resources.home import HomeDir
+from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.variables import DEFAULT_OLLAMA_ADDRESS, DEFAULT_OLLAMA_NAME
 
 
 class OllamaManager(Dict[str, Ollama]):
-    def __init__(self, home: HomeDir, *, reload=False, raise_errors=False):
+    def __init__(self, path: OllamasPath, *, reload=False, raise_errors=False):
         super().__init__()
-        self._path = home.ollamas
+        self._path = path
 
         if reload:
             self.reload_all_files(raise_errors=raise_errors)

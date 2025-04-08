@@ -8,7 +8,7 @@ from typing import Union
 from cvp.system.path import PathFlavour
 
 
-class Flows(PathFlavour):
+class FlowsPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)
 

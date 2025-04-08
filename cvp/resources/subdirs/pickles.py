@@ -12,7 +12,7 @@ PICKLE_PROTOCOL_VERSION: Final[int] = 5
 PICKLE_ENCODING: Final[str] = "ASCII"
 
 
-class Pickles(PathFlavour):
+class PicklesPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)
         self._pickle_protocol_version = PICKLE_PROTOCOL_VERSION

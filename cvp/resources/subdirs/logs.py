@@ -6,6 +6,6 @@ from typing import Union
 from cvp.system.path import PathFlavour
 
 
-class Logs(PathFlavour):
+class LogsPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)

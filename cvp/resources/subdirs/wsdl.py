@@ -8,7 +8,7 @@ from cvp.assets.wsdl import get_wsdl_dir
 from cvp.system.path import PathFlavour
 
 
-class Wsdl(PathFlavour):
+class WsdlPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)
 
