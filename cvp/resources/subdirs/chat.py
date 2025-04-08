@@ -7,7 +7,7 @@ from cvp.system.path import PathFlavour
 from cvp.variables import DEFAULT_CHAT_SQLITE_FILENAME
 
 
-class Chat(PathFlavour):
+class ChatPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)
 

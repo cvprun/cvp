@@ -109,7 +109,7 @@ class Context(ContextMixins):
             update=True,
         )
 
-        self._chat = ChatManager(self._home, create_tables=True)
+        self._chat = ChatManager(self._home.chat, create_tables=True)
         self._ollamas = OllamaManager(self._home, reload=True)
         self._flows = FlowManager(self._home)
         self._flows.refresh_flow_graphs()

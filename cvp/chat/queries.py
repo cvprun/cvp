@@ -43,13 +43,14 @@ limit ?;
 
 SELECT_CONVERSATION_LATEST_AFTER_ID = """
 select * from conversation
-where id >= ?
+where id > ?
 order by created_at desc
 limit ?;
 """
 
 INSERT_MESSAGE = """
-insert into message (conversation_id, request, response, error, created_at) values (?, ?, ?, ?, ?);
+insert into message (conversation_id, request, response, error, created_at)
+values (?, ?, ?, ?, ?);
 """
 
 DELETE_MESSAGE = """
@@ -65,7 +66,7 @@ limit ?;
 
 SELECT_MESSAGE_LATEST_AFTER_ID = """
 select * from message
-where id >= ?
+where id > ?
 order by created_at desc
 limit ?;
 """

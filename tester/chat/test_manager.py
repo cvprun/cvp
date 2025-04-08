@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os
+from datetime import UTC, datetime
 from tempfile import TemporaryDirectory
+from time import sleep
 from unittest import TestCase, main
+from warnings import warn
 
 from cvp.chat.manager import ChatManager
 from cvp.resources.home import HomeDir
+from cvp.variables import DEFAULT_CHAT_LIMIT
 
 
 class ManagerTestCase(TestCase):
@@ -13,28 +17,110 @@ class ManagerTestCase(TestCase):
         self._tmpdir = TemporaryDirectory()
         self.assertTrue(os.path.isdir(self._tmpdir.name))
         self._home = HomeDir(self._tmpdir.name)
-        self._chat = ChatManager(self._home, create_tables=True)
+        self._chat = ChatManager(self._home.chat, create_tables=True)
         self.assertTrue(self._chat.database_path.exists())
 
     def tearDown(self):
         self._tmpdir.cleanup()
 
-    def test_default(self):
-        conv_id = self._chat.insert_conversation("Test")
-        self.assertEqual(1, conv_id)
-        conv_rows = self._chat.select_conversation_latest()
-        self.assertEqual(1, len(conv_rows))
-        self.assertEqual(1, conv_rows[0].id)
-        self.assertEqual("Test", conv_rows[0].title)
+    def test_conversation(self):
+        now1 = datetime.now(UTC)
+        title = "Test"
 
-        msg_id = self._chat.insert_message(conv_id, "req", "res", "err")
+        row_id = self._chat.insert_conversation(title, now1)
+        self.assertEqual(1, row_id)
+
+        rows = self._chat.select_conversation_latest()
+        self.assertEqual(1, len(rows))
+        self.assertEqual(row_id, rows[0].id)
+        self.assertEqual(title, rows[0].title)
+        self.assertEqual(now1, rows[0].created_at)
+        self.assertIsNone(rows[0].updated_at)
+
+        now2 = datetime.now(UTC)
+        if now1 == now2:
+            warn("Your CPU may be too fast or your datetime resolution may be low")
+            sleep(1.0)
+            now2 = datetime.now(UTC)
+
+        self.assertNotEqual(now1, now2)
+
+        updated_at = now2.isoformat()
+        title2 = "Test2"
+        self._chat.update_conversation_title(row_id, title2, updated_at)
+
+        rows2 = self._chat.select_conversation_latest()
+        self.assertEqual(1, len(rows2))
+        self.assertEqual(row_id, rows2[0].id)
+        self.assertEqual(title2, rows2[0].title)
+        self.assertEqual(now1, rows2[0].created_at)
+        self.assertEqual(now2, rows2[0].updated_at)
+
+        self._chat.delete_conversation(row_id)
+        rows3 = self._chat.select_conversation_latest()
+        self.assertEqual(0, len(rows3))
+
+    def test_many_conversation(self):
+        limit = DEFAULT_CHAT_LIMIT
+
+        for i in range(limit):
+            self._chat.insert_conversation()
+
+        rows1 = self._chat.select_conversation_latest()
+        self.assertEqual(limit, len(rows1))
+        self.assertEqual(limit, rows1[0].id)
+        self.assertEqual(1, rows1[limit - 1].id)
+
+        rows2 = self._chat.select_conversation_latest_after_id(limit)
+        self.assertEqual(0, len(rows2))
+
+        self._chat.insert_conversation()
+        rows3 = self._chat.select_conversation_latest_after_id(limit)
+        self.assertEqual(1, len(rows3))
+        self.assertEqual(limit + 1, rows3[0].id)
+
+    def test_message(self):
+        now1 = datetime.now(UTC)
+
+        conv_id = self._chat.insert_conversation()
+        self.assertEqual(1, conv_id)
+
+        msg_id = self._chat.insert_message(conv_id, "req", "res", "err", now1)
         self.assertEqual(1, msg_id)
-        msg_rows = self._chat.select_message_latest()
-        self.assertEqual(1, len(msg_rows))
-        self.assertEqual(1, msg_rows[0].id)
-        self.assertEqual("req", msg_rows[0].request)
-        self.assertEqual("res", msg_rows[0].response)
-        self.assertEqual("err", msg_rows[0].error)
+
+        rows = self._chat.select_message_latest()
+        self.assertEqual(1, len(rows))
+        self.assertEqual(1, rows[0].id)
+        self.assertEqual("req", rows[0].request)
+        self.assertEqual("res", rows[0].response)
+        self.assertEqual("err", rows[0].error)
+        self.assertEqual(now1, rows[0].created_at)
+
+        self._chat.delete_message(msg_id)
+        rows2 = self._chat.select_message_latest()
+        self.assertEqual(0, len(rows2))
+
+    def test_many_message(self):
+        limit = DEFAULT_CHAT_LIMIT
+
+        conv_id = self._chat.insert_conversation()
+        self.assertEqual(1, conv_id)
+
+        for i in range(limit):
+            self._chat.insert_message(conv_id)
+
+        rows1 = self._chat.select_message_latest()
+        self.assertEqual(limit, len(rows1))
+        self.assertEqual(limit, rows1[0].id)
+        self.assertEqual(1, rows1[limit - 1].id)
+
+        rows2 = self._chat.select_message_latest_after_id(limit)
+        self.assertEqual(0, len(rows2))
+
+        self._chat.insert_message(conv_id)
+        rows3 = self._chat.select_message_latest_after_id(limit)
+        self.assertEqual(1, len(rows3))
+        self.assertEqual(limit + 1, rows3[0].id)
 
 
 if __name__ == "__main__":

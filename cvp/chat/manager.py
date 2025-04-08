@@ -1,73 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
-from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from cvp.chat import queries
-from cvp.resources.home import HomeDir
+from cvp.chat.conversation import ChatConversation
+from cvp.chat.message import ChatMessage
+from cvp.resources.subdirs.chat import ChatPath
 from cvp.variables import DEFAULT_CHAT_LIMIT
 
 
-@dataclass
-class ChatConversation:
-    id: int
-    title: str
-    created_at: datetime
-    updated_at: Optional[datetime] = None
-
-    @classmethod
-    def from_row(cls, row):
-        assert isinstance(row, tuple)
-        assert 4 == len(row)
-        id_, title, created_at, updated_at = row
-        assert isinstance(id_, int)
-        assert isinstance(title, str)
-        assert isinstance(created_at, str)
-        assert isinstance(updated_at, (type(None), str))
-        return cls(
-            id_,
-            title,
-            datetime.fromisoformat(created_at),
-            datetime.fromisoformat(updated_at) if updated_at else None,
-        )
-
-
-@dataclass
-class ChatMessage:
-    id: int
-    conversation_id: int
-    request: Optional[str]
-    response: Optional[str]
-    error: Optional[str]
-    created_at: datetime
-
-    @classmethod
-    def from_row(cls, row):
-        assert isinstance(row, tuple)
-        assert 6 == len(row)
-        id_, conversation_id, request, response, error, created_at = row
-        assert isinstance(id_, int)
-        assert isinstance(conversation_id, int)
-        assert isinstance(request, (type(None), str))
-        assert isinstance(response, (type(None), str))
-        assert isinstance(error, (type(None), str))
-        assert isinstance(created_at, str)
-        return cls(
-            id_,
-            conversation_id,
-            request,
-            response,
-            error,
-            datetime.fromisoformat(created_at),
-        )
-
-
 class ChatManager:
-    def __init__(self, home: HomeDir, *, create_tables=False):
-        super().__init__()
-        self._path = home.chat
+    def __init__(self, path: ChatPath, *, create_tables=False):
+        self._path = path
 
         if create_tables:
             self.create_tables()
@@ -94,13 +40,16 @@ class ChatManager:
     def insert_conversation(
         self,
         title: Optional[str] = None,
-        created_at: Optional[datetime] = None,
+        created_at: Optional[Union[datetime, str]] = None,
     ) -> Optional[int]:
         if title is None:
             title = str()
+        assert isinstance(title, str)
+
         if created_at is None:
             created_at = datetime.now(UTC).isoformat()
-        assert isinstance(title, str)
+        elif isinstance(created_at, datetime):
+            created_at = created_at.astimezone(UTC).isoformat()
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
@@ -112,11 +61,13 @@ class ChatManager:
         self,
         id_: int,
         title: str,
-        updated_at: Optional[datetime] = None,
+        updated_at: Optional[Union[datetime, str]] = None,
     ) -> None:
         if updated_at is None:
             updated_at = datetime.now(UTC).isoformat()
-        assert isinstance(updated_at, datetime)
+        elif isinstance(updated_at, datetime):
+            updated_at = updated_at.astimezone(UTC).isoformat()
+        assert isinstance(updated_at, str)
 
         with self.connect() as conn:
             query = queries.UPDATE_CONVERSATION_TITLE
@@ -159,10 +110,12 @@ class ChatManager:
         request: Optional[str] = None,
         response: Optional[str] = None,
         error: Optional[str] = None,
-        created_at: Optional[datetime] = None,
+        created_at: Optional[Union[datetime, str]] = None,
     ) -> Optional[int]:
         if created_at is None:
             created_at = datetime.now(UTC).isoformat()
+        elif isinstance(created_at, datetime):
+            created_at = created_at.astimezone(UTC).isoformat()
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
