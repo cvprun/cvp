@@ -3,6 +3,7 @@
 from threading import Event
 from typing import Protocol, runtime_checkable
 
+from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.flow.manager import FlowManager
 from cvp.keyring.root import RootKeyring
@@ -22,6 +23,7 @@ class BaseContextMixin(Protocol):
     _process_manager: ProcessManager
     _keyring: RootKeyring
     _onvif_manager: OnvifManager
+    _chat: ChatManager
     _ollamas: OllamaManager
     _flows: FlowManager
     _msg_queue: MsgQueue

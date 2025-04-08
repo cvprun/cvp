@@ -16,14 +16,11 @@ from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.dtype import DtypeManagerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
-from cvp.config.sections.files import FilesWindowConfig
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.font import FontConfig, FontManagerConfig
-from cvp.config.sections.games.glyph_hack import GlyphHackWindowConfig as GhWindowConfig
 from cvp.config.sections.games.tetrix import TetrixWindowConfig
 from cvp.config.sections.graphic import GraphicConfig
 from cvp.config.sections.keyring import KeyringConfig
-from cvp.config.sections.labeling import LabelingAuiConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
 from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
@@ -35,8 +32,6 @@ from cvp.config.sections.preference import PreferenceManagerConfig as PrefManage
 from cvp.config.sections.process import ProcessManagerConfig
 from cvp.config.sections.stitching import StitchingAuiConfig
 from cvp.config.sections.supabase import SupabaseConfig
-from cvp.config.sections.terminal import TerminalWindowConfig
-from cvp.config.sections.text import TextWindowConfig
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
 from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
@@ -58,14 +53,11 @@ class Config:
     display: DisplayConfig = field(default_factory=DisplayConfig)
     dtype_manager: DtypeManagerConfig = field(default_factory=DtypeManagerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
-    files_window: FilesWindowConfig = field(default_factory=FilesWindowConfig)
     flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
     font: FontConfig = field(default_factory=FontConfig)
     font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
-    glyph_hack_window: GhWindowConfig = field(default_factory=GhWindowConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
-    labeling_aui: LabelingAuiConfig = field(default_factory=LabelingAuiConfig)
     layout_manager: LayoutManagerConfig = field(default_factory=LayoutManagerConfig)
     layouts: List[LayoutConfig] = field(default_factory=list)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
@@ -80,9 +72,7 @@ class Config:
     ollama: OllamaConfig = field(default_factory=OllamaConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
     stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
-    terminal_window: TerminalWindowConfig = field(default_factory=TerminalWindowConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)
-    text_window: TextWindowConfig = field(default_factory=TextWindowConfig)
     toast_window: ToastWindowConfig = field(default_factory=ToastWindowConfig)
     window_manager: WindowManagerConfig = field(default_factory=WindowManagerConfig)
     worker_manager: WorkerManagerConfig = field(default_factory=WorkerManagerConfig)
