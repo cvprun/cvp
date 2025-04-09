@@ -13,6 +13,8 @@ from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
+from cvp.imgui.flags.combo import WIDTH_FIT_PREVIEW
+from cvp.imgui.combo import combo
 from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
 from cvp.imgui.input_text_multilingual import input_text_multilingual
 from cvp.imgui.input_text_multilingual_with_button import (
@@ -79,6 +81,29 @@ class ChatMode(BaseMode):
         finally:
             imgui.pop_style_var()
 
+    def combo_models(self) -> None:
+        model_names = self.context.chat_model_names
+        selected_index = self.chat_selected_index
+
+        if 0 <= selected_index < len(model_names):
+            preview_value = model_names[selected_index]
+        else:
+            preview_value = str()
+
+        if imgui.begin_combo("###Models", preview_value, WIDTH_FIT_PREVIEW):
+            try:
+                for i, model_name in enumerate(model_names):
+                    is_selected = selected_index == i
+                    if imgui.selectable(model_name, is_selected)[0]:
+                        self.chat_selected_index = i
+
+                    # Set the initial focus when opening the combo
+                    # (scrolling + keyboard navigation focus)
+                    if is_selected:
+                        imgui.set_item_default_focus()
+            finally:
+                imgui.end_combo()
+
     def do_child_process(
         self,
         menu_label=DEFAULT_MENU_LABEL,
@@ -112,16 +137,7 @@ class ChatMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context(main_label):
-            models_result = imgui.combo(
-                "###Models",
-                self.chat_selected_index,
-                self.context.chat_model_names,
-            )
-            models_changed = models_result[0]
-            models_index = models_result[1]
-            if models_changed:
-                self.chat_selected_index = models_index
-
+            self.combo_models()
             imgui.same_line()
             if imgui.button("Refresh"):
                 self.context.refresh_chat_models()
