@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import sqlite3
-from datetime import UTC, datetime
 from os import PathLike
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 
 from cvp.chat import queries
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.message import ChatMessage
+from cvp.chat.stream import ChatStream
+from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
 from cvp.variables import DEFAULT_CHAT_LIMIT
 
 
@@ -29,42 +30,45 @@ class ChatDatabase:
         with self.connect() as conn:
             conn.execute(queries.CREATE_TABLE_CONVERSATION)
             conn.execute(queries.CREATE_TABLE_MESSAGE)
+            conn.execute(queries.CREATE_TABLE_STREAM)
 
     # ----------------------------------------------------------------------------------
     # [conversation] -------------------------------------------------------------------
 
+    @staticmethod
+    def _insert_conversation(
+        conn: sqlite3.Connection,
+        title: str,
+        created_at: str,
+    ) -> int:
+        query = queries.INSERT_CONVERSATION
+        parameters = (title, created_at)
+        conversation_id = conn.execute(query, parameters).lastrowid
+        assert conversation_id is not None
+        return conversation_id
+
     def insert_conversation(
         self,
         title: Optional[str] = None,
-        created_at: Optional[Union[datetime, str]] = None,
+        created_at: DateTimeLike = None,
     ) -> int:
         if title is None:
             title = str()
         assert isinstance(title, str)
 
-        if created_at is None:
-            created_at = datetime.now(UTC).isoformat()
-        elif isinstance(created_at, datetime):
-            created_at = created_at.astimezone(UTC).isoformat()
+        created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
-            query = queries.INSERT_CONVERSATION
-            parameters = (title, created_at)
-            conversation_id = conn.execute(query, parameters).lastrowid
-            assert conversation_id is not None
-            return conversation_id
+            return self._insert_conversation(conn, title, created_at)
 
     def update_conversation_title(
         self,
         id_: int,
         title: str,
-        updated_at: Optional[Union[datetime, str]] = None,
+        updated_at: DateTimeLike = None,
     ) -> None:
-        if updated_at is None:
-            updated_at = datetime.now(UTC).isoformat()
-        elif isinstance(updated_at, datetime):
-            updated_at = updated_at.astimezone(UTC).isoformat()
+        updated_at = isoformat_with_utc(updated_at)
         assert isinstance(updated_at, str)
 
         with self.connect() as conn:
@@ -102,26 +106,56 @@ class ChatDatabase:
     # ----------------------------------------------------------------------------------
     # [message] ------------------------------------------------------------------------
 
+    @staticmethod
+    def _insert_message(
+        conn: sqlite3.Connection,
+        conversation_id: int,
+        request: Optional[str],
+        error: Optional[str],
+        status: int,
+        created_at: str,
+    ) -> int:
+        query = queries.INSERT_MESSAGE
+        parameters = (conversation_id, request, error, status, created_at)
+        message_id = conn.execute(query, parameters).lastrowid
+        assert message_id is not None
+        return message_id
+
     def insert_message(
         self,
         conversation_id: int,
         request: Optional[str] = None,
-        response: Optional[str] = None,
         error: Optional[str] = None,
-        created_at: Optional[Union[datetime, str]] = None,
+        status=0,
+        created_at: DateTimeLike = None,
     ) -> int:
-        if created_at is None:
-            created_at = datetime.now(UTC).isoformat()
-        elif isinstance(created_at, datetime):
-            created_at = created_at.astimezone(UTC).isoformat()
+        created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
-            query = queries.INSERT_MESSAGE
-            parameters = (conversation_id, request, response, error, created_at)
-            message_id = conn.execute(query, parameters).lastrowid
-            assert message_id is not None
-            return message_id
+            return self._insert_message(
+                conn,
+                conversation_id,
+                request,
+                error,
+                status,
+                created_at,
+            )
+
+    def update_message_error_and_status(
+        self,
+        id_: int,
+        error: Optional[str] = None,
+        status=0,
+        updated_at: DateTimeLike = None,
+    ) -> None:
+        updated_at = isoformat_with_utc(updated_at)
+        assert isinstance(updated_at, str)
+
+        with self.connect() as conn:
+            query = queries.UPDATE_MESSAGE_ERROR_STATUS
+            parameters = (error, status, updated_at, id_)
+            conn.execute(query, parameters)
 
     def delete_message(self, id_: int) -> None:
         with self.connect() as conn:
@@ -129,58 +163,68 @@ class ChatDatabase:
             parameters = (id_,)
             conn.execute(query, parameters)
 
-    def select_message_latest(
-        self,
-        limit=DEFAULT_CHAT_LIMIT,
-    ) -> List[ChatMessage]:
+    def select_message(self, conversation_id: int) -> List[ChatMessage]:
         with self.connect() as conn:
-            query = queries.SELECT_MESSAGE_LATEST
-            parameters = (limit,)
-            result = list()
-            for row in conn.execute(query, parameters):
-                result.append(ChatMessage.from_row(row))
-            return result
-
-    def select_message_latest_after_id(self, id_: int, limit=DEFAULT_CHAT_LIMIT):
-        with self.connect() as conn:
-            query = queries.SELECT_MESSAGE_LATEST_AFTER_ID
-            parameters = id_, limit
+            query = queries.SELECT_MESSAGE
+            parameters = (conversation_id,)
             result = list()
             for row in conn.execute(query, parameters):
                 result.append(ChatMessage.from_row(row))
             return result
 
     # ----------------------------------------------------------------------------------
-    # [mixins] -------------------------------------------------------------------------
+    # [stream] -------------------------------------------------------------------------
+
+    def insert_stream(
+        self,
+        message_id: int,
+        chunk: Optional[str] = None,
+        created_at: DateTimeLike = None,
+    ) -> int:
+        created_at = isoformat_with_utc(created_at)
+        assert isinstance(created_at, str)
+
+        with self.connect() as conn:
+            query = queries.INSERT_STREAM
+            parameters = (message_id, chunk, created_at)
+            stream_id = conn.execute(query, parameters).lastrowid
+            assert stream_id is not None
+            return stream_id
+
+    def delete_stream(self, id_: int) -> None:
+        with self.connect() as conn:
+            query = queries.DELETE_STREAM
+            parameters = (id_,)
+            conn.execute(query, parameters)
+
+    def select_stream(self, message_id: int) -> List[ChatStream]:
+        with self.connect() as conn:
+            query = queries.SELECT_STREAM
+            parameters = (message_id,)
+            result = list()
+            for row in conn.execute(query, parameters):
+                result.append(ChatStream.from_row(row))
+            return result
+
+    # ----------------------------------------------------------------------------------
+    # [conversation + message] ---------------------------------------------------------
 
     def insert_conversation_and_message(
         self,
         title: Optional[str] = None,
         request: Optional[str] = None,
-        response: Optional[str] = None,
-        error: Optional[str] = None,
-        created_at: Optional[Union[datetime, str]] = None,
+        created_at: DateTimeLike = None,
     ) -> Tuple[int, int]:
         if title is None:
             title = str()
         assert isinstance(title, str)
 
-        if created_at is None:
-            created_at = datetime.now(UTC).isoformat()
-        elif isinstance(created_at, datetime):
-            created_at = created_at.astimezone(UTC).isoformat()
+        created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
-            conv_query = queries.INSERT_CONVERSATION
-            conv_parameters = (title, created_at)
-            conversation_id = conn.execute(conv_query, conv_parameters).lastrowid
-
-            msg_query = queries.INSERT_MESSAGE
-            msg_parameters = (conversation_id, request, response, error, created_at)
-            msg_id = conn.execute(msg_query, msg_parameters).lastrowid
-
-            assert created_at is not None
+            conv_id = self._insert_conversation(conn, title, created_at)
+            msg_id = self._insert_message(conn, conv_id, request, None, 0, created_at)
+            assert conv_id is not None
             assert msg_id is not None
-
-            return conversation_id, msg_id
+            return conv_id, msg_id

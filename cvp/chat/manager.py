@@ -7,6 +7,7 @@ from cvp.chat.cache import ChatCache
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.database import ChatDatabase
 from cvp.chat.message import ChatMessage
+from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
 from cvp.resources.subdirs.chat import ChatPath
 from cvp.variables import DEFAULT_CHAT_LIMIT
 
@@ -53,32 +54,26 @@ class ChatManager:
     def __delitem__(self, conv_id: int):
         del self._caches[conv_id]
 
-    def create_new_chat(
+    def create_new_chat_stream(
         self,
         title: Optional[str] = None,
         request: Optional[str] = None,
-        response: Optional[str] = None,
-        error: Optional[str] = None,
-        created_at: Optional[Union[datetime, str]] = None,
+        created_at: DateTimeLike = None,
     ) -> ChatCache:
         if title is None:
             title = str()
         assert isinstance(title, str)
 
-        if created_at is None:
-            created_at = datetime.now(UTC).isoformat()
-        elif isinstance(created_at, datetime):
-            created_at = created_at.astimezone(UTC).isoformat()
+        created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
-        conv_id, msg_id = self._database.insert_conversation_and_message(
-            title, request, response, error, created_at
-        )
+        ids = self._database.insert_conversation_and_message(title, request, created_at)
+        conv_id, msg_id = ids
 
         conv_row = conv_id, title, created_at, None
         conv = ChatConversation.from_row(conv_row)
 
-        msg_row = msg_id, conv_id, request, response, error, created_at
+        msg_row = msg_id, conv_id, request, None, 0, created_at
         msg = ChatMessage.from_row(msg_row)
 
         assert conv_id not in self._caches
@@ -86,17 +81,13 @@ class ChatManager:
         self._caches[conv_id] = cache
         return cache
 
-    def refresh_messages(self, conversation_id: int, limit: Optional[int] = None):
+    def refresh_messages(self, conversation_id: int):
         if conversation_id not in self._caches:
             raise KeyError(f"Not found conversation: {conversation_id}")
 
-        if limit is None:
-            limit = self._limit
-        assert isinstance(limit, int)
-
         cache = self._caches[conversation_id]
-        messages = self._database.select_message_latest_after_id(conversation_id, limit)
-        cache.appendleft_messages(*messages)
+        messages = self._database.select_message(conversation_id)
+        cache.appendleft_messages(messages)
         return cache.messages
 
     def append_chat(
@@ -123,7 +114,7 @@ class ChatManager:
         cache = self._caches[conversation_id]
         if cache.is_unrequested:
             self.refresh_messages(conversation_id)
-        cache.appendleft_messages(message)
+        cache.appendleft_messages((message,))
         return message
 
     def messages(self, conversation_id: int) -> List[ChatMessage]:

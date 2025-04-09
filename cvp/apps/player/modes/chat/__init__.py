@@ -157,11 +157,4 @@ class ChatMode(BaseMode):
 
         for msg in cache.messages:
             request = msg.request if msg.request else str()
-            response = msg.response if msg.response else str()
-            error = msg.error if msg.error else str()
-            created_at = msg.created_at.isoformat()
-
             imgui.bullet_text(request)
-            imgui.bullet_text(response)
-            imgui.bullet_text(error)
-            imgui.bullet_text(created_at)
