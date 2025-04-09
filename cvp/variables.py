@@ -53,6 +53,7 @@ DEFAULT_MENU_WIDTH: Final[float] = 150.0
 
 DEFAULT_CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
 DEFAULT_CHAT_LIMIT: Final[int] = 30
+INVALID_CHAT_ID: Final[int] = -1
 
 DEFAULT_OLLAMA_NAME: Final[str] = "[Nameless]"
 DEFAULT_OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"

@@ -1,16 +1,37 @@
-from dataclasses import dataclass
+# -*- coding: utf-8 -*-
+
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
+
+import orjson
+
+from cvp.variables import INVALID_CHAT_ID
 
 
 @dataclass
 class ChatMessage:
-    id: int
-    conversation_id: int
-    request: Optional[str]
-    response: Optional[str]
-    error: Optional[str]
-    created_at: datetime
+    id: int = INVALID_CHAT_ID
+    conversation_id: int = INVALID_CHAT_ID
+    request: Optional[str] = None
+    response: Optional[str] = None
+    error: Optional[str] = None
+    created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
+
+    def dump_first_user_message_request(self, message: str) -> None:
+        self.dump_request({"role": "user", "content": message})
+
+    def dump_request(self, data: Any) -> None:
+        self.request = str(orjson.dumps(data), encoding="utf-8")
+
+    def load_request(self) -> Any:
+        return orjson.loads(self.request) if self.request else None
+
+    def dump_response(self, data: Any) -> None:
+        self.response = str(orjson.dumps(data), encoding="utf-8")
+
+    def load_response(self) -> Any:
+        return orjson.loads(self.response) if self.response else None
 
     @classmethod
     def from_row(cls, row):

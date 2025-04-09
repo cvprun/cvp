@@ -77,6 +77,7 @@ fmpeg
 fprobe
 framebuffers
 frect
+fromisoformat
 ftype
 fwqvga
 getbuffer
@@ -99,6 +100,7 @@ infiles
 iscapture
 islambda
 isnode
+isoformat
 isync
 jaraco
 kdci

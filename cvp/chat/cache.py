@@ -6,6 +6,7 @@ from typing import Deque, Iterable, Optional
 
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.message import ChatMessage
+from cvp.variables import INVALID_CHAT_ID
 
 
 class ChatCache:
@@ -13,9 +14,11 @@ class ChatCache:
         self,
         conversation: ChatConversation,
         messages: Optional[Iterable[ChatMessage]] = None,
+        live: Optional[ChatMessage] = None,
     ):
         self._conversation = conversation
         self._messages = deque(messages) if messages else None
+        self._live = live
 
     @property
     def id(self) -> int:
@@ -57,3 +60,21 @@ class ChatCache:
         assert isinstance(self._messages, deque)
         for msg in messages:
             self._messages.appendleft(msg)
+
+    @property
+    def has_live(self) -> bool:
+        return self._live is not None
+
+    @property
+    def live(self):
+        return self._live
+
+    @live.setter
+    def live(self, value: ChatMessage) -> None:
+        self._live = value
+
+    def clear_live(self) -> None:
+        self._live = None
+
+    def create_invalid_chat_message(self):
+        return ChatMessage(INVALID_CHAT_ID, self.id)

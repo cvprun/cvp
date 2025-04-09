@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from cvp.context.context import Context
 
 # noinspection PyProtectedMember
-from cvp.context.mixins._base import BaseContextMixin
+from cvp.context.mixins._base import ContextProtocol
 from cvp.inspect.member import get_attribute_keys
 from cvp.logging.disable import disable_logging
 
@@ -26,8 +26,8 @@ class ContextTestCase(TestCase):
             with disable_logging():
                 context = Context(tmpdir)
 
-            self.assertIsInstance(context, BaseContextMixin)
-            member_names = list(BaseContextMixin.__annotations__.keys())
+            self.assertIsInstance(context, ContextProtocol)
+            member_names = list(ContextProtocol.__annotations__.keys())
             attrs = {key: getattr(context, key) for key in get_attribute_keys(context)}
             while member_names:
                 attrs.pop(member_names.pop())

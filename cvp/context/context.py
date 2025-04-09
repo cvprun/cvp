@@ -112,8 +112,8 @@ class Context(ContextMixins):
             update=True,
         )
 
-        self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
+        self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows)
         self._flows.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
@@ -144,12 +144,12 @@ class Context(ContextMixins):
         return self._msg_queue
 
     @property
-    def chat(self):
-        return self._chat
-
-    @property
     def ollamas(self):
         return self._ollamas
+
+    @property
+    def chat(self):
+        return self._chat
 
     @property
     def fm(self):
