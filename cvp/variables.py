@@ -52,6 +52,7 @@ DEFAULT_MAIN_LABEL: Final[str] = "Main"
 DEFAULT_MENU_WIDTH: Final[float] = 150.0
 
 DEFAULT_CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
+DEFAULT_CHAT_TITLE_NONAME: Final[str] = "[New chat]"
 DEFAULT_CHAT_LIMIT: Final[int] = 30
 INVALID_CHAT_ID: Final[int] = -1
 

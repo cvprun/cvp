@@ -9,12 +9,11 @@ from cvp.chat.cache import ChatCache
 from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.combo import combo_fitting_items_max_width
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
-from cvp.imgui.flags.combo import WIDTH_FIT_PREVIEW
-from cvp.imgui.combo import combo
 from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
 from cvp.imgui.input_text_multilingual import input_text_multilingual
 from cvp.imgui.input_text_multilingual_with_button import (
@@ -26,6 +25,7 @@ from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import (
+    DEFAULT_CHAT_TITLE_NONAME,
     DEFAULT_MAIN_LABEL,
     DEFAULT_MENU_LABEL,
     DEFAULT_MENU_WIDTH,
@@ -41,6 +41,7 @@ class ChatMode(BaseMode):
         self._input_text = str()
         self._search = str()
         self._conversation_id = NOT_FOUND_INDEX
+        self._title_noname = DEFAULT_CHAT_TITLE_NONAME
 
     @staticmethod
     @override
@@ -82,27 +83,13 @@ class ChatMode(BaseMode):
             imgui.pop_style_var()
 
     def combo_models(self) -> None:
-        model_names = self.context.chat_model_names
-        selected_index = self.chat_selected_index
-
-        if 0 <= selected_index < len(model_names):
-            preview_value = model_names[selected_index]
-        else:
-            preview_value = str()
-
-        if imgui.begin_combo("###Models", preview_value, WIDTH_FIT_PREVIEW):
-            try:
-                for i, model_name in enumerate(model_names):
-                    is_selected = selected_index == i
-                    if imgui.selectable(model_name, is_selected)[0]:
-                        self.chat_selected_index = i
-
-                    # Set the initial focus when opening the combo
-                    # (scrolling + keyboard navigation focus)
-                    if is_selected:
-                        imgui.set_item_default_focus()
-            finally:
-                imgui.end_combo()
+        result = combo_fitting_items_max_width(
+            "###Models",
+            current=self.chat_selected_index,
+            items=self.context.chat_model_names,
+        )
+        if result.changed:
+            self.chat_selected_index = result.value
 
     def do_child_process(
         self,
@@ -113,7 +100,7 @@ class ChatMode(BaseMode):
         with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
             if imgui.begin_list_box("###MenuList", FULL_SIZE):
                 try:
-                    if imgui.button("New chat", (FULL_WIDTH, 0)):
+                    if imgui.button(self._title_noname, (FULL_WIDTH, 0)):
                         self._conversation_id = NOT_FOUND_INDEX
 
                     search_result = input_text_multilingual(
@@ -137,6 +124,13 @@ class ChatMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context(main_label):
+            if self._conversation_id == NOT_FOUND_INDEX:
+                imgui.text(self._title_noname)
+            else:
+                imgui.text(self.context.chat[self._conversation_id].title)
+
+            imgui.separator()
+
             self.combo_models()
             imgui.same_line()
             if imgui.button("Refresh"):
@@ -155,12 +149,13 @@ class ChatMode(BaseMode):
             imgui.separator()
 
             input_result, button_result = input_text_multilingual_with_button(
-                label="###InputText",
+                label="###UserInputText",
                 value=self._input_text,
                 button_label="Enter",
                 input_flags=ENTER_RETURNS_TRUE,
                 input_hint="Ask anything",
             )
+
             self._input_text = input_result.value
             if input_result.changed:
                 self._input_text = str()
