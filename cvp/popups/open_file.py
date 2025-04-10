@@ -14,7 +14,7 @@ from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.flags.window import WindowFlags
-from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
+from cvp.imgui.footer_height_to_reverse import footer_height_as_reverse
 from cvp.imgui.input_text import input_text
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.logging.logging import logger
@@ -118,7 +118,7 @@ class OpenFilePopup(PopupBase[str]):
             else:
                 logger.warning(f"Invalid location: '{loc_text}'")
 
-        if begin_child("Files", 0, -footer_height_to_reserve(), BORDERS):
+        if begin_child("Files", 0, footer_height_as_reverse(), BORDERS):
             try:
                 if self._current_dir != self._location_text:
                     # Update items

@@ -3,6 +3,7 @@
 from typing import NamedTuple
 
 from cvp.context.mixins._base import BaseContextMixin
+from cvp.logging.logging import logger as logger
 
 
 class ChatMixin(BaseContextMixin):
@@ -74,4 +75,6 @@ class ChatMixin(BaseContextMixin):
     ) -> None:
         if self._ollama_chat_runner.running:
             raise ValueError("The ollama chat runner is running")
+
+        logger.info(f"Request chat stream: '{message}'")
         self._ollama_chat_runner(conversation_id, server_key, model_name, message)

@@ -9,16 +9,18 @@ from cvp.chat.cache import ChatCache
 from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.button import button
 from cvp.imgui.combo import combo_fitting_items_max_width
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
+from cvp.imgui.flags.input_text import (
+    CTRL_ENTER_FOR_NEW_LINE,
+    ENTER_RETURNS_TRUE,
+    READ_ONLY,
+)
 from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
-from cvp.imgui.footer_height_to_reserve import footer_height_to_reserve
-from cvp.imgui.input_text_multilingual import input_text_multilingual
-from cvp.imgui.input_text_multilingual_with_button import (
-    input_text_multilingual_with_button,
-)
+from cvp.imgui.input_text_multilingual import input_text_multiline
+from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.msgs.msg import Msg
@@ -42,6 +44,7 @@ class ChatMode(BaseMode):
         self._search = str()
         self._conversation_id = NOT_FOUND_INDEX
         self._title_noname = DEFAULT_CHAT_TITLE_NONAME
+        self._enter_label = "Enter"
 
     @staticmethod
     @override
@@ -72,6 +75,10 @@ class ChatMode(BaseMode):
     def chat_selected_index(self, value: int) -> None:
         self.context.config.chat.selected_index = value
 
+    @property
+    def disabled_input(self) -> bool:
+        return self.context.get_ollama_chat_status().running
+
     @override
     def do_process(self) -> None:
         imgui.push_style_var(StyleVar.window_border_size, 0)
@@ -91,6 +98,61 @@ class ChatMode(BaseMode):
         if result.changed:
             self.chat_selected_index = result.value
 
+    @staticmethod
+    def calc_input_text_size(input_value: str, button_label: str) -> imgui.ImVec2:
+        button_size = imgui.calc_text_size(button_label)
+        button_width = button_size.x
+
+        frame_padding = imgui.get_style().frame_padding
+        item_spacing = imgui.get_style().item_spacing
+
+        input_text_right = button_width + (frame_padding.x * 2) + item_spacing.x
+        width = -1 * input_text_right
+
+        line_count = input_value.count("\n") + 1
+        text_height = imgui.get_font_size() * line_count
+        height = text_height + (frame_padding.y * 2)
+
+        return imgui.ImVec2(width, height)
+
+    def get_input_text_size(self) -> imgui.ImVec2:
+        return self.calc_input_text_size(self._input_text, self._enter_label)
+
+    def input_text_multilingual_with_button(self) -> None:
+        disabled_input = self.disabled_input
+
+        with style_disable_input_context(cancel=not self.disabled_input):
+            input_flags = CTRL_ENTER_FOR_NEW_LINE | ENTER_RETURNS_TRUE
+            if disabled_input:
+                input_flags |= READ_ONLY
+
+            input_result = input_text_multiline(
+                label="###UserInputText",
+                value=self._input_text,
+                flags=input_flags,
+                size=self.get_input_text_size(),
+            )
+
+            if not disabled_input:
+                self._input_text = input_result.value
+                if input_result.changed:
+                    self.request_user_input(self._input_text)
+                    self._input_text = str()
+
+            imgui.same_line()
+            if button(self._enter_label, disabled=disabled_input):
+                assert not disabled_input
+                self.request_user_input(self._input_text)
+                self._input_text = str()
+
+    def request_user_input(self, text: str) -> None:
+        self.context.request_chat_stream(
+            self._conversation_id,
+            self.context.config.chat.selected_server_key,
+            self.context.config.chat.selected_model_name,
+            text,
+        )
+
     def do_child_process(
         self,
         menu_label=DEFAULT_MENU_LABEL,
@@ -103,14 +165,14 @@ class ChatMode(BaseMode):
                     if imgui.button(self._title_noname, (FULL_WIDTH, 0)):
                         self._conversation_id = NOT_FOUND_INDEX
 
-                    search_result = input_text_multilingual(
+                    search_result = input_text_multiline(
                         label="###Search",
                         value=self._search,
-                        size=(-1 * imgui.FLT_MIN, 0.0),
-                        hint="Search chats",
+                        flags=CTRL_ENTER_FOR_NEW_LINE | ENTER_RETURNS_TRUE,
                     )
+                    self._search = search_result.value
                     if search_result.changed:
-                        self._search = search_result.value
+                        pass
 
                     imgui.separator()
 
@@ -138,7 +200,8 @@ class ChatMode(BaseMode):
 
             imgui.separator()
 
-            history_bottom = -1 * footer_height_to_reserve()
+            item_spacing_y = imgui.get_style().item_spacing.y * 2
+            history_bottom = -1 * (self.get_input_text_size().y + item_spacing_y)
 
             with begin_child_context(main_label, 0, history_bottom):
                 if self._conversation_id == NOT_FOUND_INDEX:
@@ -147,20 +210,7 @@ class ChatMode(BaseMode):
                     self.do_history(self.context.chat[self._conversation_id])
 
             imgui.separator()
-
-            input_result, button_result = input_text_multilingual_with_button(
-                label="###UserInputText",
-                value=self._input_text,
-                button_label="Enter",
-                input_flags=ENTER_RETURNS_TRUE,
-                input_hint="Ask anything",
-            )
-
-            self._input_text = input_result.value
-            if input_result.changed:
-                self._input_text = str()
-            if button_result:
-                self._input_text = str()
+            self.input_text_multilingual_with_button()
 
     def do_history(self, cache: ChatCache) -> None:
         if cache.is_unrequested:

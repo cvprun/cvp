@@ -23,6 +23,7 @@ from sys import stdout
 from typing import Final, Optional, Sequence, Union
 
 from cvp.logging.variables import (
+    CVP_CHAT_LOGGER_NAME,
     CVP_DOWNLOAD_LOGGER_NAME,
     CVP_EVENT_LOGGER_NAME,
     CVP_FLOW_LOGGER_NAME,
@@ -30,6 +31,7 @@ from cvp.logging.variables import (
     CVP_MSG_LOGGER_NAME,
     CVP_ONVIF_LOGGER_NAME,
     CVP_PROFILE_LOGGER_NAME,
+    CVP_RENDERER_LOGGER_NAME,
     CVP_WIDGETS_LOGGER_NAME,
     CVP_WORKER_LOGGER_NAME,
     CVP_WSDL_LOGGER_NAME,
@@ -47,12 +49,14 @@ from cvp.system.environ_keys import CVP_HOME
 
 logger = getLogger(CVP_LOGGER_NAME)
 
+chat_logger = getLogger(CVP_CHAT_LOGGER_NAME)
 download_logger = getLogger(CVP_DOWNLOAD_LOGGER_NAME)
 event_logger = getLogger(CVP_EVENT_LOGGER_NAME)
 flow_logger = getLogger(CVP_FLOW_LOGGER_NAME)
 msg_logger = getLogger(CVP_MSG_LOGGER_NAME)
 onvif_logger = getLogger(CVP_ONVIF_LOGGER_NAME)
 profile_logger = getLogger(CVP_PROFILE_LOGGER_NAME)
+renderer_logger = getLogger(CVP_RENDERER_LOGGER_NAME)
 widgets_logger = getLogger(CVP_WIDGETS_LOGGER_NAME)
 worker_logger = getLogger(CVP_WORKER_LOGGER_NAME)
 wsdl_logger = getLogger(CVP_WSDL_LOGGER_NAME)

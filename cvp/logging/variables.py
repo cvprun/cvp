@@ -6,12 +6,14 @@ from cvp.system.environ_keys import CVP_HOME
 
 CVP_LOGGER_NAME: Final[str] = "cvp"  # Project root logger
 
+CVP_CHAT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.chat"
 CVP_DOWNLOAD_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.download"
 CVP_EVENT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.event"
 CVP_FLOW_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.flow"
 CVP_MSG_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.msg"
 CVP_ONVIF_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.onvif"
 CVP_PROFILE_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.profile"
+CVP_RENDERER_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.renderer"
 CVP_WIDGETS_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.widgets"
 CVP_WORKER_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.worker"
 CVP_WSDL_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.wsdl"
@@ -151,12 +153,14 @@ def default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> Dict[str, Any]
                 "level": "DEBUG",
                 "propagate": 0,
             },
+            CVP_CHAT_LOGGER_NAME: {"level": "DEBUG"},
             CVP_DOWNLOAD_LOGGER_NAME: {"level": "DEBUG"},
             CVP_EVENT_LOGGER_NAME: {"level": "INFO"},
             CVP_FLOW_LOGGER_NAME: {"level": "INFO"},
             CVP_MSG_LOGGER_NAME: {"level": "DEBUG"},
             CVP_ONVIF_LOGGER_NAME: {"level": "INFO"},
             CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
+            CVP_RENDERER_LOGGER_NAME: {"level": "WARNING"},
             CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
             CVP_WORKER_LOGGER_NAME: {
                 "handlers": ["stdout_colored", "cvp_worker_file"],

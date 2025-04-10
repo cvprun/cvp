@@ -5,9 +5,10 @@ from typing import NamedTuple, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.imgui.flags.input_text import InputTextFlags
+from cvp.imgui.get_fit_width_as_reverse import get_fit_width_as_reverse
 
 
-class InputTextMultilingualResult(NamedTuple):
+class InputTextMultilineResult(NamedTuple):
     changed: bool
     value: str
 
@@ -25,30 +26,28 @@ class InputTextMultilingualResult(NamedTuple):
         return self.changed
 
 
-def input_text_multilingual(
+def calc_input_text_multiline_height(value: str) -> float:
+    frame_padding = imgui.get_style().frame_padding
+    line_count = value.count("\n") + 1
+    text_height = imgui.get_font_size() * line_count
+    return text_height + (frame_padding.y * 2)
+
+
+def input_text_multiline(
     label: str,
     value: str,
     flags: Union[InputTextFlags, int] = 0,
     size: Optional[imgui.ImVec2Like] = None,
-    hint: Optional[str] = None,
 ):
     if isinstance(flags, InputTextFlags):
         flags = int(flags)
     assert isinstance(flags, int)
 
-    # active = get_ime_active()
-    # composing = get_ime_composing()
-    has_newline = 0 <= value.find("\n")
+    if size is None:
+        width = get_fit_width_as_reverse()
+        height = calc_input_text_multiline_height(value)
+        size = imgui.ImVec2(width, height)
+    assert size is not None
 
-    if has_newline:
-        raw_result = imgui.input_text_multiline(label, value, size, flags)
-    elif hint:
-        if size is not None:
-            imgui.set_next_item_width(size[0])
-        raw_result = imgui.input_text_with_hint(label, hint, value, flags)
-    else:
-        if size is not None:
-            imgui.set_next_item_width(size[0])
-        raw_result = imgui.input_text(label, value, flags)
-
-    return InputTextMultilingualResult.from_raw(raw_result)
+    raw_result = imgui.input_text_multiline(label, value, size, flags)
+    return InputTextMultilineResult.from_raw(raw_result)

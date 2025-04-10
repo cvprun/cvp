@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.time import get_ticks
 
-from cvp.logging.logging import logger
+from cvp.logging.logging import renderer_logger as logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
 from cvp.variables import MOUSE_WHEEL_OFFSET_SCALE
