@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from collections import deque
 from datetime import datetime
-from typing import Deque, Iterable, Optional
+from typing import Iterable, List, Mapping, Optional
 
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.message import ChatMessage
-from cvp.variables import INVALID_CHAT_ID
+from cvp.chat.stream import ChatStream
 
 
 class ChatCache:
@@ -14,23 +13,25 @@ class ChatCache:
         self,
         conversation: ChatConversation,
         messages: Optional[Iterable[ChatMessage]] = None,
-        live: Optional[ChatMessage] = None,
+        streams: Optional[Mapping[int, List[ChatStream]]] = None,
     ):
         self._conversation = conversation
-        self._messages = deque(messages) if messages else None
-        self._live = live
+        self._messages = list(messages if messages else ())
+        self._streams = dict(streams if streams else {})
 
     @property
-    def id(self) -> int:
+    def conversation_id(self) -> int:
         return self._conversation.id
 
     @property
-    def title(self) -> str:
+    def conversation_title(self) -> str:
         return self._conversation.title
 
     @property
     def label(self) -> str:
-        return (self.title if self.title else str(self.id)) + f"###{self.id}"
+        conv_title = self.conversation_title
+        conv_id = self.conversation_id
+        return (conv_title if conv_title else str(conv_id)) + f"###{conv_id}"
 
     @property
     def created_at(self) -> datetime:
@@ -41,40 +42,31 @@ class ChatCache:
         return self._conversation.updated_at
 
     @property
-    def is_unrequested(self) -> bool:
-        return self._messages is None
-
-    @property
-    def messages(self) -> Deque[ChatMessage]:
-        if self.is_unrequested:
-            assert self._messages is None
-            raise ValueError("First, the message deque needs to be updated")
-
-        assert self._messages is not None
+    def messages(self) -> List[ChatMessage]:
         return self._messages
 
-    def appendleft_messages(self, messages: Iterable[ChatMessage]) -> None:
-        if self.is_unrequested:
-            assert self._messages is None
-            self._messages = deque()
-        assert isinstance(self._messages, deque)
-        for msg in messages:
-            self._messages.appendleft(msg)
+    def clear_messages(self) -> None:
+        self._messages.clear()
+
+    def set_messages(self, messages: Iterable[ChatMessage]) -> None:
+        self._messages = list(messages if messages else ())
+
+    def append_messages(self, *messages: ChatMessage) -> None:
+        for message in messages:
+            self._messages.append(message)
+
+    def find_message(self, message_id) -> ChatMessage:
+        for msg in self._messages:
+            if msg.id == message_id:
+                return msg
+        raise IndexError(f"Not found message: {message_id}")
 
     @property
-    def has_live(self) -> bool:
-        return self._live is not None
+    def streams(self):
+        return self._streams
 
-    @property
-    def live(self):
-        return self._live
-
-    @live.setter
-    def live(self, value: ChatMessage) -> None:
-        self._live = value
-
-    def clear_live(self) -> None:
-        self._live = None
-
-    def create_invalid_chat_message(self):
-        return ChatMessage(INVALID_CHAT_ID, self.id)
+    def add_stream(self, message_id: int, stream: ChatStream) -> None:
+        if message_id in self._streams:
+            self._streams[message_id].append(stream)
+        else:
+            self._streams[message_id] = [stream]

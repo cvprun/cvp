@@ -5,7 +5,7 @@ create table if not exists stream
 (
     id         integer primary key autoincrement,
     message_id integer references message (id),
-    chunk      text,
+    chunk      text     not null,
     created_at datetime not null
 );
 """
@@ -23,5 +23,5 @@ SELECT = """
 select *
 from stream
 where message_id = ?
-order by created_at desc
+order by created_at
 """

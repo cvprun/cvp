@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
+from unittest import TestCase, main, skipIf
 from uuid import uuid4
 
 from cvp.keyring.root import RootKeyring
@@ -12,6 +12,7 @@ class RootTestCase(TestCase):
         keyring2 = RootKeyring()
         self.assertIs(keyring1, keyring2)
 
+    @skipIf(not RootKeyring.is_valid_sagecipher(), "sagecipher is not available")
     def test_default(self):
         test_service = type(self).__name__
         test_key = str(uuid4())

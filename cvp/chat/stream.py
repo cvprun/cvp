@@ -2,9 +2,8 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
 
-import orjson
+from ollama import ChatResponse
 
 from cvp.variables import INVALID_CHAT_ID
 
@@ -13,14 +12,14 @@ from cvp.variables import INVALID_CHAT_ID
 class ChatStream:
     id: int = INVALID_CHAT_ID
     message_id: int = INVALID_CHAT_ID
-    chunk: Optional[str] = None
+    chunk: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
 
-    def dump_chunk(self, data: Any) -> None:
-        self.chunk = str(orjson.dumps(data), encoding="utf-8")
+    def dump_chunk(self, data: ChatResponse) -> None:
+        self.chunk = data.model_dump_json()
 
-    def load_chunk(self) -> Any:
-        return orjson.loads(self.chunk) if self.chunk else None
+    def load_chunk(self) -> ChatResponse:
+        return ChatResponse.model_validate_json(self.chunk)
 
     @classmethod
     def from_row(cls, row):
@@ -29,7 +28,7 @@ class ChatStream:
         id_, message_id, chunk, created_at = row
         assert isinstance(id_, int)
         assert isinstance(message_id, int)
-        assert isinstance(chunk, (type(None), str))
+        assert isinstance(chunk, str)
         assert isinstance(created_at, str)
         return cls(
             id_,

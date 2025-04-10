@@ -13,9 +13,6 @@ GUI_INI_FILENAME: Final[str] = "gui.ini"
 LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
 NOT_FOUND_INDEX: Final[int] = -1
-FULL_WIDTH: Final[float] = -1.0
-FULL_HEIGHT: Final[float] = -1.0
-FULL_SIZE: Final[Size] = FULL_WIDTH, FULL_HEIGHT
 
 DEFAULT_FONT_SIZE: Final[int] = 14
 DEFAULT_FONT_SCALE: Final[float] = 1.0

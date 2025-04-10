@@ -9,6 +9,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
+from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
@@ -20,9 +21,6 @@ from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
 from cvp.variables import (
     DEFAULT_MENU_WIDTH,
-    FULL_HEIGHT,
-    FULL_SIZE,
-    FULL_WIDTH,
     NOT_FOUND_INDEX,
 )
 
@@ -94,7 +92,7 @@ class OllamaPreference(BasePreference):
             if button("Del", disabled=disabled_delete):
                 del self.ollamas[self.selected_submenu_filename]
 
-            if imgui.begin_list_box("##List", FULL_SIZE):
+            if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for filename, ollama in self.ollamas.items():
                         label = f"{ollama.name}###{filename}"
@@ -219,7 +217,7 @@ class OllamaPreference(BasePreference):
         running = self._runner.running
         has_error = bool(self._runner.error)
 
-        if imgui.begin_list_box("##APIList", (DEFAULT_MENU_WIDTH, FULL_HEIGHT)):
+        if imgui.begin_list_box("##APIList", (DEFAULT_MENU_WIDTH, FIT_HEIGHT)):
             try:
                 if imgui.button("Reload"):
                     self._runner(ollama, self.RunnerCommand.list_)
@@ -232,7 +230,7 @@ class OllamaPreference(BasePreference):
 
         imgui.same_line()
 
-        with begin_child_context("APIMain", FULL_WIDTH, FULL_HEIGHT):
+        with begin_child_context("APIMain", FIT_WIDTH, FIT_HEIGHT):
             if running:
                 text_centered("Requesting a list of models...")
             elif has_error:

@@ -66,7 +66,7 @@ class DatabaseTestCase(TestCase):
         limit = DEFAULT_CHAT_LIMIT
 
         for i in range(limit):
-            self._chat.insert_conversation()
+            self._chat.insert_conversation("Title")
 
         rows1 = self._chat.select_conversation_latest()
         self.assertEqual(limit, len(rows1))
@@ -76,7 +76,7 @@ class DatabaseTestCase(TestCase):
         rows2 = self._chat.select_conversation_latest_after_id(limit)
         self.assertEqual(0, len(rows2))
 
-        self._chat.insert_conversation()
+        self._chat.insert_conversation("Title")
         rows3 = self._chat.select_conversation_latest_after_id(limit)
         self.assertEqual(1, len(rows3))
         self.assertEqual(limit + 1, rows3[0].id)
@@ -84,17 +84,17 @@ class DatabaseTestCase(TestCase):
     def test_message(self):
         now1 = datetime.now(UTC)
 
-        conv_id = self._chat.insert_conversation()
+        conv_id = self._chat.insert_conversation("Title")
         self.assertEqual(1, conv_id)
 
-        msg_id = self._chat.insert_message(conv_id, "req", None, 0, now1)
+        msg_id = self._chat.insert_message(conv_id, "req", "", 0, now1)
         self.assertEqual(1, msg_id)
 
         rows1 = self._chat.select_message(conv_id)
         self.assertEqual(1, len(rows1))
         self.assertEqual(1, rows1[0].id)
         self.assertEqual("req", rows1[0].request)
-        self.assertIsNone(rows1[0].error)
+        self.assertEqual("", rows1[0].error)
         self.assertEqual(0, rows1[0].status)
         self.assertEqual(now1, rows1[0].created_at)
         self.assertIsNone(rows1[0].updated_at)
@@ -126,10 +126,10 @@ class DatabaseTestCase(TestCase):
     def test_stream(self):
         now1 = datetime.now(UTC)
 
-        conv_id = self._chat.insert_conversation()
+        conv_id = self._chat.insert_conversation("Title")
         self.assertEqual(1, conv_id)
 
-        msg_id = self._chat.insert_message(conv_id)
+        msg_id = self._chat.insert_message(conv_id, "", "")
         self.assertEqual(1, msg_id)
 
         stream_id = self._chat.insert_stream(msg_id, "data", now1)

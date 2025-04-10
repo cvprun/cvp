@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from typing import NamedTuple
+from typing import NamedTuple, Optional, Sequence, Union
+
+from ollama import Image, Message
 
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.logging.logging import logger as logger
+from cvp.variables import NOT_FOUND_INDEX
 
 
 class ChatMixin(BaseContextMixin):
@@ -16,28 +19,38 @@ class ChatMixin(BaseContextMixin):
         conversation_id: int,
         server_key: str,
         model_name: str,
-        message: str,
+        content: str,
+        images: Optional[Sequence[Union[str, bytes]]] = None,
     ) -> None:
-        cache = self._chat[conversation_id]
-        assert cache.id == conversation_id
-        assert not cache.has_live
+        message = Message(
+            role="user",
+            content=content,
+            images=tuple(Image(value=img) for img in images) if images else None,
+            tool_calls=None,
+        )
+        request = message.model_dump_json()
+
+        if conversation_id == NOT_FOUND_INDEX:
+            cache = self._chat.create_new_chat_stream(title=str(), request=request)
+            assert 1 == len(cache.messages)
+            msg = cache.messages[0]
+        else:
+            cache = self._chat[conversation_id]
+            msg = self._chat.append_chat(conversation_id, request)
 
         ollama = self._ollamas[server_key]
         model_index = ollama.model_names.index(model_name)
         assert 0 <= model_index < len(ollama.model_names)
 
-        # messages = list(cache.messages)
-        # msg = cache.create_invalid_chat_message()
-        # msg.dump_first_user_message_request(message)
-
+        messages = tuple(msg.load_request() for msg in cache.messages)
         stream = ollama.client.chat(
             model=model_name,
-            messages=[{"role": "user", "content": message}],
+            messages=messages,
             stream=True,
         )
 
-        for chunk in stream:
-            print(chunk["message"]["content"], end="", flush=True)
+        for response in stream:
+            self._chat.append_stream(msg.id, response)
 
     @property
     def chat_model_names(self):

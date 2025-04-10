@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from datetime import UTC, datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, Optional
+
+from ollama import ChatResponse
 
 from cvp.chat.cache import ChatCache
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.database import ChatDatabase
 from cvp.chat.message import ChatMessage
+from cvp.chat.stream import ChatStream
 from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
 from cvp.resources.subdirs.chat import ChatPath
-from cvp.variables import DEFAULT_CHAT_LIMIT
+from cvp.variables import DEFAULT_CHAT_LIMIT, NOT_FOUND_INDEX
 
 
 class ChatManager:
@@ -33,8 +35,19 @@ class ChatManager:
             self.reload_conversations()
 
     def reload_conversations(self) -> None:
-        conv_rows = self._database.select_conversation_latest(limit=self._limit)
-        self._caches.update({conv.id: ChatCache(conv) for conv in conv_rows})
+        self._caches = self.read_conversations()
+
+    def read_conversations(self, limit: Optional[int] = None):
+        if limit is None:
+            limit = self._limit
+        assert isinstance(limit, int)
+
+        caches = dict()
+        for conv in self._database.select_conversation_latest(limit):
+            messages = self._database.select_message(conv.id)
+            streams = {m.id: self._database.select_stream(m.id) for m in messages}
+            caches[conv.id] = ChatCache(conv, messages, streams)
+        return caches
 
     def keys(self):
         return self._caches.keys()
@@ -56,14 +69,10 @@ class ChatManager:
 
     def create_new_chat_stream(
         self,
-        title: Optional[str] = None,
-        request: Optional[str] = None,
+        title: str,
+        request: str,
         created_at: DateTimeLike = None,
     ) -> ChatCache:
-        if title is None:
-            title = str()
-        assert isinstance(title, str)
-
         created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
@@ -73,12 +82,18 @@ class ChatManager:
         conv_row = conv_id, title, created_at, None
         conv = ChatConversation.from_row(conv_row)
 
-        msg_row = msg_id, conv_id, request, None, 0, created_at
+        msg_row = msg_id, conv_id, request, None, 0, created_at, None
         msg = ChatMessage.from_row(msg_row)
 
         assert conv_id not in self._caches
         cache = ChatCache(conv, (msg,))
         self._caches[conv_id] = cache
+
+        assert cache.conversation_id != NOT_FOUND_INDEX
+        assert 1 == len(cache.messages)
+        assert cache.messages[0].id != NOT_FOUND_INDEX
+        assert cache.messages[0].conversation_id == cache.conversation_id
+
         return cache
 
     def refresh_messages(self, conversation_id: int):
@@ -87,40 +102,68 @@ class ChatManager:
 
         cache = self._caches[conversation_id]
         messages = self._database.select_message(conversation_id)
-        cache.appendleft_messages(messages)
+        cache.set_messages(messages)
         return cache.messages
 
     def append_chat(
         self,
         conversation_id: int,
-        request: Optional[str] = None,
-        response: Optional[str] = None,
+        request: str,
         error: Optional[str] = None,
-        created_at: Optional[Union[datetime, str]] = None,
+        status=0,
+        created_at: DateTimeLike = None,
     ) -> ChatMessage:
-        if created_at is None:
-            created_at = datetime.now(UTC).isoformat()
-        elif isinstance(created_at, datetime):
-            created_at = created_at.astimezone(UTC).isoformat()
+        created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
-        message_id = self._database.insert_message(
-            conversation_id, request, response, error, created_at
-        )
-        message_row = message_id, conversation_id, request, response, error, created_at
-        message = ChatMessage.from_row(message_row)
+        if error is None:
+            error = str()
+        assert isinstance(error, str)
 
-        assert conversation_id in self._caches
-        cache = self._caches[conversation_id]
-        if cache.is_unrequested:
-            self.refresh_messages(conversation_id)
-        cache.appendleft_messages((message,))
+        msg_id = self._database.insert_message(
+            conversation_id,
+            request,
+            error,
+            status,
+            created_at,
+        )
+        msg_row = msg_id, conversation_id, request, error, status, created_at, None
+        message = ChatMessage.from_row(msg_row)
+
+        self._caches[conversation_id].append_messages(message)
         return message
 
-    def messages(self, conversation_id: int) -> List[ChatMessage]:
-        assert conversation_id in self._caches
-        cache = self._caches[conversation_id]
-        if cache.is_unrequested:
-            self.refresh_messages(conversation_id)
-        assert cache.messages is not None
-        return list(cache.messages)
+    def messages(self, conversation_id: int):
+        return self._caches[conversation_id].messages
+
+    def find_cache_with_message_id(self, message_id: int) -> ChatCache:
+        for cache in self._caches.values():
+            try:
+                msg = cache.find_message(message_id)
+                assert msg.id == message_id
+                return cache
+            except IndexError:
+                continue
+        raise IndexError(f"Not found message: {message_id}")
+
+    def append_stream(
+        self,
+        message_id: int,
+        response: ChatResponse,
+        created_at: DateTimeLike = None,
+        conversation_id: Optional[int] = None,
+    ) -> ChatStream:
+        created_at = isoformat_with_utc(created_at)
+        assert isinstance(created_at, str)
+
+        chunk = response.model_dump_json()
+        stream_id = self._database.insert_stream(message_id, chunk, created_at)
+        stream_row = stream_id, message_id, chunk, created_at
+        stream = ChatStream.from_row(stream_row)
+
+        if conversation_id is not None:
+            cache = self._caches[conversation_id]
+        else:
+            cache = self.find_cache_with_message_id(message_id)
+        cache.add_stream(message_id, stream)
+        return stream

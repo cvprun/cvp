@@ -2,9 +2,9 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
-import orjson
+from ollama import Message
 
 from cvp.variables import INVALID_CHAT_ID
 
@@ -13,20 +13,17 @@ from cvp.variables import INVALID_CHAT_ID
 class ChatMessage:
     id: int = INVALID_CHAT_ID
     conversation_id: int = INVALID_CHAT_ID
-    request: Optional[str] = None
+    request: str = field(default_factory=str)
     error: Optional[str] = None
     status: int = 0
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
     updated_at: Optional[datetime] = None
 
-    def dump_first_user_message_request(self, message: str) -> None:
-        self.dump_request({"role": "user", "content": message})
+    def dump_request(self, data: Message) -> None:
+        self.request = data.model_dump_json()
 
-    def dump_request(self, data: Any) -> None:
-        self.request = str(orjson.dumps(data), encoding="utf-8")
-
-    def load_request(self) -> Any:
-        return orjson.loads(self.request) if self.request else None
+    def load_request(self) -> Message:
+        return Message.model_validate_json(self.request)
 
     @classmethod
     def from_row(cls, row):
@@ -35,7 +32,7 @@ class ChatMessage:
         id_, conversation_id, request, error, status, created_at, updated_at = row
         assert isinstance(id_, int)
         assert isinstance(conversation_id, int)
-        assert isinstance(request, (type(None), str))
+        assert isinstance(request, str)
         assert isinstance(error, (type(None), str))
         assert isinstance(status, int)
         assert isinstance(created_at, str)

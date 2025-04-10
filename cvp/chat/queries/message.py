@@ -5,7 +5,7 @@ create table if not exists message
 (
     id              integer primary key autoincrement,
     conversation_id integer references conversation (id),
-    request         text,
+    request         text     not null,
     error           text,
     status          integer default 0,
     created_at      datetime not null,
@@ -30,5 +30,5 @@ SELECT = """
 select *
 from message
 where conversation_id = ?
-order by created_at desc
+order by created_at
 """

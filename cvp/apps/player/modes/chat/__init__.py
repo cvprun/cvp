@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from io import StringIO
+
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
@@ -11,6 +13,7 @@ from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.combo import combo_fitting_items_max_width
+from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import (
     CTRL_ENTER_FOR_NEW_LINE,
@@ -23,6 +26,7 @@ from cvp.imgui.input_text_multilingual import input_text_multiline
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.text_right_align import text_disabled_right_align
 from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -31,8 +35,6 @@ from cvp.variables import (
     DEFAULT_MAIN_LABEL,
     DEFAULT_MENU_LABEL,
     DEFAULT_MENU_WIDTH,
-    FULL_SIZE,
-    FULL_WIDTH,
     NOT_FOUND_INDEX,
 )
 
@@ -129,8 +131,8 @@ class ChatMode(BaseMode):
             input_result = input_text_multiline(
                 label="###UserInputText",
                 value=self._input_text,
-                flags=input_flags,
                 size=self.get_input_text_size(),
+                flags=input_flags,
             )
 
             if not disabled_input:
@@ -160,9 +162,9 @@ class ChatMode(BaseMode):
         split_x=DEFAULT_MENU_WIDTH,
     ):
         with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
-            if imgui.begin_list_box("###MenuList", FULL_SIZE):
+            if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
-                    if imgui.button(self._title_noname, (FULL_WIDTH, 0)):
+                    if imgui.button(self._title_noname, (FIT_WIDTH, 0)):
                         self._conversation_id = NOT_FOUND_INDEX
 
                     search_result = input_text_multiline(
@@ -189,7 +191,7 @@ class ChatMode(BaseMode):
             if self._conversation_id == NOT_FOUND_INDEX:
                 imgui.text(self._title_noname)
             else:
-                imgui.text(self.context.chat[self._conversation_id].title)
+                imgui.text(self.context.chat[self._conversation_id].conversation_title)
 
             imgui.separator()
 
@@ -212,10 +214,37 @@ class ChatMode(BaseMode):
             imgui.separator()
             self.input_text_multilingual_with_button()
 
-    def do_history(self, cache: ChatCache) -> None:
-        if cache.is_unrequested:
-            self.context.chat.refresh_messages(cache.id)
+    @staticmethod
+    def do_history(cache: ChatCache) -> None:
+        for message in cache.messages:
+            request = message.load_request()
+            imgui.text(request.role)
+            imgui.same_line()
+            with style_disable_input_context():
+                content = request.content if request.content else str()
+                imgui.text_wrapped(content.strip())
 
-        for msg in cache.messages:
-            request = msg.request if msg.request else str()
-            imgui.bullet_text(request)
+                created_at = message.created_at.isoformat()
+                text_disabled_right_align(created_at)
+
+            streams = cache.streams.get(message.id)
+            if not streams:
+                continue
+            first_stream = streams[0]
+            first_chunk = first_stream.load_chunk()
+            first_message = first_chunk.message
+
+            buffer = StringIO()
+            buffer.write(first_message.content)
+            for stream in streams[1:]:
+                chunk = stream.load_chunk()
+                assert first_message.role == chunk.message.role
+                buffer.write(chunk.message.content)
+
+            imgui.text(first_message.role)
+            imgui.same_line()
+            with style_disable_input_context():
+                imgui.text_wrapped(buffer.getvalue().strip())
+
+                created_at = first_stream.created_at.isoformat()
+                text_disabled_right_align(created_at)

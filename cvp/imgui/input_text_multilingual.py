@@ -36,8 +36,8 @@ def calc_input_text_multiline_height(value: str) -> float:
 def input_text_multiline(
     label: str,
     value: str,
-    flags: Union[InputTextFlags, int] = 0,
     size: Optional[imgui.ImVec2Like] = None,
+    flags: Union[InputTextFlags, int] = 0,
 ):
     if isinstance(flags, InputTextFlags):
         flags = int(flags)

@@ -47,18 +47,9 @@ class ChatDatabase:
         assert conversation_id is not None
         return conversation_id
 
-    def insert_conversation(
-        self,
-        title: Optional[str] = None,
-        created_at: DateTimeLike = None,
-    ) -> int:
-        if title is None:
-            title = str()
-        assert isinstance(title, str)
-
+    def insert_conversation(self, title: str, created_at: DateTimeLike = None) -> int:
         created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
-
         with self.connect() as conn:
             return self._insert_conversation(conn, title, created_at)
 
@@ -110,8 +101,8 @@ class ChatDatabase:
     def _insert_message(
         conn: sqlite3.Connection,
         conversation_id: int,
-        request: Optional[str],
-        error: Optional[str],
+        request: str,
+        error: str,
         status: int,
         created_at: str,
     ) -> int:
@@ -124,8 +115,8 @@ class ChatDatabase:
     def insert_message(
         self,
         conversation_id: int,
-        request: Optional[str] = None,
-        error: Optional[str] = None,
+        request: str,
+        error: str,
         status=0,
         created_at: DateTimeLike = None,
     ) -> int:
@@ -211,20 +202,16 @@ class ChatDatabase:
 
     def insert_conversation_and_message(
         self,
-        title: Optional[str] = None,
-        request: Optional[str] = None,
+        title: str,
+        request: str,
         created_at: DateTimeLike = None,
     ) -> Tuple[int, int]:
-        if title is None:
-            title = str()
-        assert isinstance(title, str)
-
         created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)
 
         with self.connect() as conn:
             conv_id = self._insert_conversation(conn, title, created_at)
-            msg_id = self._insert_message(conn, conv_id, request, None, 0, created_at)
+            msg_id = self._insert_message(conn, conv_id, request, str(), 0, created_at)
             assert conv_id is not None
             assert msg_id is not None
             return conv_id, msg_id
