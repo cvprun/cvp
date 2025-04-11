@@ -9,6 +9,7 @@ imgui-bundle==1.6.2
 keyring==25.6.0
 numpy==2.0.1
 ollama==0.4.7
+openai==1.72.0
 opencv-python-headless==4.10.0.84
 orjson==3.10.15
 pillow==11.1.0
