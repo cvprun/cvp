@@ -3,8 +3,6 @@
 from io import StringIO
 
 from imgui_bundle import imgui
-from pygame.event import Event
-from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.chat.cache import ChatCache
@@ -27,15 +25,12 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_right_align import text_disabled_right_align
-from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import (
-    DEFAULT_CHAT_TITLE_NONAME,
-    DEFAULT_MAIN_LABEL,
-    DEFAULT_MENU_LABEL,
-    DEFAULT_MENU_WIDTH,
+    CHAT_TITLE_NONAME,
     NOT_FOUND_INDEX,
+    SIDE_MENU_WIDTH,
 )
 
 
@@ -45,29 +40,13 @@ class ChatMode(BaseMode):
         self._input_text = str()
         self._search = str()
         self._conversation_id = NOT_FOUND_INDEX
-        self._title_noname = DEFAULT_CHAT_TITLE_NONAME
+        self._title_noname = CHAT_TITLE_NONAME
         self._enter_label = "Enter"
 
     @staticmethod
     @override
     def get_mode() -> AppMode:
         return AppMode.chat
-
-    @override
-    def on_main_menu(self) -> None:
-        pass
-
-    @override
-    def do_event(self, event: Event) -> bool:
-        return False
-
-    @override
-    def do_msg(self, msg: Msg) -> bool:
-        return False
-
-    @override
-    def on_keyboard(self, keys: ScancodeWrapper) -> None:
-        pass
 
     @property
     def chat_selected_index(self):
@@ -155,13 +134,8 @@ class ChatMode(BaseMode):
             text,
         )
 
-    def do_child_process(
-        self,
-        menu_label=DEFAULT_MENU_LABEL,
-        main_label=DEFAULT_MAIN_LABEL,
-        split_x=DEFAULT_MENU_WIDTH,
-    ):
-        with begin_child_context(menu_label, split_x, child_flags=RESIZE_X | BORDERS):
+    def do_child_process(self, split_x=SIDE_MENU_WIDTH):
+        with begin_child_context("Menu", split_x, child_flags=RESIZE_X | BORDERS):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     if imgui.button(self._title_noname, (FIT_WIDTH, 0)):
@@ -187,7 +161,7 @@ class ChatMode(BaseMode):
 
         imgui.same_line()
 
-        with begin_child_context(main_label):
+        with begin_child_context("Main"):
             if self._conversation_id == NOT_FOUND_INDEX:
                 imgui.text(self._title_noname)
             else:
@@ -205,7 +179,7 @@ class ChatMode(BaseMode):
             item_spacing_y = imgui.get_style().item_spacing.y * 2
             history_bottom = -1 * (self.get_input_text_size().y + item_spacing_y)
 
-            with begin_child_context(main_label, 0, history_bottom):
+            with begin_child_context("Main", 0, history_bottom):
                 if self._conversation_id == NOT_FOUND_INDEX:
                     text_centered("What can I help with?")
                 else:

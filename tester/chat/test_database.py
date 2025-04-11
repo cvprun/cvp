@@ -9,7 +9,7 @@ from warnings import warn
 
 from cvp.chat.database import ChatDatabase
 from cvp.resources.home import HomeDir
-from cvp.variables import DEFAULT_CHAT_LIMIT
+from cvp.variables import CHAT_LIMIT
 
 
 class DatabaseTestCase(TestCase):
@@ -63,7 +63,7 @@ class DatabaseTestCase(TestCase):
         self.assertEqual(0, len(rows3))
 
     def test_many_conversation(self):
-        limit = DEFAULT_CHAT_LIMIT
+        limit = CHAT_LIMIT
 
         for i in range(limit):
             self._chat.insert_conversation("Title")

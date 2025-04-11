@@ -4,12 +4,12 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from cvp.variables import INVALID_CHAT_ID
+from cvp.variables import CHAT_INVALID_ID
 
 
 @dataclass
 class ChatConversation:
-    id: int = INVALID_CHAT_ID
+    id: int = CHAT_INVALID_ID
     title: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
     updated_at: Optional[datetime] = None

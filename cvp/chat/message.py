@@ -6,13 +6,13 @@ from typing import Optional
 
 from ollama import Message
 
-from cvp.variables import INVALID_CHAT_ID
+from cvp.variables import CHAT_INVALID_ID
 
 
 @dataclass
 class ChatMessage:
-    id: int = INVALID_CHAT_ID
-    conversation_id: int = INVALID_CHAT_ID
+    id: int = CHAT_INVALID_ID
+    conversation_id: int = CHAT_INVALID_ID
     request: str = field(default_factory=str)
     error: Optional[str] = None
     status: int = 0

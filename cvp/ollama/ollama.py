@@ -10,7 +10,7 @@ from type_serialize import Serializable, deserialize, serialize
 
 from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
-from cvp.variables import DEFAULT_OLLAMA_TIMEOUT
+from cvp.variables import OLLAMA_TIMEOUT
 
 
 class Ollama(Serializable):
@@ -32,7 +32,7 @@ class Ollama(Serializable):
         url: Optional[str] = None,
         headers: Optional[Sequence[Tuple[str, str]]] = None,
         follow_redirects=True,
-        timeout=DEFAULT_OLLAMA_TIMEOUT,
+        timeout=OLLAMA_TIMEOUT,
         model_names: Optional[Sequence[str]] = None,
         *,
         error: Optional[BaseException] = None,
@@ -117,7 +117,7 @@ class Ollama(Serializable):
         self.headers = list((str(k), str(v)) for k, v in headers.items())
 
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
-        self.timeout = float(data.get(self._Keys.timeout, DEFAULT_OLLAMA_TIMEOUT))
+        self.timeout = float(data.get(self._Keys.timeout, OLLAMA_TIMEOUT))
         self.model_names = data.get(self._Keys.model_names, list())
 
         details = data.get(self._Keys.details, dict())

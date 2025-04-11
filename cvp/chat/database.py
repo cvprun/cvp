@@ -10,7 +10,7 @@ from cvp.chat.conversation import ChatConversation
 from cvp.chat.message import ChatMessage
 from cvp.chat.stream import ChatStream
 from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
-from cvp.variables import DEFAULT_CHAT_LIMIT
+from cvp.variables import CHAT_LIMIT
 
 
 class ChatDatabase:
@@ -75,7 +75,7 @@ class ChatDatabase:
 
     def select_conversation_latest(
         self,
-        limit=DEFAULT_CHAT_LIMIT,
+        limit=CHAT_LIMIT,
     ) -> List[ChatConversation]:
         with self.connect() as conn:
             query = queries.SELECT_CONVERSATION_LATEST
@@ -85,7 +85,7 @@ class ChatDatabase:
                 result.append(ChatConversation.from_row(row))
             return result
 
-    def select_conversation_latest_after_id(self, id_: int, limit=DEFAULT_CHAT_LIMIT):
+    def select_conversation_latest_after_id(self, id_: int, limit=CHAT_LIMIT):
         with self.connect() as conn:
             query = queries.SELECT_CONVERSATION_LATEST_AFTER_ID
             parameters = id_, limit

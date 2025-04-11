@@ -5,13 +5,13 @@ from datetime import datetime
 
 from ollama import ChatResponse
 
-from cvp.variables import INVALID_CHAT_ID
+from cvp.variables import CHAT_INVALID_ID
 
 
 @dataclass
 class ChatStream:
-    id: int = INVALID_CHAT_ID
-    message_id: int = INVALID_CHAT_ID
+    id: int = CHAT_INVALID_ID
+    message_id: int = CHAT_INVALID_ID
     chunk: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
 

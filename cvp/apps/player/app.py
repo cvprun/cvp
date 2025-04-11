@@ -40,7 +40,7 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
-from cvp.variables import DEFAULT_FONT_NAME
+from cvp.variables import FONT_NAME
 
 
 class PlayerApplication:
@@ -248,7 +248,7 @@ class PlayerApplication:
             self._font_normal = add_ttf_file(user_font, default_font_pixels)
             logger.info(f"Create user font: '{user_font}', {default_font_pixels}pixels")
         else:
-            self._font_normal = add_mixed_font(DEFAULT_FONT_NAME, default_font_pixels)
+            self._font_normal = add_mixed_font(FONT_NAME, default_font_pixels)
             logger.info(f"Create default font: {default_font_pixels}pixels")
 
         io.font_global_scale = self.config.font.scale

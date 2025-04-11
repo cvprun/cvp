@@ -11,7 +11,7 @@ from cvp.chat.message import ChatMessage
 from cvp.chat.stream import ChatStream
 from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
 from cvp.resources.subdirs.chat import ChatPath
-from cvp.variables import DEFAULT_CHAT_LIMIT, NOT_FOUND_INDEX
+from cvp.variables import CHAT_LIMIT, NOT_FOUND_INDEX
 
 
 class ChatManager:
@@ -20,7 +20,7 @@ class ChatManager:
     def __init__(
         self,
         path: ChatPath,
-        limit=DEFAULT_CHAT_LIMIT,
+        limit=CHAT_LIMIT,
         *,
         create_tables=False,
         reload=False,

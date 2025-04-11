@@ -19,7 +19,7 @@ from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.renderer.context import Context
 from cvp.types.override import override
-from cvp.variables import DEFAULT_MENU_WIDTH
+from cvp.variables import SIDE_MENU_WIDTH
 
 
 @lru_cache
@@ -75,7 +75,7 @@ class PreferenceMode(BaseMode):
             imgui.pop_style_var()
 
     def do_child_process(self):
-        width = DEFAULT_MENU_WIDTH
+        width = SIDE_MENU_WIDTH
         child_flags = RESIZE_X | BORDERS
 
         with begin_child_context("Menu", width, child_flags=child_flags):

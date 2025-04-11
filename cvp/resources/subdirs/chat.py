@@ -4,7 +4,7 @@ from os import PathLike
 from typing import Union
 
 from cvp.system.path import PathFlavour
-from cvp.variables import DEFAULT_CHAT_SQLITE_FILENAME
+from cvp.variables import CHAT_SQLITE_FILENAME
 
 
 class ChatPath(PathFlavour):
@@ -12,4 +12,4 @@ class ChatPath(PathFlavour):
         super().__init__(path)
 
     def get_database_path(self):
-        return self.as_path() / DEFAULT_CHAT_SQLITE_FILENAME
+        return self.as_path() / CHAT_SQLITE_FILENAME

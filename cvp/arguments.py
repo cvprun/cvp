@@ -20,7 +20,7 @@ from cvp.system.environ_keys import (
     CVP_USE_UVLOOP,
     CVP_VERBOSE,
 )
-from cvp.variables import CVP_HOME_DIRNAME, LOCAL_DOTENV_FILENAME, LOGGING_STEP
+from cvp.variables import CVP_HOME_DIRNAME, DOTENV_LOCAL_FILENAME, LOGGING_STEP
 
 PROG: Final[str] = "cvp"
 DESCRIPTION: Final[str] = "Computer Vision Player"
@@ -68,9 +68,9 @@ def add_dotenv_arguments(parser: ArgumentParser) -> None:
     )
     parser.add_argument(
         "--dotenv-path",
-        default=get_eval(CVP_DOTENV_PATH, join(getcwd(), LOCAL_DOTENV_FILENAME)),
+        default=get_eval(CVP_DOTENV_PATH, join(getcwd(), DOTENV_LOCAL_FILENAME)),
         metavar="file",
-        help=f"Specifies the dot-env file (default: '{LOCAL_DOTENV_FILENAME}')",
+        help=f"Specifies the dot-env file (default: '{DOTENV_LOCAL_FILENAME}')",
     )
 
 

@@ -8,7 +8,7 @@ from type_serialize import deserialize, serialize
 from cvp.logging.logging import logger
 from cvp.ollama.ollama import Ollama
 from cvp.resources.subdirs.ollamas import OllamasPath
-from cvp.variables import DEFAULT_OLLAMA_ADDRESS, DEFAULT_OLLAMA_NAME
+from cvp.variables import OLLAMA_ADDRESS, OLLAMA_NAME
 
 
 class OllamaManager(Dict[str, Ollama]):
@@ -88,8 +88,8 @@ class OllamaManager(Dict[str, Ollama]):
         url: Optional[str] = None,
     ):
         filename = filename if filename else (str(uuid4()) + self._path.extension)
-        name = name if name is not None else DEFAULT_OLLAMA_NAME
-        url = url if url is not None else DEFAULT_OLLAMA_ADDRESS
+        name = name if name is not None else OLLAMA_NAME
+        url = url if url is not None else OLLAMA_ADDRESS
 
         assert isinstance(filename, str)
         assert isinstance(name, str)

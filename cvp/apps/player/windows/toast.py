@@ -95,6 +95,9 @@ class ToastWindow:
         )
 
     def on_process(self) -> None:
+        if not self._opened:
+            return
+
         imgui.set_next_window_bg_alpha(0)
         with begin_context(type(self).__name__, self._opened, TOAST_WINDOW_FLAGS):
             if not self._items:

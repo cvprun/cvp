@@ -5,6 +5,9 @@ from typing import Final
 from cvp.types.colors import RGBA
 from cvp.types.shapes import Size
 
+NOT_FOUND_INDEX: Final[int] = -1
+NODOC: Final[str] = ""
+
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
 CVP_YML_FILENAME: Final[str] = "cvp.yml"
 CVP_EXTENSION: Final[str] = ".cvp"
@@ -12,29 +15,24 @@ CVP_ROOT_INFO_FILENAME: Final[str] = "info.yml"
 GUI_INI_FILENAME: Final[str] = "gui.ini"
 LOGGING_JSON_FILENAME: Final[str] = "logging.json"
 
-NOT_FOUND_INDEX: Final[int] = -1
-
-DEFAULT_FONT_SIZE: Final[int] = 14
-DEFAULT_FONT_SCALE: Final[float] = 1.0
-DEFAULT_FONT_NAME: Final[str] = "Default"
-
-CONFIG_VALUE_SEPARATOR: Final[str] = ","
-CHECKSUM_DELIMITER: Final[str] = ":"
-
-NODOC: Final[str] = str()
+DOTENV_LOCAL_FILENAME: Final[str] = ".env.local"
+DOTENV_TEST_FILENAME: Final[str] = ".env.test"
 
 MODULE_PATH_SEPARATOR: Final[str] = "."
+CONFIG_VALUE_SEPARATOR: Final[str] = ","
+CHECKSUM_DELIMITER: Final[str] = ":"
 
 CODEPOINT_RANGES_EXTENSION: Final[str] = ".ranges"
 CODEPOINT_GLYPHS_EXTENSION: Final[str] = ".glyphs"
 KEYRING_EXTENSION: Final[str] = ".cfg"
 
-LOCAL_DOTENV_FILENAME: Final[str] = ".env.local"
-
-MAX_THREAD_WORKERS: Final[int] = 5
-MAX_PROCESS_WORKERS: Final[int] = 5
+FONT_SIZE: Final[int] = 14
+FONT_SCALE: Final[float] = 1.0
+FONT_NAME: Final[str] = "Default"
 
 THREAD_POOL_PREFIX: Final[str] = "cvp.threadpool"
+MAX_THREAD_WORKERS: Final[int] = 5
+MAX_PROCESS_WORKERS: Final[int] = 5
 
 ASCII_RANGE: Final[int] = 127
 MAX_IMGUI_KEYCODE: Final[int] = 512
@@ -44,19 +42,18 @@ MOUSE_WHEEL_OFFSET_SCALE: Final[float] = 0.5
 LOGGING_STEP: Final[int] = 1000
 SLOW_CALLBACK_DURATION: Final[float] = 0.05
 
-DEFAULT_MENU_LABEL: Final[str] = "Manu"
-DEFAULT_MAIN_LABEL: Final[str] = "Main"
-DEFAULT_MENU_WIDTH: Final[float] = 150.0
+CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
+CHAT_TITLE_NONAME: Final[str] = "[New chat]"
+CHAT_LIMIT: Final[int] = 30
+CHAT_INVALID_ID: Final[int] = -1
 
-DEFAULT_CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
-DEFAULT_CHAT_TITLE_NONAME: Final[str] = "[New chat]"
-DEFAULT_CHAT_LIMIT: Final[int] = 30
-INVALID_CHAT_ID: Final[int] = -1
+OLLAMA_NAME: Final[str] = "[Nameless]"
+OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
+OLLAMA_TIMEOUT: Final[float] = 5.0
 
-DEFAULT_OLLAMA_NAME: Final[str] = "[Nameless]"
-DEFAULT_OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
-DEFAULT_OLLAMA_TIMEOUT: Final[float] = 5.0
-DEFAULT_SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
+SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
+
+SIDE_MENU_WIDTH: Final[float] = 150.0
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0
 MAX_SIDEBAR_WIDTH: Final[float] = 480.0

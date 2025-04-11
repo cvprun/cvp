@@ -6,7 +6,6 @@ from pygame.key import ScancodeWrapper
 from cvp.apps.player.modes._base import BaseMode
 from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
-from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.msgs.msg import Msg
 from cvp.renderer.context import RendererContext
@@ -40,10 +39,12 @@ class FlowMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        with dockspace_over_viewport_context() as dockspace_id:
-            assert isinstance(dockspace_id, int)
-            assert 0 <= dockspace_id
-            self.do_main_window()
+        # from cvp.imgui.dockspace import dockspace_over_viewport_context
+        # with dockspace_over_viewport_context() as dockspace_id:
+        #     assert isinstance(dockspace_id, int)
+        #     assert 0 <= dockspace_id
+        #     self.do_main_window()
+        pass
 
     def do_main_window(self) -> None:
         with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
