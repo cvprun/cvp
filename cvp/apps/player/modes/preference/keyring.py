@@ -11,7 +11,9 @@ from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 
 
-class Keyring(BasePreference):
+class KeyringPreference(BasePreference):
+    __cvp_menu_name__ = "Keyring"
+
     def __init__(self, context: Context):
         super().__init__(context)
         self._keyring_names = ImmutableList(list_keyring_names())

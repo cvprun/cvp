@@ -26,6 +26,8 @@ from cvp.variables import (
 
 
 class OllamaPreference(BasePreference):
+    __cvp_menu_name__ = "Ollama"
+
     @unique
     class RunnerCommand(StrEnum):
         list_ = "list"
@@ -34,11 +36,6 @@ class OllamaPreference(BasePreference):
     def __init__(self, context: Context):
         super().__init__(context)
         self._runner = context.pm.create_thread_runner(self._on_runner_main)
-
-    @classmethod
-    @override
-    def get_menu_name(cls) -> str:
-        return "Ollama"
 
     def _on_runner_main(self, ollama: Ollama, command: RunnerCommand, *args: str):
         match command:

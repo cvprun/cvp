@@ -8,9 +8,10 @@ from cvp.variables import NOT_FOUND_INDEX
 
 @dataclass
 class ChatModel:
-    server_key: str
-    server_name: str
-    model_name: str
+    server_name: str = field(default_factory=str)
+    server_address: str = field(default_factory=str)
+    server_key: str = field(default_factory=str)
+    model_name: str = field(default_factory=str)
 
     @property
     def display_name(self):
@@ -18,7 +19,7 @@ class ChatModel:
 
     @property
     def model_key(self):
-        return self.server_key, self.model_name
+        return self.server_address, self.model_name
 
 
 @dataclass
@@ -53,5 +54,5 @@ class ChatConfig:
         if value < 0 or len(self.models) <= value:
             raise IndexError(f"Index out of range: {value}")
         model = self.models[value]
-        self.selected_server_key = model.server_key
+        self.selected_server_key = model.server_address
         self.selected_model_name = model.model_name

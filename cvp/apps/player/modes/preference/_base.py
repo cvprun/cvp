@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
 from cvp.context.context import Context
 from cvp.types.override import override
 from cvp.variables import MODULE_PATH_SEPARATOR
+
+
+@runtime_checkable
+class PreferenceMenuNameProtocol(Protocol):
+    __cvp_menu_name__: str
 
 
 class PreferenceInterface(ABC):
@@ -19,14 +24,15 @@ class PreferenceInterface(ABC):
         raise NotImplementedError
 
 
-class BasePreference(PreferenceInterface, ABC):
+class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
     def __init__(self, context: Context):
         self._context = context
 
     @classmethod
     @override
     def get_menu_name(cls) -> str:
-        return cls.__name__
+        assert hasattr(cls, cls.__cvp_menu_name__)
+        return getattr(cls, cls.__cvp_menu_name__, cls.__name__)
 
     @property
     def context(self) -> Context:

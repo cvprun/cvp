@@ -24,20 +24,22 @@ from cvp.variables import SIDE_MENU_WIDTH
 
 @lru_cache
 def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
-    from cvp.apps.player.modes.preference.appearance import Appearance
-    from cvp.apps.player.modes.preference.keyring import Keyring
+    from cvp.apps.player.modes.preference.appearance import AppearancePreference
+    from cvp.apps.player.modes.preference.chat import ChatPreference
+    from cvp.apps.player.modes.preference.keyring import KeyringPreference
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
-    from cvp.apps.player.modes.preference.resource import Resource
-    from cvp.apps.player.modes.preference.supabase import Supabase
-    from cvp.apps.player.modes.preference.toast import Toast
+    from cvp.apps.player.modes.preference.resource import ResourcePreference
+    from cvp.apps.player.modes.preference.supabase import SupabasePreference
+    from cvp.apps.player.modes.preference.toast import ToastPreference
 
     return (
-        Appearance,
-        Keyring,
+        AppearancePreference,
+        ChatPreference,
+        KeyringPreference,
         OllamaPreference,
-        Resource,
-        Supabase,
-        Toast,
+        ResourcePreference,
+        SupabasePreference,
+        ToastPreference,
     )
 
 

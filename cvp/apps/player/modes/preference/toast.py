@@ -13,7 +13,9 @@ from cvp.inspect.member import get_public_instance_attributes
 from cvp.types.override import override
 
 
-class Toast(BasePreference):
+class ToastPreference(BasePreference):
+    __cvp_menu_name__ = "Toast"
+
     def __init__(self, context: Context):
         super().__init__(context)
 
@@ -87,7 +89,7 @@ class Toast(BasePreference):
         if error_result:
             self.config.error_color = error_result.color
 
-        if imgui.button("Set defaults"):
+        if imgui.button("Reset defaults"):
             default_config = ToastWindowConfig()
             for key, value in get_public_instance_attributes(default_config):
                 setattr(self.config, key, value)

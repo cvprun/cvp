@@ -16,7 +16,9 @@ from cvp.renderer.context import Context
 from cvp.types.override import override
 
 
-class Supabase(BasePreference):
+class SupabasePreference(BasePreference):
+    __cvp_menu_name__ = "Supabase"
+
     def __init__(self, context: Context):
         super().__init__(context)
         self._show_supabase_key = False

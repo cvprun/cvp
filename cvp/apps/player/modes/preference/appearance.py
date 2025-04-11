@@ -12,7 +12,9 @@ from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 
 
-class Appearance(BasePreference):
+class AppearancePreference(BasePreference):
+    __cvp_menu_name__ = "Appearance"
+
     def __init__(self, context: Context):
         super().__init__(context)
         self._theme_names = ImmutableList(THEME_NAMES)
