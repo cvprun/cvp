@@ -10,7 +10,7 @@ from type_serialize import Serializable, deserialize, serialize
 
 from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
-from cvp.variables import OLLAMA_TIMEOUT
+from cvp.variables import TIMEOUT_INFINITE
 
 
 class Ollama(Serializable):
@@ -32,7 +32,7 @@ class Ollama(Serializable):
         url: Optional[str] = None,
         headers: Optional[Sequence[Tuple[str, str]]] = None,
         follow_redirects=True,
-        timeout=OLLAMA_TIMEOUT,
+        timeout=TIMEOUT_INFINITE,
         model_names: Optional[Sequence[str]] = None,
         *,
         error: Optional[BaseException] = None,
@@ -117,7 +117,7 @@ class Ollama(Serializable):
         self.headers = list((str(k), str(v)) for k, v in headers.items())
 
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
-        self.timeout = float(data.get(self._Keys.timeout, OLLAMA_TIMEOUT))
+        self.timeout = float(data.get(self._Keys.timeout, TIMEOUT_INFINITE))
         self.model_names = data.get(self._Keys.model_names, list())
 
         details = data.get(self._Keys.details, dict())
@@ -148,7 +148,7 @@ class Ollama(Serializable):
             # http2: bool = False,
             # proxy: ProxyTypes | None = None,
             # mounts: None | (typing.Mapping[str, BaseTransport | None]) = None,
-            timeout=Timeout(self.timeout),
+            timeout=Timeout(self.timeout) if 0 < self.timeout else None,
             follow_redirects=self.follow_redirects,
             # limits: Limits = DEFAULT_LIMITS,
             # max_redirects: int = DEFAULT_MAX_REDIRECTS,
@@ -163,26 +163,37 @@ class Ollama(Serializable):
         return self.model_names.copy()
 
     def show_model(self, model_name: str) -> ModelDetails:
-        # model_name = model_name.split(":")[0]
         response = self.client.show(model_name)
         detail = self.details.get(model_name, ModelDetails())
         try:
-            detail.modified_at = response.modified_at
-            detail.template = response.template
-            detail.model_file = response.modelfile
-            detail.license = response.license
+            modified_at = response.modified_at
+            template = response.template
+            model_file = response.modelfile
+            license_ = response.license
+            model_info = response.modelinfo
+            parameters = response.parameters
 
-            detail.model_info = {str(k): str(v) for k, v in response.modelinfo.items()}
+            detail.modified_at = modified_at
+            detail.template = template if template else str()
+            detail.model_file = model_file if model_file else str()
+            detail.license = license_ if license_ else str()
+            detail.model_info = {str(k): str(v) for k, v in model_info.items()}
+            detail.parameters = parameters if parameters else str()
 
-            detail.parameters = response.parameters
-            detail.parameters = response.parameters
             if response.details is not None:
-                detail.parent_model = response.details.parent_model
-                detail.format = response.details.format
-                detail.family = response.details.family
-                detail.families = response.details.families
-                detail.parameter_size = response.details.parameter_size
-                detail.quantization_level = response.details.quantization_level
+                parent_model = response.details.parent_model
+                format_ = response.details.format
+                family = response.details.family
+                families = response.details.families
+                parameter_size = response.details.parameter_size
+                q_level = response.details.quantization_level
+
+                detail.parent_model = parent_model if parent_model else str()
+                detail.format = format_ if format_ else str()
+                detail.family = family if family else str()
+                detail.families = list(families if families else ())
+                detail.parameter_size = parameter_size if parameter_size else str()
+                detail.quantization_level = q_level if q_level else str()
             return detail
         finally:
             self.details[model_name] = detail

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Optional, TypeAlias
+from http import HTTPStatus
+from typing import Dict, Optional, TypeAlias, Union
 
 from ollama import ChatResponse
 
@@ -10,7 +11,7 @@ from cvp.chat.database import ChatDatabase
 from cvp.chat.ids import ChatConversationID, ChatMessageID
 from cvp.chat.message import ChatMessage
 from cvp.chat.stream import ChatStream
-from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
+from cvp.chrono.isoformat import DateTimeLike, fromisoformat, isoformat_with_utc
 from cvp.resources.subdirs.chat import ChatPath
 from cvp.variables import CHAT_LIMIT, NOT_FOUND_INDEX
 
@@ -87,7 +88,7 @@ class ChatManager:
         conv_row = conv_id, title, created_at, None
         conv = ChatConversation.from_row(conv_row)
 
-        msg_row = msg_id, conv_id, request, None, 0, created_at, None
+        msg_row = msg_id, conv_id, request, str(), 0, created_at, None
         msg = ChatMessage.from_row(msg_row)
 
         assert conv_id not in self._caches
@@ -150,6 +151,65 @@ class ChatManager:
             except IndexError:
                 continue
         raise IndexError(f"Not found message: {message_id}")
+
+    def update_message_result(
+        self,
+        message_id: ChatMessageID,
+        error: str,
+        status=0,
+        updated_at: DateTimeLike = None,
+        conversation_id: Optional[ChatConversationID] = None,
+    ) -> ChatMessage:
+        updated_at = isoformat_with_utc(updated_at)
+        assert isinstance(updated_at, str)
+
+        self._database.update_message_error_and_status(
+            message_id,
+            error,
+            status,
+            updated_at,
+        )
+
+        if conversation_id is not None:
+            cache = self._caches[conversation_id]
+        else:
+            cache = self.find_cache_with_message_id(message_id)
+
+        message = cache.find_message(message_id)
+        message.error = error
+        message.status = status
+        message.updated_at = fromisoformat(updated_at)
+        return message
+
+    def update_message_ok(
+        self,
+        message_id: ChatMessageID,
+        updated_at: DateTimeLike = None,
+        conversation_id: Optional[ChatConversationID] = None,
+    ):
+        return self.update_message_result(
+            message_id=message_id,
+            error=str(),
+            status=int(HTTPStatus.OK),
+            updated_at=updated_at,
+            conversation_id=conversation_id,
+        )
+
+    def update_message_error(
+        self,
+        message_id: ChatMessageID,
+        error: str,
+        status: Union[int, HTTPStatus],
+        updated_at: DateTimeLike = None,
+        conversation_id: Optional[ChatConversationID] = None,
+    ):
+        return self.update_message_result(
+            message_id=message_id,
+            error=error,
+            status=int(status),
+            updated_at=updated_at,
+            conversation_id=conversation_id,
+        )
 
     def append_stream(
         self,

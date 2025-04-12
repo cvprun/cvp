@@ -257,18 +257,18 @@ class OllamaPreference(BasePreference):
             return
 
         modified_at = detail.modified_at.isoformat() if detail.modified_at else str()
-        template = detail.template if detail.template else str()
-        model_file = detail.model_file if detail.model_file else str()
-        license_ = detail.license if detail.license else str()
-        model_info = detail.model_info if detail.model_info else dict()
-        parameters = detail.parameters if detail.parameters else str()
+        template = detail.template
+        model_file = detail.model_file
+        license_ = detail.license
+        model_info = detail.model_info
+        parameters = detail.parameters
 
-        parent_model = detail.parent_model if detail.parent_model else str()
-        format_ = detail.format if detail.format else str()
-        family = detail.family if detail.family else str()
-        families = detail.families if detail.families else list()
-        parameter_size = detail.parameter_size if detail.parameter_size else str()
-        quantization = detail.quantization_level if detail.quantization_level else str()
+        parent_model = detail.parent_model
+        format_ = detail.format
+        family = detail.family
+        families = detail.families
+        parameter_size = detail.parameter_size
+        quantization = detail.quantization_level
 
         with style_disable_input_context():
             input_text_value("Modified At", modified_at)

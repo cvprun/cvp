@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, List, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
 class ModelDetails:
     modified_at: Optional[datetime] = None
-    template: Optional[str] = None
-    model_file: Optional[str] = None
-    license: Optional[str] = None
-    model_info: Optional[dict[str, Any]] = None
-    parameters: Optional[str] = None
+    template: str = field(default_factory=str)
+    model_file: str = field(default_factory=str)
+    license: str = field(default_factory=str)
+    model_info: Dict[str, str] = field(default_factory=dict)
+    parameters: str = field(default_factory=str)
 
     # details
-    parent_model: Optional[str] = None
-    format: Optional[str] = None
-    family: Optional[str] = None
-    families: Optional[List[str]] = None
-    parameter_size: Optional[str] = None
-    quantization_level: Optional[str] = None
+    parent_model: str = field(default_factory=str)
+    format: str = field(default_factory=str)
+    family: str = field(default_factory=str)
+    families: List[str] = field(default_factory=list)
+    parameter_size: str = field(default_factory=str)
+    quantization_level: str = field(default_factory=str)

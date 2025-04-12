@@ -5,6 +5,8 @@ from typing import Final
 from cvp.types.colors import RGBA
 from cvp.types.shapes import Size
 
+TIMEOUT_INFINITE: Final[float] = -1.0
+UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
 NODOC: Final[str] = ""
 
@@ -50,7 +52,6 @@ CHAT_INVALID_ID: Final[int] = -1
 
 OLLAMA_NAME: Final[str] = "[Nameless]"
 OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
-OLLAMA_TIMEOUT: Final[float] = 5.0
 OLLAMA_MODEL_NAME_SEPARATOR: Final[str] = "@"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"

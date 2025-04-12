@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from io import StringIO
 from typing import Iterable, List, Mapping, Optional
+
+from ollama import Message
 
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.ids import INVALID_CONVERSATION_ID, ChatConversationID, ChatMessageID
@@ -75,3 +78,31 @@ class ChatCache:
             self._streams[message_id].append(stream)
         else:
             self._streams[message_id] = [stream]
+
+    def get_merged_response_message(self, message_id: ChatMessageID) -> Message:
+        streams = self._streams[message_id]
+
+        first_stream = streams[0]
+        first_chunk = first_stream.load_chunk()
+        first_message = first_chunk.message
+        first_content = first_message.content if first_message.content else str()
+        assert first_message.role == "assistant"
+        assert first_message.images is None
+
+        result_message = first_message.model_copy()
+        result_message.content = first_content
+
+        if len(streams) == 1:
+            return result_message
+
+        buffer = StringIO()
+        buffer.write(first_content)
+
+        for stream in streams[1:]:
+            chunk = stream.load_chunk()
+            assert first_message.role == chunk.message.role
+            content = chunk.message.content if chunk.message.content else str()
+            buffer.write(content)
+
+        result_message.content = buffer.getvalue().strip()
+        return result_message

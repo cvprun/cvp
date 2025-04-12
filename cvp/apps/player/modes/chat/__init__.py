@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from io import StringIO
 from typing import List
 
 from imgui_bundle import imgui
@@ -25,6 +24,7 @@ from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.input_text_multilingual import input_text_multiline
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
+from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_right_align import text_disabled_right_align
 from cvp.renderer.context import RendererContext
@@ -129,22 +129,25 @@ class ChatMode(BaseMode):
             if not disabled_input:
                 self._input_text = input_result.value
                 if input_result.changed:
-                    self.request_user_input(self._input_text)
-                    self._input_text = str()
+                    self.request_chat_completion()
 
             imgui.same_line()
             if button(self._enter_label, disabled=disabled_input):
                 assert not disabled_input
-                self.request_user_input(self._input_text)
-                self._input_text = str()
+                self.request_chat_completion()
 
-    def request_user_input(self, text: str) -> None:
-        self.context.request_chat_stream(
-            self._conversation_id,
-            self.context.config.chat.selected_server_key,
-            self.context.config.chat.selected_model_name,
-            text,
-        )
+    def request_chat_completion(self) -> None:
+        try:
+            self._conversation_id = self.context.request_chat_stream(
+                conversation_id=self._conversation_id,
+                server_key=self.context.config.chat.selected_server_key,
+                model_name=self.context.config.chat.selected_model_name,
+                content=self._input_text,
+                images=None,
+                stream=True,
+            )
+        finally:
+            self._input_text = str()
 
     def do_child_process(self, split_x=SIDE_MENU_WIDTH):
         with begin_child_context("Menu", split_x, child_flags=RESIZE_X | BORDERS):
@@ -197,8 +200,7 @@ class ChatMode(BaseMode):
             imgui.separator()
             self.input_text_multilingual_with_button()
 
-    @staticmethod
-    def do_history(cache: ChatCache) -> None:
+    def do_history(self, cache: ChatCache) -> None:
         for message in cache.messages:
             request = message.load_request()
             imgui.text(request.role)
@@ -213,21 +215,23 @@ class ChatMode(BaseMode):
             streams = cache.streams.get(message.id)
             if not streams:
                 continue
+
             first_stream = streams[0]
             first_chunk = first_stream.load_chunk()
             first_message = first_chunk.message
 
-            buffer = StringIO()
-            buffer.write(first_message.content)
-            for stream in streams[1:]:
-                chunk = stream.load_chunk()
-                assert first_message.role == chunk.message.role
-                buffer.write(chunk.message.content)
-
             imgui.text(first_message.role)
             imgui.same_line()
-            with style_disable_input_context():
-                imgui.text_wrapped(buffer.getvalue().strip())
 
-                created_at = first_stream.created_at.isoformat()
-                text_disabled_right_align(created_at)
+            with style_disable_input_context():
+                response_message = cache.get_merged_response_message(message.id)
+                response_content = response_message.content
+                assert response_content is not None
+                imgui.text_wrapped(response_content)
+
+                last_stream = streams[-1]
+                last_created_at = last_stream.created_at.isoformat()
+                text_disabled_right_align(last_created_at)
+
+        if self.context.get_ollama_chat_status().running:
+            spinner("Running")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, List, Optional
+from typing import Dict, List, NewType, Optional, Tuple
 from uuid import uuid4
 
 from type_serialize import deserialize, serialize
@@ -10,8 +10,10 @@ from cvp.ollama.ollama import Ollama
 from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.variables import OLLAMA_ADDRESS, OLLAMA_NAME
 
+OllamaFilename = NewType("OllamaFilename", str)
 
-class OllamaManager(Dict[str, Ollama]):
+
+class OllamaManager(Dict[OllamaFilename, Ollama]):
     def __init__(self, path: OllamasPath, *, reload=False, raise_errors=False):
         super().__init__()
         self._path = path
@@ -23,20 +25,20 @@ class OllamaManager(Dict[str, Ollama]):
     def path(self):
         return self._path
 
-    def read_serialized_object(self, filename: str) -> Ollama:
+    def read_serialized_object(self, filename: OllamaFilename) -> Ollama:
         result = deserialize(self._path.read_object(filename), Ollama)
         logger.info(f"Read from ollama config file: '{filename}'")
         return result
 
-    def write_serialized_object(self, ollama: Ollama, filename: str) -> int:
+    def write_serialized_object(self, ollama: Ollama, filename: OllamaFilename) -> int:
         result = self._path.write_object(serialize(ollama), filename)
         logger.info(f"Wrote to ollama config file: '{filename}'")
         return result
 
-    def filenames(self) -> List[str]:
-        return self._path.find_object_filenames()
+    def filenames(self) -> List[OllamaFilename]:
+        return [OllamaFilename(x) for x in self._path.find_object_filenames()]
 
-    def read_all_files(self, *, raise_errors=False) -> Dict[str, Ollama]:
+    def read_all_files(self, *, raise_errors=False) -> Dict[OllamaFilename, Ollama]:
         result = dict()
         for filename in self.filenames():
             try:
@@ -60,40 +62,44 @@ class OllamaManager(Dict[str, Ollama]):
 
             self.write_serialized_object(ollama, filename)
 
-    def write(self, filename: str) -> int:
+    def write(self, filename: OllamaFilename) -> int:
         ollama = self.__getitem__(filename)
         return self.write_serialized_object(ollama, filename)
 
-    def read(self, filename: str):
+    def read(self, filename: OllamaFilename):
         ollama = self.read_serialized_object(filename)
         self.__setattr__(filename, ollama)
         return ollama
 
-    def remove(self, filename: str) -> None:
+    def remove(self, filename: OllamaFilename) -> None:
         self.__delitem__(filename)
         self._path.remove_object(filename)
         logger.info(f"Removed ollama config file: '{filename}'")
 
-    def exists(self, filename: str) -> bool:
+    def exists(self, filename: OllamaFilename) -> bool:
         return (self._path / filename).is_file()
 
     def reload_all_files(self, *, raise_errors=False) -> None:
-        self.clear()
-        self.update(self.read_all_files(raise_errors=raise_errors))
+        try:
+            result = self.read_all_files(raise_errors=raise_errors)
+        except:  # noqa
+            raise
+        else:
+            self.clear()
+            self.update(result)
 
     def add_new(
         self,
-        filename: Optional[str] = None,
+        filename: Optional[OllamaFilename] = None,
         name: Optional[str] = None,
         url: Optional[str] = None,
-    ):
-        filename = filename if filename else (str(uuid4()) + self._path.extension)
-        name = name if name is not None else OLLAMA_NAME
-        url = url if url is not None else OLLAMA_ADDRESS
-
-        assert isinstance(filename, str)
-        assert isinstance(name, str)
-        assert isinstance(url, str)
+    ) -> Tuple[OllamaFilename, Ollama]:
+        if filename is None:
+            filename = OllamaFilename(str(uuid4()) + self._path.extension)
+        if name is None:
+            name = OLLAMA_NAME
+        if url is None:
+            url = OLLAMA_ADDRESS
 
         result = Ollama(name, url)
         self.__setitem__(filename, result)

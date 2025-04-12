@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
+from http import HTTPStatus
 from typing import Optional
 
 from ollama import Message
@@ -23,6 +24,14 @@ class ChatMessage:
     status: int = 0
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
     updated_at: Optional[datetime] = None
+
+    @property
+    def http_status(self) -> HTTPStatus:
+        return HTTPStatus(self.status)
+
+    @property
+    def is_ok(self) -> bool:
+        return self.status == int(HTTPStatus.OK)
 
     @property
     def is_invalid_id(self) -> bool:
