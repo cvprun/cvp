@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from io import StringIO
+from typing import List
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.chat.cache import ChatCache
+from cvp.chat.ids import INVALID_CONVERSATION_ID
 from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -30,6 +32,7 @@ from cvp.types.override import override
 from cvp.variables import (
     CHAT_TITLE_NONAME,
     NOT_FOUND_INDEX,
+    OLLAMA_MODEL_NAME_SEPARATOR,
     SIDE_MENU_WIDTH,
 )
 
@@ -39,7 +42,7 @@ class ChatMode(BaseMode):
         super().__init__(context)
         self._input_text = str()
         self._search = str()
-        self._conversation_id = NOT_FOUND_INDEX
+        self._conversation_id = INVALID_CONVERSATION_ID
         self._title_noname = CHAT_TITLE_NONAME
         self._enter_label = "Enter"
 
@@ -47,18 +50,6 @@ class ChatMode(BaseMode):
     @override
     def get_mode() -> AppMode:
         return AppMode.chat
-
-    @property
-    def chat_selected_index(self):
-        return self.context.config.chat.selected_index
-
-    @chat_selected_index.setter
-    def chat_selected_index(self, value: int) -> None:
-        self.context.config.chat.selected_index = value
-
-    @property
-    def disabled_input(self) -> bool:
-        return self.context.get_ollama_chat_status().running
 
     @override
     def do_process(self) -> None:
@@ -70,14 +61,35 @@ class ChatMode(BaseMode):
         finally:
             imgui.pop_style_var()
 
-    def combo_models(self) -> None:
-        result = combo_fitting_items_max_width(
-            "###Models",
-            current=self.chat_selected_index,
-            items=self.context.chat_model_names,
-        )
+    def combo_models(
+        self,
+        *,
+        separator=OLLAMA_MODEL_NAME_SEPARATOR,
+        double_hash="##",
+    ) -> None:
+        selected_server_key = self.context.config.chat.selected_server_key
+        selected_model_name = self.context.config.chat.selected_model_name
+        selected_index = NOT_FOUND_INDEX
+
+        combo_names: List[str] = list()
+
+        for key, ollama in self.context.ollamas.items():
+            for model_name in ollama.model_names:
+                if key == selected_server_key and model_name == selected_model_name:
+                    selected_index = len(combo_names)
+                combo_item = ollama.name + separator + model_name + double_hash + key
+                combo_names.append(combo_item)
+
+        result = combo_fitting_items_max_width("Model", selected_index, combo_names)
         if result.changed:
-            self.chat_selected_index = result.value
+            selected_index = result.value
+            selected_combo_item = combo_names[selected_index]
+
+            item_label, item_key = selected_combo_item.split(double_hash, maxsplit=1)
+            self.context.config.chat.selected_server_key = item_key
+
+            _, model_name = item_label.split(separator, maxsplit=1)
+            self.context.config.chat.selected_model_name = model_name
 
     @staticmethod
     def calc_input_text_size(input_value: str, button_label: str) -> imgui.ImVec2:
@@ -100,9 +112,9 @@ class ChatMode(BaseMode):
         return self.calc_input_text_size(self._input_text, self._enter_label)
 
     def input_text_multilingual_with_button(self) -> None:
-        disabled_input = self.disabled_input
+        disabled_input = self.context.get_ollama_chat_status().running
 
-        with style_disable_input_context(cancel=not self.disabled_input):
+        with style_disable_input_context(cancel=not disabled_input):
             input_flags = CTRL_ENTER_FOR_NEW_LINE | ENTER_RETURNS_TRUE
             if disabled_input:
                 input_flags |= READ_ONLY
@@ -139,7 +151,7 @@ class ChatMode(BaseMode):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     if imgui.button(self._title_noname, (FIT_WIDTH, 0)):
-                        self._conversation_id = NOT_FOUND_INDEX
+                        self._conversation_id = INVALID_CONVERSATION_ID
 
                     search_result = input_text_multiline(
                         label="###Search",
@@ -162,7 +174,7 @@ class ChatMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if self._conversation_id == NOT_FOUND_INDEX:
+            if self._conversation_id == INVALID_CONVERSATION_ID:
                 imgui.text(self._title_noname)
             else:
                 imgui.text(self.context.chat[self._conversation_id].conversation_title)
@@ -170,9 +182,6 @@ class ChatMode(BaseMode):
             imgui.separator()
 
             self.combo_models()
-            imgui.same_line()
-            if imgui.button("Refresh"):
-                self.context.refresh_chat_models()
 
             imgui.separator()
 
@@ -180,7 +189,7 @@ class ChatMode(BaseMode):
             history_bottom = -1 * (self.get_input_text_size().y + item_spacing_y)
 
             with begin_child_context("Main", 0, history_bottom):
-                if self._conversation_id == NOT_FOUND_INDEX:
+                if self._conversation_id == INVALID_CONVERSATION_ID:
                     text_centered("What can I help with?")
                 else:
                     self.do_history(self.context.chat[self._conversation_id])

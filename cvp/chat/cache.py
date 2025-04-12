@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import Iterable, List, Mapping, Optional
 
 from cvp.chat.conversation import ChatConversation
+from cvp.chat.ids import INVALID_CONVERSATION_ID, ChatConversationID, ChatMessageID
 from cvp.chat.message import ChatMessage
 from cvp.chat.stream import ChatStream
 
@@ -13,14 +14,18 @@ class ChatCache:
         self,
         conversation: ChatConversation,
         messages: Optional[Iterable[ChatMessage]] = None,
-        streams: Optional[Mapping[int, List[ChatStream]]] = None,
+        streams: Optional[Mapping[ChatMessageID, List[ChatStream]]] = None,
     ):
         self._conversation = conversation
         self._messages = list(messages if messages else ())
         self._streams = dict(streams if streams else {})
 
     @property
-    def conversation_id(self) -> int:
+    def is_invalid_conversation_id(self) -> bool:
+        return self.conversation_id == INVALID_CONVERSATION_ID
+
+    @property
+    def conversation_id(self) -> ChatConversationID:
         return self._conversation.id
 
     @property
@@ -55,7 +60,7 @@ class ChatCache:
         for message in messages:
             self._messages.append(message)
 
-    def find_message(self, message_id) -> ChatMessage:
+    def find_message(self, message_id: ChatMessageID) -> ChatMessage:
         for msg in self._messages:
             if msg.id == message_id:
                 return msg
@@ -65,7 +70,7 @@ class ChatCache:
     def streams(self):
         return self._streams
 
-    def add_stream(self, message_id: int, stream: ChatStream) -> None:
+    def add_stream(self, message_id: ChatMessageID, stream: ChatStream) -> None:
         if message_id in self._streams:
             self._streams[message_id].append(stream)
         else:

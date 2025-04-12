@@ -31,8 +31,7 @@ class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
     @classmethod
     @override
     def get_menu_name(cls) -> str:
-        assert hasattr(cls, cls.__cvp_menu_name__)
-        return getattr(cls, cls.__cvp_menu_name__, cls.__name__)
+        return cls.__cvp_menu_name__
 
     @property
     def context(self) -> Context:

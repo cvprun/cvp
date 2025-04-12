@@ -44,12 +44,14 @@ SLOW_CALLBACK_DURATION: Final[float] = 0.05
 
 CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
 CHAT_TITLE_NONAME: Final[str] = "[New chat]"
+CHAT_SERVER_NONAME: Final[str] = "[New server]"
 CHAT_LIMIT: Final[int] = 30
 CHAT_INVALID_ID: Final[int] = -1
 
 OLLAMA_NAME: Final[str] = "[Nameless]"
 OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
 OLLAMA_TIMEOUT: Final[float] = 5.0
+OLLAMA_MODEL_NAME_SEPARATOR: Final[str] = "@"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

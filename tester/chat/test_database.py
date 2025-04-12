@@ -8,6 +8,7 @@ from unittest import TestCase, main
 from warnings import warn
 
 from cvp.chat.database import ChatDatabase
+from cvp.chat.ids import ChatConversationID
 from cvp.resources.home import HomeDir
 from cvp.variables import CHAT_LIMIT
 
@@ -72,12 +73,13 @@ class DatabaseTestCase(TestCase):
         self.assertEqual(limit, len(rows1))
         self.assertEqual(limit, rows1[0].id)
         self.assertEqual(1, rows1[limit - 1].id)
+        first_conv_id = ChatConversationID(limit)
 
-        rows2 = self._chat.select_conversation_latest_after_id(limit)
+        rows2 = self._chat.select_conversation_latest_after_id(first_conv_id)
         self.assertEqual(0, len(rows2))
 
         self._chat.insert_conversation("Title")
-        rows3 = self._chat.select_conversation_latest_after_id(limit)
+        rows3 = self._chat.select_conversation_latest_after_id(first_conv_id)
         self.assertEqual(1, len(rows3))
         self.assertEqual(limit + 1, rows3[0].id)
 
@@ -135,7 +137,7 @@ class DatabaseTestCase(TestCase):
         stream_id = self._chat.insert_stream(msg_id, "data", now1)
         self.assertEqual(1, stream_id)
 
-        rows1 = self._chat.select_stream(conv_id)
+        rows1 = self._chat.select_stream(msg_id)
         self.assertEqual(1, len(rows1))
         self.assertEqual(1, rows1[0].id)
         self.assertEqual("data", rows1[0].chunk)

@@ -5,15 +5,28 @@ from datetime import datetime
 
 from ollama import ChatResponse
 
-from cvp.variables import CHAT_INVALID_ID
+from cvp.chat.ids import (
+    INVALID_MESSAGE_ID,
+    INVALID_STREAM_ID,
+    ChatMessageID,
+    ChatStreamID,
+)
 
 
 @dataclass
 class ChatStream:
-    id: int = CHAT_INVALID_ID
-    message_id: int = CHAT_INVALID_ID
+    id: ChatStreamID = INVALID_STREAM_ID
+    message_id: ChatMessageID = INVALID_MESSAGE_ID
     chunk: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
+
+    @property
+    def is_invalid_id(self) -> bool:
+        return self.id == INVALID_STREAM_ID
+
+    @property
+    def is_invalid_message_id(self) -> bool:
+        return self.message_id == INVALID_MESSAGE_ID
 
     def dump_chunk(self, data: ChatResponse) -> None:
         self.chunk = data.model_dump_json()
@@ -31,8 +44,8 @@ class ChatStream:
         assert isinstance(chunk, str)
         assert isinstance(created_at, str)
         return cls(
-            id_,
-            message_id,
+            ChatStreamID(id_),
+            ChatMessageID(message_id),
             chunk,
             datetime.fromisoformat(created_at).astimezone(),
         )

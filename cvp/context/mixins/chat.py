@@ -4,6 +4,7 @@ from typing import NamedTuple, Optional, Sequence, Union
 
 from ollama import Image, Message
 
+from cvp.chat.ids import ChatConversationID
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.logging.logging import logger as logger
 from cvp.variables import NOT_FOUND_INDEX
@@ -16,7 +17,7 @@ class ChatMixin(BaseContextMixin):
 
     def __on_ollama_chat_main(
         self,
-        conversation_id: int,
+        conversation_id: ChatConversationID,
         server_key: str,
         model_name: str,
         content: str,
@@ -52,17 +53,6 @@ class ChatMixin(BaseContextMixin):
         for response in stream:
             self._chat.append_stream(msg.id, response)
 
-    @property
-    def chat_model_names(self):
-        return self._config.chat.model_names
-
-    def refresh_chat_models(self) -> None:
-        self._config.chat.clear_models()
-
-        for key, ollama in self._ollamas.items():
-            for model_name in ollama.model_names:
-                self._config.chat.append_models(key, ollama.name, model_name)
-
     class _OllamaChatStatus(NamedTuple):
         has_error: bool
         error_message: str
@@ -81,7 +71,7 @@ class ChatMixin(BaseContextMixin):
 
     def request_chat_stream(
         self,
-        conversation_id: int,
+        conversation_id: ChatConversationID,
         server_key: str,
         model_name: str,
         message: str,

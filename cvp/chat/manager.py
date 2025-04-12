@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Optional
+from typing import Dict, Optional, TypeAlias
 
 from ollama import ChatResponse
 
 from cvp.chat.cache import ChatCache
 from cvp.chat.conversation import ChatConversation
 from cvp.chat.database import ChatDatabase
+from cvp.chat.ids import ChatConversationID, ChatMessageID
 from cvp.chat.message import ChatMessage
 from cvp.chat.stream import ChatStream
 from cvp.chrono.isoformat import DateTimeLike, isoformat_with_utc
 from cvp.resources.subdirs.chat import ChatPath
 from cvp.variables import CHAT_LIMIT, NOT_FOUND_INDEX
 
+ChatCacheDict: TypeAlias = Dict[ChatConversationID, ChatCache]
+
 
 class ChatManager:
-    _caches: Dict[int, ChatCache]
+    _caches: ChatCacheDict
 
     def __init__(
         self,
@@ -32,12 +35,12 @@ class ChatManager:
             create_tables=create_tables,
         )
         if reload:
-            self.reload_conversations()
+            self.reload_database()
 
-    def reload_conversations(self) -> None:
-        self._caches = self.read_conversations()
+    def reload_database(self) -> None:
+        self._caches = self.read_caches()
 
-    def read_conversations(self, limit: Optional[int] = None):
+    def read_caches(self, limit: Optional[int] = None):
         if limit is None:
             limit = self._limit
         assert isinstance(limit, int)
@@ -58,13 +61,13 @@ class ChatManager:
     def items(self):
         return self._caches.items()
 
-    def __getitem__(self, conv_id: int):
+    def __getitem__(self, conv_id: ChatConversationID):
         return self._caches[conv_id]
 
-    def __setitem__(self, conv_id: int, value: ChatCache):
+    def __setitem__(self, conv_id: ChatConversationID, value: ChatCache):
         self._caches[conv_id] = value
 
-    def __delitem__(self, conv_id: int):
+    def __delitem__(self, conv_id: ChatConversationID):
         del self._caches[conv_id]
 
     def create_new_chat_stream(
@@ -77,6 +80,8 @@ class ChatManager:
         assert isinstance(created_at, str)
 
         ids = self._database.insert_conversation_and_message(title, request, created_at)
+        assert isinstance(ids, tuple)
+        assert 2 == len(ids)
         conv_id, msg_id = ids
 
         conv_row = conv_id, title, created_at, None
@@ -96,7 +101,7 @@ class ChatManager:
 
         return cache
 
-    def refresh_messages(self, conversation_id: int):
+    def refresh_messages(self, conversation_id: ChatConversationID):
         if conversation_id not in self._caches:
             raise KeyError(f"Not found conversation: {conversation_id}")
 
@@ -107,7 +112,7 @@ class ChatManager:
 
     def append_chat(
         self,
-        conversation_id: int,
+        conversation_id: ChatConversationID,
         request: str,
         error: Optional[str] = None,
         status=0,
@@ -133,10 +138,10 @@ class ChatManager:
         self._caches[conversation_id].append_messages(message)
         return message
 
-    def messages(self, conversation_id: int):
+    def messages(self, conversation_id: ChatConversationID):
         return self._caches[conversation_id].messages
 
-    def find_cache_with_message_id(self, message_id: int) -> ChatCache:
+    def find_cache_with_message_id(self, message_id: ChatMessageID) -> ChatCache:
         for cache in self._caches.values():
             try:
                 msg = cache.find_message(message_id)
@@ -148,10 +153,10 @@ class ChatManager:
 
     def append_stream(
         self,
-        message_id: int,
+        message_id: ChatMessageID,
         response: ChatResponse,
         created_at: DateTimeLike = None,
-        conversation_id: Optional[int] = None,
+        conversation_id: Optional[ChatConversationID] = None,
     ) -> ChatStream:
         created_at = isoformat_with_utc(created_at)
         assert isinstance(created_at, str)

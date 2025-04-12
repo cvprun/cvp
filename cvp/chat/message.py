@@ -6,18 +6,31 @@ from typing import Optional
 
 from ollama import Message
 
-from cvp.variables import CHAT_INVALID_ID
+from cvp.chat.ids import (
+    INVALID_CONVERSATION_ID,
+    INVALID_MESSAGE_ID,
+    ChatConversationID,
+    ChatMessageID,
+)
 
 
 @dataclass
 class ChatMessage:
-    id: int = CHAT_INVALID_ID
-    conversation_id: int = CHAT_INVALID_ID
+    id: ChatMessageID = INVALID_MESSAGE_ID
+    conversation_id: ChatConversationID = INVALID_CONVERSATION_ID
     request: str = field(default_factory=str)
-    error: Optional[str] = None
+    error: str = field(default_factory=str)
     status: int = 0
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
     updated_at: Optional[datetime] = None
+
+    @property
+    def is_invalid_id(self) -> bool:
+        return self.id == INVALID_MESSAGE_ID
+
+    @property
+    def is_invalid_conversation_id(self) -> bool:
+        return self.conversation_id == INVALID_CONVERSATION_ID
 
     def dump_request(self, data: Message) -> None:
         self.request = data.model_dump_json()
@@ -33,13 +46,13 @@ class ChatMessage:
         assert isinstance(id_, int)
         assert isinstance(conversation_id, int)
         assert isinstance(request, str)
-        assert isinstance(error, (type(None), str))
+        assert isinstance(error, str)
         assert isinstance(status, int)
         assert isinstance(created_at, str)
         assert isinstance(updated_at, (type(None), str))
         return cls(
-            id_,
-            conversation_id,
+            ChatMessageID(id_),
+            ChatConversationID(conversation_id),
             request,
             error,
             status,

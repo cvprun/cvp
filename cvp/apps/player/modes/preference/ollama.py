@@ -19,10 +19,7 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from cvp.variables import (
-    NOT_FOUND_INDEX,
-    SIDE_MENU_WIDTH,
-)
+from cvp.variables import NOT_FOUND_INDEX, SIDE_MENU_WIDTH
 
 
 class OllamaPreference(BasePreference):
@@ -75,10 +72,8 @@ class OllamaPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        width = SIDE_MENU_WIDTH
         child_flags = RESIZE_X | BORDERS
-
-        with begin_child_context("Menu", width, child_flags=child_flags):
+        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
             if imgui.button("Reload"):
                 self.ollamas.reload_all_files()
             imgui.same_line()

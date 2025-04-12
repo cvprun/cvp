@@ -4,15 +4,19 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from cvp.variables import CHAT_INVALID_ID
+from cvp.chat.ids import INVALID_CONVERSATION_ID, ChatConversationID
 
 
 @dataclass
 class ChatConversation:
-    id: int = CHAT_INVALID_ID
+    id: ChatConversationID = INVALID_CONVERSATION_ID
     title: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
     updated_at: Optional[datetime] = None
+
+    @property
+    def is_invalid_id(self) -> bool:
+        return self.id == INVALID_CONVERSATION_ID
 
     @classmethod
     def from_row(cls, row):
@@ -24,7 +28,7 @@ class ChatConversation:
         assert isinstance(created_at, str)
         assert isinstance(updated_at, (type(None), str))
         return cls(
-            id_,
+            ChatConversationID(id_),
             title,
             datetime.fromisoformat(created_at).astimezone(),
             datetime.fromisoformat(updated_at).astimezone() if updated_at else None,

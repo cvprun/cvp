@@ -50,7 +50,7 @@ def calc_max_combo_size(
     flags: Union[ComboFlags, int] = 0,
 ) -> imgui.ImVec2:
     label_size = imgui.calc_text_size(label, None, True)
-    items_max_width = max((imgui.calc_text_size(i).x for i in items))
+    items_max_width = max((imgui.calc_text_size(i, None, True).x for i in items))
     arrow_size = get_arrow_size(flags)
 
     frame_padding = imgui.get_style().frame_padding
