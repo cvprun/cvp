@@ -30,6 +30,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
     from cvp.apps.player.modes.preference.toast import ToastPreference
+    from cvp.apps.player.modes.preference.wsdl import WsdlPreference
 
     return (
         AppearancePreference,
@@ -38,6 +39,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         ResourcePreference,
         SupabasePreference,
         ToastPreference,
+        WsdlPreference,
     )
 
 
@@ -75,10 +77,8 @@ class PreferenceMode(BaseMode):
             imgui.pop_style_var()
 
     def do_child_process(self):
-        width = SIDE_MENU_WIDTH
         child_flags = RESIZE_X | BORDERS
-
-        with begin_child_context("Menu", width, child_flags=child_flags):
+        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     for key in self._menus.keys():
@@ -86,7 +86,6 @@ class PreferenceMode(BaseMode):
                             self.selected_menu = key
                 finally:
                     imgui.end_list_box()
-
         imgui.same_line()
 
         with begin_child_context("Main"):

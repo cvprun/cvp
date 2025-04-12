@@ -17,7 +17,6 @@ from cvp.windows.preference.ffmpeg import FFmpegPreference
 from cvp.windows.preference.flow import FlowPreference
 from cvp.windows.preference.logging import LoggingPreference
 from cvp.windows.preference.overlay import OverlayPreference
-from cvp.windows.preference.wsdl import WsdlPreference
 
 
 class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
@@ -34,7 +33,6 @@ class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
             FlowPreference(context),
             FFmpegPreference(context),
             OverlayPreference(context),
-            WsdlPreference(context),
             LoggingPreference(context),
             ConcurrencyPreference(context),
             DeveloperPreference(context),
