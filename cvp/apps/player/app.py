@@ -19,6 +19,7 @@ from pygame.image import load as load_image
 from pygame.key import ScancodeWrapper, get_pressed
 
 from cvp.apps.player.modes import create_modes
+from cvp.apps.player.windows.overlay import OverlayWindow
 from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
 from cvp.chrono.filename import short_datetime_name
@@ -55,6 +56,7 @@ class PlayerApplication:
         self._profiler = ProfileLogging(profile_logger)
 
         self._toast = ToastWindow(context)
+        self._overlay = OverlayWindow(context)
         self._world = World(context)
 
         self._renderer = None
@@ -416,6 +418,7 @@ class PlayerApplication:
                 self.on_demo_window()
 
             self._toast.on_process()
+            self._overlay.on_process()
             self._world.on_process(imgui.get_io().delta_time)
         finally:
             # Cannot use `screen.fill((1, 1, 1))` because pygame's screen does not
@@ -458,20 +461,6 @@ class PlayerApplication:
         # if menu_item("Catalog", self._catalog_manager.opened):
         #     self._catalog_manager.flip_opened()
         #
-        # if self.debug:
-        #     if menu_item("Stitching", self._stitching.opened):
-        #         self._stitching.flip_opened()
-        #     if menu_item("Labeling", self._labeling_manager.opened):
-        #         self._labeling_manager.flip_opened()
-        #
-        # if self.debug:
-        #     separator()
-        #     menu_item("Editors", enabled=False)
-        #     if menu_item("Text", self._text.opened):
-        #         self._text.flip_opened()
-        #     if menu_item("Canvas", self._canvas.opened):
-        #         self._canvas.flip_opened()
-        #
         # separator()
         # menu_item("Network Device", enabled=False)
         # if menu_item("Media", self._media_manager.opened):
@@ -480,11 +469,6 @@ class PlayerApplication:
         #     self._onvif_manager.flip_opened()
         # if menu_item("WsDiscovery", self._wsd_manager.opened):
         #     self._wsd_manager.flip_opened()
-        #
-        # separator()
-        # menu_item("Information", enabled=False)
-        # if menu_item("Overlay", self._overlay.opened):
-        #     self._overlay.flip_opened()
         #
         # separator()
         # menu_item("Management", enabled=False)
@@ -524,6 +508,9 @@ class PlayerApplication:
         pass
 
     def on_windows_menu(self) -> None:
+        if menu_item("Overlay", self._overlay.opened):
+            self._overlay.flip_opened()
+
         if self.debug:
             separator()
             if menu_item("Metrics", self.config.developer.show_metrics):

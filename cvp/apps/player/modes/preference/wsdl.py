@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from imgui_bundle import imgui
-
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
+from cvp.imgui.checkbox import checkbox
 from cvp.logging.logging import logger
 from cvp.types.override import override
 
@@ -24,14 +23,9 @@ class WsdlPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        no_cache_result = imgui.checkbox("No Cache File", self.no_cache)
-        no_cache_changed = no_cache_result[0]
-        no_cache_value = no_cache_result[1]
-        assert isinstance(no_cache_changed, bool)
-        assert isinstance(no_cache_value, bool)
-        if no_cache_changed:
-            self.no_cache = no_cache_value
-            if no_cache_value:
+        if no_cache_result := checkbox("No Cache File", self.no_cache):
+            self.no_cache = no_cache_result.state
+            if no_cache_result.state:
                 logger.info("Do not save the WSDL schema as a file")
             else:
                 logger.info("Save the WSDL schema as a file")

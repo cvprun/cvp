@@ -27,6 +27,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import AppearancePreference
     from cvp.apps.player.modes.preference.keyring import KeyringPreference
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
+    from cvp.apps.player.modes.preference.overlay import OverlayPreference
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
     from cvp.apps.player.modes.preference.toast import ToastPreference
@@ -36,6 +37,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         AppearancePreference,
         KeyringPreference,
         OllamaPreference,
+        OverlayPreference,
         ResourcePreference,
         SupabasePreference,
         ToastPreference,

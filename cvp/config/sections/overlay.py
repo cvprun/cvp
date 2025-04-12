@@ -1,63 +1,62 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum, unique
 
-from cvp.config.sections.bases.window import WindowConfig
-from cvp.palette.basic import LIME, RED, YELLOW
-from cvp.types.colors import RGBA
+from cvp.types.colors import GREEN_RGBA, RED_RGBA, RGBA, YELLOW_RGBA
 
 
 @unique
 class Anchor(IntEnum):
-    TopLeft = 0
-    TopRight = 1
-    BottomLeft = 2
-    BottomRight = 3
+    top_left = 0
+    top_right = 1
+    bottom_left = 2
+    bottom_right = 3
 
 
 @dataclass
-class OverlayWindowConfig(WindowConfig):
-    anchor: Anchor = Anchor.TopLeft
+class OverlayConfig:
+    opened: bool = False
+    anchor: Anchor = Anchor.top_left
     padding: float = 10.0
     alpha: float = 0.2
     fps_warning_threshold: float = 30.0
     fps_error_threshold: float = 8.0
-    error_color: RGBA = field(default_factory=lambda: (*RED, 1.0))
-    normal_color: RGBA = field(default_factory=lambda: (*LIME, 1.0))
-    warning_color: RGBA = field(default_factory=lambda: (*YELLOW, 1.0))
+    error_color: RGBA = RED_RGBA
+    normal_color: RGBA = GREEN_RGBA
+    warning_color: RGBA = YELLOW_RGBA
 
     @property
     def is_top_left(self):
-        return self.anchor == Anchor.TopLeft
+        return self.anchor == Anchor.top_left
 
     @property
     def is_top_right(self):
-        return self.anchor == Anchor.TopRight
+        return self.anchor == Anchor.top_right
 
     @property
     def is_bottom_left(self):
-        return self.anchor == Anchor.BottomLeft
+        return self.anchor == Anchor.bottom_left
 
     @property
     def is_bottom_right(self):
-        return self.anchor == Anchor.BottomRight
+        return self.anchor == Anchor.bottom_right
 
     def set_top_left(self) -> None:
-        self.anchor = Anchor.TopLeft
+        self.anchor = Anchor.top_left
 
     def set_top_right(self) -> None:
-        self.anchor = Anchor.TopRight
+        self.anchor = Anchor.top_right
 
     def set_bottom_left(self) -> None:
-        self.anchor = Anchor.BottomLeft
+        self.anchor = Anchor.bottom_left
 
     def set_bottom_right(self) -> None:
-        self.anchor = Anchor.BottomRight
+        self.anchor = Anchor.bottom_right
 
     @property
     def is_left_side(self):
-        return self.anchor in (Anchor.TopLeft, Anchor.BottomLeft)
+        return self.anchor in (Anchor.top_left, Anchor.bottom_left)
 
     @property
     def is_right_side(self):
@@ -65,7 +64,7 @@ class OverlayWindowConfig(WindowConfig):
 
     @property
     def is_top_side(self):
-        return self.anchor in (Anchor.TopLeft, Anchor.TopRight)
+        return self.anchor in (Anchor.top_left, Anchor.top_right)
 
     @property
     def is_bottom_side(self):
