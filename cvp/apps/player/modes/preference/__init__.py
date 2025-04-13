@@ -2,7 +2,7 @@
 
 from collections import OrderedDict
 from functools import lru_cache
-from typing import Sequence, Type
+from typing import Optional, Sequence, Type
 
 from imgui_bundle import imgui
 
@@ -78,16 +78,24 @@ class PreferenceMode(BaseMode):
 
     @override
     def do_process(self) -> None:
+        widget = self._menus.get(self.selected_menu)
+        if widget is not None:
+            widget.do_preprocess()
         imgui.push_style_var(StyleVar.window_border_size, 0)
         try:
             set_next_window_as_viewport()
             with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
-                self.do_child_process()
+                self.do_child_process(widget)
         finally:
             imgui.pop_style_var()
+            if widget is not None:
+                widget.do_postprocess()
 
-    def do_child_process(self):
-        child_flags = RESIZE_X | BORDERS
+    def do_child_process(
+        self,
+        widget: Optional[BasePreference] = None,
+        child_flags=RESIZE_X | BORDERS,
+    ) -> None:
         with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
@@ -96,10 +104,11 @@ class PreferenceMode(BaseMode):
                             self.selected_menu = key
                 finally:
                     imgui.end_list_box()
+
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if widget := self._menus.get(self.selected_menu):
+            if widget is not None:
                 imgui.text(self.selected_menu)
                 imgui.separator()
                 widget.do_process()

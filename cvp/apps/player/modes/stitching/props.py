@@ -45,7 +45,7 @@ def generate_stitcher_props_tooltips(props: StitcherProps):
     return result
 
 
-class StitchingTab:
+class StitchingPropsWidget:
     def __init__(self, props: StitcherProps):
         super().__init__()
         self._props = props

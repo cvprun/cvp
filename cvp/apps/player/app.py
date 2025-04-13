@@ -337,6 +337,8 @@ class PlayerApplication:
 
         consumed_msg = self.mode.do_msg(msg)
         if not consumed_msg:
+            consumed_msg = self._context.do_activity_msg(msg)
+        if not consumed_msg:
             self.on_msg_fallback(msg)
 
     def on_msg_fallback(self, msg: Msg) -> None:
@@ -417,6 +419,7 @@ class PlayerApplication:
                 self.on_style_editor_window()
                 self.on_demo_window()
 
+            self._context.do_activity_process()
             self._toast.on_process()
             self._overlay.on_process()
             self._world.on_process(imgui.get_io().delta_time)

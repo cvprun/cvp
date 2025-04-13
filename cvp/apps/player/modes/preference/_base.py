@@ -20,7 +20,15 @@ class PreferenceInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def do_preprocess(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def do_process(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def do_postprocess(self) -> None:
         raise NotImplementedError
 
 
@@ -33,6 +41,14 @@ class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
     @override
     def get_menu_name(cls) -> str:
         return cls.__cvp_menu_name__
+
+    @override
+    def do_preprocess(self) -> None:
+        pass
+
+    @override
+    def do_postprocess(self) -> None:
+        pass
 
     @property
     def context(self) -> Context:
