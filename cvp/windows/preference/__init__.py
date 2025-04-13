@@ -12,7 +12,6 @@ from cvp.types.override import override
 from cvp.widgets.manager import Manager
 from cvp.windows.preference._base import PreferenceWidget
 from cvp.windows.preference.concurrency import ConcurrencyPreference
-from cvp.windows.preference.developer import DeveloperPreference
 from cvp.windows.preference.ffmpeg import FFmpegPreference
 from cvp.windows.preference.flow import FlowPreference
 
@@ -31,7 +30,6 @@ class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
             FlowPreference(context),
             FFmpegPreference(context),
             ConcurrencyPreference(context),
-            DeveloperPreference(context),
         ]
 
         self._menus = OrderedDict[str, PreferenceWidget]()
