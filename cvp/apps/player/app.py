@@ -28,8 +28,7 @@ from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
-from cvp.imgui.fonts.defaults import add_mixed_font, add_ttf_file
-from cvp.imgui.fonts.font import Font
+from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.separator import separator
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
@@ -46,7 +45,6 @@ from cvp.variables import FONT_NAME
 
 class PlayerApplication:
     _renderer: Optional[PygameRenderer]
-    _font_normal: Optional[Font]
 
     _prefix_menus: OrderedDict[str, Callable[[], None]]
     _suffix_menus: OrderedDict[str, Callable[[], None]]
@@ -59,8 +57,8 @@ class PlayerApplication:
         self._overlay = OverlayWindow(context)
         self._world = World(context)
 
+        self._fonts = GlobalFontMapper()
         self._renderer = None
-        self._font_normal = None
 
         self._confirm_quit = ConfirmPopup(
             title="Exit",
@@ -247,10 +245,10 @@ class PlayerApplication:
         default_font_pixels = self.config.font.size_pixels
         user_font = self.config.font.user_font
         if os.path.isfile(user_font):
-            self._font_normal = add_ttf_file(user_font, default_font_pixels)
+            self._fonts.add_ttf_file(user_font, default_font_pixels)
             logger.info(f"Create user font: '{user_font}', {default_font_pixels}pixels")
         else:
-            self._font_normal = add_mixed_font(FONT_NAME, default_font_pixels)
+            self._fonts.add_mixed_font(FONT_NAME, default_font_pixels)
             logger.info(f"Create default font: {default_font_pixels}pixels")
 
         io.font_global_scale = self.config.font.scale
@@ -275,9 +273,7 @@ class PlayerApplication:
         self._context.stop_all_flow_runners()
         self._context.teardown_process_manager()
         self._world.on_destroy()
-
-        assert self._font_normal is not None
-        self._font_normal.close()
+        self._fonts.close()
 
         self.config.display.fullscreen = pygame.display.is_fullscreen()
         self.config.display.size = pygame.display.get_window_size()
