@@ -25,6 +25,7 @@ from cvp.variables import SIDE_MENU_WIDTH
 @lru_cache
 def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import AppearancePreference
+    from cvp.apps.player.modes.preference.concurrency import ConcurrencyPreference
     from cvp.apps.player.modes.preference.developer import DeveloperPreference
     from cvp.apps.player.modes.preference.keyring import KeyringPreference
     from cvp.apps.player.modes.preference.logging import LoggingPreference
@@ -37,6 +38,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
 
     return (
         AppearancePreference,
+        ConcurrencyPreference,
         DeveloperPreference,
         KeyringPreference,
         LoggingPreference,
