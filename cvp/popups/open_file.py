@@ -49,14 +49,7 @@ class OpenFilePopup(PopupBase[str]):
             oneshot=oneshot,
         )
 
-        if isinstance(directory, Path) and directory.is_dir():
-            dir_path = directory
-        elif isinstance(directory, str) and os.path.isdir(directory):
-            dir_path = Path(directory)
-        else:
-            dir_path = Path.home()
-
-        self._location_text = str(dir_path)
+        self._location_text = str(self.location_path(directory))
         self._current_dir = str()
         self._items = list()
         self._selected = str()
@@ -67,6 +60,26 @@ class OpenFilePopup(PopupBase[str]):
         self._open_button_label = "Open"
         self._close_button_label = "Close"
         self._show_hidden = show_hidden
+
+    @staticmethod
+    def location_path(path: Optional[Union[str, PathLike]] = None) -> Path:
+        if isinstance(path, Path):
+            if path.is_dir():
+                return path
+            elif path.is_file():
+                return path.parent
+        elif isinstance(path, str):
+            if os.path.isdir(path):
+                return Path(path)
+            elif os.path.isfile(path):
+                return Path(path).parent
+        return Path.home()
+
+    def set_location(self, path: Optional[Union[str, PathLike]] = None) -> None:
+        self._location_text = str(self.location_path(path))
+        self._current_dir = str()
+        self._items = list()
+        self._selected = str()
 
     @staticmethod
     def list_items(location: Union[str, PathLike], show_hidden=False) -> List[str]:

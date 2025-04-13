@@ -94,6 +94,7 @@ class PreferenceMode(BaseMode):
     def do_child_process(
         self,
         widget: Optional[BasePreference] = None,
+        *,
         child_flags=RESIZE_X | BORDERS,
     ) -> None:
         with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):

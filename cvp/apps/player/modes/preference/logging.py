@@ -96,4 +96,10 @@ class LoggingPreference(BasePreference):
             self.logging_config_path = logging_path_value
 
         if imgui.button("Browse"):
+            if os.path.isfile(self.logging_config_path):
+                self._logging_browser.set_location(self.logging_config_path)
             self._logging_browser.show()
+
+    @override
+    def do_postprocess(self) -> None:
+        self._logging_browser.do_process()
