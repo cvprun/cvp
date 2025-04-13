@@ -15,7 +15,6 @@ from cvp.windows.preference.concurrency import ConcurrencyPreference
 from cvp.windows.preference.developer import DeveloperPreference
 from cvp.windows.preference.ffmpeg import FFmpegPreference
 from cvp.windows.preference.flow import FlowPreference
-from cvp.windows.preference.logging import LoggingPreference
 
 
 class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
@@ -31,7 +30,6 @@ class PreferenceManager(Manager[PreferenceManagerConfig, PreferenceWidget]):
         menus = [
             FlowPreference(context),
             FFmpegPreference(context),
-            LoggingPreference(context),
             ConcurrencyPreference(context),
             DeveloperPreference(context),
         ]
