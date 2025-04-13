@@ -26,6 +26,7 @@ class PreferenceInterface(ABC):
 
 class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
     def __init__(self, context: Context):
+        assert isinstance(self, PreferenceMenuNameProtocol)
         self._context = context
 
     @classmethod

@@ -27,6 +27,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import AppearancePreference
     from cvp.apps.player.modes.preference.concurrency import ConcurrencyPreference
     from cvp.apps.player.modes.preference.developer import DeveloperPreference
+    from cvp.apps.player.modes.preference.flow import FlowPreference
     from cvp.apps.player.modes.preference.keyring import KeyringPreference
     from cvp.apps.player.modes.preference.logging import LoggingPreference
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
@@ -40,6 +41,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         AppearancePreference,
         ConcurrencyPreference,
         DeveloperPreference,
+        FlowPreference,
         KeyringPreference,
         LoggingPreference,
         OllamaPreference,

@@ -2,11 +2,13 @@
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.config.sections.canvas.axis import Axis
 from cvp.config.sections.canvas.grid import Grid
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
+from cvp.context.context import Context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -15,20 +17,18 @@ from cvp.imgui.input_float2 import input_float2
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
-from cvp.windows.preference._base import PreferenceWidget
 
 
-class FlowPreference(PreferenceWidget):
-    def __init__(self, context: RendererContext, label="Flow"):
-        self._config = context.config.flow_aui
-        self._label = label
+class FlowPreference(BasePreference):
+    __cvp_menu_name__ = "Flow"
+
+    def __init__(self, context: Context):
+        super().__init__(context)
 
     @property
-    @override
-    def label(self) -> str:
-        return self._label
+    def config(self):
+        return self.context.config.flow_aui
 
     @staticmethod
     def tree_grid(label: str, grid: Grid) -> None:
@@ -112,11 +112,11 @@ class FlowPreference(PreferenceWidget):
                 imgui.tree_pop()
 
     @override
-    def on_process(self) -> None:
-        self.tree_logs("Logs", self._config.logs)
-        self.tree_grid("Grid X", self._config.grid_x)
-        self.tree_grid("Grid Y", self._config.grid_x)
-        self.tree_axis("Axis X", self._config.axis_x)
-        self.tree_axis("Axis Y", self._config.axis_y)
-        self.tree_nodes("Nodes", self._config.nodes)
-        self.tree_pins("Pins", self._config.pins)
+    def do_process(self) -> None:
+        self.tree_logs("Logs", self.config.logs)
+        self.tree_grid("Grid X", self.config.grid_x)
+        self.tree_grid("Grid Y", self.config.grid_x)
+        self.tree_axis("Axis X", self.config.axis_x)
+        self.tree_axis("Axis Y", self.config.axis_y)
+        self.tree_nodes("Nodes", self.config.nodes)
+        self.tree_pins("Pins", self.config.pins)
