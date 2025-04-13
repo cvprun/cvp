@@ -1,29 +1,37 @@
 # -*- coding: utf-8 -*-
 
-from os import PathLike, remove
-from pathlib import Path
-from typing import Union
+from datetime import datetime, timedelta
+from os import PathLike
+from typing import List, Union
 
-from imgui_bundle import imgui
-
+from cvp.chrono.filename import short_datetime_name
 from cvp.system.path import PathFlavour
 
 
 class LayoutsPath(PathFlavour):
     def __init__(self, path: Union[str, PathLike[str]]):
         super().__init__(path)
+        self._prefix = "layout-"
+        self._extension = ".ini"
 
-    def key_filepath(self, key: str):
-        return Path(self / f"{key}.ini")
+    @property
+    def extension(self):
+        return self._extension
 
-    def has_layout(self, key: str) -> bool:
-        return self.key_filepath(key).exists()
+    def get_filename(self, dt: datetime) -> str:
+        return self._prefix + short_datetime_name(dt) + self._extension
 
-    def save_layout(self, key: str) -> None:
-        imgui.save_ini_settings_to_disk(str(self.key_filepath(key)))
+    def get_nonexistent_filename(self) -> str:
+        dt = datetime.now().astimezone()
+        while True:
+            filename = self.get_filename(dt)
+            if (self / filename).exists():
+                dt += timedelta(seconds=1)
+                continue
+            return filename
 
-    def load_layout(self, key: str) -> None:
-        imgui.load_ini_settings_from_disk(str(self.key_filepath(key)))
+    def find_layout_filepaths(self) -> List[str]:
+        return self._find_files_with_extensions(self._extension, join_dirpath=True)
 
-    def remove_layout(self, key: str) -> None:
-        remove(self.key_filepath(key))
+    def find_layout_filenames(self) -> List[str]:
+        return self._find_files_with_extensions(self._extension, join_dirpath=False)

@@ -1,0 +1,188 @@
+# -*- coding: utf-8 -*-
+
+import os
+import shutil
+from pathlib import Path
+
+from imgui_bundle import imgui
+
+from cvp.apps.player.modes.preference._base import BasePreference
+from cvp.context.context import Context
+from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.button import button
+from cvp.imgui.fit_size import FIT_SIZE
+from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.input_text import READ_ONLY
+from cvp.imgui.input_text_disabled import input_text_disabled
+from cvp.imgui.text_centered import text_centered
+from cvp.imgui.text_colored import text_colored
+from cvp.popups.confirm import ConfirmPopup
+from cvp.popups.input_text import InputTextPopup
+from cvp.types.colors import GREEN_RGBA, RED_RGBA
+from cvp.types.override import override
+from cvp.variables import SIDE_MENU_WIDTH
+
+
+class LayoutPreference(BasePreference):
+    __cvp_menu_name__ = "Layout"
+
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self._filenames = self._find_layout_filenames()
+
+        self._rename_candidate = str()
+        self._rename_input = InputTextPopup(
+            title="Layout Rename",
+            label="Rename the layout filename?",
+            ok="Rename",
+            cancel="Cancel",
+            target=self.on_rename_input,
+            validate=self.on_rename_input_validate,
+        )
+
+        self._remove_candidate = Path()
+        self._confirm_remove = ConfirmPopup(
+            title="Layout Remove",
+            label="Are you sure you want to remove layout?",
+            ok="Remove",
+            cancel="Cancel",
+            target=self.on_confirm_remove,
+        )
+
+    def _find_layout_filenames(self):
+        return self.context.home.layouts.find_layout_filenames()
+
+    def reload_layout_filenames(self) -> None:
+        self._filenames = self._find_layout_filenames()
+
+    def on_rename_input(self, value: str) -> None:
+        if not value:
+            return
+
+        src = self.get_filepath(self._rename_candidate)
+        dest = self.get_filepath(value)
+
+        assert src.is_file()
+        assert not dest.exists()
+
+        shutil.move(src, dest)
+
+        self.reload_layout_filenames()
+        self.selected_submenu_filename = value
+
+    def on_rename_input_validate(self, value: str) -> bool:
+        if not self.get_filepath(self._rename_candidate).is_file():
+            return False
+        if self.get_filepath(value).exists():
+            return False
+        assert self._rename_candidate != value
+        return True
+
+    def on_confirm_remove(self, value: bool) -> None:
+        if not value:
+            return
+
+        path = self._remove_candidate
+        assert path.is_file()
+        os.remove(path)
+        self.reload_layout_filenames()
+
+    __submenu_filename_key__ = "filename"
+
+    @property
+    def selected_submenu_filename(self) -> str:
+        return self.get_selected_submenu(self.__submenu_filename_key__)
+
+    @selected_submenu_filename.setter
+    def selected_submenu_filename(self, value: str) -> None:
+        self.set_selected_submenu(self.__submenu_filename_key__, value)
+
+    def get_filepath(self, filename: str):
+        return self.context.home.layouts.as_path() / filename
+
+    def save_layout(self, filename: str) -> None:
+        imgui.save_ini_settings_to_disk(str(self.get_filepath(filename)))
+        self.context.mq.append_toast(f"Save layout file: '{filename}'")
+
+    def load_layout(self, filename: str) -> None:
+        imgui.load_ini_settings_from_disk(str(self.get_filepath(filename)))
+        self.context.mq.append_toast(f"Load layout file: '{filename}'")
+
+    def show_remove_popup(self, filename: str) -> None:
+        filepath = self.get_filepath(filename)
+        if not filepath.is_file():
+            self.context.mq.append_toast(f"Layout file not found: '{filename}'")
+            return
+
+        self._remove_candidate = filepath
+        self._confirm_remove.show()
+
+    @override
+    def do_process(self) -> None:
+        child_flags = RESIZE_X | BORDERS
+        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+            if imgui.button("Reload"):
+                self.reload_layout_filenames()
+            imgui.same_line()
+            if imgui.button("New"):
+                filename = self.context.home.layouts.get_nonexistent_filename()
+                self.save_layout(filename)
+                self.selected_submenu_filename = filename
+                self.reload_layout_filenames()
+            imgui.same_line()
+            disabled_delete = self.selected_submenu_filename not in self._filenames
+            if button("Del", disabled=disabled_delete):
+                self.show_remove_popup(self.selected_submenu_filename)
+
+            if imgui.begin_list_box("##List", FIT_SIZE):
+                try:
+                    for filename in self._filenames:
+                        selected = filename == self.selected_submenu_filename
+                        if imgui.selectable(filename, selected)[1]:
+                            self.selected_submenu_filename = filename
+                finally:
+                    imgui.end_list_box()
+
+        imgui.same_line()
+
+        with begin_child_context("Main"):
+            try:
+                filename_index = self._filenames.index(self.selected_submenu_filename)
+                assert 0 <= filename_index < len(self._filenames)
+                self.do_filename_process(self._filenames[filename_index])
+            except ValueError:
+                text_centered("Please select a item")
+
+    def do_filename_process(self, filename: str) -> None:
+        filepath = self.context.home.layouts / filename
+        has_layout = filepath.is_file()
+
+        input_text_disabled("Filename", filename, READ_ONLY)
+
+        if button("Save"):
+            self.save_layout(filename)
+        imgui.same_line()
+        if button("Load", disabled=not has_layout):
+            self.load_layout(filename)
+        imgui.same_line()
+        if button("Rename"):
+            self._rename_candidate = filename
+            self._rename_input.text = filename
+            self._rename_input.show()
+        imgui.same_line()
+        if button("Remove", disabled=not has_layout):
+            self.show_remove_popup(filename)
+
+        if has_layout:
+            status_text = "Layout file exists"
+            status_color = GREEN_RGBA
+        else:
+            status_text = "The layout file does not exist"
+            status_color = RED_RGBA
+
+        text_colored(status_text, status_color)
+
+    @override
+    def do_postprocess(self) -> None:
+        self._rename_input.do_process()
+        self._confirm_remove.do_process()

@@ -28,6 +28,7 @@ class InputTextPopup(PopupBase[str]):
         min_width=MIN_POPUP_TEXT_INPUT_WIDTH,
         min_height=MIN_POPUP_TEXT_INPUT_HEIGHT,
         target: Optional[Callable[[str], None]] = None,
+        validate: Optional[Callable[[str], bool]] = None,
         oneshot: Optional[bool] = None,
     ):
         super().__init__(
@@ -45,10 +46,15 @@ class InputTextPopup(PopupBase[str]):
         self._ok_button_label = ok if ok else "Ok"
         self._cancel_button_label = cancel if cancel else "Cancel"
         self._text_label = "## Text"
+        self._validate = validate
 
     @property
-    def text(self):
+    def text(self) -> str:
         return self._text
+
+    @text.setter
+    def text(self, value: str) -> None:
+        self._text = value
 
     @override
     def on_process(self) -> Optional[str]:
@@ -68,11 +74,16 @@ class InputTextPopup(PopupBase[str]):
             imgui.close_current_popup()
             return None
 
+        validate = True
+        if self._validate is not None:
+            validate = bool(self._validate(self._text))
+
         if button(self._cancel_button_label):
             imgui.close_current_popup()
             return None
         imgui.same_line()
-        if button(self._ok_button_label, disabled=not self._text):
+        enabled_ok_button = bool(self._text) and validate
+        if button(self._ok_button_label, disabled=not enabled_ok_button):
             imgui.close_current_popup()
             return self._text
 

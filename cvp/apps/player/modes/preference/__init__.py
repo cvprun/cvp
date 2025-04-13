@@ -31,6 +31,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.flow import FlowPreference
     from cvp.apps.player.modes.preference.font import FontPreference
     from cvp.apps.player.modes.preference.keyring import KeyringPreference
+    from cvp.apps.player.modes.preference.layout import LayoutPreference
     from cvp.apps.player.modes.preference.logging import LoggingPreference
     from cvp.apps.player.modes.preference.node import NodePreference
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
@@ -48,6 +49,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         FlowPreference,
         FontPreference,
         KeyringPreference,
+        LayoutPreference,
         LoggingPreference,
         NodePreference,
         OllamaPreference,
