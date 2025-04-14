@@ -3,6 +3,7 @@
 import os
 import shutil
 from pathlib import Path
+from typing import Final
 
 from imgui_bundle import imgui
 
@@ -20,7 +21,6 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.types.colors import GREEN_RGBA, RED_RGBA
 from cvp.types.override import override
-from cvp.variables import SIDE_MENU_WIDTH
 
 
 class LayoutPreference(BasePreference):
@@ -117,10 +117,12 @@ class LayoutPreference(BasePreference):
         self._remove_candidate = filepath
         self._confirm_remove.show()
 
+    _SPLIT_X: Final[int] = 300
+    _CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
     @override
     def do_process(self) -> None:
-        child_flags = RESIZE_X | BORDERS
-        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+        with begin_child_context("Menu", self._SPLIT_X, child_flags=self._CHILD_FLAGS):
             if imgui.button("Reload"):
                 self.reload_layout_filenames()
             imgui.same_line()
