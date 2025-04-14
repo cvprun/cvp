@@ -3,7 +3,7 @@
 
 from typing import Final, NamedTuple, Sequence, Tuple
 
-from cvp.strings.unicode.planes import (
+from cvp.unicode.planes import (
     BMP,
     PUA_A,
     PUA_B,

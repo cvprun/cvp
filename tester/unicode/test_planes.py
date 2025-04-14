@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.strings.unicode.planes import BMP, PLANES
+from cvp.unicode.planes import BMP, PLANES
 
 
 class PlanesTestCase(TestCase):
@@ -31,6 +31,16 @@ class PlanesTestCase(TestCase):
         self.assertTupleEqual((0x0100, 0x01FF), ranges[1])
         self.assertTupleEqual((0xFE00, 0xFEFF), ranges[-2])
         self.assertTupleEqual((0xFF00, 0xFFFF), ranges[-1])
+
+    def test_contains(self):
+        self.assertTrue(BMP.contain(0x0000))
+        self.assertTrue(BMP.contain(0xFFFF))
+
+        self.assertTrue(BMP.contain(0x0000 + 1))
+        self.assertTrue(BMP.contain(0xFFFF - 1))
+
+        self.assertFalse(BMP.contain(0x0000 - 1))
+        self.assertFalse(BMP.contain(0xFFFF + 1))
 
 
 if __name__ == "__main__":
