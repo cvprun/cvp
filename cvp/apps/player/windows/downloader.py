@@ -1,38 +1,33 @@
 # -*- coding: utf-8 -*-
 
 from shutil import which
-from typing import List, Optional, Sequence
+from typing import Mapping, Optional
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.proxies.ffmpeg import FFmpegProxy, FFprobeProxy
+from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.text_colored import text_colored
 from cvp.patterns.proxy import ValueProxy
 from cvp.popups.open_file import OpenFilePopup
-from cvp.renderer.context import RendererContext
-from cvp.renderer.popup.base import PopupBase
-from cvp.renderer.popup.propagator import PopupPropagator
-from cvp.resources.download.links.ffmpeg import FFMPEG_LINKS, FFPROBE_LINKS, LinkMap
+from cvp.resources.download.links.tuples import LinkInfo
 from cvp.resources.download.runner import DownloadRunner
 from cvp.system.platform import SysMach, get_system_machine
-from cvp.types.override import override
-from cvp.widgets.tab import TabBar, TabItem
 
 
-class ExeItem(TabItem, PopupPropagator):
-    _runner: Optional[DownloadRunner]
-
+class ExecutableDownloader:
     def __init__(
         self,
-        context: RendererContext,
-        name: str,
+        context: Context,
+        filename: str,
         proxy: ValueProxy,
-        links: LinkMap,
+        links: Mapping[SysMach, LinkInfo],
+        *,
+        runner: Optional[DownloadRunner] = None,
     ):
-        super().__init__(context, label=name)
-        self._filename = name
+        self._context = context
+        self._filename = filename
         self._proxy = proxy
         self._downs = {sm: context.make_downloader(link) for sm, link in links.items()}
 
@@ -43,51 +38,39 @@ class ExeItem(TabItem, PopupPropagator):
 
         self._browser = OpenFilePopup(
             f"Select {self._filename} executable",
-            target=self.on_browser,
+            target=self._on_browser,
         )
-        self._runner = None
-
-    @classmethod
-    def from_ffmpeg(cls, context: RendererContext):
-        return cls(
-            context=context,
-            name="ffmpeg",
-            proxy=FFmpegProxy(context.config.ffmpeg),
-            links=FFMPEG_LINKS,
-        )
-
-    @classmethod
-    def from_ffprobe(cls, context: RendererContext):
-        return cls(
-            context=context,
-            name="ffprobe",
-            proxy=FFprobeProxy(context.config.ffmpeg),
-            links=FFPROBE_LINKS,
-        )
+        self._runner = runner
 
     @property
-    @override
-    def popups(self) -> Sequence[PopupBase]:
-        return [self._browser]
+    def filename(self):
+        return self._filename
 
     @property
-    def exe_path(self) -> str:
+    def runner(self):
+        return self._runner
+
+    @property
+    def browser(self):
+        return self._browser
+
+    @property
+    def value(self) -> str:
         return self._proxy.get()
 
-    @exe_path.setter
-    def exe_path(self, value: str) -> None:
+    @value.setter
+    def value(self, value: str) -> None:
         self._proxy.set(value)
 
-    def on_browser(self, file: str) -> None:
-        self.exe_path = file
+    def _on_browser(self, file: str) -> None:
+        self.value = file
 
-    @override
-    def on_process(self) -> None:
-        imgui.text(f"{self._label} executable")
+    def do_child_process(self) -> None:
+        imgui.text(f"{self._filename} executable")
 
         path_result = imgui.input_text(
             "##Path",
-            self.exe_path,
+            self.value,
             ENTER_RETURNS_TRUE,
         )
 
@@ -95,16 +78,16 @@ class ExeItem(TabItem, PopupPropagator):
         if path_changed:
             path_value = path_result[1]
             assert isinstance(path_value, str)
-            self.exe_path = path_value
+            self.value = path_value
 
         if imgui.button("Default"):
-            self.exe_path = self._filename
+            self.value = self._filename
 
         imgui.same_line()
         which_path = which(self._filename)
         if button("Which", disabled=not which_path):
             assert isinstance(which_path, str)
-            self.exe_path = which_path
+            self.value = which_path
 
         imgui.same_line()
         if button("Cache"):
@@ -136,24 +119,7 @@ class ExeItem(TabItem, PopupPropagator):
         imgui.text_unformatted(down.url)
 
         if button("Download Archive", disabled=self._runner is not None):
-            self._runner = self.context.start_download_thread(down, 30.0, True)
+            self._runner = self._context.start_download_thread(down, 30.0, True)
 
         if self._runner is not None:
             imgui.text(str(self._runner.state))
-
-
-class ExeTabs(TabBar, PopupPropagator):
-    def __init__(self, context: RendererContext):
-        super().__init__(context)
-        self.register(ExeItem.from_ffmpeg(context))
-        self.register(ExeItem.from_ffprobe(context))
-
-    @property
-    @override
-    def popups(self) -> Sequence[PopupBase]:
-        result: List[PopupBase] = list()
-        for item in self._items.values():
-            if not isinstance(item, PopupPropagator):
-                continue
-            result.extend(item.popups)
-        return result

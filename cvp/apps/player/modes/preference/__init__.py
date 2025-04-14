@@ -26,6 +26,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.appearance import AppearancePreference
     from cvp.apps.player.modes.preference.concurrency import ConcurrencyPreference
     from cvp.apps.player.modes.preference.developer import DeveloperPreference
+    from cvp.apps.player.modes.preference.downloader import DownloaderPreference
     from cvp.apps.player.modes.preference.dtype import DtypePreference
     from cvp.apps.player.modes.preference.flow import FlowPreference
     from cvp.apps.player.modes.preference.font import FontPreference
@@ -44,6 +45,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         AppearancePreference,
         ConcurrencyPreference,
         DeveloperPreference,
+        DownloaderPreference,
         DtypePreference,
         FlowPreference,
         FontPreference,
