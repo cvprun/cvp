@@ -15,6 +15,7 @@ def all_mode_types() -> Sequence[Type[BaseMode]]:
     from cvp.apps.player.modes.dashboard import DashboardMode
     from cvp.apps.player.modes.flow import FlowMode
     from cvp.apps.player.modes.preference import PreferenceMode
+    from cvp.apps.player.modes.process import ProcessMode
     from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
     return (
@@ -24,6 +25,7 @@ def all_mode_types() -> Sequence[Type[BaseMode]]:
         ChatMode,
         FlowMode,
         WsDiscoveryMode,
+        ProcessMode,
     )
 
 
