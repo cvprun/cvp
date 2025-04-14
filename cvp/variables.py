@@ -8,6 +8,7 @@ from cvp.types.shapes import Size
 TIMEOUT_INFINITE: Final[float] = -1.0
 UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
+NULL_CHAR: Final[int] = 0
 NODOC: Final[str] = ""
 
 CVP_HOME_DIRNAME: Final[str] = ".cvp"

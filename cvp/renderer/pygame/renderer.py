@@ -10,7 +10,8 @@ from pygame.time import get_ticks
 from cvp.logging.logging import renderer_logger as logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
-from cvp.variables import MOUSE_WHEEL_OFFSET_SCALE
+from cvp.unicode.planes import BMP
+from cvp.variables import MOUSE_WHEEL_OFFSET_SCALE, NULL_CHAR
 
 
 class PygameRenderer(FixedPipelineRenderer):
@@ -130,9 +131,9 @@ class PygameRenderer(FixedPipelineRenderer):
 
     def on_key_down(self, event: Event) -> bool:
         for char in event.unicode:
-            code = ord(char)
-            if 0 < code < 0x10000:
-                self.io.add_input_character(code)
+            codepoint = ord(char)
+            if NULL_CHAR != codepoint and BMP.contain(codepoint):
+                self.io.add_input_character(codepoint)
 
         self.update_key_state(event.key, down=True)
         return True

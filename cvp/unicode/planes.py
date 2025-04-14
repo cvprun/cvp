@@ -35,8 +35,8 @@ class UnicodePlane(NamedTuple):
     def unassigned(self) -> bool:
         return UNASSIGNED_PLANE_INDEX_MIN <= self.number <= UNASSIGNED_PLANE_INDEX_MAX
 
-    def contain(self, code: int) -> bool:
-        return self.begin <= code <= self.end
+    def contain(self, codepoint: int) -> bool:
+        return self.begin <= codepoint <= self.end
 
     def __repr__(self):
         return f"{self.number} {self.short_name}: U+{self.begin:04X} - U+{self.end:04X}"
