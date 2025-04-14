@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from ipaddress import IPv4Address, IPv6Address
-
 from imgui_bundle import imgui
+from wsdiscovery import WSDiscovery
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.config.sections.onvif import OnvifConfig
@@ -23,6 +22,7 @@ from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.logging import logger
+from cvp.net.address_family import is_ipv4_address, is_ipv6_address
 from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 from cvp.variables import (
@@ -33,7 +33,6 @@ from cvp.variables import (
 )
 from cvp.wsdiscovery.manager import WsDiscoveryFilename
 from cvp.wsdiscovery.wsd import WsDiscovery
-from wsdiscovery import WSDiscovery
 
 
 class WsDiscoveryMode(BaseMode):
@@ -184,22 +183,12 @@ class WsDiscoveryMode(BaseMode):
             self.config.set_udp()
 
         ipv4_result = input_text("IPv4", self.config.ipv4_address, ENTER_RETURNS_TRUE)
-        if ipv4_result.changed:
-            try:
-                IPv4Address(ipv4_result.value)
-            except:  # noqa
-                pass
-            else:
-                self.config.ipv4_address = ipv4_result.value
+        if ipv4_result.changed and is_ipv4_address(ipv4_result.value):
+            self.config.ipv4_address = ipv4_result.value
 
         ipv6_result = input_text("IPv6", self.config.ipv6_address, ENTER_RETURNS_TRUE)
-        if ipv6_result.changed:
-            try:
-                IPv6Address(ipv6_result.value)
-            except:  # noqa
-                pass
-            else:
-                self.config.ipv6_address = ipv6_result.value
+        if ipv6_result.changed and is_ipv6_address(ipv6_result.value):
+            self.config.ipv6_address = ipv6_result.value
 
         if port_result := input_int("Port", self.config.port):
             self.config.port = port_result.value
