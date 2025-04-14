@@ -5,16 +5,17 @@ from functools import lru_cache
 from typing import Sequence, Type
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.chat import ChatMode
-from cvp.apps.player.modes.dashboard import DashboardMode
-from cvp.apps.player.modes.flow import FlowMode
-from cvp.apps.player.modes.preference import PreferenceMode
-from cvp.config.sections.appearance import AppMode
+from cvp.apps.player.modes.interface import ModeInterface
 from cvp.context.context import Context
 
 
 @lru_cache
 def all_mode_types() -> Sequence[Type[BaseMode]]:
+    from cvp.apps.player.modes.chat import ChatMode
+    from cvp.apps.player.modes.dashboard import DashboardMode
+    from cvp.apps.player.modes.flow import FlowMode
+    from cvp.apps.player.modes.preference import PreferenceMode
+
     return (
         PreferenceMode,  # Num.0
         # ----------------------
@@ -24,8 +25,8 @@ def all_mode_types() -> Sequence[Type[BaseMode]]:
     )
 
 
-def create_modes(context: Context) -> OrderedDict[AppMode, BaseMode]:
-    result = OrderedDict[AppMode, BaseMode]()
+def create_modes(context: Context):
+    result = OrderedDict[str, ModeInterface]()
     for mode_type in all_mode_types():
-        result[mode_type.get_mode()] = mode_type(context)
+        result[mode_type.get_mode_name()] = mode_type(context)
     return result

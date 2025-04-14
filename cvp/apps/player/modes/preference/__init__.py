@@ -8,7 +8,6 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.preference._base import BasePreference
-from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
@@ -67,14 +66,11 @@ def create_preference_widgets(context: Context):
 
 
 class PreferenceMode(BaseMode):
+    __cvp_mode_name__ = "Preference"
+
     def __init__(self, context: Context):
         super().__init__(context)
         self._menus = create_preference_widgets(context)
-
-    @staticmethod
-    @override
-    def get_mode() -> AppMode:
-        return AppMode.preference
 
     @property
     def selected_menu(self) -> str:

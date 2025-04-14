@@ -4,7 +4,6 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.msgs.msg import Msg
@@ -13,13 +12,10 @@ from cvp.types.override import override
 
 
 class FlowMode(BaseMode):
+    __cvp_mode_name__ = "Flow"
+
     def __init__(self, context: RendererContext):
         super().__init__(context)
-
-    @staticmethod
-    @override
-    def get_mode() -> AppMode:
-        return AppMode.flow
 
     @override
     def on_main_menu(self) -> None:

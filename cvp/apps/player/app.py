@@ -24,7 +24,6 @@ from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
 from cvp.chrono.filename import short_datetime_name
 from cvp.chrono.tznow import tznow
-from cvp.config.sections.appearance import AppMode
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
@@ -78,7 +77,7 @@ class PlayerApplication:
         self._suffix_menus = OrderedDict(suffix_menus)
 
         self._modes = create_modes(context)
-        self._default_mode = self._modes[AppMode.dashboard]
+        self._default_mode = next(iter(self._modes.values()))
 
     @property
     def home(self):

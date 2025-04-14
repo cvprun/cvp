@@ -7,7 +7,6 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.chat.cache import ChatCache
 from cvp.chat.ids import INVALID_CONVERSATION_ID
-from cvp.config.sections.appearance import AppMode
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -38,6 +37,8 @@ from cvp.variables import (
 
 
 class ChatMode(BaseMode):
+    __cvp_mode_name__ = "Chat"
+
     def __init__(self, context: RendererContext):
         super().__init__(context)
         self._input_text = str()
@@ -45,11 +46,6 @@ class ChatMode(BaseMode):
         self._conversation_id = INVALID_CONVERSATION_ID
         self._title_noname = CHAT_TITLE_NONAME
         self._enter_label = "Enter"
-
-    @staticmethod
-    @override
-    def get_mode() -> AppMode:
-        return AppMode.chat
 
     @override
     def do_process(self) -> None:
