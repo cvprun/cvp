@@ -282,6 +282,7 @@ class PlayerApplication:
 
         self._context.save_graphs()
         self._context.save_ollamas()
+        self._context.save_wsdiscovery()
 
         assert self._renderer is not None
         del self._renderer

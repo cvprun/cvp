@@ -46,8 +46,8 @@ class BaseFormatPath(PathFlavour, FormatInterface):
         if not subpaths:
             raise ValueError("At least one path must be specified")
         path = os.path.join(self, *subpaths)
-        ext = os.path.splitext(path)[1]
-        if ext != self._extension:
+        extension = os.path.splitext(path)[1]
+        if extension != self._extension:
             path += self._extension
         return Path(path)
 

@@ -14,6 +14,7 @@ from cvp.onvif.manager import OnvifManager
 from cvp.process.manager import ProcessManager, SubmitCallable
 from cvp.resources.home import HomeDir
 from cvp.supabase.supabase import Supabase
+from cvp.wsdiscovery.manager import WsDiscoveryManager
 
 
 @runtime_checkable
@@ -29,6 +30,7 @@ class ContextProtocol(Protocol):
     _flows: FlowManager
     _msg_queue: MsgQueue
     _supabase: Supabase
+    _wsdiscovery: WsDiscoveryManager
 
 
 class BaseContextMixin(ContextProtocol):

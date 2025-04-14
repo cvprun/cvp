@@ -8,6 +8,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.preference._base import BasePreference
+from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
@@ -16,7 +17,6 @@ from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
-from cvp.renderer.context import Context
 from cvp.types.override import override
 from cvp.variables import SIDE_MENU_WIDTH
 

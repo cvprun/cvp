@@ -8,6 +8,8 @@ from cvp.types.override import override
 
 
 class WsdlPreference(BasePreference):
+    """Web Services Description Language"""
+
     __cvp_menu_name__ = "WSDL"
 
     def __init__(self, context: Context):

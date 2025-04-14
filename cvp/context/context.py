@@ -31,6 +31,7 @@ from cvp.resources.download.runner import DownloadRunner
 from cvp.resources.home import HomeDir
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
+from cvp.wsdiscovery.manager import WsDiscoveryManager
 
 
 class Context(ContextMixins):
@@ -118,6 +119,7 @@ class Context(ContextMixins):
         self._flows.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
         self._supabase = Supabase()
+        self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
 
         if self.supabase_url and self.supabase_key:
             self.create_supabase_client(
@@ -166,6 +168,10 @@ class Context(ContextMixins):
     @property
     def supabase(self):
         return self._supabase
+
+    @property
+    def wsdiscovery(self):
+        return self._wsdiscovery
 
     @property
     def debug(self) -> bool:
@@ -237,3 +243,6 @@ class Context(ContextMixins):
 
     def save_ollamas(self) -> None:
         self._ollamas.write_all_files()
+
+    def save_wsdiscovery(self) -> None:
+        self._wsdiscovery.write_all_files()

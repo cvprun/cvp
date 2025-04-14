@@ -97,6 +97,8 @@ WSD_IPV6_MULTICAST_ADDRESS: Final[str] = "ff02::c"
 WSD_PORT_NUMBER: Final[int] = 3702
 WSD_TIMEOUT: Final[float] = 30.0
 WSD_NAME_DEFAULT: Final[str] = "New Device"
+WSD_ONVIF_SCOPE_PREFIX: Final[str] = "onvif://www.onvif.org/name/"
+WSD_ONVIF_SCOPE_PREFIX_LEN: Final[int] = len(WSD_ONVIF_SCOPE_PREFIX)
 
 ZEEP_ELEMENT_SEPARATOR: Final[str] = "."
 

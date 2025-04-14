@@ -35,7 +35,7 @@ from cvp.config.sections.supabase import SupabaseConfig
 from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
 from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
-from cvp.config.sections.wsd import WsdConfig, WsdManagerConfig
+from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.config.sections.wsdl import WsdlConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
@@ -77,9 +77,8 @@ class Config:
     window_manager: WindowManagerConfig = field(default_factory=WindowManagerConfig)
     worker_manager: WorkerManagerConfig = field(default_factory=WorkerManagerConfig)
     workers: List[WorkerConfig] = field(default_factory=list)
-    wsd_manager: WsdManagerConfig = field(default_factory=WsdManagerConfig)
+    wsdiscovery: WsDiscoveryConfig = field(default_factory=WsDiscoveryConfig)
     wsdl: WsdlConfig = field(default_factory=WsdlConfig)
-    wsds: List[WsdConfig] = field(default_factory=list)
 
     @property
     def debug(self):
@@ -112,12 +111,6 @@ class Config:
         if index < 0:
             raise KeyError(f"Not found worker: '{uuid}'")
         return self.workers.pop(index)
-
-    def remove_wsd(self, epr: str):
-        index = find_index(self.wsds, lambda wsd: wsd.epr == epr)
-        if index < 0:
-            raise KeyError(f"Not found wsd: '{epr}'")
-        return self.wsds.pop(index)
 
     def dumps_yaml(self, encoding="utf-8") -> bytes:
         return dump(serialize(self), Dumper=DefaultDumper).encode(encoding)

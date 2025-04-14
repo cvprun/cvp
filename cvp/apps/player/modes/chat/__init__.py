@@ -7,6 +7,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.chat.cache import ChatCache
 from cvp.chat.ids import INVALID_CONVERSATION_ID
+from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -26,7 +27,6 @@ from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_right_align import text_disabled_right_align
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import (
     CHAT_TITLE_NONAME,
@@ -39,7 +39,7 @@ from cvp.variables import (
 class ChatMode(BaseMode):
     __cvp_mode_name__ = "Chat"
 
-    def __init__(self, context: RendererContext):
+    def __init__(self, context: Context):
         super().__init__(context)
         self._input_text = str()
         self._search = str()
@@ -145,8 +145,12 @@ class ChatMode(BaseMode):
         finally:
             self._input_text = str()
 
-    def do_child_process(self, split_x=SIDE_MENU_WIDTH):
-        with begin_child_context("Menu", split_x, child_flags=RESIZE_X | BORDERS):
+    def do_child_process(
+        self,
+        split_x=SIDE_MENU_WIDTH,
+        menu_child_flags=RESIZE_X | BORDERS,
+    ) -> None:
+        with begin_child_context("Menu", split_x, child_flags=menu_child_flags):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     if imgui.button(self._title_noname, (FIT_WIDTH, 0)):

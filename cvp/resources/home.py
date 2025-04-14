@@ -15,6 +15,7 @@ from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.temp import TempPath
+from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.resources.subdirs.wsdl import WsdlPath
 from cvp.system.path import PathFlavour
 from cvp.variables import CVP_YML_FILENAME, GUI_INI_FILENAME, LOGGING_JSON_FILENAME
@@ -39,6 +40,7 @@ class HomeDir(PathFlavour):
         self.onvifs = OnvifsPath.classname_subdir(self)
         self.processes = ProcessesPath.classname_subdir(self)
         self.temp = TempPath.classname_subdir(self)
+        self.wsdiscovery = WsDiscoveryPath.classname_subdir(self)
         self.wsdl = WsdlPath.classname_subdir(self)
 
         self._dirs = [
@@ -53,6 +55,7 @@ class HomeDir(PathFlavour):
             self.onvifs,
             self.processes,
             self.temp,
+            self.wsdiscovery,
             self.wsdl,
         ]
 
