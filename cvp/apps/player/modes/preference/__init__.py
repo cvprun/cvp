@@ -28,6 +28,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.developer import DeveloperPreference
     from cvp.apps.player.modes.preference.downloader import DownloaderPreference
     from cvp.apps.player.modes.preference.dtype import DtypePreference
+    from cvp.apps.player.modes.preference.ffmpeg import FFmpegPreference
     from cvp.apps.player.modes.preference.flow import FlowPreference
     from cvp.apps.player.modes.preference.font import FontPreference
     from cvp.apps.player.modes.preference.keyring import KeyringPreference
@@ -47,6 +48,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         DeveloperPreference,
         DownloaderPreference,
         DtypePreference,
+        FFmpegPreference,
         FlowPreference,
         FontPreference,
         KeyringPreference,
