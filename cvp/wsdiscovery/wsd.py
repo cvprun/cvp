@@ -1,20 +1,28 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
+
+from cvp.variables import (
+    WSD_INVALID_INSTANCE_ID,
+    WSD_INVALID_MESSAGE_NUMBER,
+    WSD_INVALID_METADATA_VERSION,
+)
 
 
 @dataclass
 class WsDiscovery:
     epr: str = field(default_factory=str)  # EndPoint Reference
-    instance_id: int = -1
-    message_number: int = -1
-    metadata_version: int = -1
+    instance_id: int = WSD_INVALID_INSTANCE_ID
+    message_number: int = WSD_INVALID_MESSAGE_NUMBER
+    metadata_version: int = WSD_INVALID_METADATA_VERSION
     scopes: List[str] = field(default_factory=list)
     types: List[str] = field(default_factory=list)
     xaddrs: List[str] = field(default_factory=list)
     name: str = field(default_factory=str)
     error: str = field(default_factory=str)
+    created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
 
     @property
     def has_error(self) -> bool:

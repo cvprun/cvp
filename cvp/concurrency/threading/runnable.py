@@ -30,7 +30,10 @@ class ThreadRunnable(Generic[_P, _T]):
 
     @property
     def running(self):
-        return self._running
+        if not self._running:
+            return False
+        assert self._future is not None
+        return self._future.running()
 
     @property
     def future(self):
@@ -45,7 +48,13 @@ class ThreadRunnable(Generic[_P, _T]):
         return self._error
 
     def __bool__(self):
-        return self._running
+        return self.running
+
+    def cancel(self) -> bool:
+        if not self._running:
+            raise ValueError("Not running")
+        assert self._future is not None
+        return self._future.cancel()
 
     def _runner(self, *args: _P.args, **kwargs: _P.kwargs):
         assert self._running

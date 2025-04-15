@@ -93,13 +93,20 @@ PROCESS_TEARDOWN_TIMEOUT: Final[float] = 2.0
 STREAM_LOGGING_MAXSIZE: Final[int] = 65536
 STREAM_LOGGING_NEWLINE_SIZE: Final[int] = 88
 
+WSD_INVALID_INSTANCE_ID: Final[int] = -1
+WSD_INVALID_MESSAGE_NUMBER: Final[int] = -1
+WSD_INVALID_METADATA_VERSION: Final[int] = -1
+WSD_UNICAST_ADDRESS: Final[str] = "192.168.0.1"
 WSD_IPV4_MULTICAST_ADDRESS: Final[str] = "239.255.255.250"
 WSD_IPV6_MULTICAST_ADDRESS: Final[str] = "ff02::c"
 WSD_PORT_NUMBER: Final[int] = 3702
-WSD_TIMEOUT: Final[float] = 30.0
+WSD_TIMEOUT: Final[float] = 3.0
 WSD_NAME_DEFAULT: Final[str] = "New Device"
 WSD_ONVIF_SCOPE_PREFIX: Final[str] = "onvif://www.onvif.org/name/"
 WSD_ONVIF_SCOPE_PREFIX_LEN: Final[int] = len(WSD_ONVIF_SCOPE_PREFIX)
+WSD_UNICAST_UDP_REPEAT: Final[int] = 2
+WSD_MULTICAST_UDP_REPEAT: Final[int] = 4
+WSD_RELATES_TO: Final[bool] = True
 
 ZEEP_ELEMENT_SEPARATOR: Final[str] = "."
 

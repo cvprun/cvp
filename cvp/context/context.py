@@ -246,3 +246,6 @@ class Context(ContextMixins):
 
     def save_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_files()
+
+    def toast(self, message: str, level: Optional[Union[int, str]] = None):
+        return self._msg_queue.append_toast(message, level)
