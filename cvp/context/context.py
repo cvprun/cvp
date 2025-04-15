@@ -97,8 +97,8 @@ class Context(ContextMixins):
             logger.info(f"Update environ: {PYOPENGL_USE_ACCELERATE}={use_accelerate}")
 
         if self._config.onvif_manager.preload:
-            logger.info("Preload ONVIF declarations")
-            OnvifManager.preload_onvif_declarations()
+            logger.info("Launching ONVIF service declaration preload on a new thread")
+            self.preload_onvif_declarations()
 
         self._keyring = RootKeyring()
         if self._home.is_dir():
