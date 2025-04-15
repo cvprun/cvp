@@ -445,7 +445,6 @@ class WindowBase(
         if self._focused:
             return
         self._focused = True
-        self._context.config.window_manager.appendleft_begin_order(self.key)
         self.on_focused()
 
     def do_unfocused(self) -> None:

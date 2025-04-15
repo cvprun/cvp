@@ -3,7 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
-from cvp.config.sections.toast import ToastWindowConfig
+from cvp.config.sections.toast import ToastConfig
 from cvp.context.context import Context
 from cvp.imgui.color_edit3 import color_edit3
 from cvp.imgui.drag_float import drag_float
@@ -21,7 +21,7 @@ class ToastPreference(BasePreference):
 
     @property
     def config(self):
-        return self.context.config.toast_window
+        return self.context.config.toast
 
     @override
     def do_process(self) -> None:
@@ -90,7 +90,7 @@ class ToastPreference(BasePreference):
             self.config.error_color = error_result.color
 
         if imgui.button("Reset defaults"):
-            default_config = ToastWindowConfig()
+            default_config = ToastConfig()
             for key, value in get_public_instance_attributes(default_config):
                 setattr(self.config, key, value)
 

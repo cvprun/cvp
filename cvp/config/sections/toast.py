@@ -3,14 +3,13 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from cvp.config.sections.bases.window import WindowConfig
 from cvp.logging.logging import DEBUG, ERROR, INFO, NOTSET, WARNING
 from cvp.palette.basic import LIME, RED, WHITE, YELLOW
 from cvp.types.colors import RGB
 
 
 @dataclass
-class ToastWindowConfig(WindowConfig):
+class ToastConfig:
     pivot_x: float = 0.5
     pivot_y: float = 1.0
     anchor_x: float = 0.5

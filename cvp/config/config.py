@@ -27,14 +27,11 @@ from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
 from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
 from cvp.config.sections.overlay import OverlayConfig
-from cvp.config.sections.plot import PlotWindowConfig
-from cvp.config.sections.preference import PreferenceManagerConfig as PrefManagerConfig
+from cvp.config.sections.preference import PreferenceConfig
 from cvp.config.sections.process import ProcessManagerConfig
-from cvp.config.sections.stitching import StitchingAuiConfig
+from cvp.config.sections.stitching import StitchingConfig
 from cvp.config.sections.supabase import SupabaseConfig
-from cvp.config.sections.toast import ToastWindowConfig
-from cvp.config.sections.window import WindowManagerConfig
-from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
+from cvp.config.sections.toast import ToastConfig
 from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
@@ -66,16 +63,12 @@ class Config:
     onvif_manager: OnvifManagerConfig = field(default_factory=OnvifManagerConfig)
     onvifs: List[OnvifConfig] = field(default_factory=list)
     overlay: OverlayConfig = field(default_factory=OverlayConfig)
-    plot_window: PlotWindowConfig = field(default_factory=PlotWindowConfig)
-    preference_manager: PrefManagerConfig = field(default_factory=PrefManagerConfig)
+    preference: PreferenceConfig = field(default_factory=PreferenceConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
-    stitching_aui: StitchingAuiConfig = field(default_factory=StitchingAuiConfig)
+    stitching: StitchingConfig = field(default_factory=StitchingConfig)
     tetrix_window: TetrixWindowConfig = field(default_factory=TetrixWindowConfig)
-    toast_window: ToastWindowConfig = field(default_factory=ToastWindowConfig)
-    window_manager: WindowManagerConfig = field(default_factory=WindowManagerConfig)
-    worker_manager: WorkerManagerConfig = field(default_factory=WorkerManagerConfig)
-    workers: List[WorkerConfig] = field(default_factory=list)
+    toast: ToastConfig = field(default_factory=ToastConfig)
     wsdiscovery: WsDiscoveryConfig = field(default_factory=WsDiscoveryConfig)
 
     @property
@@ -103,12 +96,6 @@ class Config:
         if index < 0:
             raise KeyError(f"Not found onvif: '{uuid}'")
         return self.onvifs.pop(index)
-
-    def remove_worker(self, uuid: str):
-        index = find_index(self.workers, lambda worker: worker.uuid == uuid)
-        if index < 0:
-            raise KeyError(f"Not found worker: '{uuid}'")
-        return self.workers.pop(index)
 
     def dumps_yaml(self, encoding="utf-8") -> bytes:
         return dump(serialize(self), Dumper=DefaultDumper).encode(encoding)

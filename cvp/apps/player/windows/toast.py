@@ -59,7 +59,7 @@ class ToastWindow:
 
     @property
     def config(self):
-        return self._context.config.toast_window
+        return self._context.config.toast
 
     @property
     def fadein(self):

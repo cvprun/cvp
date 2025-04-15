@@ -56,7 +56,7 @@ class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
 
     @property
     def selected_submenus(self):
-        return self._context.config.preference_manager.selected_submenus
+        return self._context.config.preference.selected_submenus
 
     def gen_selected_submenu_key(
         self,

@@ -2,9 +2,7 @@
 
 from dataclasses import dataclass
 
-from cvp.config.sections.bases.aui import AuiWindowConfig
-
 
 @dataclass
-class StitchingAuiConfig(AuiWindowConfig):
+class StitchingConfig:
     pass
