@@ -24,7 +24,7 @@ class ContextProtocol(Protocol):
     _done: Event
     _process_manager: ProcessManager
     _keyring: RootKeyring
-    _onvif_manager: OnvifManager
+    _onvifs: OnvifManager
     _chat: ChatManager
     _ollamas: OllamaManager
     _flows: FlowManager

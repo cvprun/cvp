@@ -28,6 +28,7 @@ class OnvifConfig:
     encode_digest: bool = False
     http_auth: Optional[HttpAuth] = None
     no_verify: bool = False
+    no_file_cache: bool = False
     same_host: bool = False
 
     # GUI Handling

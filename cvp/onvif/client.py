@@ -8,7 +8,6 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from zeep import Transport
 
 from cvp.config.sections.onvif import OnvifConfig
-from cvp.config.sections.wsdl import WsdlConfig
 from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.declarations import (
@@ -40,15 +39,8 @@ WsdlServiceT = TypeVar("WsdlServiceT", bound=WsdlClient)
 
 
 class OnvifClient:
-    def __init__(
-        self,
-        onvif_config: OnvifConfig,
-        wsdl_config: WsdlConfig,
-        home: HomeDir,
-        keyring: RootKeyring,
-    ):
+    def __init__(self, onvif_config: OnvifConfig, home: HomeDir, keyring: RootKeyring):
         self._onvif_config = deepcopy(onvif_config)
-        self._wsdl_config = deepcopy(wsdl_config)
         self._home = home
 
         if onvif_config.use_wsse:
@@ -64,7 +56,7 @@ class OnvifClient:
             password = None
             use_digest = False
 
-        no_cache = self._wsdl_config.no_cache
+        no_cache = self._onvif_config.no_file_cache
         cache_dir = str(home.wsdl)
 
         self._session = Session()
@@ -169,10 +161,6 @@ class OnvifClient:
     @property
     def onvif_config(self):
         return self._onvif_config
-
-    @property
-    def wsdl_config(self):
-        return self._wsdl_config
 
     @property
     def services(self):

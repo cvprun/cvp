@@ -4,7 +4,6 @@ from collections import OrderedDict
 from typing import List
 
 from cvp.config.sections.onvif import OnvifConfig
-from cvp.config.sections.wsdl import WsdlConfig
 from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.client import OnvifClient
@@ -16,7 +15,6 @@ class OnvifManager(OrderedDict[str, OnvifClient]):
     def __init__(
         self,
         onvif_configs: List[OnvifConfig],
-        wsdl_config: WsdlConfig,
         home: HomeDir,
         keyring: RootKeyring,
         *,
@@ -24,7 +22,6 @@ class OnvifManager(OrderedDict[str, OnvifClient]):
     ):
         super().__init__()
         self._onvif_configs = onvif_configs
-        self._wsdl_config = wsdl_config
         self._home = home
         self._keyring = keyring
 
@@ -33,26 +30,15 @@ class OnvifManager(OrderedDict[str, OnvifClient]):
                 self.create_onvif_service(onvif_config, append=True)
 
     def create_onvif_service(self, onvif_config: OnvifConfig, *, append=False):
-        service = OnvifClient(
-            onvif_config=onvif_config,
-            wsdl_config=self._wsdl_config,
-            home=self._home,
-            keyring=self._keyring,
-        )
+        service = OnvifClient(onvif_config, self._home, self._keyring)
         if append:
             self.__setitem__(onvif_config.uuid, service)
         return service
 
-    def get_synced_client(
-        self,
-        onvif_config: OnvifConfig,
-        wsdl_config: WsdlConfig,
-    ) -> OnvifClient:
+    def get_synced_client(self, onvif_config: OnvifConfig) -> OnvifClient:
         if self.__contains__(onvif_config.uuid):
             service = self.__getitem__(onvif_config.uuid)
-            same_onvif_config = service.onvif_config == onvif_config
-            same_wsdl_config = service.wsdl_config == wsdl_config
-            if same_onvif_config and same_wsdl_config:
+            if service.onvif_config == onvif_config:
                 return service
             else:
                 self.__delitem__(onvif_config.uuid)

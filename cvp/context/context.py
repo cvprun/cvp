@@ -105,11 +105,10 @@ class Context(ContextMixins):
             logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
             self._keyring.update_default_filepath(self._home.keyrings)
 
-        self._onvif_manager = OnvifManager(
-            onvif_configs=self._config.onvifs,
-            wsdl_config=self._config.wsdl,
-            home=self._home,
-            keyring=self._keyring,
+        self._onvifs = OnvifManager(
+            self._config.onvifs,
+            self._home,
+            self._keyring,
             update=True,
         )
 
@@ -163,7 +162,7 @@ class Context(ContextMixins):
 
     @property
     def om(self):
-        return self._onvif_manager
+        return self._onvifs
 
     @property
     def supabase(self):

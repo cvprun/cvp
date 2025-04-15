@@ -6,7 +6,6 @@ from unittest import TestCase, main
 from zeep.xsd import Element
 
 from cvp.config.sections.onvif import OnvifConfig
-from cvp.config.sections.wsdl import WsdlConfig
 from cvp.keyring.root import RootKeyring
 from cvp.onvif.client import OnvifClient
 from cvp.resources.home import HomeDir
@@ -18,14 +17,8 @@ class ClientTestCase(TestCase):
         self.tmpdir = TemporaryDirectory()
         self.home = HomeDir(self.tmpdir.name)
         self.onvif_config = OnvifConfig()
-        self.wsdl_config = WsdlConfig()
         self.keyring = RootKeyring()
-        self.client = OnvifClient(
-            self.onvif_config,
-            self.wsdl_config,
-            self.home,
-            self.keyring,
-        )
+        self.client = OnvifClient(self.onvif_config, self.home, self.keyring)
 
     def tearDown(self):
         self.tmpdir.cleanup()

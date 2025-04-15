@@ -40,7 +40,6 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
     from cvp.apps.player.modes.preference.toast import ToastPreference
-    from cvp.apps.player.modes.preference.wsdl import WsdlPreference
 
     return (
         AppearancePreference,
@@ -60,7 +59,6 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         ResourcePreference,
         SupabasePreference,
         ToastPreference,
-        WsdlPreference,
     )
 
 

@@ -21,7 +21,7 @@ class OnvifServiceTab(TabItem[OnvifConfig]):
         )
 
     def on_update_service(self, item: OnvifConfig):
-        onvif = self.context.om.get_synced_client(item, self.context.config.wsdl)
+        onvif = self.context.om.get_synced_client(item)
         onvif.update_services()
         onvif.update_wsdl_addresses()
         return onvif

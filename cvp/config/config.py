@@ -36,7 +36,6 @@ from cvp.config.sections.toast import ToastWindowConfig
 from cvp.config.sections.window import WindowManagerConfig
 from cvp.config.sections.worker import WorkerConfig, WorkerManagerConfig
 from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
-from cvp.config.sections.wsdl import WsdlConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
 from cvp.yaml.dumpers import DefaultDumper
@@ -78,7 +77,6 @@ class Config:
     worker_manager: WorkerManagerConfig = field(default_factory=WorkerManagerConfig)
     workers: List[WorkerConfig] = field(default_factory=list)
     wsdiscovery: WsDiscoveryConfig = field(default_factory=WsDiscoveryConfig)
-    wsdl: WsdlConfig = field(default_factory=WsdlConfig)
 
     @property
     def debug(self):
