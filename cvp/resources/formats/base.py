@@ -3,8 +3,7 @@
 import os
 from abc import ABC, abstractmethod
 from os import PathLike
-from pathlib import Path
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 from cvp.system.path import PathFlavour
 from cvp.types.override import override
@@ -43,13 +42,11 @@ class BaseFormatPath(PathFlavour, FormatInterface):
         raise NotImplementedError
 
     def object_path(self, *subpaths: str):
-        if not subpaths:
-            raise ValueError("At least one path must be specified")
-        path = os.path.join(self, *subpaths)
-        extension = os.path.splitext(path)[1]
-        if extension != self._extension:
-            path += self._extension
-        return Path(path)
+        path = self.joinpath(*subpaths)
+        if path.suffix == self._extension:
+            return path
+        else:
+            return path.with_suffix(self._extension)
 
     def has_object(self, *subpaths: str) -> bool:
         return self.object_path(*subpaths).is_file()
@@ -68,8 +65,5 @@ class BaseFormatPath(PathFlavour, FormatInterface):
     def remove_object(self, *subpaths: str) -> None:
         return os.remove(self.object_path(*subpaths))
 
-    def find_object_filepaths(self) -> List[str]:
-        return self._find_files_with_extensions(self._extension, join_dirpath=True)
-
-    def find_object_filenames(self) -> List[str]:
-        return self._find_files_with_extensions(self._extension, join_dirpath=False)
+    def list_object_filenames(self):
+        return self.list_first_depth_filenames(self._extension, ignore_case=False)

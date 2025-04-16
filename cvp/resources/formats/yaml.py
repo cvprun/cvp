@@ -5,7 +5,7 @@ from typing import Any, Final, Union
 
 from yaml import dump, full_load
 
-from cvp.resources.formats._base import BaseFormatPath
+from cvp.resources.formats.base import BaseFormatPath
 from cvp.types.override import override
 from cvp.yaml.dumpers import DefaultDumper
 

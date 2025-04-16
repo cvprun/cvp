@@ -33,6 +33,8 @@ FONT_SIZE: Final[int] = 14
 FONT_SCALE: Final[float] = 1.0
 FONT_NAME: Final[str] = "Default"
 
+RESOURCE_MANAGER_CONFIG_PREFIX: Final[str] = ".config"
+
 THREAD_POOL_PREFIX: Final[str] = "cvp.threadpool"
 MAX_THREAD_WORKERS: Final[int] = 5
 MAX_PROCESS_WORKERS: Final[int] = 5

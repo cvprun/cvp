@@ -22,7 +22,7 @@ class PathFlavour(Path):
     def as_path(self):
         return Path(self)
 
-    def _find_files_with_extensions(
+    def walk_with_extensions(
         self,
         *extensions: str,
         ignore_case=False,
@@ -31,7 +31,7 @@ class PathFlavour(Path):
         result = list()
         if ignore_case:
             extensions = tuple(e.lower() for e in extensions)
-        for dirpath, dirnames, filenames in os.walk(self):
+        for dirpath, dirnames, filenames in self.walk():
             for filename in filenames:
                 ext = os.path.splitext(filename)[1]
                 if ignore_case:
@@ -42,6 +42,29 @@ class PathFlavour(Path):
                     else:
                         result.append(filename)
         return result
+
+    def list_first_depth_filepaths(self, *extensions: str, ignore_case=False):
+        result = list()
+        if ignore_case:
+            extensions = tuple(e.lower() for e in extensions)
+        for path in self.iterdir():
+            if not path.is_file():
+                continue
+            suffix = path.suffix.lower() if ignore_case else path.suffix
+            if suffix in extensions:
+                result.append(path)
+        return result
+
+    def list_first_depth_filenames(self, *extensions: str, ignore_case=False):
+        paths = self.list_first_depth_filepaths(*extensions, ignore_case=ignore_case)
+        return list(path.name for path in paths)
+
+    def list_first_depth_dirpaths(self):
+        return list(path for path in self.iterdir() if path.is_dir())
+
+    def list_first_depth_dirnames(self):
+        paths = self.list_first_depth_dirpaths()
+        return list(path.name for path in paths)
 
     @classmethod
     def get_subdir_name(cls) -> str:
@@ -59,7 +82,7 @@ class PathFlavour(Path):
     def classname_subdir(cls, parent: Union[str, PathLike[str]]):
         return cls(Path(parent) / cls.get_subdir_name())
 
-    if sys.version_info >= (3, 12):
+    if (3, 12) <= sys.version_info:
 
         def __truediv__(self, other):
             return self.__class__(self.as_path() / other)

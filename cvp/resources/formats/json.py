@@ -5,7 +5,7 @@ from typing import Any, Union
 
 import orjson
 
-from cvp.resources.formats._base import BaseFormatPath
+from cvp.resources.formats.base import BaseFormatPath
 from cvp.types.override import override
 
 

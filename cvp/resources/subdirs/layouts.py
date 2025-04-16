@@ -18,20 +18,17 @@ class LayoutsPath(PathFlavour):
     def extension(self):
         return self._extension
 
-    def get_filename(self, dt: datetime) -> str:
+    def generate_filename(self, dt: datetime) -> str:
         return self._prefix + short_datetime_name(dt) + self._extension
 
-    def get_nonexistent_filename(self) -> str:
+    def generate_nonexistent_filename(self) -> str:
         dt = datetime.now().astimezone()
         while True:
-            filename = self.get_filename(dt)
+            filename = self.generate_filename(dt)
             if (self / filename).exists():
                 dt += timedelta(seconds=1)
                 continue
             return filename
 
-    def find_layout_filepaths(self) -> List[str]:
-        return self._find_files_with_extensions(self._extension, join_dirpath=True)
-
-    def find_layout_filenames(self) -> List[str]:
-        return self._find_files_with_extensions(self._extension, join_dirpath=False)
+    def list_layout_filenames(self) -> List[str]:
+        return self.list_first_depth_filenames(self._extension, ignore_case=False)

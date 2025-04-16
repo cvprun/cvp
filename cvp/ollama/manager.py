@@ -27,16 +27,16 @@ class OllamaManager(Dict[OllamaFilename, Ollama]):
 
     def read_serialized_object(self, filename: OllamaFilename) -> Ollama:
         result = deserialize(self._path.read_object(filename), Ollama)
-        logger.info(f"Read from ollama config file: '{filename}'")
+        logger.info(f"Read from Ollama config file completed: '{filename}'")
         return result
 
     def write_serialized_object(self, ollama: Ollama, filename: OllamaFilename) -> int:
         result = self._path.write_object(serialize(ollama), filename)
-        logger.info(f"Wrote to ollama config file: '{filename}'")
+        logger.info(f"Write to Ollama config file completed: '{filename}'")
         return result
 
     def filenames(self) -> List[OllamaFilename]:
-        return [OllamaFilename(x) for x in self._path.find_object_filenames()]
+        return [OllamaFilename(x) for x in self._path.list_object_filenames()]
 
     def read_all_files(self, *, raise_errors=False) -> Dict[OllamaFilename, Ollama]:
         result = dict()

@@ -55,6 +55,7 @@ devicemgmt
 directsound
 dirnames
 dirpath
+dirpaths
 discardcorrupt
 dnow
 dnowext

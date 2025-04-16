@@ -23,12 +23,12 @@ class WsDiscoveryManager(Dict[WsDiscoveryFilename, WsDiscovery]):
     def path(self):
         return self._path
 
-    def gen_filename_with_epr(self, epr: str) -> WsDiscoveryFilename:
+    def generate_filename_with_epr(self, epr: str) -> WsDiscoveryFilename:
         return WsDiscoveryFilename(self._path.object_path(epr).name)
 
     def read_serialized_object(self, filename: WsDiscoveryFilename) -> WsDiscovery:
         result = deserialize(self._path.read_object(filename), WsDiscovery)
-        logger.info(f"Read from wsd config file: '{filename}'")
+        logger.info(f"Read from WSD config file completed: '{filename}'")
         return result
 
     def write_serialized_object(
@@ -37,11 +37,11 @@ class WsDiscoveryManager(Dict[WsDiscoveryFilename, WsDiscovery]):
         filename: WsDiscoveryFilename,
     ) -> int:
         result = self._path.write_object(serialize(wsd), filename)
-        logger.info(f"Wrote to wsd config file: '{filename}'")
+        logger.info(f"Write to  config file completed: '{filename}'")
         return result
 
     def filenames(self) -> List[WsDiscoveryFilename]:
-        return [WsDiscoveryFilename(x) for x in self._path.find_object_filenames()]
+        return [WsDiscoveryFilename(x) for x in self._path.list_object_filenames()]
 
     def read_all_files(
         self,
@@ -98,6 +98,6 @@ class WsDiscoveryManager(Dict[WsDiscoveryFilename, WsDiscovery]):
             self.update(result)
 
     def add(self, wsd: WsDiscovery) -> Tuple[WsDiscoveryFilename, WsDiscovery]:
-        filename = self.gen_filename_with_epr(wsd.epr)
+        filename = self.generate_filename_with_epr(wsd.epr)
         self.__setitem__(filename, wsd)
         return filename, wsd

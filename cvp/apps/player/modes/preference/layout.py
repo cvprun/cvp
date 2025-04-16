@@ -22,6 +22,9 @@ from cvp.popups.input_text import InputTextPopup
 from cvp.types.colors import GREEN_RGBA, RED_RGBA
 from cvp.types.override import override
 
+_MENU_SPLIT_X: Final[int] = 300
+_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
 
 class LayoutPreference(BasePreference):
     __cvp_menu_name__ = "Layout"
@@ -50,7 +53,7 @@ class LayoutPreference(BasePreference):
         )
 
     def _find_layout_filenames(self):
-        return self.context.home.layouts.find_layout_filenames()
+        return self.context.home.layouts.list_layout_filenames()
 
     def reload_layout_filenames(self) -> None:
         self._filenames = self._find_layout_filenames()
@@ -117,17 +120,14 @@ class LayoutPreference(BasePreference):
         self._remove_candidate = filepath
         self._confirm_remove.show()
 
-    _SPLIT_X: Final[int] = 300
-    _CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
-
     @override
     def do_process(self) -> None:
-        with begin_child_context("Menu", self._SPLIT_X, child_flags=self._CHILD_FLAGS):
+        with begin_child_context("Menu", _MENU_SPLIT_X, child_flags=_MENU_CHILD_FLAGS):
             if imgui.button("Reload"):
                 self.reload_layout_filenames()
             imgui.same_line()
             if imgui.button("New"):
-                filename = self.context.home.layouts.get_nonexistent_filename()
+                filename = self.context.home.layouts.generate_nonexistent_filename()
                 self.save_layout(filename)
                 self.selected_submenu_filename = filename
                 self.reload_layout_filenames()
