@@ -10,8 +10,8 @@ from cvp.system.path import PathFlavour
 
 
 class ProcessesPath(PathFlavour):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path)
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)
         self.logfile_prefix = ""
         self.logfile_suffix = ".log"
 

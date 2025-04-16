@@ -9,8 +9,8 @@ from cvp.system.path import PathFlavour
 
 
 class WsdlPath(PathFlavour):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path)
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)
 
     def copy_asset_files(self):
         return copytree(get_wsdl_dir(), self, dirs_exist_ok=True)

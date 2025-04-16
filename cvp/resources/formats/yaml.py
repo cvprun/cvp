@@ -10,12 +10,18 @@ from cvp.types.override import override
 from cvp.yaml.dumpers import DefaultDumper
 
 YAML_ENCODING: Final[str] = "utf-8"
+YAML_EXTENSION: Final[str] = ".yml"
 
 
 class YamlFormatPath(BaseFormatPath):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path, extension=".yml")
-        self._encoding = YAML_ENCODING
+    def __init__(
+        self,
+        *path: Union[str, PathLike[str]],
+        extension=YAML_EXTENSION,
+        encoding=YAML_ENCODING,
+    ):
+        super().__init__(*path, extension=extension)
+        self._encoding = encoding
 
     @override
     def dumps(self, data: Any) -> bytes:

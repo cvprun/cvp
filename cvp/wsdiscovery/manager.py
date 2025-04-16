@@ -24,7 +24,7 @@ class WsDiscoveryManager(Dict[WsDiscoveryFilename, WsDiscovery]):
         return self._path
 
     def generate_filename_with_epr(self, epr: str) -> WsDiscoveryFilename:
-        return WsDiscoveryFilename(self._path.object_path(epr).name)
+        return WsDiscoveryFilename(self._path.make_object_path(epr).name)
 
     def read_serialized_object(self, filename: WsDiscoveryFilename) -> WsDiscovery:
         result = deserialize(self._path.read_object(filename), WsDiscovery)

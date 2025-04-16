@@ -9,8 +9,8 @@ from cvp.system.path import PathFlavour
 
 
 class LayoutsPath(PathFlavour):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path)
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)
         self._prefix = "layout-"
         self._extension = ".ini"
 

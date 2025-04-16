@@ -9,13 +9,20 @@ from cvp.types.override import override
 
 PICKLE_PROTOCOL_VERSION: Final[int] = 5
 PICKLE_ENCODING: Final[str] = "ASCII"
+PICKLE_EXTENSION: Final[str] = ".pickle"
 
 
 class PickleFormatPath(BaseFormatPath):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path, extension=".pickle")
-        self._protocol_version = PICKLE_PROTOCOL_VERSION
-        self._encoding = PICKLE_ENCODING
+    def __init__(
+        self,
+        *path: Union[str, PathLike[str]],
+        extension=PICKLE_EXTENSION,
+        encoding=PICKLE_ENCODING,
+        protocol_version=PICKLE_PROTOCOL_VERSION,
+    ):
+        super().__init__(*path, extension=extension)
+        self._encoding = encoding
+        self._protocol_version = protocol_version
 
     @override
     def dumps(self, data: Any) -> bytes:

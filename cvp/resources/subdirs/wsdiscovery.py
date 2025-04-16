@@ -7,5 +7,5 @@ from cvp.resources.formats.yaml import YamlFormatPath
 
 
 class WsDiscoveryPath(YamlFormatPath):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path)
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)

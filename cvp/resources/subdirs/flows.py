@@ -9,8 +9,8 @@ from cvp.system.path import PathFlavour
 
 
 class FlowsPath(PathFlavour):
-    def __init__(self, path: Union[str, PathLike[str]]):
-        super().__init__(path)
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)
 
     def find_graph_files(self):
         return self.walk_with_extensions(".yml", ".yaml")
