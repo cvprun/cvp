@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
 from abc import ABC, abstractmethod
 from os import PathLike
 from typing import Any, Final, Union
@@ -64,7 +63,7 @@ class BaseFormatPath(PathFlavour, FormatInterface):
         return obj_path.write_bytes(obj_data)
 
     def remove_object(self, *subpaths: str) -> None:
-        return os.remove(self.make_object_path(*subpaths))
+        return self.make_object_path(*subpaths).unlink()
 
     def list_object_filenames(self):
         return self.list_first_depth_filenames(self._extension, ignore_case=False)

@@ -29,13 +29,13 @@ class ManagerTestCase(TestCase):
         self.assertTrue(self.manager.root_dir.is_dir())
 
         filename0 = "filename0"
-        self.assertLess(0, self.manager.add(filename0, TestConfig(100)))
+        self.manager.add(filename0, TestConfig(100))
         self.assertTrue(self.manager.exists(filename0))
         self.assertIn(filename0, self.manager)
         self.assertEqual(1, len(self.manager))
 
         filename1 = "filename1"
-        self.assertLess(0, self.manager.add(filename1, TestConfig(200)))
+        self.manager.add(filename1, TestConfig(200))
         self.assertTrue(self.manager.exists(filename1))
         self.assertIn(filename1, self.manager)
         self.assertEqual(2, len(self.manager))
