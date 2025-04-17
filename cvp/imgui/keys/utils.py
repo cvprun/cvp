@@ -3,24 +3,24 @@
 from imgui_bundle import imgui
 
 
-def _is_key_down(key: imgui.Key) -> bool:
+def is_key_down(key: imgui.Key) -> bool:
     return imgui.is_key_down(key)
 
 
 def shift_down() -> bool:
-    return _is_key_down(imgui.Key.left_shift) or _is_key_down(imgui.Key.right_shift)
+    return is_key_down(imgui.Key.left_shift) or is_key_down(imgui.Key.right_shift)
 
 
 def ctrl_down() -> bool:
-    return _is_key_down(imgui.Key.left_ctrl) or _is_key_down(imgui.Key.right_ctrl)
+    return is_key_down(imgui.Key.left_ctrl) or is_key_down(imgui.Key.right_ctrl)
 
 
 def alt_down() -> bool:
-    return _is_key_down(imgui.Key.left_alt) or _is_key_down(imgui.Key.right_alt)
+    return is_key_down(imgui.Key.left_alt) or is_key_down(imgui.Key.right_alt)
 
 
 def super_down() -> bool:
-    return _is_key_down(imgui.Key.left_super) or _is_key_down(imgui.Key.right_super)
+    return is_key_down(imgui.Key.left_super) or is_key_down(imgui.Key.right_super)
 
 
 def only_shift_down() -> bool:
