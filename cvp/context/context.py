@@ -244,4 +244,4 @@ class Context(ContextMixins):
         self._ollamas.write_all_files()
 
     def save_wsdiscovery(self) -> None:
-        self._wsdiscovery.write_all_files()
+        self._wsdiscovery.write_all_config_files()

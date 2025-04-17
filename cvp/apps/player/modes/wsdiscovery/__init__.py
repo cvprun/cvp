@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from copy import copy
 from datetime import datetime
 from typing import Optional
 
@@ -43,7 +44,6 @@ from cvp.variables import (
     WSD_RELATES_TO,
     WSD_UNICAST_UDP_REPEAT,
 )
-from cvp.wsdiscovery.manager import WsDiscoveryFilename
 from cvp.wsdiscovery.wsd import WsDiscovery
 
 
@@ -54,13 +54,20 @@ class WsDiscoveryMode(BaseMode):
         super().__init__(context)
         self._discovery_runner = context.pm.create_thread_runner(self.on_discovery_main)
         self._discovery_begin = datetime.now().astimezone()
-        self._remove_candidate = WsDiscoveryFilename(str())
+        self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
             title="Remove",
             label="Are you sure you want to remove device?",
             ok="Remove",
             cancel="No",
             target=self.on_confirm_remove,
+        )
+        self._confirm_clear = ConfirmPopup(
+            title="Clear",
+            label="Are you sure you want to remove all devices?",
+            ok="Clear",
+            cancel="No",
+            target=self.on_confirm_clear,
         )
 
     @property
@@ -72,11 +79,11 @@ class WsDiscoveryMode(BaseMode):
         return self.context.config.wsdiscovery
 
     @property
-    def selected(self) -> WsDiscoveryFilename:
-        return WsDiscoveryFilename(self.config.selected)
+    def selected(self) -> str:
+        return self.config.selected
 
     @selected.setter
-    def selected(self, value: WsDiscoveryFilename) -> None:
+    def selected(self, value: str) -> None:
         self.config.selected = str(value)
 
     @property
@@ -110,30 +117,31 @@ class WsDiscoveryMode(BaseMode):
         unicast_repeat=WSD_UNICAST_UDP_REPEAT,
         relates_to=WSD_RELATES_TO,
     ) -> None:
+        wsd = WSDiscovery(
+            unicast_num=unicast_repeat,
+            multicast_num=multicast_repeat,
+            relates_to=relates_to,
+        )
+        wsd.start()
         try:
-            wsd = WSDiscovery(
-                unicast_num=unicast_repeat,
-                multicast_num=multicast_repeat,
-                relates_to=relates_to,
-            )
-            wsd.start()
-            try:
-                for service in wsd.searchServices(
-                    address=address,
-                    port=port,
-                    timeout=timeout,
-                ):
-                    item = WsDiscovery()
-                    item.epr = service.getEPR()
-                    item.instance_id = service.getInstanceId()
-                    item.message_number = service.getMessageNumber()
-                    item.metadata_version = service.getMetadataVersion()
-                    item.scopes = [s.getValue() for s in service.getScopes()]
-                    item.types = [t.getFullname() for t in service.getTypes()]
-                    item.xaddrs = [a for a in service.getXAddrs()]
-                    item.error = str()
-                    item.created_at = datetime.now().astimezone()
+            for service in wsd.searchServices(
+                address=address,
+                port=port,
+                timeout=timeout,
+            ):
+                epr = service.getEPR()
+                item = self.wsdiscovery.get(epr, WsDiscovery(epr))
+                assert item.epr == epr
+                item.instance_id = service.getInstanceId()
+                item.message_number = service.getMessageNumber()
+                item.metadata_version = service.getMetadataVersion()
+                item.scopes = [s.getValue() for s in service.getScopes()]
+                item.types = [t.getFullname() for t in service.getTypes()]
+                item.xaddrs = [a for a in service.getXAddrs()]
+                item.error = str()
+                item.created_at = datetime.now().astimezone()
 
+                if not item.name:
                     for scope in item.scopes:
                         assert isinstance(scope, str)
                         if scope.startswith(WSD_ONVIF_SCOPE_PREFIX):
@@ -143,18 +151,21 @@ class WsDiscoveryMode(BaseMode):
                     if not item.name:
                         item.name = WSD_NAME_DEFAULT
 
-                    logger.info(f"Device discovered: {item}")
-                    self.wsdiscovery.add(item)
-            finally:
-                wsd.stop()
+                logger.info(f"Device discovered: {item}")
+                self.wsdiscovery.add(epr, item)
         finally:
-            self.wsdiscovery.write_all_files()
+            wsd.stop()
 
     def on_confirm_remove(self, value: bool) -> None:
         if not value:
             return
         assert self._remove_candidate in self.wsdiscovery
         self.wsdiscovery.remove(self._remove_candidate)
+
+    def on_confirm_clear(self, value: bool) -> None:
+        if not value:
+            return
+        self.wsdiscovery.remove_all()
 
     @override
     def do_process(self) -> None:
@@ -183,11 +194,14 @@ class WsDiscoveryMode(BaseMode):
 
             imgui.separator()
             if button("Reload", disabled=running):
-                self.wsdiscovery.reload_all_files()
+                self.wsdiscovery.read_all_config_files()
             imgui.same_line()
             if button("Del", disabled=self.selected not in self.wsdiscovery):
                 self._remove_candidate = self.selected
                 self._confirm_remove.show()
+            imgui.same_line()
+            if button("Clear", disabled=running or not self.wsdiscovery):
+                self._confirm_clear.show()
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
@@ -208,6 +222,7 @@ class WsDiscoveryMode(BaseMode):
                 text_centered("Please select a item")
 
         self._confirm_remove.do_process()
+        self._confirm_clear.do_process()
 
     def do_discovery_process(self, running: bool) -> None:
         imgui.text("Web Services Dynamic Discovery")
