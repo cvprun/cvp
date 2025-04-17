@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
 import shutil
 from pathlib import Path
 from typing import Final
@@ -51,6 +50,13 @@ class LayoutPreference(BasePreference):
             cancel="Cancel",
             target=self.on_confirm_remove,
         )
+        self._confirm_clear = ConfirmPopup(
+            title="Layout Clear",
+            label="Are you sure you want to remove all layout?",
+            ok="Clear",
+            cancel="No",
+            target=self.on_confirm_clear,
+        )
 
     @property
     def filenames(self):
@@ -91,7 +97,14 @@ class LayoutPreference(BasePreference):
 
         path = self._remove_candidate
         assert path.is_file()
-        os.remove(path)
+        path.unlink()
+        self.reload_layout_filenames()
+
+    def on_confirm_clear(self, value: bool) -> None:
+        if not value:
+            return
+        for filename in self._filenames:
+            self.get_layout_filepath(filename).unlink(missing_ok=True)
         self.reload_layout_filenames()
 
     __submenu_filename_key__ = "filename"
@@ -147,6 +160,9 @@ class LayoutPreference(BasePreference):
             disabled_delete = self.selected_submenu_filename not in self._filenames
             if button("Del", disabled=disabled_delete):
                 self.show_remove_popup(self.selected_submenu_filename)
+            imgui.same_line()
+            if button("Clear", disabled=not self._filenames):
+                self._confirm_clear.show()
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
@@ -200,3 +216,4 @@ class LayoutPreference(BasePreference):
     def do_postprocess(self) -> None:
         self._rename_input.do_process()
         self._confirm_remove.do_process()
+        self._confirm_clear.do_process()

@@ -39,12 +39,28 @@ def only_super_down() -> bool:
     return not shift_down() and not ctrl_down() and not alt_down() and super_down()
 
 
-def _is_key_pressed(key: imgui.Key, repeat=True) -> bool:
+def only_shift_ctrl_down() -> bool:
+    return shift_down() and ctrl_down() and not alt_down() and not super_down()
+
+
+def only_ctrl_alt_down() -> bool:
+    return not shift_down() and ctrl_down() and alt_down() and not super_down()
+
+
+def only_shift_alt_down() -> bool:
+    return shift_down() and not ctrl_down() and alt_down() and not super_down()
+
+
+def only_shift_ctrl_alt_down() -> bool:
+    return shift_down() and ctrl_down() and alt_down() and not super_down()
+
+
+def is_key_pressed(key: imgui.Key, repeat=True) -> bool:
     return imgui.is_key_pressed(key, repeat)
 
 
 def enter_pressed() -> bool:
-    return _is_key_pressed(imgui.Key.enter) or _is_key_pressed(imgui.Key.keypad_enter)
+    return is_key_pressed(imgui.Key.enter) or is_key_pressed(imgui.Key.keypad_enter)
 
 
 def only_shift_enter_pressed() -> bool:

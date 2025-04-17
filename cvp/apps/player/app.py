@@ -28,6 +28,7 @@ from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProx
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
 from cvp.imgui.fonts.globals import GlobalFontMapper
+from cvp.imgui.keys.utils import is_key_pressed
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.separator import separator
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
@@ -44,6 +45,27 @@ from cvp.variables import FONT_NAME
 _QUIT_SHORTCUT: Final[str] = "Ctrl+Q"
 _LAYOUT_SAVE_SHORTCUT: Final[str] = "Ctrl+Alt+L"
 _SCREENSHOT_SHORTCUT: Final[str] = "Ctrl+Alt+P"
+
+# noinspection PyProtectedMember
+_KEY0 = imgui.Key._0
+# noinspection PyProtectedMember
+_KEY1 = imgui.Key._1
+# noinspection PyProtectedMember
+_KEY2 = imgui.Key._2
+# noinspection PyProtectedMember
+_KEY3 = imgui.Key._3
+# noinspection PyProtectedMember
+_KEY4 = imgui.Key._4
+# noinspection PyProtectedMember
+_KEY5 = imgui.Key._5
+# noinspection PyProtectedMember
+_KEY6 = imgui.Key._6
+# noinspection PyProtectedMember
+_KEY7 = imgui.Key._7
+# noinspection PyProtectedMember
+_KEY8 = imgui.Key._8
+# noinspection PyProtectedMember
+_KEY9 = imgui.Key._9
 
 
 class PlayerApplication:
@@ -378,43 +400,40 @@ class PlayerApplication:
         only_shift = not m_ctrl and m_shift and not m_alt  # noqa: F841
         only_alt = not m_ctrl and not m_shift and m_alt
 
-        if only_ctrl and keys[pygame.K_q]:
+        if only_ctrl and is_key_pressed(imgui.Key.q):
             self._confirm_quit.show()
             return
 
         if not m_shift and m_ctrl and m_alt:
-            if keys[pygame.K_p]:
+            if is_key_pressed(imgui.Key.p):
                 self.save_screenshot()
                 return
-            if keys[pygame.K_l]:
+
+            if is_key_pressed(imgui.Key.l):
                 self.layout_preference_menu.save_new_layout(reload=True)
                 return
 
-        # TODO: You will need to restore it later.
-        # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
-        #     self._pref_manager.opened = True
-
         if only_alt:
             mode_index: Optional[int] = None
-            if keys[pygame.K_1]:
+            if is_key_pressed(_KEY1):
                 mode_index = 1
-            elif keys[pygame.K_2]:
+            elif is_key_pressed(_KEY2):
                 mode_index = 2
-            elif keys[pygame.K_3]:
+            elif is_key_pressed(_KEY3):
                 mode_index = 3
-            elif keys[pygame.K_4]:
+            elif is_key_pressed(_KEY4):
                 mode_index = 4
-            elif keys[pygame.K_5]:
+            elif is_key_pressed(_KEY5):
                 mode_index = 5
-            elif keys[pygame.K_6]:
+            elif is_key_pressed(_KEY6):
                 mode_index = 6
-            elif keys[pygame.K_7]:
+            elif is_key_pressed(_KEY7):
                 mode_index = 7
-            elif keys[pygame.K_8]:
+            elif is_key_pressed(_KEY8):
                 mode_index = 8
-            elif keys[pygame.K_9]:
+            elif is_key_pressed(_KEY9):
                 mode_index = 9
-            elif keys[pygame.K_0]:
+            elif is_key_pressed(_KEY0):
                 mode_index = 0
 
             if mode_index is not None:
@@ -532,6 +551,15 @@ class PlayerApplication:
         if menu_item("Overlay", self._overlay.opened):
             self._overlay.flip_opened()
 
+        if self.debug:
+            separator()
+            if menu_item("Metrics", self.config.developer.show_metrics):
+                self.config.developer.flip_show_metrics()
+            if menu_item("Style", self.config.developer.show_style):
+                self.config.developer.flip_show_style()
+            if menu_item("Demo", self.config.developer.show_demo):
+                self.config.developer.flip_show_demo()
+
         separator()
         if imgui.begin_menu("Layouts"):
             try:
@@ -544,15 +572,6 @@ class PlayerApplication:
                         layout_preference.load_layout(layout_filename)
             finally:
                 imgui.end_menu()
-
-        if self.debug:
-            separator()
-            if menu_item("Metrics", self.config.developer.show_metrics):
-                self.config.developer.flip_show_metrics()
-            if menu_item("Style", self.config.developer.show_style):
-                self.config.developer.flip_show_style()
-            if menu_item("Demo", self.config.developer.show_demo):
-                self.config.developer.flip_show_demo()
 
     def on_help_menu(self) -> None:
         if menu_item("Screenshot", shortcut=_SCREENSHOT_SHORTCUT):

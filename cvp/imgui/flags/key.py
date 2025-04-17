@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from enum import IntFlag, unique
+from enum import IntFlag
 from functools import reduce
 from typing import Final, Union
 
 from imgui_bundle import imgui
 
 
-@unique
 class KeyFlags(IntFlag):
     none = imgui.Key.none.value
     tab = imgui.Key.tab.value
