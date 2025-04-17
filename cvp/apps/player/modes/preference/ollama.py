@@ -75,14 +75,14 @@ class OllamaPreference(BasePreference):
         child_flags = RESIZE_X | BORDERS
         with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
             if imgui.button("Reload"):
-                self.ollamas.reload_all_files()
+                self.ollamas.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
                 self.selected_submenu_filename = self.ollamas.add_new()[0]
             imgui.same_line()
             disabled_delete = self.selected_submenu_filename not in self.ollamas
             if button("Del", disabled=disabled_delete):
-                del self.ollamas[self.selected_submenu_filename]
+                self.ollamas.remove(self.selected_submenu_filename)
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
@@ -183,27 +183,6 @@ class OllamaPreference(BasePreference):
 
         if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
             ollama.timeout = timeout_result.value
-
-        imgui.separator()
-
-        exists_path = self.ollamas.exists(filename)
-        if button("Save"):
-            self.ollamas.write(filename)
-            self.context.mq.append_toast("Save ollama file")
-
-        imgui.same_line()
-        if button("Load", disabled=not exists_path):
-            self.ollamas.read(filename)
-            self.context.mq.append_toast("Load ollama file")
-
-        imgui.same_line()
-        if button("Remove", disabled=not exists_path):
-            self.ollamas.remove(filename)
-            self.context.mq.append_toast("Remove ollama file")
-
-        if not exists_path:
-            imgui.same_line()
-            imgui.text_colored(self.context.warning_color, "The file does not exist")
 
     def do_ollama_apis(self, ollama: Ollama) -> None:
         running = self._runner.running

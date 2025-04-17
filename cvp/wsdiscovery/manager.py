@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.resources.manager.manager import ResourceManager
+from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.wsdiscovery.wsd import WsDiscovery
 
 

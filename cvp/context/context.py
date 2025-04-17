@@ -241,7 +241,7 @@ class Context(ContextMixins):
             self.save_graph(graph)
 
     def save_ollamas(self) -> None:
-        self._ollamas.write_all_files()
+        self._ollamas.write_all_config_files()
 
     def save_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
