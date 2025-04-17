@@ -161,7 +161,7 @@ class Context(ContextMixins):
         return self._keyring
 
     @property
-    def om(self):
+    def onvifs(self):
         return self._onvifs
 
     @property

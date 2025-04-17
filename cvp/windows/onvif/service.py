@@ -21,14 +21,14 @@ class OnvifServiceTab(TabItem[OnvifConfig]):
         )
 
     def on_update_service(self, item: OnvifConfig):
-        onvif = self.context.om.get_synced_client(item)
+        onvif = self.context.onvifs.get_synced_client(item)
         onvif.update_services()
         onvif.update_wsdl_addresses()
         return onvif
 
     @override
     def on_item(self, item: OnvifConfig) -> None:
-        has_service = item.uuid in self.context.om
+        has_service = item.uuid in self.context.onvifs
         update_running = self._update_runner.running
         has_error = bool(self._update_runner.error)
         disabled_clear = not has_service or update_running
@@ -41,12 +41,12 @@ class OnvifServiceTab(TabItem[OnvifConfig]):
         if button("Remove ONVIF Service", disabled=disabled_clear):
             assert has_service
             assert not update_running
-            self.context.om.pop(item.uuid)
+            self.context.onvifs.pop(item.uuid)
 
         if has_error:
             text_colored(str(self._update_runner.error), self._error_color)
 
-        onvif = self.context.om.get(item.uuid)
+        onvif = self.context.onvifs.get(item.uuid)
         if onvif is not None:
             imgui.text("Services:")
             if imgui.begin_table("ServicesTable", 3, ONVIF_TABLE_FLAGS):

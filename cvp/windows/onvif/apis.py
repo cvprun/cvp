@@ -131,7 +131,7 @@ class OnvifApisTab(TabItem[OnvifConfig]):
             pass
 
     def process_onvif_client(self, item: OnvifConfig) -> OnvifClient:
-        onvif = self.context.om.get(item.uuid)
+        onvif = self.context.onvifs.get(item.uuid)
 
         if onvif is None:
             self.text_warning("ONVIF service instance does not exist")
