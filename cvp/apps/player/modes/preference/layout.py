@@ -52,6 +52,10 @@ class LayoutPreference(BasePreference):
             target=self.on_confirm_remove,
         )
 
+    @property
+    def filenames(self):
+        return self._filenames
+
     def _find_layout_filenames(self):
         return self.context.home.layouts.list_layout_filenames()
 
@@ -62,8 +66,8 @@ class LayoutPreference(BasePreference):
         if not value:
             return
 
-        src = self.get_filepath(self._rename_candidate)
-        dest = self.get_filepath(value)
+        src = self.get_layout_filepath(self._rename_candidate)
+        dest = self.get_layout_filepath(value)
 
         assert src.is_file()
         assert not dest.exists()
@@ -74,9 +78,9 @@ class LayoutPreference(BasePreference):
         self.selected_submenu_filename = value
 
     def on_rename_input_validate(self, value: str) -> bool:
-        if not self.get_filepath(self._rename_candidate).is_file():
+        if not self.get_layout_filepath(self._rename_candidate).is_file():
             return False
-        if self.get_filepath(value).exists():
+        if self.get_layout_filepath(value).exists():
             return False
         assert self._rename_candidate != value
         return True
@@ -100,19 +104,27 @@ class LayoutPreference(BasePreference):
     def selected_submenu_filename(self, value: str) -> None:
         self.set_selected_submenu(self.__submenu_filename_key__, value)
 
-    def get_filepath(self, filename: str):
+    def get_layout_filepath(self, filename: str):
         return self.context.home.layouts.as_path() / filename
 
-    def save_layout(self, filename: str) -> None:
-        imgui.save_ini_settings_to_disk(str(self.get_filepath(filename)))
-        self.context.mq.append_toast(f"Save layout file: '{filename}'")
-
     def load_layout(self, filename: str) -> None:
-        imgui.load_ini_settings_from_disk(str(self.get_filepath(filename)))
+        imgui.load_ini_settings_from_disk(str(self.get_layout_filepath(filename)))
         self.context.mq.append_toast(f"Load layout file: '{filename}'")
 
+    def save_layout(self, filename: str) -> None:
+        imgui.save_ini_settings_to_disk(str(self.get_layout_filepath(filename)))
+        self.context.mq.append_toast(f"Save layout file: '{filename}'")
+
+    def save_new_layout(self, *, select=False, reload=False) -> None:
+        filename = self.context.home.layouts.generate_nonexistent_filename()
+        self.save_layout(filename)
+        if select:
+            self.selected_submenu_filename = filename
+        if reload:
+            self.reload_layout_filenames()
+
     def show_remove_popup(self, filename: str) -> None:
-        filepath = self.get_filepath(filename)
+        filepath = self.get_layout_filepath(filename)
         if not filepath.is_file():
             self.context.mq.append_toast(f"Layout file not found: '{filename}'")
             return

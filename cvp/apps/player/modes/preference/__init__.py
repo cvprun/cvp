@@ -7,7 +7,7 @@ from typing import Optional, Sequence, Type
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.preference._base import BasePreference
+from cvp.apps.player.modes.preference._base import BasePreference, PreferenceInterface
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -81,6 +81,22 @@ class PreferenceMode(BaseMode):
     @selected_menu.setter
     def selected_menu(self, value: str) -> None:
         self.context.config.preference.selected_menu = value
+
+    def get_menu(self, name: str):
+        return self._menus.get(name)
+
+    def get_menu_with_type(self, cls: Type[PreferenceInterface]):
+        return self.get_menu(cls.get_menu_name())
+
+    @property
+    def layout_menu(self):
+        # Lazy loading is intentional. Avoid 'circular import' issues.
+        from cvp.apps.player.modes.preference.layout import LayoutPreference
+
+        menu = self.get_menu_with_type(LayoutPreference)
+        assert menu is not None
+        assert isinstance(menu, LayoutPreference)
+        return menu
 
     @override
     def do_process(self) -> None:

@@ -5,7 +5,7 @@ from collections import OrderedDict
 from io import StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Optional, Tuple
+from typing import Callable, Final, Optional, Tuple
 from warnings import catch_warnings
 
 import pygame
@@ -40,6 +40,10 @@ from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
 from cvp.variables import FONT_NAME
+
+_QUIT_SHORTCUT: Final[str] = "Ctrl+Q"
+_LAYOUT_SAVE_SHORTCUT: Final[str] = "Ctrl+Alt+L"
+_SCREENSHOT_SHORTCUT: Final[str] = "Ctrl+Alt+P"
 
 
 class PlayerApplication:
@@ -98,6 +102,20 @@ class PlayerApplication:
     @property
     def mode(self):
         return self._modes.get(self._context.config.appearance.mode, self._default_mode)
+
+    @property
+    def preference_mode(self):
+        # Lazy loading is intentional. Avoid 'circular import' issues.
+        from cvp.apps.player.modes.preference import PreferenceMode
+
+        mode = self._modes.get(PreferenceMode.get_mode_name())
+        assert mode is not None
+        assert isinstance(mode, PreferenceMode)
+        return mode
+
+    @property
+    def layout_preference_menu(self):
+        return self.preference_mode.layout_menu
 
     @property
     def renderer(self) -> PygameRenderer:
@@ -364,9 +382,13 @@ class PlayerApplication:
             self._confirm_quit.show()
             return
 
-        if not m_shift and m_ctrl and m_alt and keys[pygame.K_p]:
-            self.save_screenshot()
-            return
+        if not m_shift and m_ctrl and m_alt:
+            if keys[pygame.K_p]:
+                self.save_screenshot()
+                return
+            if keys[pygame.K_l]:
+                self.layout_preference_menu.save_new_layout(reload=True)
+                return
 
         # TODO: You will need to restore it later.
         # if keys[pygame.K_LCTRL] and keys[pygame.K_LALT] and keys[pygame.K_s]:
@@ -427,7 +449,7 @@ class PlayerApplication:
             pygame.display.flip()
 
     def on_file_menu(self) -> None:
-        if menu_item("Quit", shortcut="Ctrl+Q"):
+        if menu_item("Quit", shortcut=_QUIT_SHORTCUT):
             self._confirm_quit.show()
 
     def _mode_menu_item(self, mode_name: str, index: int) -> None:
@@ -510,6 +532,19 @@ class PlayerApplication:
         if menu_item("Overlay", self._overlay.opened):
             self._overlay.flip_opened()
 
+        separator()
+        if imgui.begin_menu("Layouts"):
+            try:
+                layout_preference = self.layout_preference_menu
+                if menu_item("Save", shortcut=_LAYOUT_SAVE_SHORTCUT):
+                    layout_preference.save_new_layout(reload=True)
+                separator()
+                for layout_filename in layout_preference.filenames:
+                    if menu_item(layout_filename):
+                        layout_preference.load_layout(layout_filename)
+            finally:
+                imgui.end_menu()
+
         if self.debug:
             separator()
             if menu_item("Metrics", self.config.developer.show_metrics):
@@ -520,7 +555,7 @@ class PlayerApplication:
                 self.config.developer.flip_show_demo()
 
     def on_help_menu(self) -> None:
-        if menu_item("Screenshot", shortcut="Ctrl+Alt+P"):
+        if menu_item("Screenshot", shortcut=_SCREENSHOT_SHORTCUT):
             self.save_screenshot()
 
     def on_main_menu(self) -> None:
