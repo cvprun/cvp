@@ -62,7 +62,6 @@ class Config:
     media_manager: MediaManagerConfig = field(default_factory=MediaManagerConfig)
     media_windows: List[MediaWindowConfig] = field(default_factory=list)
     onvif_manager: OnvifManagerConfig = field(default_factory=OnvifManagerConfig)
-    onvifs: List[OnvifConfig] = field(default_factory=list)
     overlay: OverlayConfig = field(default_factory=OverlayConfig)
     preference: PreferenceConfig = field(default_factory=PreferenceConfig)
     process_manager: ProcessManagerConfig = field(default_factory=ProcessManagerConfig)

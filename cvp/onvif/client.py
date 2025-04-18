@@ -7,7 +7,6 @@ from requests import Session
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from zeep import Transport
 
-from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.declarations import (
     ONVIF_ANALYTICS,
@@ -28,7 +27,8 @@ from cvp.onvif.declarations import (
 )
 from cvp.onvif.onvif import OnvifConfig
 from cvp.onvif.service import OnvifServiceMapper
-from cvp.resources.home import HomeDir
+from cvp.resources.formats.json import JsonFormatPath
+from cvp.resources.subdirs.wsdl import WsdlPath
 from cvp.wsdl.cache import ZeepFileCache
 from cvp.wsdl.client import WsdlClient
 from cvp.wsdl.wsse import create_username_token
@@ -39,16 +39,22 @@ WsdlServiceT = TypeVar("WsdlServiceT", bound=WsdlClient)
 
 
 class OnvifClient:
-    def __init__(self, onvif_config: OnvifConfig, home: HomeDir, keyring: RootKeyring):
-        self._onvif_config = deepcopy(onvif_config)
-        self._home = home
+    def __init__(
+        self,
+        config: OnvifConfig,
+        root_dir: JsonFormatPath,
+        wsdl_cache_dir: Optional[WsdlPath] = None,
+        password: Optional[str] = None,
+    ):
+        self._config = deepcopy(config)
+        self._root_dir = root_dir
 
-        if onvif_config.use_wsse:
-            with_http_basic = onvif_config.is_http_basic
-            with_http_digest = onvif_config.is_http_digest
-            username = onvif_config.username
-            password = keyring.onvif.get(onvif_config.uuid)
-            use_digest = onvif_config.encode_digest
+        if config.use_wsse:
+            with_http_basic = config.is_http_basic
+            with_http_digest = config.is_http_digest
+            username = config.username
+            password = password  # keyring.onvif.get(config.uuid)
+            use_digest = config.encode_digest
         else:
             with_http_basic = False
             with_http_digest = False
@@ -56,11 +62,11 @@ class OnvifClient:
             password = None
             use_digest = False
 
-        no_cache = self._onvif_config.no_file_cache
-        cache_dir = str(home.wsdl)
+        cache_dir = str(wsdl_cache_dir) if wsdl_cache_dir else None
+        no_cache = self._config.no_file_cache or not cache_dir
 
         self._session = Session()
-        self._session.verify = not onvif_config.no_verify
+        self._session.verify = not config.no_verify
         self._cache = None if no_cache else ZeepFileCache(cache_dir)
         self._wsse = create_username_token(username, password, use_digest)
         self._transport = Transport(cache=self._cache, session=self._session)
@@ -82,14 +88,14 @@ class OnvifClient:
                 self._session.auth = HTTPDigestAuth(username, password)
 
         self._services = OnvifServiceMapper(
-            uuid=self._onvif_config.uuid,
-            same_host=self._onvif_config.same_host,
-            address=self._onvif_config.address,
-            jsons=self._home.onvifs,
+            uuid=self._config.uuid,
+            same_host=self._config.same_host,
+            address=self._config.address,
+            jsons=self._root_dir,
         )
         self._services.update_with_cache()
 
-        self.devicemgmt = self.create_wsdl(ONVIF_DEVICEMGMT, self._onvif_config.address)
+        self.devicemgmt = self.create_wsdl(ONVIF_DEVICEMGMT, self._config.address)
         self.analytics = self.create_wsdl(ONVIF_ANALYTICS)
         self.deviceio = self.create_wsdl(ONVIF_DEVICEIO)
         self.events = self.create_wsdl(ONVIF_EVENTS)
@@ -125,7 +131,7 @@ class OnvifClient:
 
     @property
     def uuid(self):
-        return self._onvif_config.uuid
+        return self._config.uuid
 
     def create_wsdl(
         self,
@@ -138,8 +144,8 @@ class OnvifClient:
             address = self._services.get_address(declaration.namespace)
 
         result = WsdlClient(
-            jsons=self._home.onvifs,
-            uuid=self._onvif_config.uuid,
+            jsons=self._root_dir,
+            uuid=self._config.uuid,
             declaration=declaration,
             wsse=self._wsse,
             transport=self._transport,
@@ -159,8 +165,8 @@ class OnvifClient:
         return result
 
     @property
-    def onvif_config(self):
-        return self._onvif_config
+    def config(self):
+        return self._config
 
     @property
     def services(self):

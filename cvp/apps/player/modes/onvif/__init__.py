@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
+from collections import OrderedDict
+from functools import lru_cache
+from typing import Final, Sequence, Type
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -23,11 +26,27 @@ _MENU_SPLIT_X: Final[int] = 300
 _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
+@lru_cache
+def create_onvif_tab_types() -> Sequence[Type[BaseOnvifTab]]:
+    from cvp.apps.player.modes.onvif.apis import OnvifApisTab
+    from cvp.apps.player.modes.onvif.auth import OnvifAuthTab
+    from cvp.apps.player.modes.onvif.client import OnvifClientTab
+    from cvp.apps.player.modes.onvif.info import OnvifInfoTab
+
+    return OnvifInfoTab, OnvifAuthTab, OnvifClientTab, OnvifApisTab
+
+
+def create_onvif_tabs(context: Context):
+    tab_types = create_onvif_tab_types()
+    return OrderedDict({tt.get_tab_name(): tt(context) for tt in tab_types})
+
+
 class OnvifMode(BaseMode):
     __cvp_mode_name__ = "Onvif"
 
     def __init__(self, context: Context):
         super().__init__(context)
+        self._tabs = create_onvif_tabs(context)
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
             title="Remove",
@@ -91,7 +110,7 @@ class OnvifMode(BaseMode):
                 self.onvifs.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected = self.onvifs.add_new()[0]
+                self.selected = self.onvifs.add_config()[0]
             imgui.same_line()
             if button("Del", disabled=self.selected not in self.onvifs):
                 self._remove_candidate = self.selected
@@ -114,12 +133,21 @@ class OnvifMode(BaseMode):
 
         with begin_child_context("Main"):
             if selected_onvif := self.onvifs.get(self.selected):
-                self.do_onvif_process(selected_onvif)
+                self.do_onvif_tab_bar(selected_onvif)
             else:
                 text_centered("Please select a item")
 
         self._confirm_remove.do_process()
         self._confirm_clear.do_process()
 
-    def do_onvif_process(self, onvif: OnvifConfig) -> None:
-        pass
+    def do_onvif_tab_bar(self, onvif: OnvifConfig) -> None:
+        if imgui.begin_tab_bar("Tabs"):
+            try:
+                for name, tab in self._tabs.items():
+                    if imgui.begin_tab_item(name)[0]:
+                        try:
+                            tab.do_process(onvif)
+                        finally:
+                            imgui.end_tab_item()
+            finally:
+                imgui.end_tab_bar()

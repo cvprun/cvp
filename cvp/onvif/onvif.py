@@ -17,11 +17,11 @@ class OnvifConfig:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
     address: str = field(default_factory=str)
-    use_wsse: bool = False
     username: str = field(default_factory=str)
-    # 'password' is stored in the keyring.
-    encode_digest: bool = False
+
     http_auth: Optional[HttpAuth] = None
+    use_wsse: bool = False
+    encode_digest: bool = False
     no_verify: bool = False
     no_file_cache: bool = False
     same_host: bool = False
@@ -37,3 +37,9 @@ class OnvifConfig:
     @property
     def is_http_digest(self):
         return self.http_auth == HttpAuth.digest
+
+    def set_http_basic(self) -> None:
+        self.http_auth = HttpAuth.basic
+
+    def set_http_digest(self) -> None:
+        self.http_auth = HttpAuth.digest

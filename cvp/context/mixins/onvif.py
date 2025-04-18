@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from typing import NamedTuple, Optional
+from uuid import uuid4
 
 from cvp.context.mixins._base import BaseContextMixin
+from cvp.onvif.client import OnvifClient
 from cvp.onvif.declarations import ONVIF_DECLARATIONS
+from cvp.onvif.onvif import OnvifConfig
+from cvp.strings.is_uuid import is_uuid4
 from cvp.wsdl.loader import load_wsdl_declarations
 
 
@@ -41,3 +45,32 @@ class OnvifMixin(BaseContextMixin):
             return False
         assert isinstance(preload_count, int)
         return preload_count == len(ONVIF_DECLARATIONS)
+
+    def create_onvif_client(self, config: OnvifConfig, *, append=False):
+        assert self._home is not None
+        assert self._keyring is not None
+
+        client = OnvifClient(
+            config=config,
+            root_dir=self._home.onvifs.get_client_root_dir(config.uuid),
+            wsdl_cache_dir=self._home.wsdl,
+            password=self._keyring.onvif.get(config.uuid),
+        )
+        if append:
+            self._onvifs.add_client(config.uuid, client)
+        return client
+
+    def get_onvif_client(self, config: OnvifConfig) -> OnvifClient:
+        client = self._onvifs.get_client(config.uuid)
+        if client is not None:
+            if client.config == config:
+                return client
+            self._onvifs.pop_client(config.uuid)
+        return self.create_onvif_client(config, append=True)
+
+    def initialize_onvif_clients(self) -> None:
+        assert self._home is not None
+        assert self._keyring is not None
+
+        for config in self._onvifs.values():
+            self.create_onvif_client(config, append=True)

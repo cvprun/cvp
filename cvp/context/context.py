@@ -105,15 +105,17 @@ class Context(ContextMixins):
             logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
             self._keyring.update_default_filepath(self._home.keyrings)
 
-        self._onvifs = OnvifManager(self._home.onvifs, reload=True)
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows)
         self._flows.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
-        self._supabase = Supabase()
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
 
+        self._onvifs = OnvifManager(self._home.onvifs, reload=True)
+        self.initialize_onvif_clients()
+
+        self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
             self.create_supabase_client(
                 self.supabase_url,
@@ -155,16 +157,16 @@ class Context(ContextMixins):
         return self._keyring
 
     @property
+    def wsdiscovery(self):
+        return self._wsdiscovery
+
+    @property
     def onvifs(self):
         return self._onvifs
 
     @property
     def supabase(self):
         return self._supabase
-
-    @property
-    def wsdiscovery(self):
-        return self._wsdiscovery
 
     @property
     def debug(self) -> bool:
