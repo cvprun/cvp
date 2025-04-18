@@ -5,7 +5,7 @@ from collections import OrderedDict
 from io import StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Final, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 from warnings import catch_warnings
 
 import pygame
@@ -27,11 +27,12 @@ from cvp.chrono.tznow import tznow
 from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
+from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.fonts.globals import GlobalFontMapper
-from cvp.imgui.keys.utils import is_key_pressed
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.separator import separator
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
+from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
@@ -41,31 +42,6 @@ from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
 from cvp.variables import FONT_NAME
-
-_QUIT_SHORTCUT: Final[str] = "Ctrl+Q"
-_LAYOUT_SAVE_SHORTCUT: Final[str] = "Ctrl+Alt+L"
-_SCREENSHOT_SHORTCUT: Final[str] = "Ctrl+Alt+P"
-
-# noinspection PyProtectedMember
-_KEY0 = imgui.Key._0
-# noinspection PyProtectedMember
-_KEY1 = imgui.Key._1
-# noinspection PyProtectedMember
-_KEY2 = imgui.Key._2
-# noinspection PyProtectedMember
-_KEY3 = imgui.Key._3
-# noinspection PyProtectedMember
-_KEY4 = imgui.Key._4
-# noinspection PyProtectedMember
-_KEY5 = imgui.Key._5
-# noinspection PyProtectedMember
-_KEY6 = imgui.Key._6
-# noinspection PyProtectedMember
-_KEY7 = imgui.Key._7
-# noinspection PyProtectedMember
-_KEY8 = imgui.Key._8
-# noinspection PyProtectedMember
-_KEY9 = imgui.Key._9
 
 
 class PlayerApplication:
@@ -105,6 +81,41 @@ class PlayerApplication:
         self._modes = create_modes(context)
         self._default_mode = next(iter(self._modes.values()))
 
+        self._shortcut_program_quit = Shortcut(
+            KeyFlags.q,
+            ctrl=True,
+            callback=lambda: self._confirm_quit.show(),
+        )
+        self._shortcut_save_layout = Shortcut(
+            KeyFlags.l,
+            ctrl=True,
+            alt=True,
+            callback=lambda: self.layout_preference_menu.save_new_layout(reload=True),
+        )
+        self._shortcut_screenshot = Shortcut(
+            KeyFlags.p,
+            ctrl=True,
+            alt=True,
+            callback=lambda: self.save_screenshot(),
+        )
+
+        # noinspection PyProtectedMember
+        self._shortcuts = [
+            self._shortcut_program_quit,
+            self._shortcut_save_layout,
+            self._shortcut_screenshot,
+            Shortcut(KeyFlags._0, alt=True, callback=lambda: self.change_mode(0)),
+            Shortcut(KeyFlags._1, alt=True, callback=lambda: self.change_mode(1)),
+            Shortcut(KeyFlags._2, alt=True, callback=lambda: self.change_mode(2)),
+            Shortcut(KeyFlags._3, alt=True, callback=lambda: self.change_mode(3)),
+            Shortcut(KeyFlags._4, alt=True, callback=lambda: self.change_mode(4)),
+            Shortcut(KeyFlags._5, alt=True, callback=lambda: self.change_mode(5)),
+            Shortcut(KeyFlags._6, alt=True, callback=lambda: self.change_mode(6)),
+            Shortcut(KeyFlags._7, alt=True, callback=lambda: self.change_mode(7)),
+            Shortcut(KeyFlags._8, alt=True, callback=lambda: self.change_mode(8)),
+            Shortcut(KeyFlags._9, alt=True, callback=lambda: self.change_mode(9)),
+        ]
+
     @property
     def home(self):
         return self._context.home
@@ -120,6 +131,20 @@ class PlayerApplication:
     @property
     def verbose(self):
         return self._context.verbose
+
+    def change_mode(self, index: Union[str, int]) -> None:
+        if isinstance(index, int):
+            if 0 <= index < len(self._modes):
+                self.config.appearance.mode = list(self._modes.keys())[index]
+            else:
+                raise IndexError(f"Invalid mode index: {index}")
+        elif isinstance(index, str):
+            if index in self._modes:
+                self.config.appearance.mode = index
+            else:
+                raise ValueError(f"Invalid mode name: {index}")
+        else:
+            raise TypeError(f"Invalid mode index type: {type(index).__name__}")
 
     @property
     def mode(self):
@@ -385,60 +410,68 @@ class PlayerApplication:
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
 
-        l_ctrl = keys[pygame.K_LCTRL]
-        r_ctrl = keys[pygame.K_RCTRL]
-        l_shift = keys[pygame.K_LSHIFT]
-        r_shift = keys[pygame.K_RSHIFT]
-        l_alt = keys[pygame.K_LALT]
-        r_alt = keys[pygame.K_RALT]
+        for shortcut in self._shortcuts:
+            shortcut()
 
-        m_ctrl = l_ctrl or r_ctrl
-        m_shift = l_shift or r_shift
-        m_alt = l_alt or r_alt
-
-        only_ctrl = m_ctrl and not m_shift and not m_alt
-        only_shift = not m_ctrl and m_shift and not m_alt  # noqa: F841
-        only_alt = not m_ctrl and not m_shift and m_alt
-
-        if only_ctrl and is_key_pressed(imgui.Key.q):
-            self._confirm_quit.show()
-            return
-
-        if not m_shift and m_ctrl and m_alt:
-            if is_key_pressed(imgui.Key.p):
-                self.save_screenshot()
-                return
-
-            if is_key_pressed(imgui.Key.l):
-                self.layout_preference_menu.save_new_layout(reload=True)
-                return
-
-        if only_alt:
-            mode_index: Optional[int] = None
-            if is_key_pressed(_KEY1):
-                mode_index = 1
-            elif is_key_pressed(_KEY2):
-                mode_index = 2
-            elif is_key_pressed(_KEY3):
-                mode_index = 3
-            elif is_key_pressed(_KEY4):
-                mode_index = 4
-            elif is_key_pressed(_KEY5):
-                mode_index = 5
-            elif is_key_pressed(_KEY6):
-                mode_index = 6
-            elif is_key_pressed(_KEY7):
-                mode_index = 7
-            elif is_key_pressed(_KEY8):
-                mode_index = 8
-            elif is_key_pressed(_KEY9):
-                mode_index = 9
-            elif is_key_pressed(_KEY0):
-                mode_index = 0
-
-            if mode_index is not None:
-                if mode_index < len(self._modes):
-                    self.config.appearance.mode = list(self._modes.keys())[mode_index]
+        # l_ctrl = keys[pygame.K_LCTRL]
+        # r_ctrl = keys[pygame.K_RCTRL]
+        # l_shift = keys[pygame.K_LSHIFT]
+        # r_shift = keys[pygame.K_RSHIFT]
+        # l_alt = keys[pygame.K_LALT]
+        # r_alt = keys[pygame.K_RALT]
+        #
+        # m_ctrl = l_ctrl or r_ctrl
+        # m_shift = l_shift or r_shift
+        # m_alt = l_alt or r_alt
+        #
+        # only_ctrl = m_ctrl and not m_shift and not m_alt
+        # only_shift = not m_ctrl and m_shift and not m_alt  # noqa: F841
+        # only_alt = not m_ctrl and not m_shift and m_alt
+        #
+        # only_shift_ctrl = m_ctrl and m_shift and not m_alt
+        # only_shift_alt = not m_ctrl and m_shift and m_alt
+        # only_ctrl_alt = m_ctrl and not m_shift and m_alt
+        #
+        # if only_ctrl and is_key_pressed(imgui.Key.q):
+        #     self._confirm_quit.show()
+        #     return
+        #
+        # if not m_shift and m_ctrl and m_alt:
+        #     if is_key_pressed(imgui.Key.p):
+        #         self.save_screenshot()
+        #         return
+        #
+        #     if is_key_pressed(imgui.Key.l):
+        #         self.layout_preference_menu.save_new_layout(reload=True)
+        #         return
+        #
+        # if only_alt:
+        #     mode_index: Optional[int] = None
+        #
+        #     if is_key_pressed(_KEY1):
+        #         mode_index = 1
+        #     elif is_key_pressed(_KEY2):
+        #         mode_index = 2
+        #     elif is_key_pressed(_KEY3):
+        #         mode_index = 3
+        #     elif is_key_pressed(_KEY4):
+        #         mode_index = 4
+        #     elif is_key_pressed(_KEY5):
+        #         mode_index = 5
+        #     elif is_key_pressed(_KEY6):
+        #         mode_index = 6
+        #     elif is_key_pressed(_KEY7):
+        #         mode_index = 7
+        #     elif is_key_pressed(_KEY8):
+        #         mode_index = 8
+        #     elif is_key_pressed(_KEY9):
+        #         mode_index = 9
+        #     elif is_key_pressed(_KEY0):
+        #         mode_index = 0
+        #
+        #     if mode_index is not None:
+        #         if mode_index < len(self._modes):
+        #             self.config.appearance.mode = list(self._modes.keys())[mode_index]
 
         self.mode.on_keyboard(keys)
 
@@ -468,7 +501,7 @@ class PlayerApplication:
             pygame.display.flip()
 
     def on_file_menu(self) -> None:
-        if menu_item("Quit", shortcut=_QUIT_SHORTCUT):
+        if menu_item("Program Quit", shortcut=self._shortcut_program_quit.label):
             self._confirm_quit.show()
 
     def _mode_menu_item(self, mode_name: str, index: int) -> None:
@@ -492,59 +525,6 @@ class PlayerApplication:
         self._mode_menu_item(keys[0], 0)
 
     def on_tools_menu(self) -> None:
-        # TODO: You will need to restore it later.
-        # menu_item("Computer Vision", enabled=False)
-        # if menu_item("Flow", self._flow.opened):
-        #     self._flow.flip_opened()
-        # if menu_item("Dtype", self._dtype_manager.opened):
-        #     self._dtype_manager.flip_opened()
-        # if menu_item("Catalog", self._catalog_manager.opened):
-        #     self._catalog_manager.flip_opened()
-        #
-        # separator()
-        # menu_item("Network Device", enabled=False)
-        # if menu_item("Media", self._media_manager.opened):
-        #     self._media_manager.flip_opened()
-        # if menu_item("ONVIF", self._onvif_manager.opened):
-        #     self._onvif_manager.flip_opened()
-        # if menu_item("WsDiscovery", self._wsd_manager.opened):
-        #     self._wsd_manager.flip_opened()
-        #
-        # separator()
-        # menu_item("Management", enabled=False)
-        # if menu_item("Layout", self._layout_manager.opened):
-        #     self._layout_manager.flip_opened()
-        # if menu_item("Process", self._process_manager.opened):
-        #     self._process_manager.flip_opened()
-        # if menu_item("Window", self._window_manager.opened):
-        #     self._window_manager.flip_opened()
-        #
-        # if self.debug:
-        #     if menu_item("Worker", self._worker_manager.opened):
-        #         self._worker_manager.flip_opened()
-        #     if menu_item("Files", self._files.opened):
-        #         self._files.flip_opened()
-        #
-        # if self.debug:
-        #     separator()
-        #     menu_item("Development", enabled=False)
-        #     if menu_item("Terminal", self._terminal.opened):
-        #         self._terminal.flip_opened()
-        #
-        # separator()
-        # menu_item("Game", enabled=False)
-        # if menu_item("TetriX", self._tetrix.opened):
-        #     self._tetrix.flip_opened()
-        #
-        # if self.debug:
-        #     if menu_item("GlyphWorld", self._glyph_hack.opened):
-        #         self._glyph_hack.flip_opened()
-        #
-        # separator()
-        # if menu_item("Font", self._font_manager.opened):
-        #     self._font_manager.flip_opened()
-        # if menu_item("Preference", self._pref_manager.opened, shortcut="Ctrl+Alt+S"):
-        #     self._pref_manager.opened = not self._pref_manager.opened
         pass
 
     def on_windows_menu(self) -> None:
@@ -564,7 +544,7 @@ class PlayerApplication:
         if imgui.begin_menu("Layouts"):
             try:
                 layout_preference = self.layout_preference_menu
-                if menu_item("Save", shortcut=_LAYOUT_SAVE_SHORTCUT):
+                if menu_item("Save", shortcut=self._shortcut_save_layout.label):
                     layout_preference.save_new_layout(reload=True)
                 separator()
                 for layout_filename in layout_preference.filenames:
@@ -574,7 +554,7 @@ class PlayerApplication:
                 imgui.end_menu()
 
     def on_help_menu(self) -> None:
-        if menu_item("Screenshot", shortcut=_SCREENSHOT_SHORTCUT):
+        if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
             self.save_screenshot()
 
     def on_main_menu(self) -> None:

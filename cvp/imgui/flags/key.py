@@ -6,6 +6,27 @@ from typing import Final, Union
 
 from imgui_bundle import imgui
 
+# noinspection PyProtectedMember
+IMGUI_KEY_0 = imgui.Key._0
+# noinspection PyProtectedMember
+IMGUI_KEY_1 = imgui.Key._1
+# noinspection PyProtectedMember
+IMGUI_KEY_2 = imgui.Key._2
+# noinspection PyProtectedMember
+IMGUI_KEY_3 = imgui.Key._3
+# noinspection PyProtectedMember
+IMGUI_KEY_4 = imgui.Key._4
+# noinspection PyProtectedMember
+IMGUI_KEY_5 = imgui.Key._5
+# noinspection PyProtectedMember
+IMGUI_KEY_6 = imgui.Key._6
+# noinspection PyProtectedMember
+IMGUI_KEY_7 = imgui.Key._7
+# noinspection PyProtectedMember
+IMGUI_KEY_8 = imgui.Key._8
+# noinspection PyProtectedMember
+IMGUI_KEY_9 = imgui.Key._9
+
 
 class KeyFlags(IntFlag):
     none = imgui.Key.none.value
@@ -34,26 +55,16 @@ class KeyFlags(IntFlag):
     right_super = imgui.Key.right_super.value
     menu = imgui.Key.menu.value
 
-    # noinspection PyProtectedMember
-    _0 = imgui.Key._0.value
-    # noinspection PyProtectedMember
-    _1 = imgui.Key._1.value
-    # noinspection PyProtectedMember
-    _2 = imgui.Key._2.value
-    # noinspection PyProtectedMember
-    _3 = imgui.Key._3.value
-    # noinspection PyProtectedMember
-    _4 = imgui.Key._4.value
-    # noinspection PyProtectedMember
-    _5 = imgui.Key._5.value
-    # noinspection PyProtectedMember
-    _6 = imgui.Key._6.value
-    # noinspection PyProtectedMember
-    _7 = imgui.Key._7.value
-    # noinspection PyProtectedMember
-    _8 = imgui.Key._8.value
-    # noinspection PyProtectedMember
-    _9 = imgui.Key._9.value
+    _0 = IMGUI_KEY_0
+    _1 = IMGUI_KEY_1
+    _2 = IMGUI_KEY_2
+    _3 = IMGUI_KEY_3
+    _4 = IMGUI_KEY_4
+    _5 = IMGUI_KEY_5
+    _6 = IMGUI_KEY_6
+    _7 = IMGUI_KEY_7
+    _8 = IMGUI_KEY_8
+    _9 = IMGUI_KEY_9
 
     a = imgui.Key.a.value
     b = imgui.Key.b.value
