@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from typing import Optional
+from typing import Final, Optional
 
 from imgui_bundle import imgui
 from wsdiscovery import WSDiscovery
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -29,6 +28,7 @@ from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.net.address_family import is_ip_address
+from cvp.onvif.onvif import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 from cvp.variables import (
@@ -44,6 +44,9 @@ from cvp.variables import (
     WSD_UNICAST_UDP_REPEAT,
 )
 from cvp.wsdiscovery.wsd import WsDiscovery
+
+_MENU_SPLIT_X: Final[int] = 300
+_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 class WsDiscoveryMode(BaseMode):
@@ -178,11 +181,11 @@ class WsDiscoveryMode(BaseMode):
 
     def do_child_process(
         self,
-        split_x=SIDE_MENU_WIDTH,
-        menu_child_flags=RESIZE_X | BORDERS,
+        menu_split_x=_MENU_SPLIT_X,
+        menu_child_flags=_MENU_CHILD_FLAGS,
     ) -> None:
         running = self._discovery_runner.running
-        with begin_child_context("Menu", split_x, child_flags=menu_child_flags):
+        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
             if running:
                 imgui.begin_disabled()
             try:
@@ -204,11 +207,11 @@ class WsDiscoveryMode(BaseMode):
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
-                    for filename, wsd in self.wsdiscovery.items():
-                        label = f"{wsd.name}###{filename}"
-                        selected = filename == self.selected
+                    for key, wsd in self.wsdiscovery.items():
+                        label = f"{wsd.name}###{key}"
+                        selected = key == self.selected
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = filename
+                            self.selected = key
                 finally:
                     imgui.end_list_box()
 

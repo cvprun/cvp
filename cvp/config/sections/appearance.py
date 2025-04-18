@@ -20,7 +20,10 @@ class AppearanceConfig:
 
     clear_color: RGBA = BLACK_RGBA
     detail_color: RGBA = BLUE_RGBA
+
     success_color: RGBA = GREEN_RGBA
     normal_color: RGBA = WHITE_RGBA
     warning_color: RGBA = YELLOW_RGBA
     error_color: RGBA = RED_RGBA
+
+    typename_color: RGBA = 1.0, 0.647, 0.0, 1.0

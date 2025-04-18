@@ -2,9 +2,9 @@
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
+from cvp.onvif.onvif import OnvifConfig
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem

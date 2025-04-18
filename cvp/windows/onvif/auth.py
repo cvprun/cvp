@@ -2,9 +2,9 @@
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.onvif import HttpAuth, OnvifConfig
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE, PASSWORD
 from cvp.imgui.input_text_value import input_text_value
+from cvp.onvif.onvif import HttpAuth, OnvifConfig
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem

@@ -105,13 +105,7 @@ class Context(ContextMixins):
             logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
             self._keyring.update_default_filepath(self._home.keyrings)
 
-        self._onvifs = OnvifManager(
-            self._config.onvifs,
-            self._home,
-            self._keyring,
-            update=True,
-        )
-
+        self._onvifs = OnvifManager(self._home.onvifs, reload=True)
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows)

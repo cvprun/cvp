@@ -7,7 +7,6 @@ from requests import Session
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from zeep import Transport
 
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import onvif_logger as logger
 from cvp.onvif.declarations import (
@@ -27,6 +26,7 @@ from cvp.onvif.declarations import (
     ONVIF_SUBSCRIPTION,
     WsdlDeclaration,
 )
+from cvp.onvif.onvif import OnvifConfig
 from cvp.onvif.service import OnvifServiceMapper
 from cvp.resources.home import HomeDir
 from cvp.wsdl.cache import ZeepFileCache

@@ -110,6 +110,9 @@ WSD_UNICAST_UDP_REPEAT: Final[int] = 2
 WSD_MULTICAST_UDP_REPEAT: Final[int] = 4
 WSD_RELATES_TO: Final[bool] = True
 
+ONVIF_NONAME: Final[str] = "New Device"
+ONVIF_ADDRESS: Final[str] = "http://localhost/"
+
 ZEEP_ELEMENT_SEPARATOR: Final[str] = "."
 
 BEZIER_CURVE_TESSELLATION_TOLERANCE: Final[float] = 1.25

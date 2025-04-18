@@ -6,7 +6,6 @@ from typing import Any, Dict, Sequence, Tuple
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.button import button
 from cvp.imgui.clipboard import put_clipboard_text
@@ -15,6 +14,7 @@ from cvp.imgui.push_item_width import item_width
 from cvp.imgui.slider_float import slider_float
 from cvp.imgui.text_colored import text_colored
 from cvp.onvif.client import OnvifClient
+from cvp.onvif.onvif import OnvifConfig
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX

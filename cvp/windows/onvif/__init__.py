@@ -4,8 +4,9 @@ from typing import Mapping
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
+from cvp.config.sections.onvif import OnvifManagerConfig
 from cvp.imgui.button import button
+from cvp.onvif.onvif import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.renderer.context import RendererContext
@@ -74,4 +75,4 @@ class OnvifManager(ManagerTabs[OnvifManagerConfig, OnvifConfig]):
         assert selected_menu is not None
 
         uuid = selected_menu.uuid
-        self.context.config.remove_onvif(uuid)
+        # self.context.config.remove_onvif(uuid)

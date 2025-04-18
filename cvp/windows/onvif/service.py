@@ -2,11 +2,11 @@
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.imgui.button import button
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
 from cvp.imgui.text_colored import text_colored
+from cvp.onvif.onvif import OnvifConfig
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem

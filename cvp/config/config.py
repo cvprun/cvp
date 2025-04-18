@@ -25,7 +25,7 @@ from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
 from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
-from cvp.config.sections.onvif import OnvifConfig, OnvifManagerConfig
+from cvp.config.sections.onvif import OnvifManagerConfig
 from cvp.config.sections.overlay import OverlayConfig
 from cvp.config.sections.preference import PreferenceConfig
 from cvp.config.sections.process import ProcessManagerConfig
@@ -35,6 +35,7 @@ from cvp.config.sections.toast import ToastConfig
 from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
+from cvp.onvif.onvif import OnvifConfig
 from cvp.yaml.dumpers import DefaultDumper
 
 
@@ -90,12 +91,6 @@ class Config:
         if index < 0:
             raise KeyError(f"Not found media window: '{uuid}'")
         return self.media_windows.pop(index)
-
-    def remove_onvif(self, uuid: str):
-        index = find_index(self.onvifs, lambda onvif: onvif.uuid == uuid)
-        if index < 0:
-            raise KeyError(f"Not found onvif: '{uuid}'")
-        return self.onvifs.pop(index)
 
     def dumps_yaml(self, encoding="utf-8") -> bytes:
         return dump(serialize(self), Dumper=DefaultDumper).encode(encoding)

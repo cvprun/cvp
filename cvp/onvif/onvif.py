@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+
+from dataclasses import dataclass, field
+from enum import StrEnum, auto, unique
+from typing import Optional
+from uuid import uuid4
+
+
+@unique
+class HttpAuth(StrEnum):
+    basic = auto()
+    digest = auto()
+
+
+@dataclass
+class OnvifConfig:
+    uuid: str = field(default_factory=lambda: str(uuid4()))
+    name: str = field(default_factory=str)
+    address: str = field(default_factory=str)
+    use_wsse: bool = False
+    username: str = field(default_factory=str)
+    # 'password' is stored in the keyring.
+    encode_digest: bool = False
+    http_auth: Optional[HttpAuth] = None
+    no_verify: bool = False
+    no_file_cache: bool = False
+    same_host: bool = False
+
+    # GUI Handling
+    select_binding: str = field(default_factory=str)
+    select_api: str = field(default_factory=str)
+
+    @property
+    def is_http_basic(self):
+        return self.http_auth == HttpAuth.basic
+
+    @property
+    def is_http_digest(self):
+        return self.http_auth == HttpAuth.digest

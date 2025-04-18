@@ -5,9 +5,9 @@ from unittest import TestCase, main
 
 from zeep.xsd import Element
 
-from cvp.config.sections.onvif import OnvifConfig
 from cvp.keyring.root import RootKeyring
 from cvp.onvif.client import OnvifClient
+from cvp.onvif.onvif import OnvifConfig
 from cvp.resources.home import HomeDir
 from cvp.wsdl.operation import WsdlOperationProxy
 
