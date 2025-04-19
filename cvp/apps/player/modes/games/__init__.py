@@ -10,4 +10,4 @@ from cvp.apps.player.modes._base import BaseMode
 def all_game_mode_types() -> Sequence[Type[BaseMode]]:
     from cvp.apps.player.modes.games.tetrix import TetrixMode
 
-    return TetrixMode,
+    return (TetrixMode,)

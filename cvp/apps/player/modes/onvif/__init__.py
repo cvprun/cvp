@@ -18,7 +18,7 @@ from cvp.imgui.flags.style_var import StyleVar
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
-from cvp.onvif.onvif import OnvifConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 

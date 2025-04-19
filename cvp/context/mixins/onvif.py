@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from typing import NamedTuple, Optional
-from uuid import uuid4
 
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.onvif.client import OnvifClient
+from cvp.onvif.config import OnvifConfig
 from cvp.onvif.declarations import ONVIF_DECLARATIONS
-from cvp.onvif.onvif import OnvifConfig
-from cvp.strings.is_uuid import is_uuid4
 from cvp.wsdl.loader import load_wsdl_declarations
 
 

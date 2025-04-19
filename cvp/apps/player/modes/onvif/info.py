@@ -6,7 +6,7 @@ from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
-from cvp.onvif.onvif import OnvifConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.types.override import override
 
 

@@ -28,11 +28,9 @@ from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.net.address_family import is_ip_address
-from cvp.onvif.onvif import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 from cvp.variables import (
-    SIDE_MENU_WIDTH,
     WSD_IPV4_MULTICAST_ADDRESS,
     WSD_IPV6_MULTICAST_ADDRESS,
     WSD_MULTICAST_UDP_REPEAT,

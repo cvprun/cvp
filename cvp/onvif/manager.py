@@ -4,7 +4,7 @@ from typing import Dict, Optional, Tuple
 from uuid import uuid4
 
 from cvp.onvif.client import OnvifClient
-from cvp.onvif.onvif import OnvifConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.variables import ONVIF_ADDRESS, ONVIF_NONAME

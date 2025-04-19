@@ -36,7 +36,6 @@ from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
 from cvp.media.config import MediaConfig
-from cvp.onvif.onvif import OnvifConfig
 from cvp.yaml.dumpers import DefaultDumper
 
 

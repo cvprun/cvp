@@ -59,8 +59,9 @@ def canvas_context(
             assert isinstance(cy, float)
             assert isinstance(cw, float)
             assert isinstance(ch, float)
-
-            draw_list.add_rect_filled(cx, cy, cx + cw, cy + ch, clear_color_u32)
+            p1 = cx, cy
+            p2 = cx + cw, cy + ch
+            draw_list.add_rect_filled(p1, p2, clear_color_u32)
         yield draw_list
     finally:
         imgui.end_child()

@@ -13,13 +13,10 @@ from cvp.types.override import override
 
 @runtime_checkable
 class BaseModeProtocol(Protocol):
-    __cvp_mode_menus__: Sequence[str]
     __cvp_mode_name__: str
 
 
 class BaseMode(ModeInterface, BaseModeProtocol):
-    __cvp_mode_menus__ = ()
-
     def __init__(self, context: Context):
         assert isinstance(self, BaseModeProtocol)
         self._context = context
@@ -36,7 +33,7 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @classmethod
     @override
     def get_mode_menus(cls) -> Sequence[str]:
-        return cls.__cvp_mode_menus__
+        return ()
 
     @override
     def on_main_menu(self) -> None:

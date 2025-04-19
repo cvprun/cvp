@@ -8,6 +8,7 @@ from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from zeep import Transport
 
 from cvp.logging.logging import onvif_logger as logger
+from cvp.onvif.config import OnvifConfig
 from cvp.onvif.declarations import (
     ONVIF_ANALYTICS,
     ONVIF_DEVICEIO,
@@ -25,7 +26,6 @@ from cvp.onvif.declarations import (
     ONVIF_SUBSCRIPTION,
     WsdlDeclaration,
 )
-from cvp.onvif.onvif import OnvifConfig
 from cvp.onvif.service import OnvifServiceMapper
 from cvp.resources.formats.json import JsonFormatPath
 from cvp.resources.subdirs.wsdl import WsdlPath
@@ -63,11 +63,11 @@ class OnvifClient:
             use_digest = False
 
         cache_dir = str(wsdl_cache_dir) if wsdl_cache_dir else None
-        no_cache = self._config.no_file_cache or not cache_dir
+        no_cache = self._config.no_file_cache
 
         self._session = Session()
         self._session.verify = not config.no_verify
-        self._cache = None if no_cache else ZeepFileCache(cache_dir)
+        self._cache = None if no_cache or not cache_dir else ZeepFileCache(cache_dir)
         self._wsse = create_username_token(username, password, use_digest)
         self._transport = Transport(cache=self._cache, session=self._session)
 

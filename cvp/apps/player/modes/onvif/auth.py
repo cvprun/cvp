@@ -6,7 +6,7 @@ from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE, PASSWORD
 from cvp.imgui.input_text_value import input_text_value
-from cvp.onvif.onvif import OnvifConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.types.override import override
 
 

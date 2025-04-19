@@ -1,39 +1,31 @@
 # -*- coding: utf-8 -*-
 
 from ctypes import addressof, c_void_p, create_string_buffer, memmove
-from typing import Tuple
 
 from imgui_bundle import imgui
 from OpenGL import GL
 
+from cvp.apps.player.modes.medias._base import BaseMediaTab
+from cvp.context.context import Context
 from cvp.imgui.canvas import canvas_context
 from cvp.imgui.draw_list.types import DrawList
-from cvp.imgui.flags.style_var import WINDOW_PADDING
-from cvp.imgui.menu_item_ex import menu_item
 from cvp.media.config import MediaConfig
-from cvp.renderer.context import RendererContext
-from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
-class MediaWindow(WindowBase[MediaConfig]):
-    def __init__(self, context: RendererContext, window_config: MediaConfig):
-        super().__init__(
-            context=context,
-            window_config=window_config,
-            title="Media",
-            closable=True,
-            flags=None,
-            modifiable_title=True,
-        )
+class MediaPlayerTab(BaseMediaTab):
+    __cvp_media_tab_name__ = "Player"
 
+    def __init__(self, context: Context):
+        super().__init__(context)
         self._clear_color = 0.5, 0.5, 0.5, 1.0
         self._texture = 0
         self._pbo = 0
         self._prev_frame_index = 0
+        self._min_width = 800
+        self._min_height = 600
 
-    @override
-    def on_create(self) -> None:
+    def create(self) -> None:
         assert self._texture == 0
         assert self._pbo == 0
 
@@ -63,18 +55,7 @@ class MediaWindow(WindowBase[MediaConfig]):
         assert self._texture != 0
         assert self._pbo != 0
 
-    @override
-    def begin(self) -> Tuple[bool, bool]:
-        imgui.push_style_var(WINDOW_PADDING, (0, 0))
-        return super().begin()
-
-    @override
-    def end(self) -> None:
-        super().end()
-        imgui.pop_style_var()
-
-    @override
-    def on_destroy(self) -> None:
+    def destroy(self) -> None:
         assert self._texture != 0
         assert self._pbo != 0
 
@@ -85,20 +66,19 @@ class MediaWindow(WindowBase[MediaConfig]):
         self._pbo = 0
 
     @override
-    def on_process(self) -> None:
+    def do_process(self, media: MediaConfig) -> None:
         with canvas_context(
             "Canvas",
             clear_color=self._clear_color,
             rect_filled=True,
         ) as draw_list:
-            self.on_canvas(draw_list)
-            self.on_popup_menu()
+            self.on_canvas(media, draw_list)
 
-    def update_texture(self) -> None:
+    def update_texture(self, media: MediaConfig) -> None:
         if not self._texture:
             return
 
-        process = self.context.pm.get(self.window_config.uuid)
+        process = self.context.pm.get(media.uuid)
         if process is None:
             return
 
@@ -177,8 +157,8 @@ class MediaWindow(WindowBase[MediaConfig]):
 
         GL.glBindBuffer(GL.GL_PIXEL_UNPACK_BUFFER, 0)
 
-    def on_canvas(self, draw_list: DrawList):
-        self.update_texture()
+    def on_canvas(self, media: MediaConfig, draw_list: DrawList):
+        self.update_texture(media)
 
         screen_pos = imgui.get_cursor_screen_pos()
         region_size = imgui.get_content_region_avail()
@@ -190,12 +170,3 @@ class MediaWindow(WindowBase[MediaConfig]):
         p1 = cx, cy
         p2 = cx + cw, cy + ch
         draw_list.add_image(self._texture, p1, p2, (0, 0), (1, 1))
-
-    def on_popup_menu(self):
-        if imgui.begin_popup_context_window():
-            try:
-                imgui.separator()
-                if menu_item("Close"):
-                    self.opened = False
-            finally:
-                imgui.end_popup()

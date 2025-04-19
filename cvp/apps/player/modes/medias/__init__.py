@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
+from collections import OrderedDict
+from functools import lru_cache
+from typing import Final, Sequence, Type
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.medias._base import BaseMediaTab
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -23,11 +26,25 @@ _MENU_SPLIT_X: Final[int] = 300
 _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
+@lru_cache
+def create_media_tab_types() -> Sequence[Type[BaseMediaTab]]:
+    from cvp.apps.player.modes.medias.info import MediaInfoTab
+    from cvp.apps.player.modes.medias.player import MediaPlayerTab
+
+    return MediaInfoTab, MediaPlayerTab
+
+
+def create_media_tabs(context: Context):
+    tab_types = create_media_tab_types()
+    return OrderedDict({tt.get_tab_name(): tt(context) for tt in tab_types})
+
+
 class MediasMode(BaseMode):
     __cvp_mode_name__ = "Medias"
 
     def __init__(self, context: Context):
         super().__init__(context)
+        self._tabs = create_media_tabs(context)
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
             title="Remove",
@@ -114,12 +131,21 @@ class MediasMode(BaseMode):
 
         with begin_child_context("Main"):
             if selected_media := self.medias.get(self.selected):
-                self.do_media_process(selected_media)
+                self.do_media_tab_bar(selected_media)
             else:
                 text_centered("Please select a item")
 
         self._confirm_remove.do_process()
         self._confirm_clear.do_process()
 
-    def do_media_process(self, media: MediaConfig) -> None:
-        pass
+    def do_media_tab_bar(self, media: MediaConfig) -> None:
+        if imgui.begin_tab_bar("Tabs"):
+            try:
+                for name, tab in self._tabs.items():
+                    if imgui.begin_tab_item(name)[0]:
+                        try:
+                            tab.do_process(media)
+                        finally:
+                            imgui.end_tab_item()
+            finally:
+                imgui.end_tab_bar()

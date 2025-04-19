@@ -8,7 +8,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
-from cvp.imgui.begin_child import begin_child, begin_child_context, end_child
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.fit_size import FIT_SIZE
@@ -16,7 +16,7 @@ from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.push_item_width import item_width
 from cvp.imgui.text_colored import text_colored
 from cvp.onvif.client import OnvifClient
-from cvp.onvif.onvif import OnvifConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 from cvp.widgets.wsdl_operation import WsdlOperationWidget
