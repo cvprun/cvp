@@ -53,11 +53,12 @@ CHAT_SERVER_NONAME: Final[str] = "[New server]"
 CHAT_LIMIT: Final[int] = 30
 CHAT_INVALID_ID: Final[int] = -1
 
-OLLAMA_NONAME: Final[str] = "[Nameless]"
+OLLAMA_NONAME: Final[str] = "[New Ollama]"
 OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
 OLLAMA_MODEL_NAME_SEPARATOR: Final[str] = "@"
 
 LAYOUT_NONAME: Final[str] = "[New Layout]"
+MEDIA_NONAME: Final[str] = "[New Media]"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

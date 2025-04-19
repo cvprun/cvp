@@ -24,7 +24,7 @@ from cvp.config.sections.graphic import GraphicConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.layout import LayoutConfig, LayoutManagerConfig
 from cvp.config.sections.logging import LoggingConfig
-from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
+from cvp.config.sections.media import MediaManagerConfig
 from cvp.config.sections.onvif import OnvifManagerConfig
 from cvp.config.sections.overlay import OverlayConfig
 from cvp.config.sections.preference import PreferenceConfig
@@ -35,6 +35,7 @@ from cvp.config.sections.toast import ToastConfig
 from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.itertools.find_index import find_index
+from cvp.media.config import MediaConfig
 from cvp.onvif.onvif import OnvifConfig
 from cvp.yaml.dumpers import DefaultDumper
 
@@ -60,7 +61,7 @@ class Config:
     layouts: List[LayoutConfig] = field(default_factory=list)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     media_manager: MediaManagerConfig = field(default_factory=MediaManagerConfig)
-    media_windows: List[MediaWindowConfig] = field(default_factory=list)
+    media_windows: List[MediaConfig] = field(default_factory=list)
     onvif_manager: OnvifManagerConfig = field(default_factory=OnvifManagerConfig)
     overlay: OverlayConfig = field(default_factory=OverlayConfig)
     preference: PreferenceConfig = field(default_factory=PreferenceConfig)

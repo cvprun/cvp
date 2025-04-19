@@ -5,9 +5,10 @@ from typing import Mapping
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.media import MediaManagerConfig, MediaWindowConfig
-from cvp.config.sections.media import Mode as MediaSectionMode
+from cvp.config.sections.media import MediaManagerConfig
 from cvp.imgui.button import button
+from cvp.media.config import MediaConfig
+from cvp.media.config import MediaMode as MediaSectionMode
 from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.popups.open_file import OpenFilePopup
@@ -18,7 +19,7 @@ from cvp.windows.media.info import MediaInfoTab
 from cvp.windows.media.media import MediaWindow
 
 
-class MediaManager(ManagerTabs[MediaManagerConfig, MediaWindowConfig]):
+class MediaManager(ManagerTabs[MediaManagerConfig, MediaConfig]):
     def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
@@ -52,11 +53,11 @@ class MediaManager(ManagerTabs[MediaManagerConfig, MediaWindowConfig]):
         self.register_popup(self._open_url_popup)
         self.register_popup(self._confirm_remove)
 
-    def add_media_window(self, config: MediaWindowConfig) -> None:
+    def add_media_window(self, config: MediaConfig) -> None:
         window = MediaWindow(self.context, config)
         self.context.windows.add_window(window, window.key)
 
-    def add_media_windows(self, *configs: MediaWindowConfig) -> None:
+    def add_media_windows(self, *configs: MediaConfig) -> None:
         for config in configs:
             self.add_media_window(config)
 
@@ -77,12 +78,12 @@ class MediaManager(ManagerTabs[MediaManagerConfig, MediaWindowConfig]):
             self._confirm_remove.show()
 
     @override
-    def get_menus(self) -> Mapping[str, MediaWindowConfig]:
+    def get_menus(self) -> Mapping[str, MediaConfig]:
         return {mw.uuid: mw for mw in self._context.config.media_windows}
 
     def on_open_file_popup(self, file: str) -> None:
-        config = MediaWindowConfig(
-            title=os.path.basename(file),
+        config = MediaConfig(
+            name=os.path.basename(file),
             opened=True,
             mode=MediaSectionMode.file,
             file=file,
@@ -91,8 +92,8 @@ class MediaManager(ManagerTabs[MediaManagerConfig, MediaWindowConfig]):
         self.add_media_window(config)
 
     def on_open_url_popup(self, url: str) -> None:
-        config = MediaWindowConfig(
-            title=url,
+        config = MediaConfig(
+            name=url,
             opened=True,
             mode=MediaSectionMode.url,
             file=url,

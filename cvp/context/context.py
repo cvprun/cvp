@@ -21,6 +21,7 @@ from cvp.logging.logging import (
     logger,
     set_root_level,
 )
+from cvp.media.manager import MediaManager
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
@@ -115,6 +116,8 @@ class Context(ContextMixins):
         self._onvifs = OnvifManager(self._home.onvifs, reload=True)
         self.initialize_onvif_clients()
 
+        self._medias = MediaManager(self._home.medias, reload=True)
+
         self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
             self.create_supabase_client(
@@ -163,6 +166,10 @@ class Context(ContextMixins):
     @property
     def onvifs(self):
         return self._onvifs
+
+    @property
+    def medias(self):
+        return self._medias
 
     @property
     def supabase(self):

@@ -2,7 +2,6 @@
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.media import MediaWindowConfig
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size
 from cvp.imgui.button import button
 from cvp.imgui.input_int2 import input_int2
@@ -10,23 +9,24 @@ from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_item_width import item_width
 from cvp.logging.logging import logger
+from cvp.media.config import MediaConfig
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.tab import TabItem
 
 
-class MediaInfoTab(TabItem[MediaWindowConfig]):
+class MediaInfoTab(TabItem[MediaConfig]):
     def __init__(self, context: RendererContext):
         super().__init__(context, "Info")
 
     @override
-    def on_item(self, item: MediaWindowConfig) -> None:
+    def on_item(self, item: MediaConfig) -> None:
         imgui.text("Section:")
         input_text_disabled("## Section", item.uuid)
 
         imgui.text("Title:")
         with item_width(-1):
-            item.title = input_text_value("## Title", item.title)
+            item.name = input_text_value("## Title", item.name)
 
         imgui.text("File:")
         with item_width(-1):

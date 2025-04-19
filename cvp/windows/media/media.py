@@ -6,18 +6,18 @@ from typing import Tuple
 from imgui_bundle import imgui
 from OpenGL import GL
 
-from cvp.config.sections.media import MediaWindowConfig
 from cvp.imgui.canvas import canvas_context
 from cvp.imgui.draw_list.types import DrawList
 from cvp.imgui.flags.style_var import WINDOW_PADDING
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.media.config import MediaConfig
 from cvp.renderer.context import RendererContext
 from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 
 
-class MediaWindow(WindowBase[MediaWindowConfig]):
-    def __init__(self, context: RendererContext, window_config: MediaWindowConfig):
+class MediaWindow(WindowBase[MediaConfig]):
+    def __init__(self, context: RendererContext, window_config: MediaConfig):
         super().__init__(
             context=context,
             window_config=window_config,
