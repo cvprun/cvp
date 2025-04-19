@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List
+from typing import Final, List
 
 from imgui_bundle import imgui
 
@@ -32,8 +32,10 @@ from cvp.variables import (
     CHAT_TITLE_NONAME,
     NOT_FOUND_INDEX,
     OLLAMA_MODEL_NAME_SEPARATOR,
-    SIDE_MENU_WIDTH,
 )
+
+_MENU_SPLIT_X: Final[int] = 300
+_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 class ChatMode(BaseMode):
@@ -147,10 +149,10 @@ class ChatMode(BaseMode):
 
     def do_child_process(
         self,
-        split_x=SIDE_MENU_WIDTH,
-        menu_child_flags=RESIZE_X | BORDERS,
+        menu_split_x=_MENU_SPLIT_X,
+        menu_child_flags=_MENU_CHILD_FLAGS,
     ) -> None:
-        with begin_child_context("Menu", split_x, child_flags=menu_child_flags):
+        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     if imgui.button(self._title_noname, (FIT_WIDTH, 0)):

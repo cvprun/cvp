@@ -6,22 +6,30 @@ from typing import Final, Sequence, Tuple
 import numpy as np
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.games._base import BaseGameMode
 from cvp.config.sections.games.tetrix import (
     DEFAULT_BOARD_COLS,
     DEFAULT_BOARD_ROWS,
     DEFAULT_CELL_PIXELS,
     DEFAULT_DROP_INTERVAL_INIT,
     DEFAULT_DROP_INTERVAL_STEP,
-    TetrixWindowConfig,
 )
+from cvp.context.context import Context
+from cvp.imgui.begin import begin_context
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.draw_list.types import DrawList
+from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.style_var import StyleVar
+from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
+from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
-from cvp.renderer.context import RendererContext
-from cvp.renderer.window.base import WindowBase
 from cvp.types.override import override
 from cvp.types.shapes import Rect
+
+_MENU_SPLIT_X: Final[int] = 300
+_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 SINGLE_LINE_CLEAR_SCORE: Final[int] = 100
 DOUBLE_LINE_CLEAR_SCORE: Final[int] = 300
@@ -60,17 +68,11 @@ BLOCKS: Final[Sequence[BlockShapeType]] = (
 )
 
 
-class TetrixWindow(WindowBase[TetrixWindowConfig]):
-    def __init__(self, context: RendererContext):
-        super().__init__(
-            context=context,
-            window_config=context.config.tetrix_window,
-            title="TetriX",
-            closable=True,
-            flags=None,
-            modifiable_title=False,
-        )
+class TetrixMode(BaseGameMode):
+    __cvp_mode_name__ = "TetriX"
 
+    def __init__(self, context: Context):
+        super().__init__(context)
         config = context.config.tetrix_window
         assert DEFAULT_BOARD_ROWS <= config.board_rows
         assert DEFAULT_BOARD_COLS <= config.board_cols
@@ -100,8 +102,12 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
         return int(x), int(y)
 
     @property
+    def config(self):
+        return self.context.config.tetrix_window
+
+    @property
     def cell_pixels(self):
-        return self.window_config.cell_pixels
+        return self.config.cell_pixels
 
     @property
     def current_y(self):
@@ -121,29 +127,29 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
 
     @property
     def current_block_color(self):
-        r, g, b = self.window_config.current_block_color
+        r, g, b = self.config.current_block_color
         color = r, g, b, 1.0
         return imgui.get_color_u32(color)
 
     @property
     def fixed_block_color(self):
-        r, g, b = self.window_config.fixed_block_color
+        r, g, b = self.config.fixed_block_color
         color = r, g, b, 1.0
         return imgui.get_color_u32(color)
 
     @property
     def outline_color(self):
-        r, g, b = self.window_config.outline_color
+        r, g, b = self.config.outline_color
         color = r, g, b, 1.0
         return imgui.get_color_u32(color)
 
     @property
     def high_score(self):
-        return self.window_config.high_score
+        return self.config.high_score
 
     @high_score.setter
     def high_score(self, value: int) -> None:
-        self.window_config.high_score = value
+        self.config.high_score = value
 
     @property
     def cols(self):
@@ -160,8 +166,8 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
         self._board[y][x] = value
 
     def clear_board(self) -> None:
-        rows = self.window_config.tetrix_window.board_rows
-        cols = self.window_config.tetrix_window.board_cols
+        rows = self.config.tetrix_window.board_rows
+        cols = self.config.tetrix_window.board_cols
         self._board = np.zeros((rows, cols), dtype=int)
 
     def clear_state(self) -> None:
@@ -252,27 +258,43 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
             self._current_score += [0, 40, 100, 300, 1200][lines_cleared]
 
     @override
-    def on_process(self) -> None:
-        imgui.text(f"Score: {self._current_score}")
+    def do_process(self) -> None:
+        imgui.push_style_var(StyleVar.window_border_size, 0)
+        try:
+            set_next_window_as_viewport()
+            with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
+                self.do_child_process()
+        finally:
+            imgui.pop_style_var()
+
+    def do_child_process(
+        self,
+        menu_split_x=_MENU_SPLIT_X,
+        menu_child_flags=_MENU_CHILD_FLAGS,
+    ) -> None:
+        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
+            imgui.text(f"Score: {self._current_score}")
+            imgui.text(f"High: {self.high_score}")
+
+            if button("Start", disabled=not self._game_over):
+                self._current_score = 0
+                self._board[::] = 0
+                self._game_over = False
+                self._current_pos = [0, 0]
+            if button("Stop", disabled=self._game_over):
+                if self.high_score < self._current_score:
+                    self.high_score = self._current_score
+                self._game_over = True
+
         imgui.same_line()
-        imgui.text(f"High: {self.high_score}")
 
-        if button("Start", disabled=not self._game_over):
-            self._current_score = 0
-            self._board[::] = 0
-            self._game_over = False
-            self._current_pos = [0, 0]
-        imgui.same_line()
-        if button("Stop", disabled=self._game_over):
-            if self.high_score < self._current_score:
-                self.high_score = self._current_score
-            self._game_over = True
-        imgui.separator()
+        with begin_child_context("Main"):
+            if self._game_over:
+                text_centered("Game Over")
+            else:
+                self.do_main_process()
 
-        if self._game_over:
-            text_centered("Game Over")
-            return
-
+    def do_main_process(self) -> None:
         screen_pos = imgui.get_cursor_screen_pos()
         region_size = imgui.get_content_region_avail()
         cx = screen_pos.x
@@ -323,11 +345,13 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
                 y1 = cy + y * cell_pixels
                 x2 = x1 + cell_pixels
                 y2 = y1 + cell_pixels
+                p1 = x1, y1
+                p2 = x2, y2
 
                 if self.get_cell(x, y):
-                    draw_list.add_rect_filled(x1, y1, x2, y2, fixed_block_color)
+                    draw_list.add_rect_filled(p1, p2, fixed_block_color)
 
-                draw_list.add_rect(x1, y1, x2, y2, outline_color)
+                draw_list.add_rect(p1, p2, outline_color)
 
     def draw_current_block(self, draw_list: DrawList, canvas_roi: Rect) -> None:
         if self._game_over:
@@ -349,5 +373,7 @@ class TetrixWindow(WindowBase[TetrixWindowConfig]):
                 y1 = cy + (current_y + y) * cell_pixels
                 x2 = x1 + cell_pixels
                 y2 = y1 + cell_pixels
+                p1 = x1, y1
+                p2 = x2, y2
 
-                draw_list.add_rect_filled(x1, y1, x2, y2, block_color)
+                draw_list.add_rect_filled(p1, p2, block_color)

@@ -409,70 +409,9 @@ class PlayerApplication:
 
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
-
         for shortcut in self._shortcuts:
-            shortcut()
-
-        # l_ctrl = keys[pygame.K_LCTRL]
-        # r_ctrl = keys[pygame.K_RCTRL]
-        # l_shift = keys[pygame.K_LSHIFT]
-        # r_shift = keys[pygame.K_RSHIFT]
-        # l_alt = keys[pygame.K_LALT]
-        # r_alt = keys[pygame.K_RALT]
-        #
-        # m_ctrl = l_ctrl or r_ctrl
-        # m_shift = l_shift or r_shift
-        # m_alt = l_alt or r_alt
-        #
-        # only_ctrl = m_ctrl and not m_shift and not m_alt
-        # only_shift = not m_ctrl and m_shift and not m_alt  # noqa: F841
-        # only_alt = not m_ctrl and not m_shift and m_alt
-        #
-        # only_shift_ctrl = m_ctrl and m_shift and not m_alt
-        # only_shift_alt = not m_ctrl and m_shift and m_alt
-        # only_ctrl_alt = m_ctrl and not m_shift and m_alt
-        #
-        # if only_ctrl and is_key_pressed(imgui.Key.q):
-        #     self._confirm_quit.show()
-        #     return
-        #
-        # if not m_shift and m_ctrl and m_alt:
-        #     if is_key_pressed(imgui.Key.p):
-        #         self.save_screenshot()
-        #         return
-        #
-        #     if is_key_pressed(imgui.Key.l):
-        #         self.layout_preference_menu.save_new_layout(reload=True)
-        #         return
-        #
-        # if only_alt:
-        #     mode_index: Optional[int] = None
-        #
-        #     if is_key_pressed(_KEY1):
-        #         mode_index = 1
-        #     elif is_key_pressed(_KEY2):
-        #         mode_index = 2
-        #     elif is_key_pressed(_KEY3):
-        #         mode_index = 3
-        #     elif is_key_pressed(_KEY4):
-        #         mode_index = 4
-        #     elif is_key_pressed(_KEY5):
-        #         mode_index = 5
-        #     elif is_key_pressed(_KEY6):
-        #         mode_index = 6
-        #     elif is_key_pressed(_KEY7):
-        #         mode_index = 7
-        #     elif is_key_pressed(_KEY8):
-        #         mode_index = 8
-        #     elif is_key_pressed(_KEY9):
-        #         mode_index = 9
-        #     elif is_key_pressed(_KEY0):
-        #         mode_index = 0
-        #
-        #     if mode_index is not None:
-        #         if mode_index < len(self._modes):
-        #             self.config.appearance.mode = list(self._modes.keys())[mode_index]
-
+            if shortcut():
+                return
         self.mode.on_keyboard(keys)
 
     def on_frame(self) -> None:

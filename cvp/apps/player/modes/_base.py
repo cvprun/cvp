@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Protocol, runtime_checkable
+from typing import Protocol, Sequence, runtime_checkable
 
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
@@ -13,10 +13,13 @@ from cvp.types.override import override
 
 @runtime_checkable
 class BaseModeProtocol(Protocol):
+    __cvp_mode_menus__: Sequence[str]
     __cvp_mode_name__: str
 
 
 class BaseMode(ModeInterface, BaseModeProtocol):
+    __cvp_mode_menus__ = ()
+
     def __init__(self, context: Context):
         assert isinstance(self, BaseModeProtocol)
         self._context = context
@@ -29,6 +32,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @override
     def get_mode_name(cls) -> str:
         return cls.__cvp_mode_name__
+
+    @classmethod
+    @override
+    def get_mode_menus(cls) -> Sequence[str]:
+        return cls.__cvp_mode_menus__
 
     @override
     def on_main_menu(self) -> None:
