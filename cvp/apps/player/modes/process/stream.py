@@ -4,13 +4,13 @@ from enum import StrEnum, auto, unique
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.process._base import BaseProcessTab
+from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.text_centered import text_centered
 from cvp.process.process import Process
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
-from cvp.widgets.tab import TabItem
 
 
 @unique
@@ -19,32 +19,34 @@ class StreamType(StrEnum):
     stderr = auto()
 
 
-class ProcessStreamTab(TabItem[Process]):
-    def __init__(self, context: RendererContext, stream: StreamType):
-        super().__init__(context, str(stream))
-        self._stream = stream
+class ProcessStreamTab(BaseProcessTab):
+    __cvp_process_tab_name__ = "Stream"
+
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self._stream = StreamType.stdout
         self._auto_scroll = True
 
-    @classmethod
-    def from_stdout(cls, context: RendererContext):
-        return cls(context, StreamType.stdout)
-
-    @classmethod
-    def from_stderr(cls, context: RendererContext):
-        return cls(context, StreamType.stderr)
-
     @override
-    def on_item(self, item: Process) -> None:
+    def do_process(self, process: Process) -> None:
+        if imgui.radio_button("Stdout", self._stream == StreamType.stdout):
+            self._stream = StreamType.stdout
+        imgui.same_line()
+        if imgui.radio_button("Stderr", self._stream == StreamType.stderr):
+            self._stream = StreamType.stderr
+
+        imgui.separator()
+
         match self._stream:
             case StreamType.stdout:
-                buffer = item.stdout_buffer
+                buffer = process.stdout_buffer
             case StreamType.stderr:
-                buffer = item.stderr_buffer
+                buffer = process.stderr_buffer
             case _:
                 assert False, "Inaccessible section"
 
         if buffer is None:
-            text_centered(f"The {self.label} buffer does not exist")
+            text_centered("The stream buffer does not exist")
             return
 
         buffer.update_safe()
