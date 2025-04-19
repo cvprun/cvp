@@ -22,9 +22,9 @@ class MediaManager(ResourceManager[MediaConfig]):
         self,
         name=MEDIA_NONAME,
         *,
-        key: Optional[str] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[str, MediaConfig]:
-        key = key if key else str(uuid4())
-        config = MediaConfig(uuid=key, name=name)
-        self.add(key, config)
-        return key, config
+        uuid = uuid if uuid else str(uuid4())
+        config = MediaConfig(uuid=uuid, name=name)
+        self.add(uuid, config)
+        return uuid, config

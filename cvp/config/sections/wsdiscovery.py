@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum, auto, unique
 
 from cvp.variables import (
@@ -21,7 +21,6 @@ class CastType(StrEnum):
 
 @dataclass
 class WsDiscoveryConfig:
-    selected: str = field(default_factory=str)
     cast_type: CastType = CastType.multicast
     address: str = WSD_UNICAST_ADDRESS
     port: int = WSD_PORT_NUMBER

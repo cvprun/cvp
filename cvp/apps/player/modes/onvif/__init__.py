@@ -69,15 +69,7 @@ class OnvifMode(BaseMode):
 
     @property
     def config(self):
-        return self.context.config.onvif_manager
-
-    @property
-    def selected(self) -> str:
-        return self.config.selected
-
-    @selected.setter
-    def selected(self, value: str) -> None:
-        self.config.selected = value
+        return self.context.config.onvif
 
     def on_confirm_remove(self, value: bool) -> None:
         if not value:

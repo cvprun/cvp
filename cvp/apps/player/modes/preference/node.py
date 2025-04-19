@@ -24,16 +24,6 @@ class NodePreference(BasePreference):
     def nodes(self):
         return self.context.fm.nodes
 
-    __submenu_node_key__ = "node"
-
-    @property
-    def selected_submenu_node(self) -> str:
-        return self.get_selected_submenu(self.__submenu_node_key__)
-
-    @selected_submenu_node.setter
-    def selected_submenu_node(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_node_key__, value)
-
     @override
     def do_process(self) -> None:
         child_flags = RESIZE_X | BORDERS
@@ -42,16 +32,16 @@ class NodePreference(BasePreference):
                 try:
                     for path, node in self.nodes.items():
                         label = f"{node.class_name}###{path}"
-                        selected = path == self.selected_submenu_node
+                        selected = path == self.selected
                         if imgui.selectable(label, selected)[1]:
-                            self.selected_submenu_node = path
+                            self.selected = path
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if node := self.nodes.get(self.selected_submenu_node):
+            if node := self.nodes.get(self.selected):
                 self.do_node_process(node)
             else:
                 text_centered("Please select a item")

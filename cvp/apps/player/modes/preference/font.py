@@ -72,16 +72,6 @@ class FontPreference(BasePreference):
     def error_stroke_color(self) -> RGBA:
         return self.config.error_stroke_color
 
-    __submenu_fontname_key__ = "fontname"
-
-    @property
-    def selected_submenu_fontname(self) -> str:
-        return self.get_selected_submenu(self.__submenu_fontname_key__)
-
-    @selected_submenu_fontname.setter
-    def selected_submenu_fontname(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_fontname_key__, value)
-
     @override
     def do_process(self) -> None:
         child_flags = RESIZE_X | BORDERS
@@ -89,16 +79,16 @@ class FontPreference(BasePreference):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for key, font in GlobalFontMapper().items():
-                        selected = key == self.selected_submenu_fontname
+                        selected = key == self.selected
                         if imgui.selectable(key, selected)[1]:
-                            self.selected_submenu_fontname = key
+                            self.selected = key
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            selected_font = GlobalFontMapper().get(self.selected_submenu_fontname)
+            selected_font = GlobalFontMapper().get(self.selected)
             if selected_font is None:
                 text_centered("Please select a item")
             else:

@@ -32,6 +32,7 @@ class OllamaPreference(BasePreference):
 
     def __init__(self, context: Context):
         super().__init__(context)
+        self._selected_model = str()
         self._runner = context.pm.create_thread_runner(self._on_runner_main)
 
     def _on_runner_main(self, ollama: Ollama, command: RunnerCommand, *args: str):
@@ -50,25 +51,11 @@ class OllamaPreference(BasePreference):
     def ollamas(self):
         return self.context.ollamas
 
-    __submenu_filename_key__ = "filename"
+    def get_selected_submenu_model(self, ollama: Ollama) -> str:
+        return self.get_selected_submenu(suffix=ollama.uuid)
 
-    @property
-    def selected_submenu_filename(self) -> str:
-        return self.get_selected_submenu(self.__submenu_filename_key__)
-
-    @selected_submenu_filename.setter
-    def selected_submenu_filename(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_filename_key__, value)
-
-    __submenu_model_key__ = "model"
-
-    @property
-    def selected_submenu_model(self) -> str:
-        return self.get_selected_submenu(self.__submenu_model_key__)
-
-    @selected_submenu_model.setter
-    def selected_submenu_model(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_model_key__, value)
+    def set_selected_submenu_model(self, ollama: Ollama, value: str) -> None:
+        self.set_selected_submenu(value, suffix=ollama.uuid)
 
     @override
     def do_process(self) -> None:
@@ -78,34 +65,31 @@ class OllamaPreference(BasePreference):
                 self.ollamas.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected_submenu_filename = self.ollamas.add_new()[0]
+                self.selected = self.ollamas.add_new()[0]
             imgui.same_line()
-            disabled_delete = self.selected_submenu_filename not in self.ollamas
+            disabled_delete = self.selected not in self.ollamas
             if button("Del", disabled=disabled_delete):
-                self.ollamas.remove(self.selected_submenu_filename)
+                self.ollamas.remove(self.selected)
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for filename, ollama in self.ollamas.items():
                         label = f"{ollama.name}###{filename}"
-                        selected = filename == self.selected_submenu_filename
+                        selected = filename == self.selected
                         if imgui.selectable(label, selected)[1]:
-                            self.selected_submenu_filename = filename
+                            self.selected = filename
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if ollama := self.ollamas.get(self.selected_submenu_filename):
+            if ollama := self.ollamas.get(self.selected):
                 if imgui.begin_tab_bar("MainTabBar"):
                     try:
                         if imgui.begin_tab_item("Config")[0]:
                             try:
-                                self.do_ollama_config(
-                                    self.selected_submenu_filename,
-                                    ollama,
-                                )
+                                self.do_ollama_config(self.selected, ollama)
                             finally:
                                 imgui.end_tab_item()
 
@@ -193,9 +177,9 @@ class OllamaPreference(BasePreference):
                 if imgui.button("Reload"):
                     self._runner(ollama, self.RunnerCommand.list_)
                 for model_name in ollama.model_names:
-                    selected = model_name == self.selected_submenu_model
+                    selected = model_name == self._selected_model
                     if imgui.selectable(model_name, selected)[1]:
-                        self.selected_submenu_model = model_name
+                        self._selected_model = model_name
             finally:
                 imgui.end_list_box()
 
@@ -212,7 +196,7 @@ class OllamaPreference(BasePreference):
                 assert not running
                 assert not has_error
                 try:
-                    index = ollama.model_names.index(self.selected_submenu_model)
+                    index = ollama.model_names.index(self._selected_model)
                     self.do_ollama_model_details(ollama, index)
                 except ValueError:
                     text_centered("Please select a item")

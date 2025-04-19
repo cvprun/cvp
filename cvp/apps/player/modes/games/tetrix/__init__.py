@@ -73,15 +73,15 @@ class TetrixMode(BaseGameMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        config = context.config.tetrix_window
-        assert DEFAULT_BOARD_ROWS <= config.board_rows
-        assert DEFAULT_BOARD_COLS <= config.board_cols
-        assert DEFAULT_CELL_PIXELS <= config.cell_pixels
-        assert DEFAULT_DROP_INTERVAL_INIT <= config.drop_interval_init
-        assert DEFAULT_DROP_INTERVAL_STEP <= config.drop_interval_step
 
-        rows = config.board_rows
-        cols = config.board_cols
+        assert DEFAULT_BOARD_ROWS <= context.config.tetrix.board_rows
+        assert DEFAULT_BOARD_COLS <= context.config.tetrix.board_cols
+        assert DEFAULT_CELL_PIXELS <= context.config.tetrix.cell_pixels
+        assert DEFAULT_DROP_INTERVAL_INIT <= context.config.tetrix.drop_interval_init
+        assert DEFAULT_DROP_INTERVAL_STEP <= context.config.tetrix.drop_interval_step
+
+        rows = context.config.tetrix.board_rows
+        cols = context.config.tetrix.board_cols
         self._board = np.zeros((rows, cols), dtype=int)
 
         self._blocks = BLOCKS
@@ -91,7 +91,7 @@ class TetrixMode(BaseGameMode):
         self._current_score = 0
         self._current_time = 0.0
         self._last_drop_time = 0.0
-        self._drop_interval = config.drop_interval_init
+        self._drop_interval = context.config.tetrix.drop_interval_init
         self.new_piece()
 
     @property
@@ -103,7 +103,7 @@ class TetrixMode(BaseGameMode):
 
     @property
     def config(self):
-        return self.context.config.tetrix_window
+        return self.context.config.tetrix
 
     @property
     def cell_pixels(self):
@@ -166,8 +166,8 @@ class TetrixMode(BaseGameMode):
         self._board[y][x] = value
 
     def clear_board(self) -> None:
-        rows = self.config.tetrix_window.board_rows
-        cols = self.config.tetrix_window.board_cols
+        rows = self.config.tetrix.board_rows
+        cols = self.config.tetrix.board_cols
         self._board = np.zeros((rows, cols), dtype=int)
 
     def clear_state(self) -> None:

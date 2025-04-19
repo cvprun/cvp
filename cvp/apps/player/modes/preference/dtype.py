@@ -24,16 +24,6 @@ class DtypePreference(BasePreference):
     def dtypes(self):
         return self.context.fm.dtypes
 
-    __submenu_dtype_key__ = "dtype"
-
-    @property
-    def selected_submenu_dtype(self) -> str:
-        return self.get_selected_submenu(self.__submenu_dtype_key__)
-
-    @selected_submenu_dtype.setter
-    def selected_submenu_dtype(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_dtype_key__, value)
-
     @override
     def do_process(self) -> None:
         child_flags = RESIZE_X | BORDERS
@@ -42,16 +32,16 @@ class DtypePreference(BasePreference):
                 try:
                     for path, dtype in self.dtypes.items():
                         label = f"{dtype.class_name}###{path}"
-                        selected = path == self.selected_submenu_dtype
+                        selected = path == self.selected
                         if imgui.selectable(label, selected)[1]:
-                            self.selected_submenu_dtype = path
+                            self.selected = path
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if dtype := self.dtypes.get(self.selected_submenu_dtype):
+            if dtype := self.dtypes.get(self.selected):
                 self.do_dtype_process(dtype)
             else:
                 text_centered("Please select a item")

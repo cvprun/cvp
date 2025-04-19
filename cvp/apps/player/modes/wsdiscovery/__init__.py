@@ -79,14 +79,6 @@ class WsDiscoveryMode(BaseMode):
         return self.context.config.wsdiscovery
 
     @property
-    def selected(self) -> str:
-        return self.config.selected
-
-    @selected.setter
-    def selected(self, value: str) -> None:
-        self.config.selected = str(value)
-
-    @property
     def error_color(self):
         return self.context.config.appearance.error_color
 

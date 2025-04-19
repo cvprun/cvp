@@ -97,7 +97,7 @@ class Context(ContextMixins):
             os.environ[PYOPENGL_USE_ACCELERATE] = use_accelerate
             logger.info(f"Update environ: {PYOPENGL_USE_ACCELERATE}={use_accelerate}")
 
-        if self._config.onvif_manager.preload:
+        if self._config.onvif.preload:
             logger.info("Launching ONVIF service declaration preload on a new thread")
             self.preload_onvif_declarations()
 
@@ -227,7 +227,7 @@ class Context(ContextMixins):
         self._flows.stop_all_runners()
 
     def teardown_process_manager(self) -> None:
-        timeout = self._config.process_manager.teardown_timeout
+        timeout = self._config.process.teardown_timeout
         self._process_manager.teardown(timeout)
 
     def save_config(self) -> None:

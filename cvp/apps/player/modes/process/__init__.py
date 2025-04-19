@@ -19,11 +19,7 @@ class ProcessMode(BaseMode):
 
     @property
     def config(self):
-        return self.context.config.process_manager
-
-    @property
-    def selected(self) -> str:
-        return self.config.selected
+        return self.context.config.process
 
     @override
     def do_process(self) -> None:

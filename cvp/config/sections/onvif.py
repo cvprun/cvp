@@ -8,10 +8,8 @@ from cvp.variables import API_SELECT_WIDTH, MAX_API_SELECT_WIDTH, MIN_API_SELECT
 
 
 @dataclass
-class OnvifManagerConfig:
+class OnvifConfig:
     preload: bool = False
-
-    selected: str = field(default_factory=str)
 
     api_select_width: float = API_SELECT_WIDTH
     min_api_select_width: float = MIN_API_SELECT_WIDTH

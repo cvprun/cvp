@@ -2,7 +2,7 @@
 
 from typing import Mapping
 
-from cvp.config.sections.process import ProcessManagerConfig
+from cvp.config.sections.process import ProcessConfig
 from cvp.process.process import Process
 from cvp.renderer.context import RendererContext
 from cvp.types.override import override
@@ -11,11 +11,11 @@ from cvp.windows.process.info import ProcessInfoTab
 from cvp.windows.process.stream import ProcessStreamTab
 
 
-class ProcessManager(ManagerTabs[ProcessManagerConfig, Process]):
+class ProcessManager(ManagerTabs[ProcessConfig, Process]):
     def __init__(self, context: RendererContext):
         super().__init__(
             context=context,
-            window_config=context.config.process_manager,
+            window_config=context.config.process,
             title="Process Manager",
             closable=True,
             flags=None,

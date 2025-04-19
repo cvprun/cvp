@@ -65,18 +65,6 @@ class MediasMode(BaseMode):
     def medias(self):
         return self.context.medias
 
-    @property
-    def config(self):
-        return self.context.config.media_manager
-
-    @property
-    def selected(self) -> str:
-        return self.config.selected
-
-    @selected.setter
-    def selected(self, value: str) -> None:
-        self.config.selected = value
-
     def on_confirm_remove(self, value: bool) -> None:
         if not value:
             return

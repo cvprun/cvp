@@ -74,14 +74,6 @@ class PreferenceMode(BaseMode):
         super().__init__(context)
         self._menus = create_preference_widgets(context)
 
-    @property
-    def selected_menu(self) -> str:
-        return self.context.config.preference.selected_menu
-
-    @selected_menu.setter
-    def selected_menu(self, value: str) -> None:
-        self.context.config.preference.selected_menu = value
-
     def get_menu(self, name: str):
         return self._menus.get(name)
 
@@ -100,7 +92,7 @@ class PreferenceMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        widget = self._menus.get(self.selected_menu)
+        widget = self._menus.get(self.selected)
         if widget is not None:
             widget.do_preprocess()
         imgui.push_style_var(StyleVar.window_border_size, 0)
@@ -123,8 +115,8 @@ class PreferenceMode(BaseMode):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     for key in self._menus.keys():
-                        if imgui.selectable(key, key == self.selected_menu)[1]:
-                            self.selected_menu = key
+                        if imgui.selectable(key, key == self.selected)[1]:
+                            self.selected = key
                 finally:
                     imgui.end_list_box()
 
@@ -132,7 +124,7 @@ class PreferenceMode(BaseMode):
 
         with begin_child_context("Main"):
             if widget is not None:
-                imgui.text(self.selected_menu)
+                imgui.text(self.selected)
                 imgui.separator()
                 widget.do_process()
             else:

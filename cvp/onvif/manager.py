@@ -39,9 +39,9 @@ class OnvifManager(ResourceManager[OnvifConfig]):
         name=ONVIF_NONAME,
         address=ONVIF_ADDRESS,
         *,
-        key: Optional[str] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[str, OnvifConfig]:
-        key = key if key else str(uuid4())
-        config = OnvifConfig(uuid=key, name=name, address=address)
-        self.add(key, config)
-        return key, config
+        uuid = uuid if uuid else str(uuid4())
+        config = OnvifConfig(uuid=uuid, name=name, address=address)
+        self.add(uuid, config)
+        return uuid, config

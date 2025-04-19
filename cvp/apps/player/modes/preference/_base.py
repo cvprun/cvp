@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Any, Protocol, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from cvp.context.context import Context
 from cvp.types.override import override
-from cvp.variables import MODULE_PATH_SEPARATOR
 
 
 @runtime_checkable
@@ -54,22 +53,16 @@ class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
     def context(self) -> Context:
         return self._context
 
+    def get_selected_submenu(self, *, suffix=None) -> str:
+        return self._context.get_selected_submenu(type(self), suffix=suffix)
+
+    def set_selected_submenu(self, value: str, *, suffix=None) -> None:
+        self._context.set_selected_submenu(type(self), value, suffix=suffix)
+
     @property
-    def selected_submenus(self):
-        return self._context.config.preference.selected_submenus
+    def selected(self) -> str:
+        return self.get_selected_submenu()
 
-    def gen_selected_submenu_key(
-        self,
-        key: Any,
-        *,
-        separator=MODULE_PATH_SEPARATOR,
-    ) -> str:
-        return type(self).__name__ + separator + str(key)
-
-    def get_selected_submenu(self, key: Any) -> str:
-        submenu_key = self.gen_selected_submenu_key(key)
-        return self.selected_submenus.get(submenu_key, str())
-
-    def set_selected_submenu(self, key: Any, value: str) -> None:
-        submenu_key = self.gen_selected_submenu_key(key)
-        self.selected_submenus[submenu_key] = value
+    @selected.setter
+    def selected(self, value: str) -> None:
+        self.set_selected_submenu(value)

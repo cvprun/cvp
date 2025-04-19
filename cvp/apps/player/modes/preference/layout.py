@@ -81,7 +81,7 @@ class LayoutPreference(BasePreference):
         shutil.move(src, dest)
 
         self.reload_layout_filenames()
-        self.selected_submenu_filename = value
+        self.selected = value
 
     def on_rename_input_validate(self, value: str) -> bool:
         if not self.get_layout_filepath(self._rename_candidate).is_file():
@@ -107,16 +107,6 @@ class LayoutPreference(BasePreference):
             self.get_layout_filepath(filename).unlink(missing_ok=True)
         self.reload_layout_filenames()
 
-    __submenu_filename_key__ = "filename"
-
-    @property
-    def selected_submenu_filename(self) -> str:
-        return self.get_selected_submenu(self.__submenu_filename_key__)
-
-    @selected_submenu_filename.setter
-    def selected_submenu_filename(self, value: str) -> None:
-        self.set_selected_submenu(self.__submenu_filename_key__, value)
-
     def get_layout_filepath(self, filename: str):
         return self.context.home.layouts.as_path() / filename
 
@@ -132,7 +122,7 @@ class LayoutPreference(BasePreference):
         filename = self.context.home.layouts.generate_nonexistent_filename()
         self.save_layout(filename)
         if select:
-            self.selected_submenu_filename = filename
+            self.selected = filename
         if reload:
             self.reload_layout_filenames()
 
@@ -154,12 +144,12 @@ class LayoutPreference(BasePreference):
             if imgui.button("New"):
                 filename = self.context.home.layouts.generate_nonexistent_filename()
                 self.save_layout(filename)
-                self.selected_submenu_filename = filename
+                self.selected = filename
                 self.reload_layout_filenames()
             imgui.same_line()
-            disabled_delete = self.selected_submenu_filename not in self._filenames
+            disabled_delete = self.selected not in self._filenames
             if button("Del", disabled=disabled_delete):
-                self.show_remove_popup(self.selected_submenu_filename)
+                self.show_remove_popup(self.selected)
             imgui.same_line()
             if button("Clear", disabled=not self._filenames):
                 self._confirm_clear.show()
@@ -167,9 +157,9 @@ class LayoutPreference(BasePreference):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for filename in self._filenames:
-                        selected = filename == self.selected_submenu_filename
+                        selected = filename == self.selected
                         if imgui.selectable(filename, selected)[1]:
-                            self.selected_submenu_filename = filename
+                            self.selected = filename
                 finally:
                     imgui.end_list_box()
 
@@ -177,7 +167,7 @@ class LayoutPreference(BasePreference):
 
         with begin_child_context("Main"):
             try:
-                filename_index = self._filenames.index(self.selected_submenu_filename)
+                filename_index = self._filenames.index(self.selected)
                 assert 0 <= filename_index < len(self._filenames)
                 self.do_filename_process(self._filenames[filename_index])
             except ValueError:

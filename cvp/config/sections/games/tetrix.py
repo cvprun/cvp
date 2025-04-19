@@ -15,7 +15,7 @@ DEFAULT_DROP_INTERVAL_STEP: Final[float] = 0.1
 
 
 @dataclass
-class TetrixWindowConfig(WindowConfig):
+class TetrixConfig(WindowConfig):
     board_rows: int = DEFAULT_BOARD_ROWS
     board_cols: int = DEFAULT_BOARD_COLS
     cell_pixels: int = DEFAULT_CELL_PIXELS

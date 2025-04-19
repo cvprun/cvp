@@ -54,3 +54,17 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @override
     def do_process(self) -> None:
         pass
+
+    def get_selected_submenu(self, *, suffix=None) -> str:
+        return self._context.get_selected_submenu(type(self), suffix=suffix)
+
+    def set_selected_submenu(self, value: str, *, suffix=None) -> None:
+        self._context.set_selected_submenu(type(self), value, suffix=suffix)
+
+    @property
+    def selected(self) -> str:
+        return self.get_selected_submenu()
+
+    @selected.setter
+    def selected(self, value: str) -> None:
+        self.set_selected_submenu(value)
