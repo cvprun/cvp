@@ -37,7 +37,7 @@ def dockspace_over_viewport_context(
 
 
 def dock_space_over_viewport(
-    dockspace_id: imgui.ID = 0,
+    dockspace_id: int = 0,
     viewport: Optional[imgui.Viewport] = None,
     dockspace_flags: Union[DockNodeFlags, int] = PASSTHRU_CENTRAL_NODE,
     window_class: Optional[imgui.WindowClass] = None,
