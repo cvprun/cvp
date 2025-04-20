@@ -6,7 +6,6 @@ from cvp.apps.player.modes.medias._base import BaseMediaTab
 from cvp.context.context import Context
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size
 from cvp.imgui.button import button
-from cvp.imgui.checkbox import checkbox
 from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
@@ -25,15 +24,12 @@ class MediaInfoTab(BaseMediaTab):
     def do_process(self, media: MediaConfig) -> None:
         input_text_disabled("UUID", media.uuid)
 
-        if opened_result := checkbox("Opened", media.opened):
-            media.opened = opened_result.state
-
         media.name = input_text_value("Name", media.name)
         media.file = input_text_value("File", media.file)
 
-        spawnable = self.context.pm.spawnable(media.uuid)
-        stoppable = self.context.pm.stoppable(media.uuid)
-        removable = self.context.pm.removable(media.uuid)
+        spawnable = self.context.medias.spawnable(media.uuid)
+        stoppable = self.context.medias.stoppable(media.uuid)
+        removable = self.context.medias.removable(media.uuid)
 
         imgui.separator()
         if frame_size_result := input_int2(
@@ -53,11 +49,11 @@ class MediaInfoTab(BaseMediaTab):
                 logger.error(e)
 
         imgui.separator()
-        status = self.context.pm.status(media.uuid)
+        status = self.context.medias.status(media.uuid)
         imgui.text(f"Process ({status})")
 
         if button("Spawn", disabled=not spawnable):
-            self.context.pm.spawn_ffmpeg_with_file(
+            self.context.medias.spawn_ffmpeg_with_file(
                 key=media.uuid,
                 file=media.file,
                 width=media.frame_width,
@@ -65,10 +61,10 @@ class MediaInfoTab(BaseMediaTab):
             )
         imgui.same_line()
         if button("Stop", disabled=not stoppable):
-            self.context.pm.interrupt(media.uuid)
+            self.context.medias.interrupt(media.uuid)
         imgui.same_line()
         if button("Remove", disabled=not removable):
-            self.context.pm.pop(media.uuid)
+            self.context.medias.removable_pop(media.uuid)
 
         imgui.separator()
         imgui.text("Window visibility")

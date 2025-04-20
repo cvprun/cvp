@@ -12,7 +12,6 @@ from cvp.keyring.root import RootKeyring
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
-from cvp.process.manager import ProcessManager
 from cvp.resources.home import HomeDir
 from cvp.supabase.supabase import Supabase
 from cvp.wsdiscovery.manager import WsDiscoveryManager
@@ -28,7 +27,6 @@ class ContextProtocol(Protocol):
     _done: Event
     _thread_pool: ThreadPoolExecutor
     _process_pool: ProcessPoolExecutor
-    _process_manager: ProcessManager
     _keyring: RootKeyring
     _onvifs: OnvifManager
     _chat: ChatManager

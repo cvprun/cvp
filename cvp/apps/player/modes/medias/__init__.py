@@ -7,7 +7,7 @@ from typing import Final, Sequence, Type
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.medias._base import BaseMediaTab
+from cvp.apps.player.modes.medias._base import BaseMediaTab, MediaTabInterface
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -30,11 +30,12 @@ _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 def create_media_tab_types() -> Sequence[Type[BaseMediaTab]]:
     from cvp.apps.player.modes.medias.info import MediaInfoTab
     from cvp.apps.player.modes.medias.player import MediaPlayerTab
+    from cvp.apps.player.modes.medias.stream import MediaStreamTab
 
-    return MediaInfoTab, MediaPlayerTab
+    return MediaInfoTab, MediaPlayerTab, MediaStreamTab
 
 
-def create_media_tabs(context: Context):
+def create_media_tabs(context: Context) -> OrderedDict[str, MediaTabInterface]:
     tab_types = create_media_tab_types()
     return OrderedDict({tt.get_tab_name(): tt(context) for tt in tab_types})
 

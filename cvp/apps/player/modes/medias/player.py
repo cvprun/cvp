@@ -78,7 +78,7 @@ class MediaPlayerTab(BaseMediaTab):
         if not self._texture:
             return
 
-        process = self.context.pm.get(media.uuid)
+        process = self.context.medias.get_process(media.uuid)
         if process is None:
             return
 

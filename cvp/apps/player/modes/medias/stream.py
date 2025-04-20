@@ -4,23 +4,24 @@ from enum import StrEnum, auto, unique
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.process._base import BaseProcessTab
+from cvp.apps.player.modes.medias._base import BaseMediaTab
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.text_centered import text_centered
-from cvp.process.process import Process
+from cvp.media.config import MediaConfig
 from cvp.types.override import override
 
 
 @unique
 class StreamType(StrEnum):
+    both = auto()
     stdout = auto()
     stderr = auto()
 
 
-class ProcessStreamTab(BaseProcessTab):
-    __cvp_process_tab_name__ = "Stream"
+class MediaStreamTab(BaseMediaTab):
+    __cvp_media_tab_name__ = "Stream"
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -28,7 +29,10 @@ class ProcessStreamTab(BaseProcessTab):
         self._auto_scroll = True
 
     @override
-    def do_process(self, process: Process) -> None:
+    def do_process(self, media: MediaConfig) -> None:
+        if imgui.radio_button("Both", self._stream == StreamType.both):
+            self._stream = StreamType.both
+        imgui.same_line()
         if imgui.radio_button("Stdout", self._stream == StreamType.stdout):
             self._stream = StreamType.stdout
         imgui.same_line()
@@ -36,6 +40,11 @@ class ProcessStreamTab(BaseProcessTab):
             self._stream = StreamType.stderr
 
         imgui.separator()
+
+        process = self.context.medias.get_process(media.uuid)
+        if process is None:
+            text_centered("Not found media process")
+            return
 
         match self._stream:
             case StreamType.stdout:

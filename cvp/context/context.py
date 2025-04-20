@@ -26,7 +26,6 @@ from cvp.media.manager import MediaManager
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
-from cvp.process.manager import ProcessManager
 from cvp.resources.download.archive import DownloadArchive
 from cvp.resources.download.links.tuples import LinkInfo
 from cvp.resources.download.runner import DownloadRunner
@@ -88,8 +87,6 @@ class Context(ContextMixins):
         self._process_pool = ProcessPoolExecutor(max_workers=process_workers)
         logger.info(f"Create ProcessPoolExecutor(max_workers={process_workers}) of PM")
 
-        self._process_manager = ProcessManager(self._config.ffmpeg, self._home)
-
         if self._config.graphic.force_egl is not None:
             force_egl = self._config.graphic.force_egl_environ
             os.environ[SDL_VIDEO_X11_FORCE_EGL] = force_egl
@@ -135,8 +132,8 @@ class Context(ContextMixins):
         self._flows.stop_all_runners()
 
         timeout = self._config.process.teardown_timeout
-        logger.info(f"Stop all processes... ({timeout:.02f}s)")
-        self._process_manager.teardown(self._config.process.teardown_timeout)
+        logger.info(f"Stop all media processes... ({timeout:.02f}s)")
+        self._medias.teardown_all(self._config.process.teardown_timeout)
 
         logger.info("Shutting down thread pool...")
         self._thread_pool.shutdown(wait=True)
@@ -179,10 +176,6 @@ class Context(ContextMixins):
     @property
     def config(self):
         return self._config
-
-    @property
-    def pm(self):
-        return self._process_manager
 
     @property
     def mq(self):
