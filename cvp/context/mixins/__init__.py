@@ -12,8 +12,8 @@ class ContextMixins(
     ActivityMixin,
     AppearanceMixin,
     ChatMixin,
-    SupabaseMixins,
     OnvifMixin,
+    SupabaseMixins,
     ToastMixin,
 ):
     pass

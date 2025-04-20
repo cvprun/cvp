@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from os import PathLike
 from threading import Event
 from typing import Optional, Union
@@ -77,15 +78,17 @@ class Context(ContextMixins):
 
         thread_workers = self._config.concurrency.thread_workers
         thread_name_prefix = self._config.concurrency.thread_name_prefix
-        process_workers = self._config.concurrency.process_workers
-
-        self._process_manager = ProcessManager(
-            config=self._config.ffmpeg,
-            home=self._home,
-            thread_workers=thread_workers,
+        self._thread_pool = ThreadPoolExecutor(
+            max_workers=thread_workers,
             thread_name_prefix=thread_name_prefix,
-            process_workers=process_workers,
         )
+        logger.info(f"Create ThreadPoolExecutor(max_workers={thread_workers})")
+
+        process_workers = self._config.concurrency.process_workers
+        self._process_pool = ProcessPoolExecutor(max_workers=process_workers)
+        logger.info(f"Create ProcessPoolExecutor(max_workers={process_workers}) of PM")
+
+        self._process_manager = ProcessManager(self._config.ffmpeg, self._home)
 
         if self._config.graphic.force_egl is not None:
             force_egl = self._config.graphic.force_egl_environ
@@ -126,6 +129,48 @@ class Context(ContextMixins):
                 self.server_username,
                 self.server_password,
             )
+
+    def shutdown(self) -> None:
+        logger.info("Stop all flow runners")
+        self._flows.stop_all_runners()
+
+        timeout = self._config.process.teardown_timeout
+        logger.info(f"Stop all processes... ({timeout:.02f}s)")
+        self._process_manager.teardown(self._config.process.teardown_timeout)
+
+        logger.info("Shutting down thread pool...")
+        self._thread_pool.shutdown(wait=True)
+
+        logger.info("Shutting down process pool...")
+        self._process_pool.shutdown(wait=True)
+
+    def save_all(self) -> None:
+        self.save_config()
+        self.save_graphs()
+        self.save_ollamas()
+        self.save_wsdiscovery()
+
+    def save_config(self) -> None:
+        self._config.write_yaml(self._home.cvp_yml)
+        logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
+
+    def save_graph(self, graph: FlowGraph) -> None:
+        filepath = self._home.flows.graph_filepath(graph.key)
+        self._flows.write_graph_yaml(filepath, graph)
+        logger.info(f"Save the graph file: '{str(filepath)}'")
+
+    def save_graphs(self) -> None:
+        for graph in self._flows.graphs.values():
+            self.save_graph(graph)
+        logger.info("Save all graph files")
+
+    def save_ollamas(self) -> None:
+        self._ollamas.write_all_config_files()
+        logger.info("Save all ollama files")
+
+    def save_wsdiscovery(self) -> None:
+        self._wsdiscovery.write_all_config_files()
+        logger.info("Save all WS-Discovery files")
 
     @property
     def home(self):
@@ -204,7 +249,7 @@ class Context(ContextMixins):
         verify_checksum=True,
     ):
         return DownloadRunner(
-            executor=self._process_manager.thread_pool,
+            executor=self._thread_pool,
             downloader=downloader,
             download_timeout=download_timeout,
             verify_checksum=verify_checksum,
@@ -212,7 +257,7 @@ class Context(ContextMixins):
 
     def start_flow_thread(self, graph: FlowGraph, start_node: Union[FlowNode, str]):
         runner = FlowRunner(
-            executor=self._process_manager.thread_pool,
+            executor=self._thread_pool,
             graph=graph,
             start_node=start_node,
             use_copy=False,
@@ -222,29 +267,3 @@ class Context(ContextMixins):
         )
         self._flows.runners[graph.key] = runner
         return runner
-
-    def stop_all_flow_runners(self) -> None:
-        self._flows.stop_all_runners()
-
-    def teardown_process_manager(self) -> None:
-        timeout = self._config.process.teardown_timeout
-        self._process_manager.teardown(timeout)
-
-    def save_config(self) -> None:
-        self._config.write_yaml(self._home.cvp_yml)
-        logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
-
-    def save_graph(self, graph: FlowGraph) -> None:
-        filepath = self._home.flows.graph_filepath(graph.key)
-        self._flows.write_graph_yaml(filepath, graph)
-        logger.info(f"Save the graph file: '{str(filepath)}'")
-
-    def save_graphs(self) -> None:
-        for graph in self._flows.graphs.values():
-            self.save_graph(graph)
-
-    def save_ollamas(self) -> None:
-        self._ollamas.write_all_config_files()
-
-    def save_wsdiscovery(self) -> None:
-        self._wsdiscovery.write_all_config_files()

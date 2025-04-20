@@ -21,7 +21,7 @@ class OnvifClientTab(BaseOnvifTab):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._update_client_runner = self.context.pm.create_thread_runner(
+        self._update_client_runner = self.context.create_thread_runner(
             self._on_update_client,
         )
 

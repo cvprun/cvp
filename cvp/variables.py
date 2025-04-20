@@ -62,6 +62,7 @@ MEDIA_NONAME: Final[str] = "[New Media]"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
+HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH: Final[int] = 400
 SIDE_MENU_WIDTH: Final[float] = 150.0
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0

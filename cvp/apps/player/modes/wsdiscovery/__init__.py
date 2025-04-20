@@ -52,7 +52,7 @@ class WsDiscoveryMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._discovery_runner = context.pm.create_thread_runner(self.on_discovery_main)
+        self._discovery_runner = context.create_thread_runner(self.on_discovery_main)
         self._discovery_begin = datetime.now().astimezone()
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(

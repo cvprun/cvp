@@ -31,7 +31,7 @@ class FFmpegPreference(BasePreference):
             "Select executable file",
             target=self._on_file_selected,
         )
-        self._version_runner = context.pm.create_thread_runner(self._on_version_main)
+        self._version_runner = context.create_thread_runner(self._on_version_main)
         self._result = dict()
 
     def _on_version_main(self, filename: str, path: str) -> None:

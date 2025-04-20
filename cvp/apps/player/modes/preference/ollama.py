@@ -33,7 +33,7 @@ class OllamaPreference(BasePreference):
     def __init__(self, context: Context):
         super().__init__(context)
         self._selected_model = str()
-        self._runner = context.pm.create_thread_runner(self._on_runner_main)
+        self._runner = context.create_thread_runner(self._on_runner_main)
 
     def _on_runner_main(self, ollama: Ollama, command: RunnerCommand, *args: str):
         match command:

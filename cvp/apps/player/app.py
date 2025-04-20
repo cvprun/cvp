@@ -334,20 +334,15 @@ class PlayerApplication:
         logger.info("Initialized world object.")
 
     def on_exit(self) -> None:
-        self._context.stop_all_flow_runners()
-        self._context.teardown_process_manager()
+        self._context.shutdown()
         self._world.on_destroy()
         self._fonts.close()
 
         self.config.display.fullscreen = pygame.display.is_fullscreen()
         self.config.display.size = pygame.display.get_window_size()
 
-        self._context.save_config()
         imgui.save_ini_settings_to_disk(str(self.home.gui_ini))
-
-        self._context.save_graphs()
-        self._context.save_ollamas()
-        self._context.save_wsdiscovery()
+        self._context.save_all()
 
         assert self._renderer is not None
         del self._renderer
