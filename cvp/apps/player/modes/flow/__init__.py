@@ -18,10 +18,11 @@ from cvp.types.override import override
 
 @lru_cache
 def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
+    from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
     from cvp.apps.player.modes.flow.debug import DebugFlowWindow
-    from cvp.apps.player.modes.flow.dtypes import DtypesFlowWindow
+    from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
 
-    return DebugFlowWindow, DtypesFlowWindow
+    return CatalogFlowWindow, DebugFlowWindow, LoggingFlowWindow
 
 
 def create_flow_window(context: Context) -> OrderedDict[str, FlowWindowInterface]:

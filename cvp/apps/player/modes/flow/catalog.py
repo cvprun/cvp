@@ -9,8 +9,8 @@ from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_GRAPH, DRAG_FLOW_NOD
 from cvp.types.override import override
 
 
-class DtypesFlowWindow(BaseFlowWindow):
-    __cvp_flow_window_name__ = "Dtypes"
+class CatalogFlowWindow(BaseFlowWindow):
+    __cvp_flow_window_name__ = "Catalog"
 
     def __init__(self, context: Context):
         super().__init__(context)

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from collections import deque
 from logging import CRITICAL, DEBUG, ERROR, INFO, NOTSET, WARNING, Handler, LogRecord
 from typing import Callable, Deque, NamedTuple
 from weakref import finalize
 
 from imgui_bundle import imgui
 
-from cvp.imgui.begin_child import begin_child, end_child
+from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.context.context import Context
+from cvp.imgui.begin import begin_context
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
 from cvp.imgui.flags import color_var
-from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.text_colored import text_colored
 from cvp.logging.logging import (
@@ -21,11 +22,8 @@ from cvp.logging.logging import (
 )
 from cvp.logging.logging import flow_logger as logger
 from cvp.patterns.delta import Delta
-from cvp.renderer.context import RendererContext
 from cvp.types.colors import RGBA
 from cvp.types.override import override
-from cvp.widgets.canvas.tabs import FlowCanvasTabs
-from cvp.widgets.tab import TabItem
 
 
 class _LoggingHandler(Handler):
@@ -48,14 +46,15 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
     logger.removeHandler(handler)
 
 
-class LogsTab(TabItem[FlowCanvasTabs]):
-    _records: Deque[_LineRecord]
+class LoggingFlowWindow(BaseFlowWindow):
+    __cvp_flow_window_name__ = "Logging"
 
-    def __init__(self, context: RendererContext):
-        super().__init__(context, "Logs")
+    def __init__(self, context: Context):
+        super().__init__(context)
         assert 1 <= self.context.config.flow_aui.logs.lines
         self._mouse_wheel = Delta.from_single_value(0.0)
-        self._records = deque(maxlen=self.context.config.flow_aui.logs.lines)
+        maxlen = self.context.config.flow_aui.logs.lines
+        self._records = Deque[_LineRecord](maxlen=maxlen)
         self._handler = _LoggingHandler(self.on_logging)
         logger.addHandler(self._handler)
         self._finalizer = finalize(self, _unregister_handler, self._handler)
@@ -120,7 +119,15 @@ class LogsTab(TabItem[FlowCanvasTabs]):
         self._records = new_lines
 
     @override
-    def on_process(self) -> None:
+    def do_process(self) -> None:
+        with begin_context(self.get_window_name()):
+            with begin_child_context("Toolbar"):
+                self.do_toolbar_process()
+            imgui.separator()
+            with begin_child_context("Logging"):
+                self.do_logging_process()
+
+    def do_toolbar_process(self) -> None:
         if self._records.maxlen != self.lines:
             self.update_records_maxlen(self.lines)
 
@@ -138,36 +145,30 @@ class LogsTab(TabItem[FlowCanvasTabs]):
         imgui.set_next_item_width(-1)
         self.filter = imgui.input_text_with_hint("##Filter", "Filter", self.filter)[1]
 
-        imgui.separator()
+    def do_logging_process(self) -> None:
+        if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
+            if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
+                if 0 < self._mouse_wheel.value:
+                    # Drag Up
+                    if imgui.get_scroll_y() < imgui.get_scroll_max_y():
+                        self.autoscroll = False
+                elif self._mouse_wheel.value < 0:
+                    # Drag Down
+                    if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
+                        self.autoscroll = True
+                else:
+                    assert 0 == self._mouse_wheel.value
 
-        bottom_spacing = imgui.get_style().item_spacing.y
-        if begin_child("##Logging", 0, -bottom_spacing, BORDERS):
-            try:
-                if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
-                    if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
-                        if 0 < self._mouse_wheel.value:
-                            # Drag Up
-                            if imgui.get_scroll_y() < imgui.get_scroll_max_y():
-                                self.autoscroll = False
-                        elif self._mouse_wheel.value < 0:
-                            # Drag Down
-                            if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
-                                self.autoscroll = True
-                        else:
-                            assert 0 == self._mouse_wheel.value
+        filter_level = self.get_level_number()
 
-                filter_level = self.get_level_number()
+        for line in self._records:
+            if line.level < filter_level:
+                continue
+            if line.message.find(self.filter) == -1:
+                continue
 
-                for line in self._records:
-                    if line.level < filter_level:
-                        continue
-                    if line.message.find(self.filter) == -1:
-                        continue
+            color = self.get_level_color(line.level)
+            text_colored(f"[{line.levelname}] {line.message}", color)
 
-                    color = self.get_level_color(line.level)
-                    text_colored(f"[{line.levelname}] {line.message}", color)
-
-                if self.autoscroll:
-                    imgui.set_scroll_here_y(1.0)
-            finally:
-                end_child()
+        if self.autoscroll:
+            imgui.set_scroll_here_y(1.0)

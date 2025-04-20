@@ -28,10 +28,14 @@ class DebugFlowWindow(BaseFlowWindow):
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            self.do_child_process()
+            with begin_child_context("Toolbar"):
+                self.do_toolbar_process()
+            imgui.separator()
+            with begin_child_context("Logging"):
+                self.do_logging_process()
 
     @staticmethod
-    def do_child_process() -> None:
+    def do_toolbar_process() -> None:
         opened = False  # TODO: Remove
         button(f"{PLAY} Run", disabled=not opened)
 
@@ -53,6 +57,6 @@ class DebugFlowWindow(BaseFlowWindow):
         imgui.same_line()
         button(f"{DEBUG_STEP_OUT} Step Out", disabled=not opened)
 
-        imgui.separator()
-        with begin_child_context("Logging"):
-            pass
+    @staticmethod
+    def do_logging_process() -> None:
+        pass
