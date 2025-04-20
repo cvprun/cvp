@@ -2,10 +2,13 @@
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
+from cvp.imgui.begin import begin_context
 from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.flags.tree_node import (
     ARC_FLAGS,
@@ -16,25 +19,29 @@ from cvp.imgui.flags.tree_node import (
     VARIABLE_FLAGS,
 )
 from cvp.imgui.text_centered import text_centered
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
-from cvp.widgets.tab import TabItem
 
 
-class TreeTab(TabItem[FlowCanvasTabs]):
-    def __init__(self, context: RendererContext):
-        super().__init__(context, "Tree")
+class TreeFlowWindow(BaseFlowWindow):
+    __cvp_flow_window_name__ = "Tree"
 
-    @override
-    def on_none(self) -> None:
-        text_centered("Please select a graph")
+    def __init__(self, context: Context):
+        super().__init__(context)
 
     @override
+    def do_process(self) -> None:
+        with begin_context(self.get_window_name()):
+            self.do_child_process()
+
+    @staticmethod
+    def do_child_process() -> None:
+        pass
+
     def on_item(self, item: FlowCanvasTabs) -> None:
         graph = item.graph
         if graph is None:
-            self.on_none()
+            text_centered("Please select a graph")
             return
 
         graph_label = f"{graph.name}###{graph.key}"

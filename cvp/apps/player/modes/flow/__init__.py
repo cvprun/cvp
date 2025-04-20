@@ -21,8 +21,9 @@ def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
     from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
     from cvp.apps.player.modes.flow.debug import DebugFlowWindow
     from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
+    from cvp.apps.player.modes.flow.tree import TreeFlowWindow
 
-    return CatalogFlowWindow, DebugFlowWindow, LoggingFlowWindow
+    return CatalogFlowWindow, DebugFlowWindow, LoggingFlowWindow, TreeFlowWindow
 
 
 def create_flow_window(context: Context) -> OrderedDict[str, FlowWindowInterface]:

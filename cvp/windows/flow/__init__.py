@@ -36,7 +36,6 @@ from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.flow import FlowCanvas
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.splitter import Splitter
-from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
 
 
@@ -56,7 +55,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         )
 
         self._canvases = FlowCanvasTabs(context)
-        self._left_tabs = FlowLeftTabs(context)
         self._right_tabs = FlowRightTabs(context)
 
         self._split_tree = SplitTreeProxy(context.config.flow_aui)
@@ -568,7 +566,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
     def on_process_sidebar_left(self):
         if begin_child("## ChildLeftTop", 0, -self.split_tree):
             try:
-                self._left_tabs.do_process(self._canvases)
+                pass
             finally:
                 end_child()
 
