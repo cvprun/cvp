@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Mapping, Optional, Sequence, Tuple, Union
+from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from weakref import ReferenceType, ref
 
 from cvp.config.sections.ffmpeg import FFmpegConfig
+from cvp.gl.textures.texture import Texture
 from cvp.media.config import MediaConfig
-from cvp.media.process.frame import FrameShape
+from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process
 from cvp.process.manager import ProcessManager
 from cvp.resources.manager.manager import ResourceManager
@@ -21,6 +22,7 @@ from cvp.variables import (
 
 class MediaManager(ResourceManager[MediaConfig]):
     _ffmpeg_config: ReferenceType[FFmpegConfig]
+    _textures: Dict[str, Texture]
 
     def __init__(
         self,
@@ -39,7 +41,8 @@ class MediaManager(ResourceManager[MediaConfig]):
         )
         self._processes_path = processes_path
         self._ffmpeg_config = ref(ffmpeg_config)
-        self._processes = ProcessManager()
+        self._processes = ProcessManager[str, FrameReaderProcess]()
+        self._textures = dict()
 
     @property
     def ffmpeg_config(self) -> FFmpegConfig:
@@ -94,6 +97,13 @@ class MediaManager(ResourceManager[MediaConfig]):
     def interrupt(self, key: str) -> None:
         return self._processes.interrupt(key)
 
+    def removable_pop(self, key: str):
+        process = self._processes.removable_pop(key)
+        texture = self._textures.pop(key)
+        assert texture.opened
+        texture.close()
+        return process
+
     def teardown_all(self, timeout: Optional[float] = None):
         self._processes.shutdown(timeout)
 
@@ -103,6 +113,9 @@ class MediaManager(ResourceManager[MediaConfig]):
 
     def get_process(self, key: str):
         return self._processes.get(key)
+
+    def get_texture(self, key: str):
+        return self._textures.get(key)
 
     def _spawn(
         self,
@@ -187,4 +200,36 @@ class MediaManager(ResourceManager[MediaConfig]):
 
         process = self._spawn_with_file(key, file, width, height)
         self._processes[key] = process
+
+        texture = Texture()
+        texture.open(width, height)
+        self._textures[key] = texture
+
         return process
+
+    def update_texture(self, key: str) -> int:
+        process = self.get_process(key)
+        if process is None:
+            raise KeyError(f"Process is not exists: '{key}'")
+
+        if process.poll() is not None:
+            raise ValueError(f"Process is not alive: '{key}'")
+
+        pixels = process.dequeue_latest()
+        if not pixels:
+            raise ValueError(f"Pixels is empty: '{key}'")
+
+        texture = self.get_texture(key)
+        if texture is None:
+            raise KeyError(f"Texture is not exists: '{key}'")
+
+        with texture:
+            texture.update_rgb_texture(pixels)
+
+        return texture.texture
+
+    def get_latest_texture(self, key: str) -> Optional[int]:
+        try:
+            return self.update_texture(key)
+        except (KeyError, ValueError):
+            return None

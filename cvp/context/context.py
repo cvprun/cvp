@@ -151,6 +151,7 @@ class Context(ContextMixins):
         self.save_graphs()
         self.save_ollamas()
         self.save_wsdiscovery()
+        self.save_medias()
 
     def save_config(self) -> None:
         self._config.write_yaml(self._home.cvp_yml)
@@ -173,6 +174,10 @@ class Context(ContextMixins):
     def save_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
         logger.info("Save all WS-Discovery files")
+
+    def save_medias(self) -> None:
+        self._medias.write_all_config_files()
+        logger.info("Save all media files")
 
     @property
     def home(self):

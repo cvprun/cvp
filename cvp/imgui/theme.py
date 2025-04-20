@@ -33,6 +33,11 @@ def apply_theme_with_index(index: int, *, default: Optional[int] = None) -> None
 
 
 def apply_theme_with_name(name: str, *, default: Optional[str] = None) -> None:
-    index = THEME_NAMES.index(name)
     default_index = THEME_NAMES.index(default) if default is not None else None
+    try:
+        index = THEME_NAMES.index(name)
+    except ValueError:
+        if default_index is None:
+            raise
+        index = default_index
     apply_theme_with_index(index, default=default_index)

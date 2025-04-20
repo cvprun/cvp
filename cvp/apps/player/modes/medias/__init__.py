@@ -29,10 +29,9 @@ _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 @lru_cache
 def create_media_tab_types() -> Sequence[Type[BaseMediaTab]]:
     from cvp.apps.player.modes.medias.info import MediaInfoTab
-    from cvp.apps.player.modes.medias.player import MediaPlayerTab
     from cvp.apps.player.modes.medias.stream import MediaStreamTab
 
-    return MediaInfoTab, MediaPlayerTab, MediaStreamTab
+    return MediaInfoTab, MediaStreamTab
 
 
 def create_media_tabs(context: Context) -> OrderedDict[str, MediaTabInterface]:
