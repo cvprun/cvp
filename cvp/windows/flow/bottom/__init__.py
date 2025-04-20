@@ -4,7 +4,6 @@ from cvp.renderer.context import RendererContext
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabBar
 from cvp.windows.flow.bottom.logs import LogsTab
-from cvp.windows.flow.bottom.run import RunTab
 
 
 class FlowBottomTabs(TabBar[FlowCanvasTabs]):
@@ -15,4 +14,3 @@ class FlowBottomTabs(TabBar[FlowCanvasTabs]):
             flags=0,
         )
         self.register(LogsTab(context))
-        self.register(RunTab(context))
