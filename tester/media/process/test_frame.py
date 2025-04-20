@@ -6,7 +6,7 @@ from unittest import TestCase, main, skipIf
 
 import numpy as np
 
-from cvp.process.frame import FrameReaderProcess
+from cvp.media.process.frame import FrameReaderProcess
 
 
 class FrameTestCase(TestCase):

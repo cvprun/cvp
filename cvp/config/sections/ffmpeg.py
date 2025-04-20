@@ -2,14 +2,20 @@
 
 from dataclasses import dataclass
 
-from cvp.variables import STREAM_LOGGING_MAXSIZE, STREAM_LOGGING_NEWLINE_SIZE
+from cvp.variables import (
+    FFMPEG_EXECUTABLE_FILENAME,
+    FFPROBE_EXECUTABLE_FILENAME,
+    STREAM_LOGGING_ENCODING,
+    STREAM_LOGGING_MAXSIZE,
+    STREAM_LOGGING_NEWLINE_SIZE,
+)
 
 
 @dataclass
 class FFmpegConfig:
-    ffmpeg: str = "ffmpeg"
-    ffprobe: str = "ffprobe"
+    ffmpeg: str = FFMPEG_EXECUTABLE_FILENAME
+    ffprobe: str = FFPROBE_EXECUTABLE_FILENAME
 
     logging_maxsize: int = STREAM_LOGGING_MAXSIZE
-    logging_encoding: str = "utf-8"
+    logging_encoding: str = STREAM_LOGGING_ENCODING
     logging_newline_size: int = STREAM_LOGGING_NEWLINE_SIZE

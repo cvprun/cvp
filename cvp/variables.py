@@ -58,7 +58,10 @@ OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"
 OLLAMA_MODEL_NAME_SEPARATOR: Final[str] = "@"
 
 LAYOUT_NONAME: Final[str] = "[New Layout]"
+
 MEDIA_NONAME: Final[str] = "[New Media]"
+MEDIA_FRAME_RGB24_CHANNELS: Final[int] = 3
+MEDIA_FRAME_PIPE_STDOUT: Final[str] = "pipe:1"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
@@ -94,7 +97,11 @@ AUI_PADDING_HEIGHT: Final[float] = 8.0
 
 PROCESS_TEARDOWN_TIMEOUT: Final[float] = 2.0
 
+FFMPEG_EXECUTABLE_FILENAME: Final[str] = "ffmpeg"
+FFPROBE_EXECUTABLE_FILENAME: Final[str] = "ffprobe"
+
 STREAM_LOGGING_MAXSIZE: Final[int] = 65536
+STREAM_LOGGING_ENCODING: Final[str] = "utf-8"
 STREAM_LOGGING_NEWLINE_SIZE: Final[int] = 88
 
 WSD_INVALID_INSTANCE_ID: Final[int] = -1

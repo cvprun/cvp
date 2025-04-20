@@ -2,7 +2,6 @@
 
 from datetime import datetime
 from os import PathLike
-from pathlib import Path
 from typing import Optional, Union
 
 from cvp.chrono.filename import short_datetime_name
@@ -16,12 +15,14 @@ class ProcessesPath(PathFlavour):
         self.logfile_suffix = ".log"
 
     @staticmethod
-    def gen_filename(stream: str, dt: Optional[datetime] = None):
+    def generate_logfile_name(stream: str, dt: Optional[datetime] = None):
         dt = dt if dt is not None else datetime.now()
         assert dt is not None
         return f"{stream}.{short_datetime_name(dt)}"
 
-    def gen(self, key: str, stream: str, dt: Optional[datetime] = None):
-        filename = self.gen_filename(stream, dt)
-        fullname = self.logfile_prefix + filename + self.logfile_suffix
-        return Path(self) / key / fullname
+    def generate_logfile_fullname(self, stream: str, dt: Optional[datetime] = None):
+        filename = self.generate_logfile_name(stream, dt)
+        return self.logfile_prefix + filename + self.logfile_suffix
+
+    def generate(self, key: str, stream: str, dt: Optional[datetime] = None):
+        return self.as_path() / key / self.generate_logfile_fullname(stream, dt)

@@ -116,7 +116,12 @@ class Context(ContextMixins):
         self._onvifs = OnvifManager(self._home.onvifs, reload=True)
         self.initialize_onvif_clients()
 
-        self._medias = MediaManager(self._home.medias, reload=True)
+        self._medias = MediaManager(
+            self._home.medias,
+            self._home.processes,
+            self._config.ffmpeg,
+            reload=True,
+        )
 
         self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
