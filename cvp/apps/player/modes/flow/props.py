@@ -2,7 +2,9 @@
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.flow._base import BaseFlowWindow
 from cvp.config.sections.canvas.axis import Axis
+from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphName
 from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
@@ -15,6 +17,8 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable, VariableName
 from cvp.flow.wire import FlowWire
+from cvp.imgui.begin import begin_context
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
@@ -24,22 +28,39 @@ from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
+from cvp.imgui.text_centered import text_centered
 from cvp.nodes.node import NodeName
-from cvp.renderer.context import RendererContext
 from cvp.types.override import override
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
-from cvp.widgets.tab import TabItem
 
 
-class PropsTab(TabItem[FlowCanvasTabs]):
-    def __init__(self, context: RendererContext):
-        super().__init__(context, "Props")
+class PropsFlowWindow(BaseFlowWindow):
+    __cvp_flow_window_name__ = "Props"
+
+    def __init__(self, context: Context):
+        super().__init__(context)
 
     @override
+    def do_process(self) -> None:
+        with begin_context(self.get_window_name()):
+            with begin_child_context("Toolbar"):
+                self.do_toolbar_process()
+            imgui.separator()
+            with begin_child_context("Logging"):
+                self.do_logging_process()
+
+    @staticmethod
+    def do_toolbar_process() -> None:
+        pass
+
+    @staticmethod
+    def do_logging_process() -> None:
+        pass
+
     def on_item(self, item: FlowCanvasTabs) -> None:
         graph = item.graph
         if graph is None:
-            self.on_none()
+            text_centered("Please select a graph")
             return
 
         selected_items = graph.selection
@@ -81,7 +102,8 @@ class PropsTab(TabItem[FlowCanvasTabs]):
             assert 2 <= len(selected_items)
             self.on_multiple_items(graph, selected_items)
 
-    def input_icon(self, label: str, icon: str) -> None:
+    @staticmethod
+    def input_icon(label: str, icon: str) -> None:
         if True:  # with self.context.fonts.normal_icon:
             input_text_disabled(f"##{label}", icon)
         imgui.same_line(0.0, imgui.get_style().item_inner_spacing[0])

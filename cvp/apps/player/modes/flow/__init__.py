@@ -22,6 +22,7 @@ def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
     from cvp.apps.player.modes.flow.debug import DebugFlowWindow
     from cvp.apps.player.modes.flow.history import HistoryFlowWindow
     from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
+    from cvp.apps.player.modes.flow.props import PropsFlowWindow
     from cvp.apps.player.modes.flow.tree import TreeFlowWindow
 
     return (
@@ -29,6 +30,7 @@ def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
         DebugFlowWindow,
         HistoryFlowWindow,
         LoggingFlowWindow,
+        PropsFlowWindow,
         TreeFlowWindow,
     )
 
