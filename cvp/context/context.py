@@ -200,7 +200,7 @@ class Context(ContextMixins):
         return self._chat
 
     @property
-    def fm(self):
+    def flows(self):
         return self._flows
 
     @property

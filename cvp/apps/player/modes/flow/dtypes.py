@@ -2,20 +2,27 @@
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.context.context import Context
+from cvp.imgui.begin import begin_context
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_GRAPH, DRAG_FLOW_NODE
-from cvp.renderer.context import RendererContext
-from cvp.renderer.widget.interface import WidgetInterface
 from cvp.types.override import override
 
 
-class Catalog(WidgetInterface):
-    def __init__(self, context: RendererContext):
-        self._context = context
+class DtypesFlowWindow(BaseFlowWindow):
+    __cvp_flow_window_name__ = "Dtypes"
+
+    def __init__(self, context: Context):
+        super().__init__(context)
 
     @override
-    def on_process(self) -> None:
+    def do_process(self) -> None:
+        with begin_context(self.get_window_name()):
+            self.do_child_process()
+
+    def do_child_process(self) -> None:
         if imgui.collapsing_header("Dtypes"):
-            for dtype in self._context.fm.dtypes.values():
+            for dtype in self._context.flows.dtypes.values():
                 imgui.selectable(dtype.path, p_selected=False)
                 if imgui.begin_drag_drop_source():
                     try:
@@ -26,7 +33,7 @@ class Catalog(WidgetInterface):
                         imgui.end_drag_drop_source()
 
         if imgui.collapsing_header("Nodes"):
-            for node in self._context.fm.nodes.values():
+            for node in self._context.flows.nodes.values():
                 imgui.selectable(node.path, p_selected=False)
                 if imgui.begin_drag_drop_source():
                     try:
@@ -37,7 +44,7 @@ class Catalog(WidgetInterface):
                         imgui.end_drag_drop_source()
 
         if imgui.collapsing_header("Graphs"):
-            for graph in self._context.fm.graphs.values():
+            for graph in self._context.flows.graphs.values():
                 imgui.selectable(f"{graph.name}##{graph.key}", p_selected=False)
                 if imgui.begin_drag_drop_source():
                     try:

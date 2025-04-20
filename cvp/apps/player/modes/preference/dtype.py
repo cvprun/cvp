@@ -22,7 +22,7 @@ class DtypePreference(BasePreference):
 
     @property
     def dtypes(self):
-        return self.context.fm.dtypes
+        return self.context.flows.dtypes
 
     @override
     def do_process(self) -> None:

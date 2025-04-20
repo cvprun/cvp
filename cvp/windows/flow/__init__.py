@@ -37,7 +37,6 @@ from cvp.widgets.canvas.flow import FlowCanvas
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.splitter import Splitter
 from cvp.windows.flow.bottom import FlowBottomTabs
-from cvp.windows.flow.catalog import Catalog
 from cvp.windows.flow.left import FlowLeftTabs
 from cvp.windows.flow.right import FlowRightTabs
 
@@ -58,7 +57,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         )
 
         self._canvases = FlowCanvasTabs(context)
-        self._catalog = Catalog(context)
         self._left_tabs = FlowLeftTabs(context)
         self._right_tabs = FlowRightTabs(context)
         self._bottom_tabs = FlowBottomTabs(context)
@@ -144,11 +142,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         self.window_config.logs.autoscroll = value
 
     def on_new_graph_popup(self, name: str) -> None:
-        graph = self.context.fm.create_graph(name, append=True)
+        graph = self.context.flows.create_graph(name, append=True)
         filepath = self.context.home.flows.graph_filepath(graph.key)
         if filepath.exists():
             raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
-        self.context.fm.write_graph_yaml(filepath, graph)
+        self.context.flows.write_graph_yaml(filepath, graph)
         self._canvases.open(graph)
 
     def on_import_file_popup(self, file: str) -> None:
@@ -200,7 +198,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         undoable = canvas.history.undoable
         redoable = canvas.history.redoable
         selected_any = bool(canvas.graph.selection)
-        has_clipboard = self.context.fm.has_clipboard
+        has_clipboard = self.context.flows.has_clipboard
 
         if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
             canvas.undo_history()
@@ -209,27 +207,27 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         imgui.separator()
         if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
-            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
-            self.context.fm.clipboard_pivot = canvas.graph.selection.group_pos
+            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.flows.clipboard_pivot = canvas.graph.selection.group_pos
             canvas.graph.remove_selected_items()
             canvas.save_history("Cut selected items")
         if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
-            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
             px, py = canvas.graph.selection.group_pos
             px += self.window_config.paste_margin
             py += self.window_config.paste_margin
-            self.context.fm.clipboard_pivot = px, py
+            self.context.flows.clipboard_pivot = px, py
         if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
             canvas.graph.unselect_all_items()
             canvas.graph.paste_selection(
-                self.context.fm.clipboard_items,
-                self.context.fm.clipboard_pivot,
+                self.context.flows.clipboard_items,
+                self.context.flows.clipboard_pivot,
                 selected=True,
             )
-            px, py = self.context.fm.clipboard_pivot
+            px, py = self.context.flows.clipboard_pivot
             px += self.window_config.paste_margin
             py += self.window_config.paste_margin
-            self.context.fm.clipboard_pivot = px, py
+            self.context.flows.clipboard_pivot = px, py
             canvas.save_history("Paste selected items")
 
         imgui.separator()
@@ -411,12 +409,12 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         imgui.separator()
 
         if menu_item("Setter"):
-            node = self.context.fm.add_setter_node(canvas.graph, self._variable_key)
+            node = self.context.flows.add_setter_node(canvas.graph, self._variable_key)
             canvas.update_node_roi(node)
             canvas.save_history("Add setter variable node", self._variable_key)
 
         if menu_item("Getter"):
-            node = self.context.fm.add_getter_node(canvas.graph, self._variable_key)
+            node = self.context.flows.add_getter_node(canvas.graph, self._variable_key)
             canvas.update_node_roi(node)
             canvas.save_history("Add getter variable node", self._variable_key)
 
@@ -438,8 +436,8 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         if imgui.begin_menu("Open graph"):
             try:
-                if self.context.fm.graphs:
-                    for uuid, graph in self.context.fm.graphs.items():
+                if self.context.flows.graphs:
+                    for uuid, graph in self.context.flows.graphs.items():
                         if menu_item(graph.name):
                             self._canvases.open(graph)
                 else:
@@ -555,17 +553,17 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if graph := self._canvases.graph:
             graph_uuid_stash = graph.key
 
-        self.context.fm.graphs.clear()
+        self.context.flows.graphs.clear()
         self._canvases.clear()
 
         try:
-            self.context.fm.refresh_flow_graphs()
+            self.context.flows.refresh_flow_graphs()
             logger.info("Refresh flow graphs")
         except BaseException as e:
             logger.error(e)
 
         if graph_uuid_stash:
-            if graph := self.context.fm.graphs.get(graph_uuid_stash):
+            if graph := self.context.flows.graphs.get(graph_uuid_stash):
                 self._canvases.open(graph)
 
     @override
@@ -578,14 +576,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with style_item_spacing_context(0, -1):
             self._tree_splitter.do_process()
-
-        if begin_child("## ChildLeftBottom"):
-            try:
-                with style_item_spacing_context(0, 0):
-                    imgui.dummy((0, self.padding_height))
-                self._catalog.on_process()
-            finally:
-                end_child()
 
     @override
     def on_process_sidebar_right(self):
@@ -669,32 +659,32 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             return
 
         if only_ctrl and self.imgui_is_pressed_x():
-            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
-            self.context.fm.clipboard_pivot = canvas.graph.selection.group_pos
+            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.flows.clipboard_pivot = canvas.graph.selection.group_pos
             canvas.graph.remove_selected_items()
             canvas.save_history("Cut selected items")
             return
 
         if only_ctrl and self.imgui_is_pressed_c():
-            self.context.fm.clipboard_items = canvas.graph.selection.deepcopy()
+            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
             px, py = canvas.graph.selection.group_pos
             px += self.window_config.paste_margin
             py += self.window_config.paste_margin
-            self.context.fm.clipboard_pivot = px, py
+            self.context.flows.clipboard_pivot = px, py
             canvas.save_history("Copy selected items")
             return
 
         if only_ctrl and self.imgui_is_pressed_v():
             canvas.graph.unselect_all_items()
             canvas.graph.paste_selection(
-                self.context.fm.clipboard_items,
-                self.context.fm.clipboard_pivot,
+                self.context.flows.clipboard_items,
+                self.context.flows.clipboard_pivot,
                 selected=True,
             )
-            px, py = self.context.fm.clipboard_pivot
+            px, py = self.context.flows.clipboard_pivot
             px += self.window_config.paste_margin
             py += self.window_config.paste_margin
-            self.context.fm.clipboard_pivot = px, py
+            self.context.flows.clipboard_pivot = px, py
             canvas.save_history("Paste selected items")
             return
 
@@ -705,11 +695,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if imgui.begin_drag_drop_target():
             try:
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
-                    self._drag_dtype = self.context.fm.dtypes[payload.type]
+                    self._drag_dtype = self.context.flows.dtypes[payload.type]
                     self._add_variable_popup.show()
 
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
-                    node = self.context.fm.add_node(canvas.graph, payload.type)
+                    node = self.context.flows.add_node(canvas.graph, payload.type)
                     canvas.update_node_roi(node)
                     canvas.save_history("Add a new node", payload.type)
 

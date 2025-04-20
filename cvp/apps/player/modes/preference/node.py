@@ -22,7 +22,7 @@ class NodePreference(BasePreference):
 
     @property
     def nodes(self):
-        return self.context.fm.nodes
+        return self.context.flows.nodes
 
     @override
     def do_process(self) -> None:

@@ -1,14 +1,31 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
+from functools import lru_cache
+from typing import Sequence, Type
+
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.flow._base import BaseFlowWindow, FlowWindowInterface
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
+from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
+
+
+@lru_cache
+def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
+    from cvp.apps.player.modes.flow.dtypes import DtypesFlowWindow
+
+    return (DtypesFlowWindow,)
+
+
+def create_flow_window(context: Context) -> OrderedDict[str, FlowWindowInterface]:
+    win_types = create_flow_window_types()
+    return OrderedDict({wt.get_window_name(): wt(context) for wt in win_types})
 
 
 class FlowMode(BaseMode):
@@ -16,6 +33,8 @@ class FlowMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
+        self._windows = create_flow_window(context)
+        self._viewport_flags = ROOT_STATIC_VIEWPORT_FLAGS
 
     @override
     def on_main_menu(self) -> None:
@@ -35,13 +54,9 @@ class FlowMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        # from cvp.imgui.dockspace import dockspace_over_viewport_context
-        # with dockspace_over_viewport_context() as dockspace_id:
-        #     assert isinstance(dockspace_id, int)
-        #     assert 0 <= dockspace_id
-        #     self.do_main_window()
-        pass
+        with dockspace_over_viewport_context() as dockspace_id:
+            assert isinstance(dockspace_id, int)
+            assert 0 <= dockspace_id
 
-    def do_main_window(self) -> None:
-        with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
-            pass
+        for window in self._windows.values():
+            window.do_process()
