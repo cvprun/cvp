@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-from functools import lru_cache
-from typing import Final
-
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
+from cvp.concurrency.utils import valid_process_workers, valid_thread_workers
 from cvp.context.context import Context
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
@@ -15,43 +11,6 @@ from cvp.imgui.text_colored import text_colored
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.logging.logging import logger
 from cvp.types.override import override
-
-# On Windows, WaitForMultipleObjects is used to wait for processes to finish.
-# It can wait on, at most, 63 objects. There is an overhead of two objects:
-# - the result queue reader
-# - the thread wakeup reader
-MAX_WINDOWS_PROCESS_WORKERS: Final[int] = 63 - 2
-
-MIN_THREAD_WORKERS: Final[int] = 5
-MIN_PROCESS_WORKERS: Final[int] = 1
-
-
-@lru_cache
-def cpu_count() -> int:
-    count = os.cpu_count()
-    return count if count is not None else 1
-
-
-def valid_thread_workers(value: int) -> int:
-    if value < MIN_THREAD_WORKERS:
-        return MIN_THREAD_WORKERS
-
-    max_thread_workers = min(32, cpu_count() + 4)
-    if max_thread_workers < value:
-        return max_thread_workers
-
-    return value
-
-
-def valid_process_workers(value: int) -> int:
-    if value < MIN_PROCESS_WORKERS:
-        return MIN_PROCESS_WORKERS
-
-    is_win32 = sys.platform == "win32"
-    if is_win32 and MAX_WINDOWS_PROCESS_WORKERS < value:
-        return MAX_WINDOWS_PROCESS_WORKERS
-
-    return value
 
 
 class ConcurrencyPreference(BasePreference):
