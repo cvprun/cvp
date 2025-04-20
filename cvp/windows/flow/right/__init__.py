@@ -3,7 +3,6 @@
 from cvp.renderer.context import RendererContext
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 from cvp.widgets.tab import TabBar
-from cvp.windows.flow.right.history import HistoryTab
 from cvp.windows.flow.right.props import PropsTab
 
 
@@ -15,4 +14,3 @@ class FlowRightTabs(TabBar[FlowCanvasTabs]):
             flags=0,
         )
         self.register(PropsTab(context))
-        self.register(HistoryTab(context))

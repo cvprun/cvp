@@ -20,10 +20,17 @@ from cvp.types.override import override
 def create_flow_window_types() -> Sequence[Type[BaseFlowWindow]]:
     from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
     from cvp.apps.player.modes.flow.debug import DebugFlowWindow
+    from cvp.apps.player.modes.flow.history import HistoryFlowWindow
     from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
     from cvp.apps.player.modes.flow.tree import TreeFlowWindow
 
-    return CatalogFlowWindow, DebugFlowWindow, LoggingFlowWindow, TreeFlowWindow
+    return (
+        CatalogFlowWindow,
+        DebugFlowWindow,
+        HistoryFlowWindow,
+        LoggingFlowWindow,
+        TreeFlowWindow,
+    )
 
 
 def create_flow_window(context: Context) -> OrderedDict[str, FlowWindowInterface]:
