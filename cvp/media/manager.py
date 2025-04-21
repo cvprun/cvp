@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-
+import os.path
 from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
 from uuid import uuid4
 from weakref import ReferenceType, ref
 
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.gl.textures.texture import Texture
+from cvp.logging.logging import logger
 from cvp.media.config import MediaConfig
 from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process
+from cvp.net.uri.parser import is_file_scheme
 from cvp.process.manager import ProcessManager
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.medias import MediasPath
@@ -125,18 +127,23 @@ class MediaManager(ResourceManager[MediaConfig]):
         env: Optional[Union[Mapping[str, str], Mapping[bytes, bytes]]] = None,
         start_thread=True,
     ):
-        return spawn_frame_reader_process(
-            name=name,
-            ffmpeg_executable=self.ffmpeg,
-            ffmpeg_args=ffmpeg_args,
-            frame_shape=frame_shape,
-            stderr_path=self._processes_path.generate(name, "stderr"),
-            env=env,
-            start_thread=start_thread,
-            logging_encoding=self.logging_encoding,
-            logging_maxsize=self.logging_maxsize,
-            logging_newline_size=self.logging_newline_size,
-        )
+        try:
+            process = spawn_frame_reader_process(
+                name=name,
+                ffmpeg_executable=self.ffmpeg,
+                ffmpeg_args=ffmpeg_args,
+                frame_shape=frame_shape,
+                stderr_path=self._processes_path.generate(name, "stderr"),
+                env=env,
+                start_thread=start_thread,
+                logging_encoding=self.logging_encoding,
+                logging_maxsize=self.logging_maxsize,
+                logging_newline_size=self.logging_newline_size,
+            )
+            logger.info(f"Spawned frame reader process: {process.pid}")
+            return process
+        except BaseException as e:
+            logger.exception(e)
 
     @staticmethod
     def alsa_default_args(stream_index=0) -> Sequence[str]:
@@ -194,11 +201,15 @@ class MediaManager(ResourceManager[MediaConfig]):
         frame_shape = width, height, MEDIA_FRAME_RGB24_CHANNELS
         return self._spawn(key, args, frame_shape)
 
-    def spawn_ffmpeg_with_file(self, key: str, file: str, width: int, height: int):
+    def spawn_ffmpeg(self, key: str, file: str, width: int, height: int):
         if key in self._processes:
             raise KeyError(f"Key is exists: '{key}'")
 
-        process = self._spawn_with_file(key, file, width, height)
+        if os.path.isfile(file) or is_file_scheme(file):
+            process = self._spawn_with_file(key, file, width, height)
+        else:
+            process = self._spawn_with_rtsp(key, file, width, height)
+
         self._processes[key] = process
 
         texture = Texture()

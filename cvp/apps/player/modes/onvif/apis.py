@@ -44,12 +44,12 @@ class OnvifApisTab(BaseOnvifTab):
     def __init__(self, context: Context):
         super().__init__(context)
         self._operation_widget = WsdlOperationWidget()
-        self._request_runner = self.context.create_thread_runner(self.on_api_request)
+        self._request_runner = self.context.create_thread_runner(self._on_api_request)
         self._response_cache = dict()
         self._response_error = dict()
         self._show_copied_message = False
 
-    def on_api_request(self, operation: WsdlOperationProxy):
+    def _on_api_request(self, operation: WsdlOperationProxy):
         key = operation.cache_args
         try:
             response = operation.call_with_arguments()

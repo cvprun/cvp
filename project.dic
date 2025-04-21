@@ -32,6 +32,7 @@ blocksize
 bluegreen
 bluegrey
 bluey
+bluray
 browny
 bsfs
 buildconf
@@ -71,6 +72,7 @@ fastdecode
 fblits
 fflags
 ffmpegs
+ffrtmphttp
 filekeys
 fileno
 filtergraph
@@ -135,6 +137,8 @@ maxtail
 mbutton
 meipass
 metadatastream
+mmsh
+mmst
 mmxext
 mouseable
 multiband
@@ -168,6 +172,7 @@ popindex
 popright
 premul
 premult
+prompeg
 psnr
 pullpoint
 purpleish
@@ -200,6 +205,9 @@ rightparen
 rmeta
 rotozoom
 rsuper
+rtmps
+rtmpt
+rtmpts
 sameq
 scrollock
 setend
@@ -215,6 +223,7 @@ stillimage
 strfmt
 strftime
 strptime
+subfile
 subpath
 surfaceable
 svga
@@ -230,6 +239,7 @@ tptz
 ttfs
 tvstd
 tznow
+udplite
 undoable
 unhovered
 unhovering

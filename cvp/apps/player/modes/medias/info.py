@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from typing import Final
+import os.path
+from typing import Final, Optional
 
 from imgui_bundle import imgui
 
@@ -27,8 +27,32 @@ _PREVIEW_CHILD_FLAGS: Final[int] = RESIZE_X | RESIZE_Y | BORDERS
 class MediaInfoTab(BaseMediaTab):
     __cvp_media_tab_name__ = "Info"
 
+    _inspect_media: Optional[MediaConfig]
+
     def __init__(self, context: Context):
         super().__init__(context)
+        self._inspect_media = None
+        self._inspect_runner = self.context.create_thread_runner(self._on_inspect)
+
+    @property
+    def timeout(self) -> float:
+        return 5.0
+
+    def _on_inspect(self, timeout: Optional[float] = None) -> None:
+        assert self._inspect_media is not None
+        ffprobe = self.context.config.ffmpeg.ffprobe
+        if not os.path.isfile(ffprobe):
+            raise ValueError(f"ffprobe is not exists: '{ffprobe}'")
+        if not os.access(ffprobe, os.X_OK):
+            raise PermissionError(f"ffprobe is not executable: '{ffprobe}'")
+        try:
+            self._inspect_media.frame_size = inspect_video_frame_size(
+                self._inspect_media.file,
+                timeout=timeout,
+                ffprobe=ffprobe,
+            )
+        except BaseException as e:
+            logger.error(e)
 
     @override
     def do_process(self, media: MediaConfig) -> None:
@@ -51,29 +75,30 @@ class MediaInfoTab(BaseMediaTab):
         if imgui.button("Reset"):
             media.frame_size = 0, 0
 
+        inspect_running = self._inspect_runner.running
+
         imgui.same_line()
-        if imgui.button("Inspect"):
-            try:
-                media.frame_size = inspect_video_frame_size(media.file)
-            except BaseException as e:
-                logger.error(e)
+        if button("Inspect", disabled=inspect_running):
+            self._inspect_runner(self.timeout)
 
         imgui.separator()
         status = self.context.medias.status(media.uuid)
         imgui.text(f"Process ({status})")
 
-        if button("Spawn", disabled=not spawnable):
-            self.context.medias.spawn_ffmpeg_with_file(
+        valid_frame_size = media.valid_frame_size
+        disabled_spawn = not spawnable or inspect_running or not valid_frame_size
+        if button("Spawn", disabled=disabled_spawn):
+            self.context.medias.spawn_ffmpeg(
                 key=media.uuid,
                 file=media.file,
                 width=media.frame_width,
                 height=media.frame_height,
             )
         imgui.same_line()
-        if button("Stop", disabled=not stoppable):
+        if button("Stop", disabled=not stoppable or inspect_running):
             self.context.medias.interrupt(media.uuid)
         imgui.same_line()
-        if button("Remove", disabled=not removable):
+        if button("Remove", disabled=not removable or inspect_running):
             self.context.medias.removable_pop(media.uuid)
 
         imgui.separator()

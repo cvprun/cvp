@@ -62,6 +62,8 @@ LAYOUT_NONAME: Final[str] = "[New Layout]"
 MEDIA_NONAME: Final[str] = "[New Media]"
 MEDIA_FRAME_RGB24_CHANNELS: Final[int] = 3
 MEDIA_FRAME_PIPE_STDOUT: Final[str] = "pipe:1"
+MEDIA_FRAME_WIDTH: Final[int] = 400
+MEDIA_FRAME_HEIGHT: Final[int] = 300
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

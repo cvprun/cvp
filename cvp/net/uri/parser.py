@@ -30,3 +30,11 @@ def replace_netloc(src_url: str, host_url: str) -> str:
         buffer.write(f"#{src.fragment}")
 
     return buffer.getvalue()
+
+
+def is_file_scheme(address: str):
+    try:
+        # https://www.iana.org/assignments/uri-schemes/uri-schemes.xhtml
+        return urlparse(address).scheme in ("file", "filesystem")
+    except:  # noqa
+        return False
