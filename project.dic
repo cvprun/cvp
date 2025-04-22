@@ -37,6 +37,7 @@ browny
 bsfs
 buildconf
 burple
+byterange
 casteljau
 cmov
 colorkey
@@ -67,8 +68,11 @@ doreturn
 dostr
 doublebuf
 dragger
+endlist
 eventable
 extendleft
+extinf
+extm
 fastdecode
 fblits
 fflags
@@ -91,6 +95,7 @@ glyphos
 greenblue
 greeny
 greyblue
+hdcp
 hexdigest
 hideable
 hline
@@ -111,6 +116,8 @@ isync
 jaraco
 kdci
 keyboardable
+keyformat
+keyformatversions
 keymod
 keyrings
 kflat
@@ -231,6 +238,7 @@ svga
 sxga
 sysreq
 systemable
+targetduration
 terracota
 tetri
 tetrix
