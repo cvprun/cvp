@@ -7,6 +7,7 @@ from cvp.logging.logging import logger
 from cvp.resources.subdirs.bin import BinPath
 from cvp.resources.subdirs.cache import CachePath
 from cvp.resources.subdirs.chat import ChatPath
+from cvp.resources.subdirs.downloads import DownloadsPath
 from cvp.resources.subdirs.flows import FlowsPath
 from cvp.resources.subdirs.keyrings import KeyringsPath
 from cvp.resources.subdirs.layouts import LayoutsPath
@@ -33,6 +34,7 @@ class HomeDir(PathFlavour):
         self.bin = BinPath.classname_subdir(self)
         self.cache = CachePath.classname_subdir(self)
         self.chat = ChatPath.classname_subdir(self)
+        self.downloads = DownloadsPath.classname_subdir(self)
         self.flows = FlowsPath.classname_subdir(self)
         self.keyrings = KeyringsPath.classname_subdir(self)
         self.layouts = LayoutsPath.classname_subdir(self)
@@ -49,6 +51,7 @@ class HomeDir(PathFlavour):
             self.bin,
             self.cache,
             self.chat,
+            self.downloads,
             self.flows,
             self.keyrings,
             self.layouts,

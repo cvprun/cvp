@@ -7,11 +7,10 @@ from typing import Deque, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
+from cvp.imgui.begin_mode import begin_mode_context
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
-from cvp.imgui.flags.window import TOAST_WINDOW_FLAGS
 from cvp.imgui.measure_window_roi import get_window_roi
 from cvp.logging.logging import INFO, convert_level_number
 from cvp.transitions.fade import measure_fade_ratio
@@ -99,7 +98,7 @@ class ToastWindow:
             return
 
         imgui.set_next_window_bg_alpha(0)
-        with begin_context(type(self).__name__, self._opened, TOAST_WINDOW_FLAGS):
+        with begin_mode_context(type(self).__name__, self._opened):
             if not self._items:
                 self._opened = False
                 return

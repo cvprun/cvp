@@ -100,19 +100,6 @@ OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
 )
 
-TOAST_WINDOW_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_move,
-    WindowFlags.always_auto_resize,
-    WindowFlags.no_saved_settings,
-    WindowFlags.no_focus_on_appearing,
-    WindowFlags.no_bring_to_front_on_focus,
-    WindowFlags.unsaved_document,
-    WindowFlags.no_docking,
-    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
-    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
-    WindowFlags.no_inputs,  # no_mouse_inputs | no_nav_inputs | no_nav_focus
-)
-
 ROOT_STATIC_VIEWPORT_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_resize,
     WindowFlags.no_move,

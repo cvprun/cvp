@@ -8,7 +8,6 @@ from cvp.apps.player.modes._base import BaseMode
 from cvp.chat.cache import ChatCache
 from cvp.chat.ids import INVALID_CONVERSATION_ID
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.combo import combo_fitting_items_max_width
@@ -19,11 +18,8 @@ from cvp.imgui.flags.input_text import (
     ENTER_RETURNS_TRUE,
     READ_ONLY,
 )
-from cvp.imgui.flags.style_var import StyleVar
-from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.input_text_multilingual import input_text_multiline
 from cvp.imgui.push_style_color import style_disable_input_context
-from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_right_align import text_disabled_right_align
@@ -51,13 +47,8 @@ class ChatMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        imgui.push_style_var(StyleVar.window_border_size, 0)
-        try:
-            set_next_window_as_viewport()
-            with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
-                self.do_child_process()
-        finally:
-            imgui.pop_style_var()
+        with self.begin_mode_context():
+            self.do_child_process()
 
     def combo_models(
         self,

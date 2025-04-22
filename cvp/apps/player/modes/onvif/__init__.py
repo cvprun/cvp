@@ -9,14 +9,10 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.flags.style_var import StyleVar
-from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
-from cvp.imgui.set_next_window_as_viewport import set_next_window_as_viewport
 from cvp.imgui.text_centered import text_centered
 from cvp.onvif.config import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
@@ -84,13 +80,8 @@ class OnvifMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        imgui.push_style_var(StyleVar.window_border_size, 0)
-        try:
-            set_next_window_as_viewport()
-            with begin_context(type(self).__name__, flags=ROOT_STATIC_VIEWPORT_FLAGS):
-                self.do_child_process()
-        finally:
-            imgui.pop_style_var()
+        with self.begin_mode_context():
+            self.do_child_process()
 
     def do_child_process(
         self,

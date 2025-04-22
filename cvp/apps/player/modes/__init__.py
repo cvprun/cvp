@@ -13,6 +13,7 @@ from cvp.context.context import Context
 def all_mode_types() -> Sequence[Type[BaseMode]]:
     from cvp.apps.player.modes.chat import ChatMode
     from cvp.apps.player.modes.dashboard import DashboardMode
+    from cvp.apps.player.modes.download import DownloadMode
     from cvp.apps.player.modes.flow import FlowMode
     from cvp.apps.player.modes.games import all_game_mode_types
     from cvp.apps.player.modes.medias import MediasMode
@@ -24,6 +25,7 @@ def all_mode_types() -> Sequence[Type[BaseMode]]:
         PreferenceMode,  # Num.0
         # ----------------------
         DashboardMode,  # Num.1
+        DownloadMode,
         ChatMode,
         FlowMode,
         MediasMode,

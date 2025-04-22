@@ -9,6 +9,7 @@ from typing import Optional, Union
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context.mixins import ContextMixins
+from cvp.download.manager import DownloadManager
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
 from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
@@ -112,6 +113,11 @@ class Context(ContextMixins):
         self._flows.refresh_flow_graphs()
         self._msg_queue = MsgQueue()
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
+        self._downloader = DownloadManager(
+            self._home.downloads,
+            self._home.temp.as_path(),
+            reload=True,
+        )
 
         self._onvifs = OnvifManager(self._home.onvifs, reload=True)
         self.initialize_onvif_clients()
@@ -210,6 +216,10 @@ class Context(ContextMixins):
     @property
     def wsdiscovery(self):
         return self._wsdiscovery
+
+    @property
+    def downloader(self):
+        return self._downloader
 
     @property
     def onvifs(self):

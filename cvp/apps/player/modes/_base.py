@@ -7,6 +7,7 @@ from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.interface import ModeInterface
 from cvp.context.context import Context
+from cvp.imgui.begin_mode import begin_mode_context
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
@@ -68,3 +69,6 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @selected.setter
     def selected(self, value: str) -> None:
         self.set_selected_submenu(value)
+
+    def begin_mode_context(self):
+        return begin_mode_context(type(self).__name__)
