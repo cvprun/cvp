@@ -79,6 +79,7 @@ class MediaInfoTab(BaseMediaTab):
 
         imgui.same_line()
         if button("Inspect", disabled=inspect_running):
+            self._inspect_media = media
             self._inspect_runner(self.timeout)
 
         imgui.separator()

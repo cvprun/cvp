@@ -174,6 +174,7 @@ class MediaManager(ResourceManager[MediaConfig]):
     def _spawn_with_file(self, key: str, file: str, width: int, height: int):
         args = (
             "-hide_banner",
+            "-progress",
             "-re",
             "-i",
             file,
@@ -186,6 +187,7 @@ class MediaManager(ResourceManager[MediaConfig]):
     def _spawn_with_rtsp(self, key: str, url: str, width: int, height: int):
         args = (
             "-hide_banner",
+            "-progress",
             "-fflags",
             "nobuffer",
             "-fflags",
