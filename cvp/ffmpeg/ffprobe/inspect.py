@@ -16,6 +16,8 @@ def inspect_source(
         ffprobe,
         "-v",
         "quiet",
+        "-rtsp_transport",
+        "tcp",
         "-print_format",
         "json",
         "-show_format",

@@ -127,23 +127,18 @@ class MediaManager(ResourceManager[MediaConfig]):
         env: Optional[Union[Mapping[str, str], Mapping[bytes, bytes]]] = None,
         start_thread=True,
     ):
-        try:
-            process = spawn_frame_reader_process(
-                name=name,
-                ffmpeg_executable=self.ffmpeg,
-                ffmpeg_args=ffmpeg_args,
-                frame_shape=frame_shape,
-                stderr_path=self._processes_path.generate(name, "stderr"),
-                env=env,
-                start_thread=start_thread,
-                logging_encoding=self.logging_encoding,
-                logging_maxsize=self.logging_maxsize,
-                logging_newline_size=self.logging_newline_size,
-            )
-            logger.info(f"Spawned frame reader process: {process.pid}")
-            return process
-        except BaseException as e:
-            logger.exception(e)
+        return spawn_frame_reader_process(
+            name=name,
+            ffmpeg_executable=self.ffmpeg,
+            ffmpeg_args=ffmpeg_args,
+            frame_shape=frame_shape,
+            stderr_path=self._processes_path.generate(name, "stderr"),
+            env=env,
+            start_thread=start_thread,
+            logging_encoding=self.logging_encoding,
+            logging_maxsize=self.logging_maxsize,
+            logging_newline_size=self.logging_newline_size,
+        )
 
     @staticmethod
     def alsa_default_args(stream_index=0) -> Sequence[str]:
@@ -203,15 +198,30 @@ class MediaManager(ResourceManager[MediaConfig]):
         frame_shape = width, height, MEDIA_FRAME_RGB24_CHANNELS
         return self._spawn(key, args, frame_shape)
 
-    def spawn_ffmpeg(self, key: str, file: str, width: int, height: int):
+    def _spawn_with_auto(self, key: str, file: str, width: int, height: int):
+        if os.path.isfile(file) or is_file_scheme(file):
+            return self._spawn_with_file(key, file, width, height)
+        else:
+            return self._spawn_with_rtsp(key, file, width, height)
+
+    def spawn_ffmpeg(
+        self,
+        key: str,
+        file: str,
+        width: int,
+        height: int,
+    ) -> Optional[FrameReaderProcess]:
         if key in self._processes:
             raise KeyError(f"Key is exists: '{key}'")
 
-        if os.path.isfile(file) or is_file_scheme(file):
-            process = self._spawn_with_file(key, file, width, height)
-        else:
-            process = self._spawn_with_rtsp(key, file, width, height)
+        try:
+            process = self._spawn_with_auto(key, file, width, height)
+            logger.info(f"Spawned frame reader process: {process.pid}")
+        except BaseException as e:
+            logger.exception(e)
+            return None
 
+        assert key not in self._processes
         self._processes[key] = process
 
         texture = Texture()
