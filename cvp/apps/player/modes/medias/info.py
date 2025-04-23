@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import os.path
-from typing import Final, Optional
+
+from datetime import datetime
+from typing import Final
 
 from imgui_bundle import imgui
 
@@ -11,9 +12,11 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.flags.child import BORDERS, RESIZE_X, RESIZE_Y
+from cvp.imgui.input_float import input_float
 from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
+from cvp.imgui.spinner import spinner
 from cvp.logging.logging import logger
 from cvp.media.config import MediaConfig
 from cvp.types.override import override
@@ -27,32 +30,37 @@ _PREVIEW_CHILD_FLAGS: Final[int] = RESIZE_X | RESIZE_Y | BORDERS
 class MediaInfoTab(BaseMediaTab):
     __cvp_media_tab_name__ = "Info"
 
-    _inspect_media: Optional[MediaConfig]
-
     def __init__(self, context: Context):
         super().__init__(context)
-        self._inspect_media = None
+        self._inspect_begin = datetime.now().astimezone()
         self._inspect_runner = self.context.create_thread_runner(self._on_inspect)
 
     @property
-    def timeout(self) -> float:
-        return 5.0
+    def error_color(self):
+        return self.context.config.appearance.error_color
 
-    def _on_inspect(self, timeout: Optional[float] = None) -> None:
-        assert self._inspect_media is not None
-        ffprobe = self.context.config.ffmpeg.ffprobe
-        if not os.path.isfile(ffprobe):
-            raise ValueError(f"ffprobe is not exists: '{ffprobe}'")
-        if not os.access(ffprobe, os.X_OK):
-            raise PermissionError(f"ffprobe is not executable: '{ffprobe}'")
+    @staticmethod
+    def _on_inspect(ffprobe: str, media: MediaConfig) -> None:
         try:
-            self._inspect_media.frame_size = inspect_video_frame_size(
-                self._inspect_media.file,
-                timeout=timeout,
+            media.frame_size = inspect_video_frame_size(
+                media.file,
+                timeout=media.inspect_timeout,
                 ffprobe=ffprobe,
             )
         except BaseException as e:
             logger.error(e)
+            raise
+
+    def inspect_frame_size(self, media: MediaConfig) -> None:
+        if self._inspect_runner.running:
+            raise ValueError("Inspection is already running")
+
+        try:
+            self._inspect_runner(self.context.config.ffmpeg.ffprobe, media)
+            self._inspect_begin = datetime.now().astimezone()
+        except BaseException as e:
+            logger.exception(e)
+            self.context.toast(f"Inspection failed: '{e}'")
 
     @override
     def do_process(self, media: MediaConfig) -> None:
@@ -65,6 +73,9 @@ class MediaInfoTab(BaseMediaTab):
         stoppable = self.context.medias.stoppable(media.uuid)
         removable = self.context.medias.removable(media.uuid)
 
+        if timeout := input_float("Inspect timeout", media.inspect_timeout, step=1.0):
+            media.inspect_timeout = timeout.value
+
         imgui.separator()
         if frame_size_result := input_int2(
             "Frame Size",
@@ -72,15 +83,26 @@ class MediaInfoTab(BaseMediaTab):
             media.frame_size[1],
         ):
             media.frame_size = frame_size_result.value
-        if imgui.button("Reset"):
-            media.frame_size = 0, 0
+        if imgui.button("Reset default"):
+            media.update_default_frame_size()
 
         inspect_running = self._inspect_runner.running
 
         imgui.same_line()
         if button("Inspect", disabled=inspect_running):
-            self._inspect_media = media
-            self._inspect_runner(self.timeout)
+            self.inspect_frame_size(media)
+
+        if inspect_running:
+            imgui.same_line()
+            spinner("Running Spinner")
+
+            imgui.same_line()
+            duration = datetime.now().astimezone() - self._inspect_begin
+            remain_seconds = media.inspect_timeout - duration.total_seconds()
+            imgui.text(f"{remain_seconds:.01f}s")
+
+        if self._inspect_runner.error is not None:
+            imgui.text_colored(self.error_color, str(self._inspect_runner.error))
 
         imgui.separator()
         status = self.context.medias.status(media.uuid)

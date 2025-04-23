@@ -64,6 +64,7 @@ MEDIA_FRAME_RGB24_CHANNELS: Final[int] = 3
 MEDIA_FRAME_PIPE_STDOUT: Final[str] = "pipe:1"
 MEDIA_FRAME_WIDTH: Final[int] = 400
 MEDIA_FRAME_HEIGHT: Final[int] = 300
+MEDIA_INSPECT_TIMEOUT: Final[float] = 3.0
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

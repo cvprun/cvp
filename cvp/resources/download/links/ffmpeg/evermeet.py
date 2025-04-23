@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# BtbN supports macOS.
+# evermeet supports macOS.
 
 HEALTHCHECK_URL = "https://evermeet.cx/ffmpeg/"
 
