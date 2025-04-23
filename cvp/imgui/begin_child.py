@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from contextlib import contextmanager
-from typing import Union
+from typing import Optional, Union
 
 from imgui_bundle import imgui
 
@@ -11,12 +11,19 @@ from cvp.imgui.flags.window import WindowFlags
 
 def begin_child(
     label: Union[str, int],
-    width=0.0,
-    height=0.0,
+    size: Optional[imgui.ImVec2Like] = None,
     child_flags: Union[ChildFlags, int] = 0,
     window_flags: Union[WindowFlags, int] = 0,
 ) -> bool:
-    return imgui.begin_child(label, (width, height), child_flags, window_flags)
+    if isinstance(child_flags, ChildFlags):
+        child_flags = int(child_flags)
+    if isinstance(window_flags, WindowFlags):
+        window_flags = int(window_flags)
+
+    assert isinstance(child_flags, int)
+    assert isinstance(window_flags, int)
+
+    return imgui.begin_child(label, size, child_flags, window_flags)
 
 
 def end_child() -> None:
@@ -26,12 +33,11 @@ def end_child() -> None:
 @contextmanager
 def begin_child_context(
     label: Union[str, int],
-    width=0.0,
-    height=0.0,
+    size: Optional[imgui.ImVec2Like] = None,
     child_flags: Union[ChildFlags, int] = 0,
     window_flags: Union[WindowFlags, int] = 0,
 ):
-    result = begin_child(label, width, height, child_flags, window_flags)
+    result = begin_child(label, size, child_flags, window_flags)
     try:
         yield result
     finally:

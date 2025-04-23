@@ -82,8 +82,8 @@ class SidebarWindow(WindowBase[SidebarWidthT], SidebarWindowInterface):
     def on_process(self) -> None:
         child_flags = BORDERS if self._sidebar_border else 0
         if begin_child(
-            label="## ChildSidebar",
-            width=self.sidebar_width,
+            label="##ChildSidebar",
+            size=(self.sidebar_width, 0),
             child_flags=child_flags,
         ):
             self.on_process_sidebar()
@@ -92,7 +92,7 @@ class SidebarWindow(WindowBase[SidebarWidthT], SidebarWindowInterface):
         self._sidebar_splitter.do_process()
         imgui.same_line()
 
-        if begin_child("## ChildMain"):
+        if begin_child("##ChildMain"):
             try:
                 self.on_process_main()
             finally:

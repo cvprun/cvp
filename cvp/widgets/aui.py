@@ -148,7 +148,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
         top = imgui.get_cursor_pos_y()
 
         imgui.set_cursor_pos_x(imgui.get_cursor_pos_x() + pw)
-        if begin_child(f"##{self._left_child_id}", self.split_left):
+        if begin_child(f"##{self._left_child_id}", (self.split_left, 0)):
             try:
                 with style_item_spacing_context(0, 0):
                     imgui.dummy((0, ph))
@@ -170,10 +170,10 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
         main_w: float
         main_h: float
 
-        if begin_child(f"##{self._center_child_id}", -self.split_right - pw):
+        if begin_child(f"##{self._center_child_id}", (-self.split_right - pw, 0)):
             try:
                 with style_item_spacing_context(0, -1):
-                    if begin_child(f"##{self._main_child_id}", 0.0, -self.split_bottom):
+                    if begin_child(f"##{self._main_child_id}", (0, -self.split_bottom)):
                         try:
                             main_pos = imgui.get_window_pos()
                             main_size = imgui.get_window_size()
@@ -191,7 +191,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
                 self._bottom_splitter.do_process()
 
             imgui.set_cursor_pos_x(imgui.get_cursor_pos_x() + pw)
-            if begin_child(f"##{self._bottom_child_id}", -pw):
+            if begin_child(f"##{self._bottom_child_id}", (-pw, 0)):
                 try:
                     with style_item_spacing_context(0, 0):
                         imgui.dummy((0, ph))
@@ -208,7 +208,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
         with style_item_spacing_context(pw, 0):
             imgui.same_line()
 
-        if begin_child(f"##{self._right_child_id}", -pw):
+        if begin_child(f"##{self._right_child_id}", (-pw, 0)):
             try:
                 with style_item_spacing_context(0, 0):
                     imgui.dummy((0, ph))
@@ -217,7 +217,7 @@ class AuiWindow(WindowBase[AuiSectionT], AuiInterface):
                 end_child()
 
         imgui.set_next_window_pos((main_x, main_y))
-        if begin_child(f"##{self._main_child_id}", main_w, main_h):
+        if begin_child(f"##{self._main_child_id}", (main_w, main_h)):
             try:
                 # This is where the actual rendering of main_child occurs.
                 self.on_process_main()

@@ -11,7 +11,6 @@ from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.text_centered import text_centered
 from cvp.nodes.node import Node
 from cvp.types.override import override
-from cvp.variables import SIDE_MENU_WIDTH
 
 
 class NodePreference(BasePreference):
@@ -26,8 +25,13 @@ class NodePreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        child_flags = RESIZE_X | BORDERS
-        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+        menu_split_x = 150
+        menu_child_flags = RESIZE_X | BORDERS
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for path, node in self.nodes.items():

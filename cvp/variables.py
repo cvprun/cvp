@@ -8,6 +8,7 @@ from cvp.types.shapes import Size
 TIMEOUT_INFINITE: Final[float] = -1.0
 UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
+UNKNOWN_TOTAL_SIZE: Final[int] = -1
 NULL_CHAR: Final[int] = 0
 NODOC: Final[str] = ""
 
@@ -69,7 +70,6 @@ MEDIA_INSPECT_TIMEOUT: Final[float] = 3.0
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
 HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH: Final[int] = 400
-SIDE_MENU_WIDTH: Final[float] = 150.0
 
 MIN_SIDEBAR_WIDTH: Final[float] = 160.0
 MAX_SIDEBAR_WIDTH: Final[float] = 480.0

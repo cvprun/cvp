@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from typing import Final
 
 from imgui_bundle import imgui
 
@@ -20,11 +19,6 @@ from cvp.imgui.spinner import spinner
 from cvp.logging.logging import logger
 from cvp.media.config import MediaConfig
 from cvp.types.override import override
-
-_PREVIEW_NAME: Final[str] = "Preview"
-_PREVIEW_WIDTH: Final[int] = 400
-_PREVIEW_HEIGHT: Final[int] = 300
-_PREVIEW_CHILD_FLAGS: Final[int] = RESIZE_X | RESIZE_Y | BORDERS
 
 
 class MediaInfoTab(BaseMediaTab):
@@ -145,12 +139,15 @@ class MediaInfoTab(BaseMediaTab):
     @staticmethod
     def do_preview_process(
         texture: int,
-        name=_PREVIEW_NAME,
-        width=_PREVIEW_WIDTH,
-        height=_PREVIEW_HEIGHT,
-        child_flags=_PREVIEW_CHILD_FLAGS,
+        width=400,
+        height=300,
+        child_flags=RESIZE_X | RESIZE_Y | BORDERS,
     ):
-        with begin_child_context(name, width, height, child_flags=child_flags):
+        with begin_child_context(
+            label="Preview",
+            size=(width, height),
+            child_flags=child_flags,
+        ):
             screen_pos = imgui.get_cursor_screen_pos()
             region_size = imgui.get_content_region_avail()
 

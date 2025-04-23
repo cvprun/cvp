@@ -9,7 +9,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
-from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE, FIT_WIDTH
+from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
@@ -19,7 +19,7 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.ollama.ollama import Ollama
 from cvp.types.override import override
-from cvp.variables import NOT_FOUND_INDEX, SIDE_MENU_WIDTH
+from cvp.variables import NOT_FOUND_INDEX
 
 
 class OllamaPreference(BasePreference):
@@ -59,8 +59,13 @@ class OllamaPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        child_flags = RESIZE_X | BORDERS
-        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+        menu_split_x = 150
+        menu_child_flags = RESIZE_X | BORDERS
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if imgui.button("Reload"):
                 self.ollamas.read_all_config_files()
             imgui.same_line()
@@ -168,11 +173,17 @@ class OllamaPreference(BasePreference):
         if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
             ollama.timeout = timeout_result.value
 
-    def do_ollama_apis(self, ollama: Ollama) -> None:
+    def do_ollama_apis(
+        self,
+        ollama: Ollama,
+        *,
+        api_list_width=150,
+        api_list_height=FIT_HEIGHT,
+    ) -> None:
         running = self._runner.running
         has_error = bool(self._runner.error)
 
-        if imgui.begin_list_box("##APIList", (SIDE_MENU_WIDTH, FIT_HEIGHT)):
+        if imgui.begin_list_box("##APIList", size=(api_list_width, api_list_height)):
             try:
                 if imgui.button("Reload"):
                     self._runner(ollama, self.RunnerCommand.list_)
@@ -185,7 +196,7 @@ class OllamaPreference(BasePreference):
 
         imgui.same_line()
 
-        with begin_child_context("APIMain", FIT_WIDTH, FIT_HEIGHT):
+        with begin_child_context("APIMain", FIT_SIZE):
             if running:
                 text_centered("Requesting a list of models...")
             elif has_error:

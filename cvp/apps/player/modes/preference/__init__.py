@@ -14,7 +14,6 @@ from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
-from cvp.variables import SIDE_MENU_WIDTH
 
 
 @lru_cache
@@ -102,9 +101,14 @@ class PreferenceMode(BaseMode):
         self,
         widget: Optional[BasePreference] = None,
         *,
-        child_flags=RESIZE_X | BORDERS,
+        menu_split_x=150,
+        menu_child_flags=RESIZE_X | BORDERS,
     ) -> None:
-        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+        with begin_child_context(
+            "Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     for key in self._menus.keys():

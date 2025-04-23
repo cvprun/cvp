@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, List
+from typing import List
 
 from imgui_bundle import imgui
 
@@ -10,6 +10,7 @@ from cvp.chat.ids import INVALID_CONVERSATION_ID
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
+from cvp.imgui.calc_input_text_with_button_size import calc_input_multiline_text_size
 from cvp.imgui.combo import combo_fitting_items_max_width
 from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
@@ -29,9 +30,6 @@ from cvp.variables import (
     NOT_FOUND_INDEX,
     OLLAMA_MODEL_NAME_SEPARATOR,
 )
-
-_MENU_SPLIT_X: Final[int] = 300
-_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 class ChatMode(BaseMode):
@@ -80,25 +78,8 @@ class ChatMode(BaseMode):
             _, model_name = item_label.split(separator, maxsplit=1)
             self.context.config.chat.selected_model_name = model_name
 
-    @staticmethod
-    def calc_input_text_size(input_value: str, button_label: str) -> imgui.ImVec2:
-        button_size = imgui.calc_text_size(button_label)
-        button_width = button_size.x
-
-        frame_padding = imgui.get_style().frame_padding
-        item_spacing = imgui.get_style().item_spacing
-
-        input_text_right = button_width + (frame_padding.x * 2) + item_spacing.x
-        width = -1 * input_text_right
-
-        line_count = input_value.count("\n") + 1
-        text_height = imgui.get_font_size() * line_count
-        height = text_height + (frame_padding.y * 2)
-
-        return imgui.ImVec2(width, height)
-
     def get_input_text_size(self) -> imgui.ImVec2:
-        return self.calc_input_text_size(self._input_text, self._enter_label)
+        return calc_input_multiline_text_size(self._input_text, self._enter_label)
 
     def input_text_multilingual_with_button(self) -> None:
         disabled_input = self.context.get_ollama_chat_status().running
@@ -140,10 +121,14 @@ class ChatMode(BaseMode):
 
     def do_child_process(
         self,
-        menu_split_x=_MENU_SPLIT_X,
-        menu_child_flags=_MENU_CHILD_FLAGS,
+        menu_split_x=300,
+        menu_child_flags=RESIZE_X | BORDERS,
     ) -> None:
-        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     if imgui.button(self._title_noname, (FIT_WIDTH, 0)):
@@ -184,7 +169,7 @@ class ChatMode(BaseMode):
             item_spacing_y = imgui.get_style().item_spacing.y * 2
             history_bottom = -1 * (self.get_input_text_size().y + item_spacing_y)
 
-            with begin_child_context("Main", 0, history_bottom):
+            with begin_child_context("Main", size=(0, history_bottom)):
                 if self._conversation_id == INVALID_CONVERSATION_ID:
                     text_centered("What can I help with?")
                 else:

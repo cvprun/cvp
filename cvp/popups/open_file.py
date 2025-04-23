@@ -131,7 +131,7 @@ class OpenFilePopup(PopupBase[str]):
             else:
                 logger.warning(f"Invalid location: '{loc_text}'")
 
-        if begin_child("Files", 0, footer_height_as_reverse(), BORDERS):
+        if begin_child("Files", (0, footer_height_as_reverse()), BORDERS):
             try:
                 if self._current_dir != self._location_text:
                     # Update items

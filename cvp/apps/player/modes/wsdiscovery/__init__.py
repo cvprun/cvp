@@ -166,7 +166,11 @@ class WsDiscoveryMode(BaseMode):
         menu_child_flags=_MENU_CHILD_FLAGS,
     ) -> None:
         running = self._discovery_runner.running
-        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if running:
                 imgui.begin_disabled()
             try:

@@ -2,7 +2,7 @@
 
 from collections import OrderedDict
 from functools import lru_cache
-from typing import Final, Sequence, Type
+from typing import Sequence, Type
 
 from imgui_bundle import imgui
 
@@ -17,9 +17,6 @@ from cvp.imgui.text_centered import text_centered
 from cvp.onvif.config import OnvifConfig
 from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
-
-_MENU_SPLIT_X: Final[int] = 300
-_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 @lru_cache
@@ -85,10 +82,14 @@ class OnvifMode(BaseMode):
 
     def do_child_process(
         self,
-        menu_split_x=_MENU_SPLIT_X,
-        menu_child_flags=_MENU_CHILD_FLAGS,
+        menu_split_x=300,
+        menu_child_flags=RESIZE_X | BORDERS,
     ) -> None:
-        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if button("Reload"):
                 self.onvifs.read_all_config_files()
             imgui.same_line()

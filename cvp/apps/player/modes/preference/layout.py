@@ -137,7 +137,11 @@ class LayoutPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        with begin_child_context("Menu", _MENU_SPLIT_X, child_flags=_MENU_CHILD_FLAGS):
+        with begin_child_context(
+            label="Menu",
+            size=(_MENU_SPLIT_X, 0),
+            child_flags=_MENU_CHILD_FLAGS,
+        ):
             if imgui.button("Reload"):
                 self.reload_layout_filenames()
             imgui.same_line()

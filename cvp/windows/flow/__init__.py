@@ -562,7 +562,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
     @override
     def on_process_sidebar_left(self):
-        if begin_child("## ChildLeftTop", 0, -self.split_tree):
+        if begin_child("##ChildLeftTop", (0, -self.split_tree)):
             try:
                 pass
             finally:

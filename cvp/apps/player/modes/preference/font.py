@@ -19,7 +19,6 @@ from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.text_centered import text_centered
 from cvp.types.colors import RGBA
 from cvp.types.override import override
-from cvp.variables import SIDE_MENU_WIDTH
 
 
 class FontPreference(BasePreference):
@@ -74,8 +73,13 @@ class FontPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        child_flags = RESIZE_X | BORDERS
-        with begin_child_context("Menu", SIDE_MENU_WIDTH, child_flags=child_flags):
+        menu_split_x = 150
+        menu_child_flags = RESIZE_X | BORDERS
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for key, font in GlobalFontMapper().items():
@@ -94,12 +98,20 @@ class FontPreference(BasePreference):
             else:
                 self.do_font_process(selected_font)
 
-    def do_font_process(self, font: Font) -> None:
+    def do_font_process(
+        self,
+        font: Font,
+        planes_split_x=150,
+        planes_child_flags=RESIZE_X | BORDERS,
+    ) -> None:
         input_text_disabled("Font family", font.family)
         input_text_disabled("Font pixel size", str(font.size))
 
-        child_flags = RESIZE_X | BORDERS
-        with begin_child_context("Planes", SIDE_MENU_WIDTH, child_flags=child_flags):
+        with begin_child_context(
+            label="Planes",
+            size=(planes_split_x, 0),
+            child_flags=planes_child_flags,
+        ):
             if imgui.begin_list_box("##Planes", FIT_SIZE):
                 try:
                     self.selectable_blocks(font)

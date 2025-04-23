@@ -2,7 +2,7 @@
 
 import json
 from traceback import format_exc
-from typing import Any, Dict, Final, Sequence, Tuple
+from typing import Any, Dict, Sequence, Tuple
 
 from imgui_bundle import imgui
 
@@ -22,9 +22,6 @@ from cvp.variables import NOT_FOUND_INDEX
 from cvp.widgets.wsdl_operation import WsdlOperationWidget
 from cvp.wsdl.client import WsdlClient
 from cvp.wsdl.operation import WsdlOperationProxy
-
-_API_LIST_SPLIT_X: Final[int] = 150
-_API_LIST_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 class StepDone(ValueError):
@@ -171,10 +168,10 @@ class OnvifApisTab(BaseOnvifTab):
     def do_process_select_api(
         item: OnvifConfig,
         apis: Dict[str, WsdlOperationProxy],
-        split_x=_API_LIST_SPLIT_X,
-        child_flags=_API_LIST_CHILD_FLAGS,
+        split_x=200,
+        child_flags=RESIZE_X | BORDERS,
     ) -> str:
-        with begin_child_context("API List", split_x, child_flags=child_flags):
+        with begin_child_context("API List", (split_x, 0), child_flags=child_flags):
             if imgui.begin_list_box("##APIList", FIT_SIZE):
                 try:
                     for i, key in enumerate(apis.keys()):

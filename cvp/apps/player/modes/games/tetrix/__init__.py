@@ -28,9 +28,6 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 from cvp.types.shapes import Rect
 
-_MENU_SPLIT_X: Final[int] = 300
-_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
-
 SINGLE_LINE_CLEAR_SCORE: Final[int] = 100
 DOUBLE_LINE_CLEAR_SCORE: Final[int] = 300
 TRIPLE_LINE_CLEAR_SCORE: Final[int] = 500
@@ -269,10 +266,14 @@ class TetrixMode(BaseGameMode):
 
     def do_child_process(
         self,
-        menu_split_x=_MENU_SPLIT_X,
-        menu_child_flags=_MENU_CHILD_FLAGS,
+        menu_split_x=300,
+        menu_child_flags=RESIZE_X | BORDERS,
     ) -> None:
-        with begin_child_context("Menu", menu_split_x, child_flags=menu_child_flags):
+        with begin_child_context(
+            label="Menu",
+            size=(menu_split_x, 0),
+            child_flags=menu_child_flags,
+        ):
             imgui.text(f"Score: {self._current_score}")
             imgui.text(f"High: {self.high_score}")
 
