@@ -9,6 +9,12 @@ from cvp.variables import UNKNOWN_TOTAL_SIZE
 
 
 @unique
+class DownloadType(StrEnum):
+    default = auto()
+    curl = auto()
+
+
+@unique
 class DownloadState(StrEnum):
     unknown = auto()
     pending = auto()
@@ -21,7 +27,7 @@ class DownloadItem:
     dest: str = field(default_factory=str)
     total: int = UNKNOWN_TOTAL_SIZE
     downloaded: int = UNKNOWN_TOTAL_SIZE
-    state: DownloadState = DownloadState.pending
+    state: DownloadState = DownloadState.unknown
     progress: float = 0.0
     speed: int = 0
     elapsed: float = 0.0

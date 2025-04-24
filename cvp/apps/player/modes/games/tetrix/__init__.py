@@ -68,6 +68,9 @@ BLOCKS: Final[Sequence[BlockShapeType]] = (
 class TetrixMode(BaseMode):
     __cvp_mode_name__ = "TetriX"
 
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
     def __init__(self, context: Context):
         super().__init__(context)
 
@@ -264,15 +267,11 @@ class TetrixMode(BaseMode):
         finally:
             imgui.pop_style_var()
 
-    def do_child_process(
-        self,
-        menu_split_x=300,
-        menu_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_child_process(self) -> None:
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             imgui.text(f"Score: {self._current_score}")
             imgui.text(f"High: {self.high_score}")

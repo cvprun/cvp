@@ -41,14 +41,7 @@ class FlowWindow:
         self._drag_dtype = Dtype.any()
         self._variable_key = str()
 
-        self._menus = (
-            ("File", self.on_file_menu),
-            ("Edit", self.on_edit_menu),
-            ("Layout", self.on_layout_menu),
-            ("Run", self.on_run_menu),
-            ("Deploy", self.on_deploy_menu),
-            ("View", self.on_view_menu),
-        )
+        self._menus = (("File", self.on_file_menu),)
 
         self._new_graph_popup = InputTextPopup(
             title="New graph",
@@ -84,30 +77,6 @@ class FlowWindow:
     def window_config(self):
         return self.context.config.flow_aui
 
-    @property
-    def split_tree(self) -> float:
-        return self.window_config.split_tree
-
-    @split_tree.setter
-    def split_tree(self, value: float) -> None:
-        self.window_config.split_tree = value
-
-    @property
-    def show_layout(self) -> bool:
-        return self.window_config.nodes.show_layout
-
-    @show_layout.setter
-    def show_layout(self, value: bool) -> None:
-        self.window_config.nodes.show_layout = value
-
-    @property
-    def autoscroll(self) -> bool:
-        return self.window_config.logs.autoscroll
-
-    @autoscroll.setter
-    def autoscroll(self, value: bool) -> None:
-        self.window_config.logs.autoscroll = value
-
     def on_new_graph_popup(self, name: str) -> None:
         graph = self.context.flows.create_graph(name, append=True)
         filepath = self.context.home.flows.graph_filepath(graph.key)
@@ -135,24 +104,6 @@ class FlowWindow:
 
         with canvas:
             canvas.graph.add_variable(name, self._drag_dtype)
-
-    @staticmethod
-    def _process_disabled_edit_menu() -> None:
-        menu_item("Undo", shortcut="Ctrl+Z", enabled=False)
-        menu_item("Redo", shortcut="Ctrl+Y", enabled=False)
-        imgui.separator()
-        menu_item("Cut", shortcut="Ctrl+X", enabled=False)
-        menu_item("Copy", shortcut="Ctrl+C", enabled=False)
-        menu_item("Paste", shortcut="Ctrl+V", enabled=False)
-        imgui.separator()
-        menu_item("Delete", shortcut="Del", enabled=False)
-        imgui.separator()
-        menu_item("Reset control", enabled=False)
-        imgui.separator()
-        menu_item("Select all", enabled=False)
-        menu_item("Select nodes", enabled=False)
-        menu_item("Select wires", enabled=False)
-        menu_item("Select pins", enabled=False)
 
     def _process_enabled_edit_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
@@ -240,13 +191,6 @@ class FlowWindow:
             canvas.save_history("Send backward items")
 
     @staticmethod
-    def _process_disabled_layout_menu() -> None:
-        menu_item("To Front", enabled=False)
-        menu_item("To Back", enabled=False)
-        menu_item("Bring Forward", enabled=False)
-        menu_item("Send Backward", enabled=False)
-
-    @staticmethod
     def _process_enabled_align_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
@@ -280,10 +224,6 @@ class FlowWindow:
                 imgui.end_menu()
 
     @staticmethod
-    def _process_disabled_align_menu() -> None:
-        imgui.begin_menu("Align", enabled=False)
-
-    @staticmethod
     def _process_enabled_distribute_menu(canvas: FlowCanvas) -> None:
         assert canvas.opened
 
@@ -299,10 +239,6 @@ class FlowWindow:
                 canvas.graph.nodes_distribute_vertical(nodes)
                 canvas.save_history("Distribute vertical nodes")
             imgui.end_menu()
-
-    @staticmethod
-    def _process_disabled_distribute_menu() -> None:
-        imgui.begin_menu("Distribute", enabled=False)
 
     def _process_enabled_run_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
@@ -344,28 +280,6 @@ class FlowWindow:
         if menu_item(f"{DEBUG_STEP_OUT} Step Out"):
             pass
 
-    @staticmethod
-    def _process_disabled_run_menu() -> None:
-        imgui.begin_menu(f"{PLAY} Run", enabled=False)
-        imgui.begin_menu(f"{BUG} Debug", enabled=False)
-        imgui.separator()
-        menu_item(f"{PAUSE} Pause", enabled=False)
-        menu_item(f"{STOP} Stop", enabled=False)
-        menu_item(f"{DEBUG_STEP_OVER} Step Over", enabled=False)
-        menu_item(f"{DEBUG_STEP_INTO} Step Into", enabled=False)
-        menu_item(f"{DEBUG_STEP_OUT} Step Out", enabled=False)
-
-    @staticmethod
-    def _process_enabled_deploy_menu(canvas: FlowCanvas) -> None:
-        assert canvas.opened
-
-        if menu_item("Upload to ...", enabled=False):
-            pass
-
-    @staticmethod
-    def _process_disabled_deploy_menu() -> None:
-        menu_item("Upload to ...", enabled=False)
-
     def _process_add_variable_menu(self, canvas: FlowCanvas) -> None:
         menu_item(f"Add {self._variable_key} variable node", enabled=False)
         imgui.separator()
@@ -379,18 +293,6 @@ class FlowWindow:
             node = self.context.flows.add_getter_node(canvas.graph, self._variable_key)
             canvas.update_node_roi(node)
             canvas.save_history("Add getter variable node", self._variable_key)
-
-    def on_menu(self) -> None:
-        if imgui.begin_menu_bar():
-            try:
-                for name, func in self._menus:
-                    if imgui.begin_menu(name):
-                        try:
-                            func()
-                        finally:
-                            imgui.end_menu()
-            finally:
-                imgui.end_menu_bar()
 
     def on_file_menu(self) -> None:
         if menu_item("New graph"):
@@ -446,53 +348,6 @@ class FlowWindow:
     def close(self):
         pass
 
-    def on_edit_menu(self) -> None:
-        if canvas := self._canvases.canvas:
-            with canvas:
-                if canvas.opened:
-                    self._process_enabled_edit_menu(canvas)
-                    return
-        self._process_disabled_edit_menu()
-
-    def on_layout_menu(self) -> None:
-        if canvas := self._canvases.canvas:
-            with canvas:
-                if canvas.opened:
-                    self._process_enabled_layout_menu(canvas)
-                    imgui.separator()
-                    self._process_enabled_align_menu(canvas)
-                    self._process_enabled_distribute_menu(canvas)
-                    return
-
-        self._process_disabled_layout_menu()
-        imgui.separator()
-        self._process_disabled_align_menu()
-        self._process_disabled_distribute_menu()
-
-    def on_run_menu(self) -> None:
-        if canvas := self._canvases.canvas:
-            with canvas:
-                if canvas.opened:
-                    self._process_enabled_run_menu(canvas)
-                    return
-        self._process_disabled_run_menu()
-
-    def on_deploy_menu(self) -> None:
-        if canvas := self._canvases.canvas:
-            with canvas:
-                if canvas.opened:
-                    self._process_enabled_deploy_menu(canvas)
-                    return
-        self._process_disabled_deploy_menu()
-
-    def on_view_menu(self) -> None:
-        if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
-            self.autoscroll = autoscroll.state
-
-        imgui.separator()
-        if show_layout := menu_item("Show Layout", selected=self.show_layout):
-            self.show_layout = show_layout.state
-
     def save_current_graph(self) -> None:
         graph = self._canvases.graph
         if graph is None:
@@ -530,14 +385,6 @@ class FlowWindow:
         if graph_uuid_stash:
             if graph := self.context.flows.graphs.get(graph_uuid_stash):
                 self._canvases.open(graph)
-
-    # @override
-    def on_process_sidebar_left(self):
-        if begin_child("##ChildLeftTop", (0, -self.split_tree)):
-            try:
-                pass
-            finally:
-                end_child()
 
     # @override
     def on_process_sidebar_right(self):

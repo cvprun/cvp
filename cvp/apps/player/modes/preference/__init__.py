@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
-from functools import lru_cache
-from typing import Optional, Sequence, Type
+from typing import Final, Optional, Type
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.preference._base import BasePreference, PreferenceInterface
+from cvp.apps.player.modes.preference._manager import create_preference_widgets
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
@@ -16,53 +15,12 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-@lru_cache
-def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
-    from cvp.apps.player.modes.preference.appearance import AppearancePreference
-    from cvp.apps.player.modes.preference.concurrency import ConcurrencyPreference
-    from cvp.apps.player.modes.preference.developer import DeveloperPreference
-    from cvp.apps.player.modes.preference.dtype import DtypePreference
-    from cvp.apps.player.modes.preference.ffmpeg import FFmpegPreference
-    from cvp.apps.player.modes.preference.flow import FlowPreference
-    from cvp.apps.player.modes.preference.font import FontPreference
-    from cvp.apps.player.modes.preference.keyring import KeyringPreference
-    from cvp.apps.player.modes.preference.layout import LayoutPreference
-    from cvp.apps.player.modes.preference.logging import LoggingPreference
-    from cvp.apps.player.modes.preference.node import NodePreference
-    from cvp.apps.player.modes.preference.ollama import OllamaPreference
-    from cvp.apps.player.modes.preference.overlay import OverlayPreference
-    from cvp.apps.player.modes.preference.resource import ResourcePreference
-    from cvp.apps.player.modes.preference.supabase import SupabasePreference
-    from cvp.apps.player.modes.preference.toast import ToastPreference
-
-    return (
-        AppearancePreference,
-        ConcurrencyPreference,
-        DeveloperPreference,
-        DtypePreference,
-        FFmpegPreference,
-        FlowPreference,
-        FontPreference,
-        KeyringPreference,
-        LayoutPreference,
-        LoggingPreference,
-        NodePreference,
-        OllamaPreference,
-        OverlayPreference,
-        ResourcePreference,
-        SupabasePreference,
-        ToastPreference,
-    )
-
-
-def create_preference_widgets(context: Context):
-    widget_types = create_preference_widget_types()
-    return OrderedDict({wt.get_menu_name(): wt(context) for wt in widget_types})
-
-
 class PreferenceMode(BaseMode):
     __cvp_mode_number__ = 0
     __cvp_mode_name__ = "Preference"
+
+    _MENU_SPLIT_X: Final[int] = 150
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -96,17 +54,11 @@ class PreferenceMode(BaseMode):
             if widget is not None:
                 widget.do_postprocess()
 
-    def do_child_process(
-        self,
-        widget: Optional[BasePreference] = None,
-        *,
-        menu_split_x=150,
-        menu_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_child_process(self, widget: Optional[BasePreference] = None) -> None:
         with begin_child_context(
-            "Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            label="Menu",
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:

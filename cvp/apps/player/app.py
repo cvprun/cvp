@@ -67,12 +67,8 @@ class PlayerApplication:
             cancel="No",
         )
 
-        prefix_menus = {"Mode": self.on_mode_menu}
-        self._prefix_menus = OrderedDict(prefix_menus)
-
-        suffix_menus = {"Layout": self.on_layout_menu, "Help": self.on_help_menu}
-        self._suffix_menus = OrderedDict(suffix_menus)
-
+        self._prefix_menus = OrderedDict({"Mode": self.on_mode_menu})
+        self._suffix_menus = OrderedDict({"Help": self.on_help_menu})
         self._modes = ModeManager(context)
 
         self._shortcut_program_quit = Shortcut(
@@ -403,25 +399,26 @@ class PlayerApplication:
         if menu_item("Quit", shortcut=self._shortcut_program_quit.label):
             self._confirm_quit.show()
 
-    def on_layout_menu(self) -> None:
-        if menu_item("Save", shortcut=self._shortcut_save_layout.label):
-            self._modes.save_new_layout(reload=True)
+    def on_help_menu(self) -> None:
+        if imgui.begin_menu("Layout"):
+            try:
+                if menu_item("Save", shortcut=self._shortcut_save_layout.label):
+                    self._modes.save_new_layout(reload=True)
+                imgui.separator()
+                for layout_filename in self._modes.layout_filenames:
+                    if menu_item(layout_filename):
+                        self._modes.load_layout(layout_filename)
+            finally:
+                imgui.end_menu()
 
         imgui.separator()
-        for layout_filename in self._modes.layout_filenames:
-            if menu_item(layout_filename):
-                self._modes.load_layout(layout_filename)
-
-    def on_help_menu(self) -> None:
         if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
             self.save_screenshot()
 
         imgui.separator()
         if menu_item("Overlay", self._overlay.opened):
             self._overlay.flip_opened()
-
         if self.debug:
-            imgui.separator()
             if menu_item("Metrics", self.config.developer.show_metrics):
                 self.config.developer.flip_show_metrics()
             if menu_item("Style", self.config.developer.show_style):

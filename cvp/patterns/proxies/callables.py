@@ -9,7 +9,7 @@ from cvp.types.override import override
 class CallableTypeProxy(ValueProxy[ValueT]):
     def __init__(
         self,
-        getter: Optional[Callable[..., ValueT]] = None,
+        getter: Optional[Callable[[], ValueT]] = None,
         setter: Optional[Callable[[ValueT], None]] = None,
     ):
         self._getter = getter
