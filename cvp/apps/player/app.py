@@ -301,7 +301,7 @@ class PlayerApplication:
         self._fonts.close()
 
         self.config.display.fullscreen = pygame.display.is_fullscreen()
-        self.config.display.size = pygame.display.get_window_size()
+        self.config.display.total = pygame.display.get_window_size()
 
         imgui.save_ini_settings_to_disk(str(self.home.gui_ini))
         self._context.save_all()
