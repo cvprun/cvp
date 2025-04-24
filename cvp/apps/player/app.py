@@ -30,7 +30,6 @@ from cvp.context.context import Context
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.imgui.separator import separator
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
@@ -71,11 +70,7 @@ class PlayerApplication:
         prefix_menus = {"File": self.on_file_menu, "Mode": self.on_mode_menu}
         self._prefix_menus = OrderedDict(prefix_menus)
 
-        suffix_menus = {
-            "Tools": self.on_tools_menu,
-            "Windows": self.on_windows_menu,
-            "Help": self.on_help_menu,
-        }
+        suffix_menus = {"Layout": self.on_layout_menu, "Help": self.on_help_menu}
         self._suffix_menus = OrderedDict(suffix_menus)
 
         self._modes = create_modes(context)
@@ -458,38 +453,31 @@ class PlayerApplication:
         # According to the keyboard number order, 1..9 is followed by 0.
         self._mode_menu_item(keys[0], 0)
 
-    def on_tools_menu(self) -> None:
-        pass
+    def on_layout_menu(self) -> None:
+        layout_preference = self.layout_preference_menu
+        if menu_item("Save", shortcut=self._shortcut_save_layout.label):
+            layout_preference.save_new_layout(reload=True)
 
-    def on_windows_menu(self) -> None:
+        imgui.separator()
+        for layout_filename in layout_preference.filenames:
+            if menu_item(layout_filename):
+                layout_preference.load_layout(layout_filename)
+
+    def on_help_menu(self) -> None:
         if menu_item("Overlay", self._overlay.opened):
             self._overlay.flip_opened()
 
+        if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
+            self.save_screenshot()
+
         if self.debug:
-            separator()
+            imgui.separator()
             if menu_item("Metrics", self.config.developer.show_metrics):
                 self.config.developer.flip_show_metrics()
             if menu_item("Style", self.config.developer.show_style):
                 self.config.developer.flip_show_style()
             if menu_item("Demo", self.config.developer.show_demo):
                 self.config.developer.flip_show_demo()
-
-        separator()
-        if imgui.begin_menu("Layouts"):
-            try:
-                layout_preference = self.layout_preference_menu
-                if menu_item("Save", shortcut=self._shortcut_save_layout.label):
-                    layout_preference.save_new_layout(reload=True)
-                separator()
-                for layout_filename in layout_preference.filenames:
-                    if menu_item(layout_filename):
-                        layout_preference.load_layout(layout_filename)
-            finally:
-                imgui.end_menu()
-
-    def on_help_menu(self) -> None:
-        if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
-            self.save_screenshot()
 
     def on_main_menu(self) -> None:
         if imgui.begin_main_menu_bar():
