@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Protocol, Sequence, runtime_checkable
+from typing import Protocol, runtime_checkable
 
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
@@ -10,11 +10,17 @@ from cvp.context.context import Context
 from cvp.imgui.begin_mode import begin_mode_context
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
+from cvp.variables import NOT_FOUND_INDEX
 
 
 @runtime_checkable
 class BaseModeProtocol(Protocol):
     __cvp_mode_name__: str
+
+
+@runtime_checkable
+class BaseModeNumberProtocol(Protocol):
+    __cvp_mode_number__: int
 
 
 class BaseMode(ModeInterface, BaseModeProtocol):
@@ -33,8 +39,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
 
     @classmethod
     @override
-    def get_mode_menus(cls) -> Sequence[str]:
-        return ()
+    def get_mode_number(cls) -> int:
+        if isinstance(cls, BaseModeNumberProtocol):
+            return cls.__cvp_mode_number__
+        else:
+            return NOT_FOUND_INDEX
 
     @override
     def on_main_menu(self) -> None:

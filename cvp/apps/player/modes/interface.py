@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Sequence
 
 from pygame import Event
 from pygame.key import ScancodeWrapper
@@ -17,7 +16,7 @@ class ModeInterface(ABC):
 
     @classmethod
     @abstractmethod
-    def get_mode_menus(cls) -> Sequence[str]:
+    def get_mode_number(cls) -> int:
         raise NotImplementedError
 
     @abstractmethod

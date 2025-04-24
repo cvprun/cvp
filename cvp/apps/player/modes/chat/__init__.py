@@ -33,6 +33,7 @@ from cvp.variables import (
 
 
 class ChatMode(BaseMode):
+    __cvp_mode_number__ = 2
     __cvp_mode_name__ = "Chat"
 
     def __init__(self, context: Context):

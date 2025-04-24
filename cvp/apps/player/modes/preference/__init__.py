@@ -61,6 +61,7 @@ def create_preference_widgets(context: Context):
 
 
 class PreferenceMode(BaseMode):
+    __cvp_mode_number__ = 0
     __cvp_mode_name__ = "Preference"
 
     def __init__(self, context: Context):

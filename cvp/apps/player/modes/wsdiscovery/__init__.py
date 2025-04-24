@@ -44,6 +44,7 @@ _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 
 class WsDiscoveryMode(BaseMode):
+    __cvp_mode_number__ = 6
     __cvp_mode_name__ = "WsDiscovery"
 
     def __init__(self, context: Context):

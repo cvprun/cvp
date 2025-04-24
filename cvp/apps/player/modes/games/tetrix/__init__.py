@@ -6,7 +6,7 @@ from typing import Final, Sequence, Tuple
 import numpy as np
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.games._base import BaseGameMode
+from cvp.apps.player.modes._base import BaseMode
 from cvp.config.sections.games.tetrix import (
     DEFAULT_BOARD_COLS,
     DEFAULT_BOARD_ROWS,
@@ -65,7 +65,7 @@ BLOCKS: Final[Sequence[BlockShapeType]] = (
 )
 
 
-class TetrixMode(BaseGameMode):
+class TetrixMode(BaseMode):
     __cvp_mode_name__ = "TetriX"
 
     def __init__(self, context: Context):

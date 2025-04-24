@@ -35,6 +35,7 @@ def create_onvif_tabs(context: Context):
 
 
 class OnvifMode(BaseMode):
+    __cvp_mode_number__ = 5
     __cvp_mode_name__ = "Onvif"
 
     def __init__(self, context: Context):

@@ -14,6 +14,7 @@ from cvp.types.override import override
 
 
 class FlowMode(BaseMode):
+    __cvp_mode_number__ = 3
     __cvp_mode_name__ = "Flow"
 
     def __init__(self, context: Context):

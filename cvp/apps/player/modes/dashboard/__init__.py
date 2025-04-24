@@ -11,6 +11,7 @@ from cvp.types.override import override
 
 
 class DashboardMode(BaseMode):
+    __cvp_mode_number__ = 1
     __cvp_mode_name__ = "Dashboard"
 
     def __init__(self, context: Context):

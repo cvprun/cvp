@@ -5,7 +5,7 @@ from collections import OrderedDict
 from io import StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Optional, Tuple
 from warnings import catch_warnings
 
 import pygame
@@ -18,7 +18,7 @@ from pygame.event import Event, event_name
 from pygame.image import load as load_image
 from pygame.key import ScancodeWrapper, get_pressed
 
-from cvp.apps.player.modes import create_modes
+from cvp.apps.player.modes import ModeManager
 from cvp.apps.player.windows.overlay import OverlayWindow
 from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
@@ -67,14 +67,13 @@ class PlayerApplication:
             cancel="No",
         )
 
-        prefix_menus = {"File": self.on_file_menu, "Mode": self.on_mode_menu}
+        prefix_menus = {"File": self.on_file_menu}
         self._prefix_menus = OrderedDict(prefix_menus)
 
         suffix_menus = {"Layout": self.on_layout_menu, "Help": self.on_help_menu}
         self._suffix_menus = OrderedDict(suffix_menus)
 
-        self._modes = create_modes(context)
-        self._default_mode = next(iter(self._modes.values()))
+        self._modes = ModeManager(context)
 
         self._shortcut_program_quit = Shortcut(
             KeyFlags.q,
@@ -85,7 +84,7 @@ class PlayerApplication:
             KeyFlags.l,
             ctrl=True,
             alt=True,
-            callback=lambda: self.layout_preference_menu.save_new_layout(reload=True),
+            callback=lambda: self._modes.save_new_layout(reload=True),
         )
         self._shortcut_screenshot = Shortcut(
             KeyFlags.p,
@@ -99,16 +98,16 @@ class PlayerApplication:
             self._shortcut_program_quit,
             self._shortcut_save_layout,
             self._shortcut_screenshot,
-            Shortcut(KeyFlags._0, alt=True, callback=lambda: self.change_mode(0)),
-            Shortcut(KeyFlags._1, alt=True, callback=lambda: self.change_mode(1)),
-            Shortcut(KeyFlags._2, alt=True, callback=lambda: self.change_mode(2)),
-            Shortcut(KeyFlags._3, alt=True, callback=lambda: self.change_mode(3)),
-            Shortcut(KeyFlags._4, alt=True, callback=lambda: self.change_mode(4)),
-            Shortcut(KeyFlags._5, alt=True, callback=lambda: self.change_mode(5)),
-            Shortcut(KeyFlags._6, alt=True, callback=lambda: self.change_mode(6)),
-            Shortcut(KeyFlags._7, alt=True, callback=lambda: self.change_mode(7)),
-            Shortcut(KeyFlags._8, alt=True, callback=lambda: self.change_mode(8)),
-            Shortcut(KeyFlags._9, alt=True, callback=lambda: self.change_mode(9)),
+            Shortcut(KeyFlags._0, alt=True, callback=lambda: self._modes.set_mode(0)),
+            Shortcut(KeyFlags._1, alt=True, callback=lambda: self._modes.set_mode(1)),
+            Shortcut(KeyFlags._2, alt=True, callback=lambda: self._modes.set_mode(2)),
+            Shortcut(KeyFlags._3, alt=True, callback=lambda: self._modes.set_mode(3)),
+            Shortcut(KeyFlags._4, alt=True, callback=lambda: self._modes.set_mode(4)),
+            Shortcut(KeyFlags._5, alt=True, callback=lambda: self._modes.set_mode(5)),
+            Shortcut(KeyFlags._6, alt=True, callback=lambda: self._modes.set_mode(6)),
+            Shortcut(KeyFlags._7, alt=True, callback=lambda: self._modes.set_mode(7)),
+            Shortcut(KeyFlags._8, alt=True, callback=lambda: self._modes.set_mode(8)),
+            Shortcut(KeyFlags._9, alt=True, callback=lambda: self._modes.set_mode(9)),
         ]
 
     @property
@@ -126,38 +125,6 @@ class PlayerApplication:
     @property
     def verbose(self):
         return self._context.verbose
-
-    def change_mode(self, index: Union[str, int]) -> None:
-        if isinstance(index, int):
-            if 0 <= index < len(self._modes):
-                self.config.appearance.mode = list(self._modes.keys())[index]
-            else:
-                raise IndexError(f"Invalid mode index: {index}")
-        elif isinstance(index, str):
-            if index in self._modes:
-                self.config.appearance.mode = index
-            else:
-                raise ValueError(f"Invalid mode name: {index}")
-        else:
-            raise TypeError(f"Invalid mode index type: {type(index).__name__}")
-
-    @property
-    def mode(self):
-        return self._modes.get(self._context.config.appearance.mode, self._default_mode)
-
-    @property
-    def preference_mode(self):
-        # Lazy loading is intentional. Avoid 'circular import' issues.
-        from cvp.apps.player.modes.preference import PreferenceMode
-
-        mode = self._modes.get(PreferenceMode.get_mode_name())
-        assert mode is not None
-        assert isinstance(mode, PreferenceMode)
-        return mode
-
-    @property
-    def layout_preference_menu(self):
-        return self.preference_mode.layout_menu
 
     @property
     def renderer(self) -> PygameRenderer:
@@ -361,7 +328,7 @@ class PlayerApplication:
         assert NOEVENT < event.type < NUMEVENTS
         event_logger.debug(f"<Event {event_name(event.type)}> {event.dict}")
 
-        consumed_event = self.mode.do_event(event)
+        consumed_event = self._modes.current_mode.do_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -386,7 +353,7 @@ class PlayerApplication:
         args = msg.as_args()
         msg_logger.debug(f"<Msg {name} {uuid}> {args}")
 
-        consumed_msg = self.mode.do_msg(msg)
+        consumed_msg = self._modes.current_mode.do_msg(msg)
         if not consumed_msg:
             consumed_msg = self._context.do_activity_msg(msg)
         if not consumed_msg:
@@ -402,7 +369,7 @@ class PlayerApplication:
         for shortcut in self._shortcuts:
             if shortcut():
                 return
-        self.mode.on_keyboard(keys)
+        self._modes.current_mode.on_keyboard(keys)
 
     def on_frame(self) -> None:
         imgui.new_frame()
@@ -411,7 +378,7 @@ class PlayerApplication:
 
             self.on_main_menu()
             self.on_popups_process()
-            self.mode.do_process()
+            self._modes.current_mode.do_process()
 
             if self.debug:
                 self.on_metrics_window()
@@ -430,45 +397,28 @@ class PlayerApplication:
             pygame.display.flip()
 
     def on_file_menu(self) -> None:
-        if menu_item("Program Quit", shortcut=self._shortcut_program_quit.label):
+        self._modes.do_menu_process()
+
+        imgui.separator()
+        if menu_item("Quit", shortcut=self._shortcut_program_quit.label):
             self._confirm_quit.show()
 
-    def _mode_menu_item(self, mode_name: str, index: int) -> None:
-        title = str(mode_name).capitalize()
-        selected = mode_name == self.config.appearance.mode
-        shortcut = f"Alt+{index}" if index <= 9 else str()
-        enabled = not selected
-        if menu_item(title, selected=selected, shortcut=shortcut, enabled=enabled):
-            self.config.appearance.mode = mode_name
-
-    def on_mode_menu(self) -> None:
-        keys = list(self._modes.keys())
-        assert 1 <= len(keys)
-
-        for index, mode_name in enumerate(keys[1:], start=1):
-            self._mode_menu_item(mode_name, index)
-
-        imgui.separator()
-
-        # According to the keyboard number order, 1..9 is followed by 0.
-        self._mode_menu_item(keys[0], 0)
-
     def on_layout_menu(self) -> None:
-        layout_preference = self.layout_preference_menu
         if menu_item("Save", shortcut=self._shortcut_save_layout.label):
-            layout_preference.save_new_layout(reload=True)
+            self._modes.save_new_layout(reload=True)
 
         imgui.separator()
-        for layout_filename in layout_preference.filenames:
+        for layout_filename in self._modes.layout_filenames:
             if menu_item(layout_filename):
-                layout_preference.load_layout(layout_filename)
+                self._modes.load_layout(layout_filename)
 
     def on_help_menu(self) -> None:
-        if menu_item("Overlay", self._overlay.opened):
-            self._overlay.flip_opened()
-
         if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
             self.save_screenshot()
+
+        imgui.separator()
+        if menu_item("Overlay", self._overlay.opened):
+            self._overlay.flip_opened()
 
         if self.debug:
             imgui.separator()
@@ -489,7 +439,7 @@ class PlayerApplication:
                         finally:
                             imgui.end_menu()
 
-                self.mode.on_main_menu()
+                self._modes.current_mode.on_main_menu()
 
                 for name, func in self._suffix_menus.items():
                     if imgui.begin_menu(name):
