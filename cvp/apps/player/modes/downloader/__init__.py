@@ -14,8 +14,8 @@ from cvp.imgui.input_text import input_text
 from cvp.types.override import override
 
 
-class DownloadMode(BaseMode):
-    __cvp_mode_name__ = "Download"
+class DownloaderMode(BaseMode):
+    __cvp_mode_name__ = "Downloader"
 
     def __init__(self, context: Context):
         super().__init__(context)

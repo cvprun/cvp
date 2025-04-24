@@ -13,7 +13,7 @@ class ModeManager:
     def __init__(self, context: Context):
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.dashboard import DashboardMode
-        from cvp.apps.player.modes.download import DownloadMode
+        from cvp.apps.player.modes.downloader import DownloaderMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.medias import MediasMode
@@ -23,7 +23,7 @@ class ModeManager:
 
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
-        self.download_mode = DownloadMode(context)
+        self.download_mode = DownloaderMode(context)
         self.flow_mode = FlowMode(context)
         self.medias_mode = MediasMode(context)
         self.onvif_mode = OnvifMode(context)
