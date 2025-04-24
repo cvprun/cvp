@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from typing import Final
+
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
@@ -16,6 +18,9 @@ from cvp.types.override import override
 class NodePreference(BasePreference):
     __cvp_menu_name__ = "Node"
 
+    _MENU_SPLIT_X: Final[int] = 150
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
     def __init__(self, context: Context):
         super().__init__(context)
 
@@ -25,12 +30,10 @@ class NodePreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        menu_split_x = 150
-        menu_child_flags = RESIZE_X | BORDERS
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:

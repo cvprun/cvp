@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import StrEnum, auto, unique
+from typing import Final, Tuple
 
 from imgui_bundle import imgui
 
@@ -24,6 +25,10 @@ from cvp.variables import NOT_FOUND_INDEX
 
 class OllamaPreference(BasePreference):
     __cvp_menu_name__ = "Ollama"
+
+    _MENU_SPLIT_X: Final[int] = 150
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+    _API_LIST_SIZE: Final[Tuple[int, int]] = 150, int(FIT_HEIGHT)
 
     @unique
     class RunnerCommand(StrEnum):
@@ -59,12 +64,10 @@ class OllamaPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        menu_split_x = 150
-        menu_child_flags = RESIZE_X | BORDERS
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.button("Reload"):
                 self.ollamas.read_all_config_files()
@@ -173,17 +176,11 @@ class OllamaPreference(BasePreference):
         if timeout_result := input_float("HTTP timeout (seconds)", ollama.timeout, 1.0):
             ollama.timeout = timeout_result.value
 
-    def do_ollama_apis(
-        self,
-        ollama: Ollama,
-        *,
-        api_list_width=150,
-        api_list_height=FIT_HEIGHT,
-    ) -> None:
+    def do_ollama_apis(self, ollama: Ollama) -> None:
         running = self._runner.running
         has_error = bool(self._runner.error)
 
-        if imgui.begin_list_box("##APIList", size=(api_list_width, api_list_height)):
+        if imgui.begin_list_box("##APIList", size=self._API_LIST_SIZE):
             try:
                 if imgui.button("Reload"):
                     self._runner(ollama, self.RunnerCommand.list_)

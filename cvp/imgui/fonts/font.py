@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, NamedTuple, Optional
 
 from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.codepoint_info import CodepointInfo
 from cvp.gl.textures.texture import Texture
+
+
+class BlockRange(NamedTuple):
+    begin: int
+    end: int
+
+    def as_label(self) -> str:
+        return f"{self.begin:06X}-{self.end:06X}"
 
 
 @dataclass
@@ -17,7 +25,7 @@ class Font:
     size: int
     block_step: int
     ttfs: List[CachedTTF] = field(default_factory=list)
-    blocks: List[Tuple[int, int]] = field(default_factory=list)
+    blocks: List[BlockRange] = field(default_factory=list)
     texture: Optional[Texture] = None
     cp_infos: Dict[int, CodepointInfo] = field(default_factory=dict)
 

@@ -8,7 +8,6 @@ from typing import Dict, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
-from cvp.config.sections.proxies.ffmpeg import FFmpegProxy, FFprobeProxy
 from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
@@ -22,23 +21,26 @@ from cvp.types.override import override
 class FFmpegPreference(BasePreference):
     __cvp_menu_name__ = "FFmpeg"
 
-    _result: Dict[str, Union[str, BaseException]]
-
-    def __init__(self, context: Context):
+    def __init__(
+        self,
+        context: Context,
+        *,
+        result: Optional[Dict[str, Union[str, BaseException]]] = None,
+    ):
         super().__init__(context)
         self._executable_proxy: Optional[ValueProxy[str]] = None
+        self._outputs = dict(result if result else {})
+        self._version_runner = context.create_thread_runner(self._on_version_main)
         self._executable_browser = OpenFilePopup(
-            "Select executable file",
+            "Select Executable File",
             target=self._on_file_selected,
         )
-        self._version_runner = context.create_thread_runner(self._on_version_main)
-        self._result = dict()
 
     def _on_version_main(self, filename: str, path: str) -> None:
         try:
-            self._result[filename] = check_output([path, "-version"], encoding="utf-8")
+            self._outputs[filename] = check_output([path, "-version"], encoding="utf-8")
         except BaseException as e:
-            self._result[filename] = e
+            self._outputs[filename] = e
 
     def _on_file_selected(self, file: str) -> None:
         if not os.path.exists(file):
@@ -78,11 +80,11 @@ class FFmpegPreference(BasePreference):
             try:
                 self.do_executable_tab(
                     filename="ffmpeg",
-                    proxy=FFmpegProxy(self.context.config.ffmpeg),
+                    proxy=self.context.config.ffmpeg.create_ffmpeg_proxy(),
                 )
                 self.do_executable_tab(
                     filename="ffprobe",
-                    proxy=FFprobeProxy(self.context.config.ffmpeg),
+                    proxy=self.context.config.ffmpeg.create_ffprobe_proxy(),
                 )
             finally:
                 imgui.end_tab_bar()
@@ -148,7 +150,7 @@ class FFmpegPreference(BasePreference):
             spinner("Running Spinner")
             return
 
-        result = self._result.get(filename)
+        result = self._outputs.get(filename)
         if not result:
             return
 

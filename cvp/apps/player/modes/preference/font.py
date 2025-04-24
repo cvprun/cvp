@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from math import isqrt
-from typing import List, Tuple
+from typing import Final, List, Tuple
 
 from imgui_bundle import imgui
 
@@ -23,6 +23,12 @@ from cvp.types.override import override
 
 class FontPreference(BasePreference):
     __cvp_menu_name__ = "Font"
+
+    _MENU_SPLIT_X: Final[int] = 150
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
+    _PLANES_SPLIT_X: Final[int] = 150
+    _PLANES_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -73,12 +79,10 @@ class FontPreference(BasePreference):
 
     @override
     def do_process(self) -> None:
-        menu_split_x = 150
-        menu_child_flags = RESIZE_X | BORDERS
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
@@ -98,19 +102,14 @@ class FontPreference(BasePreference):
             else:
                 self.do_font_process(selected_font)
 
-    def do_font_process(
-        self,
-        font: Font,
-        planes_split_x=150,
-        planes_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_font_process(self, font: Font) -> None:
         input_text_disabled("Font family", font.family)
         input_text_disabled("Font pixel size", str(font.size))
 
         with begin_child_context(
             label="Planes",
-            size=(planes_split_x, 0),
-            child_flags=planes_child_flags,
+            size=(self._PLANES_SPLIT_X, 0),
+            child_flags=self._PLANES_CHILD_FLAGS,
         ):
             if imgui.begin_list_box("##Planes", FIT_SIZE):
                 try:
@@ -125,9 +124,7 @@ class FontPreference(BasePreference):
 
     def selectable_blocks(self, font: Font) -> None:
         for block in font.blocks:
-            begin, end = block
-            label = f"{begin:06X}-{end:06X}"
-            if imgui.selectable(label, block == self.selected_block)[1]:
+            if imgui.selectable(block.as_label(), block == self.selected_block)[1]:
                 self.selected_block = block
 
     def do_codepoint_matrix(self, font: Font) -> None:

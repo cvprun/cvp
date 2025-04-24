@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 from imgui_bundle import imgui
 
@@ -9,7 +9,7 @@ from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.ranges import UNICODE_SINGLE_BLOCK_SIZE, CodepointRange
 from cvp.fonts.ttf import TTF
 from cvp.gl.textures.texture import Texture
-from cvp.imgui.fonts.font import Font
+from cvp.imgui.fonts.font import BlockRange, Font
 from cvp.imgui.fonts.get_fonts import get_tex_data_as_raw_rgba32
 from cvp.imgui.fonts.glyph_ranges import create_glyph_ranges
 
@@ -82,12 +82,13 @@ class FontBuilder:
             texture.update_alpha_texture(pixels)
         return texture
 
-    def _create_blocks(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[Tuple[int, int]]:
+    def _create_blocks(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[BlockRange]:
         result = set()
         for ttf in self._ttfs:
             for cp_range in ttf.ranges:
                 for block_range in cp_range.as_blocks(step):
-                    result.add(block_range)
+                    begin, end = block_range
+                    result.add(BlockRange(begin, end))
         return list(sorted(result, key=lambda x: x[0]))
 
     def done(self, block_step=UNICODE_SINGLE_BLOCK_SIZE, *, use_texture=False) -> Font:

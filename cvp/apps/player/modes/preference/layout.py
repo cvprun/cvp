@@ -21,12 +21,12 @@ from cvp.popups.input_text import InputTextPopup
 from cvp.types.colors import GREEN_RGBA, RED_RGBA
 from cvp.types.override import override
 
-_MENU_SPLIT_X: Final[int] = 300
-_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
-
 
 class LayoutPreference(BasePreference):
     __cvp_menu_name__ = "Layout"
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -139,8 +139,8 @@ class LayoutPreference(BasePreference):
     def do_process(self) -> None:
         with begin_child_context(
             label="Menu",
-            size=(_MENU_SPLIT_X, 0),
-            child_flags=_MENU_CHILD_FLAGS,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.button("Reload"):
                 self.reload_layout_filenames()
