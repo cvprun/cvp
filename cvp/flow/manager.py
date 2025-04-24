@@ -39,7 +39,7 @@ class FlowManager:
         self._dtype_registry = DtypeRegistry()
         self._node_registry = NodeRegistry()
 
-        self._configs = ResourceManager(
+        self._workspaces = ResourceManager(
             cls=FlowWorkspace,
             root_dir=path,
             reload=reload,
@@ -58,8 +58,8 @@ class FlowManager:
             runner.stop()
 
     @property
-    def configs(self):
-        return self._configs
+    def workspaces(self):
+        return self._workspaces
 
     @property
     def graphs(self):

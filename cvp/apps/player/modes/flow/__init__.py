@@ -13,7 +13,11 @@ from cvp.fonts.glyphs import mdi
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.logging.logging import flow_logger as logger
 from cvp.msgs.msg import Msg
+from cvp.popups.confirm import ConfirmPopup
+from cvp.popups.input_text import InputTextPopup
+from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
 
 
@@ -38,9 +42,71 @@ class FlowMode(BaseMode):
             ("View", self.on_view_menu),
         )
 
+        self._new_workspace_popup = InputTextPopup(
+            title="New workspace",
+            label="Please enter a workspace name:",
+            ok="Create",
+            cancel="Cancel",
+            target=self.on_new_workspace,
+        )
+        self._import_workspace_popup = OpenFilePopup(
+            title="Import workspace",
+            target=self.on_import_workspace,
+        )
+        self._export_workspace_popup = OpenFilePopup(
+            title="Export workspace",
+            target=self.on_export_workspace,
+        )
+        self._confirm_remove_workspace_popup = ConfirmPopup(
+            title="Remove workspace",
+            label="Are you sure you want to remove workspace?",
+            ok="Remove",
+            cancel="Cancel",
+            target=self.on_confirm_remove_workspace,
+        )
+        self._new_variable_popup = InputTextPopup(
+            title="New variable",
+            label="Please enter a variable name:",
+            ok="Add",
+            cancel="Cancel",
+            target=self.on_new_variable,
+        )
+
+    def on_new_workspace(self, name: str) -> None:
+        # graph = self.flows.create_graph(name, append=True)
+        # filepath = self.context.home.flows.graph_filepath(graph.key)
+        # if filepath.exists():
+        #     raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
+        # self.flows.write_graph_yaml(filepath, graph)
+        # self._canvases.open(graph)
+        pass
+
+    def on_import_workspace(self, file: str) -> None:
+        pass
+
+    def on_export_workspace(self, file: str) -> None:
+        pass
+
+    def on_confirm_remove_workspace(self, value: bool) -> None:
+        pass
+
+    def on_new_variable(self, name: str) -> None:
+        # if not name:
+        #     raise ValueError("Variable name cannot be empty")
+        # canvas = self._canvases.canvas
+        # if canvas is None:
+        #     raise ValueError("Canvas cannot be none")
+        # with canvas:
+        #     canvas.graph.add_variable(name, self._drag_dtype)
+        pass
+
     @property
     def config(self):
         return self.context.config.flow_aui
+
+    @property
+    def flows(self):
+        return self.context.flows
 
     @property
     def show_layout(self) -> bool:
@@ -58,6 +124,37 @@ class FlowMode(BaseMode):
     def autoscroll(self, value: bool) -> None:
         self.config.logs.autoscroll = value
 
+    def open_workspace(self, uuid: str) -> None:
+        workspace = self.flows.workspaces.get(uuid)
+        if workspace is None:
+            self.context.toast_error(f"Not found workspace: {uuid}", logger)
+            return
+
+        if workspace.opened:
+            self.context.toast_error(f"The workspace is already open: {uuid}", logger)
+            return
+
+        if workspace.open():
+            logger.info(f"Workspace opened successfully: {uuid}")
+        else:
+            self.context.toast_error(f"Workspace open failed: {uuid}", logger)
+
+    def close_workspace(self, uuid: str) -> None:
+        workspace = self.flows.workspaces.get(uuid)
+        if workspace is None:
+            self.context.toast_error(f"Not found workspace: {uuid}", logger)
+            return
+
+        if not workspace.opened:
+            self.context.toast_error(f"The workspace is already closed: {uuid}", logger)
+            return
+
+        try:
+            workspace.close()
+            logger.info(f"Workspace closed successfully: {uuid}")
+        except BaseException as e:
+            self.context.toast_error(f"Workspace close failed: {e}", logger)
+
     @override
     def on_main_menu(self) -> None:
         for name, func in self._menus:
@@ -68,7 +165,51 @@ class FlowMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        pass
+        if menu_item("New workspace"):
+            self._new_workspace_popup.show()
+
+        has_any_workspace = bool(self.flows.workspaces)
+        if imgui.begin_menu("Open workspace", enabled=has_any_workspace):
+            try:
+                for uuid, workspace in self.flows.workspaces.values():
+                    if menu_item(workspace.name):
+                        self.open_workspace(uuid)
+            finally:
+                imgui.end_menu()
+
+        has_any_recent = bool(self.config.recent)
+        if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
+            try:
+                for recent in self.config.recent:
+                    if menu_item(recent.name):
+                        self.open_workspace(recent.uuid)
+            finally:
+                imgui.end_menu()
+
+        # imgui.separator()
+        # has_opened_graph = self._canvases.opened
+        # if menu_item("Save graph", enabled=has_opened_graph):
+        #     self.save_current_graph()
+        # if menu_item("Save and close graph", enabled=has_opened_graph):
+        #     self.save_current_graph()
+        #     self.close_current_graph()
+        # if menu_item("Close graph", enabled=has_opened_graph):
+        #     self.close_current_graph()
+        #
+        # imgui.separator()
+        # if menu_item("Import graph"):
+        #     self._import_graph_popup.show()
+        # if menu_item("Export graph"):
+        #     self._export_graph_popup.show()
+        #
+        # imgui.separator()
+        # if menu_item("Refresh graphs"):
+        #     self.save_current_graph()
+        #     self.refresh_graphs()
+        #
+        # imgui.separator()
+        # if menu_item("Close flow window"):
+        #     self.close()
 
     def on_edit_menu(self) -> None:
         self._process_disabled_edit_menu()

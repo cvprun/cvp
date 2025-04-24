@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Sequence, Tuple
-
 from imgui_bundle import imgui
 
 from cvp.context.context import Context
@@ -15,95 +13,24 @@ from cvp.fonts.glyphs.mdi import (
     PLAY,
     STOP,
 )
-from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
-from cvp.imgui.flags.child import BORDERS
-from cvp.imgui.flags.color_var import CHILD_BG
-from cvp.imgui.flags.style_var import WINDOW_PADDING
-from cvp.imgui.flags.window import CANVAS_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.logging import flow_logger as logger
-from cvp.popups.confirm import ConfirmPopup
-from cvp.popups.input_text import InputTextPopup
-from cvp.popups.open_file import OpenFilePopup
 from cvp.widgets.canvas.flow import FlowCanvas
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
 
 
 class FlowWindow:
-    _menus: Sequence[Tuple[str, Callable[[], None]]]
-
     def __init__(self, context: Context):
         self.context = context
         self._canvases = FlowCanvasTabs(context)
-
         self._drag_dtype = Dtype.any()
         self._variable_key = str()
-
-        self._menus = (("File", self.on_file_menu),)
-
-        self._new_graph_popup = InputTextPopup(
-            title="New graph",
-            label="Please enter a graph name:",
-            ok="Create",
-            cancel="Cancel",
-            target=self.on_new_graph_popup,
-        )
-        self._import_graph_popup = OpenFilePopup(
-            title="Import graph",
-            target=self.on_import_file_popup,
-        )
-        self._export_graph_popup = OpenFilePopup(
-            title="Export graph",
-            target=self.on_export_file_popup,
-        )
-        self._confirm_remove = ConfirmPopup(
-            title="Remove",
-            label="Are you sure you want to remove graph?",
-            ok="Remove",
-            cancel="No",
-            target=self.on_confirm_remove,
-        )
-        self._add_variable_popup = InputTextPopup(
-            title="New variable",
-            label="Please enter a variable name:",
-            ok="Add",
-            cancel="Cancel",
-            target=self.on_add_variable,
-        )
 
     @property
     def window_config(self):
         return self.context.config.flow_aui
-
-    def on_new_graph_popup(self, name: str) -> None:
-        graph = self.context.flows.create_graph(name, append=True)
-        filepath = self.context.home.flows.graph_filepath(graph.key)
-        if filepath.exists():
-            raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
-        self.context.flows.write_graph_yaml(filepath, graph)
-        self._canvases.open(graph)
-
-    def on_import_file_popup(self, file: str) -> None:
-        pass
-
-    def on_export_file_popup(self, file: str) -> None:
-        pass
-
-    def on_confirm_remove(self, value: bool) -> None:
-        pass
-
-    def on_add_variable(self, name: str) -> None:
-        if not name:
-            raise ValueError("Variable name cannot be empty")
-
-        canvas = self._canvases.canvas
-        if canvas is None:
-            raise ValueError("Canvas cannot be none")
-
-        with canvas:
-            canvas.graph.add_variable(name, self._drag_dtype)
 
     def _process_enabled_edit_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
@@ -294,60 +221,6 @@ class FlowWindow:
             canvas.update_node_roi(node)
             canvas.save_history("Add getter variable node", self._variable_key)
 
-    def on_file_menu(self) -> None:
-        if menu_item("New graph"):
-            self._new_graph_popup.show()
-
-        if imgui.begin_menu("Open graph"):
-            try:
-                if self.context.flows.graphs:
-                    for uuid, graph in self.context.flows.graphs.items():
-                        if menu_item(graph.name):
-                            self._canvases.open(graph)
-                else:
-                    menu_item("[Empty]", enabled=False)
-            finally:
-                imgui.end_menu()
-
-        if imgui.begin_menu("Recent graphs"):
-            try:
-                if self.window_config.recent:
-                    for recent in self.window_config.recent:
-                        if menu_item(recent):
-                            pass
-                else:
-                    menu_item("[Empty]", enabled=False)
-            finally:
-                imgui.end_menu()
-
-        imgui.separator()
-        has_opened_graph = self._canvases.opened
-        if menu_item("Save graph", enabled=has_opened_graph):
-            self.save_current_graph()
-        if menu_item("Save and close graph", enabled=has_opened_graph):
-            self.save_current_graph()
-            self.close_current_graph()
-        if menu_item("Close graph", enabled=has_opened_graph):
-            self.close_current_graph()
-
-        imgui.separator()
-        if menu_item("Import graph"):
-            self._import_graph_popup.show()
-        if menu_item("Export graph"):
-            self._export_graph_popup.show()
-
-        imgui.separator()
-        if menu_item("Refresh graphs"):
-            self.save_current_graph()
-            self.refresh_graphs()
-
-        imgui.separator()
-        if menu_item("Close flow window"):
-            self.close()
-
-    def close(self):
-        pass
-
     def save_current_graph(self) -> None:
         graph = self._canvases.graph
         if graph is None:
@@ -395,38 +268,15 @@ class FlowWindow:
         imgui.spacing()
 
     # @override
-    def on_process_bottom(self):
-        pass
-
-    # @override
     def on_process_main(self) -> None:
         canvas = self._canvases.canvas
         if canvas is None:
             text_centered("Please select a graph")
             return
 
-        self.begin_child_canvas()
-        try:
-            with canvas:
-                self.on_canvas_events(canvas)
-                self.on_canvas(canvas)
-        finally:
-            imgui.end_child()
-
-    @staticmethod
-    def begin_child_canvas() -> None:
-        imgui.push_style_var(WINDOW_PADDING, (0, 0))
-        imgui.push_style_color(CHILD_BG, (0.5, 0.5, 0.5, 1.0))
-        try:
-            begin_child(
-                "##Canvas",
-                child_flags=BORDERS,
-                window_flags=CANVAS_FLAGS,
-            )
-        finally:
-            imgui.pop_style_color()
-            imgui.pop_style_var()
-            end_child()
+        with canvas:
+            self.on_canvas_events(canvas)
+            self.on_canvas(canvas)
 
     def on_canvas_events(self, canvas: FlowCanvas) -> None:
         assert self
@@ -505,7 +355,7 @@ class FlowWindow:
             try:
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
                     self._drag_dtype = self.context.flows.dtypes[payload.type]
-                    self._add_variable_popup.show()
+                    # self._add_variable_popup.show()
 
                 if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
                     node = self.context.flows.add_node(canvas.graph, payload.type)
