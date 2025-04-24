@@ -3,9 +3,9 @@
 from typing import Dict, Optional
 from weakref import ReferenceType, ref
 
+from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph
 from cvp.logging.logging import flow_logger as logger
-from cvp.renderer.context import RendererContext
 from cvp.widgets.canvas.flow import FlowCanvas
 
 
@@ -13,7 +13,7 @@ class FlowCanvasTabs:
     _canvases: Dict[str, FlowCanvas]
     _ref: Optional[ReferenceType[FlowGraph]]
 
-    def __init__(self, context: RendererContext):
+    def __init__(self, context: Context):
         self._context = context
         self._canvases = dict()
         self._ref = None

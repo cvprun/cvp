@@ -6,13 +6,13 @@ from gotrue import User
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
+from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.flags.input_text import READ_ONLY, InputTextFlags
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.spinner import spinner
-from cvp.renderer.context import Context
 from cvp.types.override import override
 
 

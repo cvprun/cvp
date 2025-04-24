@@ -4,9 +4,9 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.containers.immutable_list import ImmutableList
+from cvp.context.context import Context
 from cvp.keyring.details import list_keyring_names, load_keyring, set_keyring
 from cvp.logging.logging import logger
-from cvp.renderer.context import Context
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 

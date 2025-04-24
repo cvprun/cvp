@@ -7,6 +7,7 @@ from typing import Any, Dict, Sequence, Tuple
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.onvif._base import BaseOnvifTab
+from cvp.apps.player.modes.onvif._operation import WsdlOperation
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -19,7 +20,6 @@ from cvp.onvif.client import OnvifClient
 from cvp.onvif.config import OnvifConfig
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
-from cvp.widgets.wsdl_operation import WsdlOperationWidget
 from cvp.wsdl.client import WsdlClient
 from cvp.wsdl.operation import WsdlOperationProxy
 
@@ -40,7 +40,7 @@ class OnvifApisTab(BaseOnvifTab):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._operation_widget = WsdlOperationWidget()
+        self._operation_widget = WsdlOperation()
         self._request_runner = self.context.create_thread_runner(self._on_api_request)
         self._response_cache = dict()
         self._response_error = dict()

@@ -12,16 +12,14 @@ from zeep.xsd.valueobjects import CompoundValue
 from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument
 from cvp.inspect.member import get_public_instance_attributes, is_private_member
-from cvp.renderer.widget.interface import WidgetInterface
 from cvp.types.colors import RGBA
-from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX, ZEEP_ELEMENT_SEPARATOR
 from cvp.wsdl.annotation import ElementAnnotation
 from cvp.wsdl.operation import WsdlOperationProxy
 from cvp.wsdl.schema import XsdSchema
 
 
-class WsdlOperationWidget(WidgetInterface):
+class WsdlOperation:
     def __init__(
         self,
         operation: Optional[WsdlOperationProxy] = None,
@@ -322,7 +320,6 @@ class WsdlOperationWidget(WidgetInterface):
         )
         setattr(value, name, item_value)
 
-    @override
     def on_process(self) -> None:
         if self._operation is None:
             return

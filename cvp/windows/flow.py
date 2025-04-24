@@ -4,8 +4,7 @@ from typing import Callable, Sequence, Tuple
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.flow import FlowAuiConfig
-from cvp.config.sections.proxies.flow import SplitTreeProxy
+from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
 from cvp.fonts.glyphs.mdi import (
     BUG,
@@ -21,47 +20,23 @@ from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARI
 from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.flags.color_var import CHILD_BG
 from cvp.imgui.flags.style_var import WINDOW_PADDING
-from cvp.imgui.flags.window import CANVAS_FLAGS, MENU_BAR
+from cvp.imgui.flags.window import CANVAS_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.imgui.push_style_var import style_item_spacing_context
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.logging import flow_logger as logger
 from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
 from cvp.popups.open_file import OpenFilePopup
-from cvp.renderer.context import RendererContext
-from cvp.types.override import override
-from cvp.variables import MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH
-from cvp.widgets.aui import AuiWindow
 from cvp.widgets.canvas.flow import FlowCanvas
 from cvp.widgets.canvas.tabs import FlowCanvasTabs
-from cvp.widgets.splitter import Splitter
 
 
-class FlowWindow(AuiWindow[FlowAuiConfig]):
+class FlowWindow:
     _menus: Sequence[Tuple[str, Callable[[], None]]]
 
-    def __init__(self, context: RendererContext):
-        super().__init__(
-            context=context,
-            window_config=context.config.flow_aui,
-            title="Flow",
-            closable=True,
-            flags=MENU_BAR,
-            min_width=MIN_WINDOW_WIDTH,
-            min_height=MIN_WINDOW_HEIGHT,
-            modifiable_title=False,
-        )
-
+    def __init__(self, context: Context):
+        self.context = context
         self._canvases = FlowCanvasTabs(context)
-
-        self._split_tree = SplitTreeProxy(context.config.flow_aui)
-        self._tree_splitter = Splitter.from_horizontal(
-            "##HSplitterTree",
-            value_proxy=self._split_tree,
-            min_value=context.config.flow_aui.min_split_tree,
-            negative_delta=True,
-        )
 
         self._drag_dtype = Dtype.any()
         self._variable_key = str()
@@ -105,11 +80,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             target=self.on_add_variable,
         )
 
-        self.register_popup(self._new_graph_popup)
-        self.register_popup(self._import_graph_popup)
-        self.register_popup(self._export_graph_popup)
-        self.register_popup(self._confirm_remove)
-        self.register_popup(self._add_variable_popup)
+    @property
+    def window_config(self):
+        return self.context.config.flow_aui
 
     @property
     def split_tree(self) -> float:
@@ -162,11 +135,6 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
 
         with canvas:
             canvas.graph.add_variable(name, self._drag_dtype)
-
-    @override
-    def on_process(self) -> None:
-        self.on_menu()
-        super().on_process()
 
     @staticmethod
     def _process_disabled_edit_menu() -> None:
@@ -475,6 +443,9 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
         if menu_item("Close flow window"):
             self.close()
 
+    def close(self):
+        pass
+
     def on_edit_menu(self) -> None:
         if canvas := self._canvases.canvas:
             with canvas:
@@ -560,7 +531,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             if graph := self.context.flows.graphs.get(graph_uuid_stash):
                 self._canvases.open(graph)
 
-    @override
+    # @override
     def on_process_sidebar_left(self):
         if begin_child("##ChildLeftTop", (0, -self.split_tree)):
             try:
@@ -568,10 +539,7 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             finally:
                 end_child()
 
-        with style_item_spacing_context(0, -1):
-            self._tree_splitter.do_process()
-
-    @override
+    # @override
     def on_process_sidebar_right(self):
         imgui.text("Canvas controller:")
         if canvas := self._canvases.canvas:
@@ -579,11 +547,11 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
                 canvas.do_process_controllers(debugging=self.context.debug)
         imgui.spacing()
 
-    @override
+    # @override
     def on_process_bottom(self):
         pass
 
-    @override
+    # @override
     def on_process_main(self) -> None:
         canvas = self._canvases.canvas
         if canvas is None:
@@ -614,72 +582,73 @@ class FlowWindow(AuiWindow[FlowAuiConfig]):
             end_child()
 
     def on_canvas_events(self, canvas: FlowCanvas) -> None:
+        assert self
         assert canvas.opened
-        ctrl_down = canvas.ctrl_down
-        shift_down = canvas.shift_down
-        alt_down = canvas.alt_down
-        only_ctrl = ctrl_down and not shift_down and not alt_down
-        ctrl_shift = ctrl_down and shift_down and not alt_down
-
-        if self.imgui_is_pressed_delete():
-            canvas.graph.remove_selected_items()
-            canvas.save_history("Remove selected items")
-            return
-
-        if self.imgui_is_pressed_escape():
-            canvas.graph.unselect_all_items()
-            return
-
-        if canvas.history.undoable:
-            if only_ctrl and self.imgui_is_pressed_z():
-                canvas.undo_history()
-                return
-
-        if canvas.history.redoable:
-            if only_ctrl and self.imgui_is_pressed_y():
-                canvas.redo_history()
-                return
-            elif ctrl_shift and self.imgui_is_pressed_z():
-                canvas.redo_history()
-                return
-
-        if only_ctrl and self.imgui_is_pressed_a():
-            canvas.graph.select_all_nodes()
-            return
-
-        if ctrl_shift and self.imgui_is_pressed_a():
-            canvas.graph.select_all_items()
-            return
-
-        if only_ctrl and self.imgui_is_pressed_x():
-            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
-            self.context.flows.clipboard_pivot = canvas.graph.selection.group_pos
-            canvas.graph.remove_selected_items()
-            canvas.save_history("Cut selected items")
-            return
-
-        if only_ctrl and self.imgui_is_pressed_c():
-            self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
-            px, py = canvas.graph.selection.group_pos
-            px += self.window_config.paste_margin
-            py += self.window_config.paste_margin
-            self.context.flows.clipboard_pivot = px, py
-            canvas.save_history("Copy selected items")
-            return
-
-        if only_ctrl and self.imgui_is_pressed_v():
-            canvas.graph.unselect_all_items()
-            canvas.graph.paste_selection(
-                self.context.flows.clipboard_items,
-                self.context.flows.clipboard_pivot,
-                selected=True,
-            )
-            px, py = self.context.flows.clipboard_pivot
-            px += self.window_config.paste_margin
-            py += self.window_config.paste_margin
-            self.context.flows.clipboard_pivot = px, py
-            canvas.save_history("Paste selected items")
-            return
+        # ctrl_down = canvas.ctrl_down
+        # shift_down = canvas.shift_down
+        # alt_down = canvas.alt_down
+        # only_ctrl = ctrl_down and not shift_down and not alt_down
+        # ctrl_shift = ctrl_down and shift_down and not alt_down
+        #
+        # if self.imgui_is_pressed_delete():
+        #     canvas.graph.remove_selected_items()
+        #     canvas.save_history("Remove selected items")
+        #     return
+        #
+        # if self.imgui_is_pressed_escape():
+        #     canvas.graph.unselect_all_items()
+        #     return
+        #
+        # if canvas.history.undoable:
+        #     if only_ctrl and self.imgui_is_pressed_z():
+        #         canvas.undo_history()
+        #         return
+        #
+        # if canvas.history.redoable:
+        #     if only_ctrl and self.imgui_is_pressed_y():
+        #         canvas.redo_history()
+        #         return
+        #     elif ctrl_shift and self.imgui_is_pressed_z():
+        #         canvas.redo_history()
+        #         return
+        #
+        # if only_ctrl and self.imgui_is_pressed_a():
+        #     canvas.graph.select_all_nodes()
+        #     return
+        #
+        # if ctrl_shift and self.imgui_is_pressed_a():
+        #     canvas.graph.select_all_items()
+        #     return
+        #
+        # if only_ctrl and self.imgui_is_pressed_x():
+        #     self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
+        #     self.context.flows.clipboard_pivot = canvas.graph.selection.group_pos
+        #     canvas.graph.remove_selected_items()
+        #     canvas.save_history("Cut selected items")
+        #     return
+        #
+        # if only_ctrl and self.imgui_is_pressed_c():
+        #     self.context.flows.clipboard_items = canvas.graph.selection.deepcopy()
+        #     px, py = canvas.graph.selection.group_pos
+        #     px += self.window_config.paste_margin
+        #     py += self.window_config.paste_margin
+        #     self.context.flows.clipboard_pivot = px, py
+        #     canvas.save_history("Copy selected items")
+        #     return
+        #
+        # if only_ctrl and self.imgui_is_pressed_v():
+        #     canvas.graph.unselect_all_items()
+        #     canvas.graph.paste_selection(
+        #         self.context.flows.clipboard_items,
+        #         self.context.flows.clipboard_pivot,
+        #         selected=True,
+        #     )
+        #     px, py = self.context.flows.clipboard_pivot
+        #     px += self.window_config.paste_margin
+        #     py += self.window_config.paste_margin
+        #     self.context.flows.clipboard_pivot = px, py
+        #     canvas.save_history("Paste selected items")
+        #     return
 
     def on_canvas(self, canvas: FlowCanvas) -> None:
         assert canvas.opened

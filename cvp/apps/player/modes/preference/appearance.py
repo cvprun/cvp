@@ -4,10 +4,10 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.containers.immutable_list import ImmutableList
+from cvp.context.context import Context
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.theme import THEME_NAMES, apply_theme_with_name
 from cvp.logging.logging import logger
-from cvp.renderer.context import Context
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 
