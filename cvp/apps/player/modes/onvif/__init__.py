@@ -2,7 +2,7 @@
 
 from collections import OrderedDict
 from functools import lru_cache
-from typing import Sequence, Type
+from typing import Final, Sequence, Type
 
 from imgui_bundle import imgui
 
@@ -37,6 +37,9 @@ def create_onvif_tabs(context: Context):
 class OnvifMode(BaseMode):
     __cvp_mode_number__ = 5
     __cvp_mode_name__ = "Onvif"
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -81,15 +84,11 @@ class OnvifMode(BaseMode):
         with self.begin_mode_context():
             self.do_child_process()
 
-    def do_child_process(
-        self,
-        menu_split_x=300,
-        menu_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_child_process(self) -> None:
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if button("Reload"):
                 self.onvifs.read_all_config_files()

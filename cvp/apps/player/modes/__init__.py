@@ -12,6 +12,7 @@ from cvp.imgui.menu_item_ex import menu_item
 class ModeManager:
     def __init__(self, context: Context):
         from cvp.apps.player.modes.chat import ChatMode
+        from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.downloader import DownloaderMode
         from cvp.apps.player.modes.flow import FlowMode
@@ -22,6 +23,7 @@ class ModeManager:
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         self.chat_mode = ChatMode(context)
+        self.hash_mode = HashMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
         self.flow_mode = FlowMode(context)
@@ -34,6 +36,7 @@ class ModeManager:
         self._context = context
         self._modes: List[ModeInterface] = [
             self.chat_mode,
+            self.hash_mode,
             self.dashboard_mode,
             self.download_mode,
             self.flow_mode,
@@ -140,6 +143,12 @@ class ModeManager:
         self._mode_menu_item(self.medias_mode)
         self._mode_menu_item(self.onvif_mode)
         self._mode_menu_item(self.wsdiscovery_mode)
+
+        if imgui.begin_menu("Cryptography"):
+            try:
+                self._mode_menu_item(self.hash_mode)
+            finally:
+                imgui.end_menu()
 
         if imgui.begin_menu("Utils"):
             try:
