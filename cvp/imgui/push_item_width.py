@@ -17,7 +17,7 @@ def item_width(width: Union[int, float]):
 
 @contextmanager
 def align_right_side():
-    imgui.push_item_width(-imgui.FLOAT_MIN)
+    imgui.push_item_width(-imgui.FLT_MIN)
     try:
         yield
     finally:

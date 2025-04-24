@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List
+from typing import Final, List
 
 from imgui_bundle import imgui
 
@@ -35,6 +35,9 @@ from cvp.variables import (
 class ChatMode(BaseMode):
     __cvp_mode_number__ = 2
     __cvp_mode_name__ = "Chat"
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -120,15 +123,11 @@ class ChatMode(BaseMode):
         finally:
             self._input_text = str()
 
-    def do_child_process(
-        self,
-        menu_split_x=300,
-        menu_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_child_process(self) -> None:
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:

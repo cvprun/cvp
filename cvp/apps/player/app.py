@@ -67,7 +67,7 @@ class PlayerApplication:
             cancel="No",
         )
 
-        prefix_menus = {"File": self.on_file_menu}
+        prefix_menus = {"Mode": self.on_mode_menu}
         self._prefix_menus = OrderedDict(prefix_menus)
 
         suffix_menus = {"Layout": self.on_layout_menu, "Help": self.on_help_menu}
@@ -396,7 +396,7 @@ class PlayerApplication:
             self.renderer.render(imgui.get_draw_data())
             pygame.display.flip()
 
-    def on_file_menu(self) -> None:
+    def on_mode_menu(self) -> None:
         self._modes.do_menu_process()
 
         imgui.separator()

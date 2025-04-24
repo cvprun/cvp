@@ -18,8 +18,10 @@ from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
+from cvp.flow.workspace import FlowWorkspace
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.flows import FlowsPath
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
@@ -33,9 +35,16 @@ class FlowManager:
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
-    def __init__(self, path: FlowsPath, *, refresh_graphs=False):
+    def __init__(self, path: FlowsPath, *, reload=False, raise_errors=False):
         self._dtype_registry = DtypeRegistry()
         self._node_registry = NodeRegistry()
+
+        self._configs = ResourceManager(
+            cls=FlowWorkspace,
+            root_dir=path,
+            reload=reload,
+            raise_errors=raise_errors,
+        )
 
         self._graphs = OrderedDict()
         self._runners = OrderedDict()
@@ -44,12 +53,13 @@ class FlowManager:
         self._clipboard_items = None
         self._clipboard_pivot = None
 
-        if refresh_graphs:
-            self.refresh_flow_graphs()
-
     def stop_all_runners(self) -> None:
         for runner in self._runners.values():
             runner.stop()
+
+    @property
+    def configs(self):
+        return self._configs
 
     @property
     def graphs(self):
@@ -100,7 +110,7 @@ class FlowManager:
         self._clipboard_pivot = None
 
     def refresh_flow_graphs(self):
-        for file in self._path.find_graph_files():
+        for file in self._path.list_first_depth_filenames():
             self.update_graph_yaml(file)
 
     def create_graph(
