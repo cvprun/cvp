@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
-from typing import Final, Sequence, Type
+from typing import Final, List, Sequence, Type
 
 from imgui_bundle import imgui
 
@@ -23,7 +22,7 @@ def dock_window(window_name: str, node_id: int) -> None:
 class _FlowLayout:
     types: Sequence[Type[BaseFlowWindow]]
 
-    def __init__(self):
+    def __init__(self, context: Context):
         from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
         from cvp.apps.player.modes.flow.debug import DebugFlowWindow
         from cvp.apps.player.modes.flow.history import HistoryFlowWindow
@@ -34,30 +33,27 @@ class _FlowLayout:
 
         self._initialized_dock_layout = False
 
-        self.catalog = CatalogFlowWindow.get_window_name()
-        self.debug = DebugFlowWindow.get_window_name()
-        self.history = HistoryFlowWindow.get_window_name()
-        self.intro = IntroFlowWindow.get_window_name()
-        self.logging = LoggingFlowWindow.get_window_name()
-        self.props = PropsFlowWindow.get_window_name()
-        self.tree = TreeFlowWindow.get_window_name()
+        self.catalog = CatalogFlowWindow(context)
+        self.debug = DebugFlowWindow(context)
+        self.history = HistoryFlowWindow(context)
+        self.intro = IntroFlowWindow(context)
+        self.logging = LoggingFlowWindow(context)
+        self.props = PropsFlowWindow(context)
+        self.tree = TreeFlowWindow(context)
 
-        self.types = (
-            CatalogFlowWindow,
-            DebugFlowWindow,
-            HistoryFlowWindow,
-            IntroFlowWindow,
-            LoggingFlowWindow,
-            PropsFlowWindow,
-            TreeFlowWindow,
-        )
+        self._windows: List[FlowWindowInterface] = [
+            self.catalog,
+            self.debug,
+            self.history,
+            self.intro,
+            self.logging,
+            self.props,
+            self.tree,
+        ]
 
     @property
     def initialized(self) -> bool:
         return self._initialized_dock_layout
-
-    def create_windows(self, context: Context) -> OrderedDict[str, FlowWindowInterface]:
-        return OrderedDict({wt.get_window_name(): wt(context) for wt in self.types})
 
     def _initialize_dock_layout(
         self,
@@ -92,16 +88,16 @@ class _FlowLayout:
         dock_center_bottom = split_result.id_at_dir
         dock_center_top = split_result.id_at_opposite_dir
 
-        dock_window(self.tree, dock_left_top)
-        dock_window(self.catalog, dock_left_bottom)
+        dock_window(self.tree.get_window_name(), dock_left_top)
+        dock_window(self.catalog.get_window_name(), dock_left_bottom)
 
-        dock_window(self.props, dock_right_top)
-        dock_window(self.history, dock_right_bottom)
+        dock_window(self.props.get_window_name(), dock_right_top)
+        dock_window(self.history.get_window_name(), dock_right_bottom)
 
-        dock_window(self.logging, dock_center_bottom)
-        dock_window(self.debug, dock_center_bottom)
+        dock_window(self.logging.get_window_name(), dock_center_bottom)
+        dock_window(self.debug.get_window_name(), dock_center_bottom)
 
-        dock_window(self.intro, dock_center_top)
+        dock_window(self.intro.get_window_name(), dock_center_top)
 
         # dock_left_top_node = imgui.internal.dock_builder_get_node(dock_left_top)
         # dock_left_top_node.local_flags |= imgui.DockNodeFlags_.no_docking_split
@@ -129,3 +125,7 @@ class _FlowLayout:
         finally:
             imgui.internal.dock_builder_finish(dockspace_id)
             self._initialized_dock_layout = True
+
+    def do_process(self) -> None:
+        for window in self._windows:
+            window.do_process()

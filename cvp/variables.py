@@ -154,6 +154,7 @@ CANVAS_ROI_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.3
 CANVAS_ROI_ROUNDING: Final[float] = 0.0
 CANVAS_ROI_THICKNESS: Final[float] = 2.0
 
+FLOW_WORKSPACE_NONAME: Final[str] = "New Workspace"
 FLOW_EXTENSION: Final[str] = ".flow.cvp"
 FLOW_PATH_SEPARATOR: Final[str] = "."
 FLOW_PATH_ENCODING: Final[str] = "utf-8"

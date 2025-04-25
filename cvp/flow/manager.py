@@ -4,7 +4,8 @@ from collections import OrderedDict
 from concurrent.futures import Executor
 from copy import deepcopy
 from os import PathLike
-from typing import Any, Optional, Union
+from typing import Any, Optional, Tuple, Union
+from uuid import uuid4
 
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
@@ -25,6 +26,7 @@ from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.flows import FlowsPath
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
+from cvp.variables import FLOW_WORKSPACE_NONAME
 from cvp.yaml.dumpers import IndentListDumper
 
 
@@ -112,6 +114,17 @@ class FlowManager:
     def refresh_flow_graphs(self):
         for file in self._path.list_first_depth_filenames():
             self.update_graph_yaml(file)
+
+    def create_new_workspace(
+        self,
+        name=FLOW_WORKSPACE_NONAME,
+        *,
+        uuid: Optional[str] = None,
+    ) -> Tuple[str, FlowWorkspace]:
+        uuid = uuid if uuid else str(uuid4())
+        workspace = FlowWorkspace(uuid=uuid, name=name)
+        self._workspaces.add(uuid, workspace)
+        return uuid, workspace
 
     def create_graph(
         self,

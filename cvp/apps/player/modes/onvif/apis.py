@@ -2,7 +2,7 @@
 
 import json
 from traceback import format_exc
-from typing import Any, Dict, Sequence, Tuple
+from typing import Any, Dict, Final, Sequence, Tuple
 
 from imgui_bundle import imgui
 
@@ -34,6 +34,9 @@ class ResponseTraceBack(ValueError):
 
 class OnvifApisTab(BaseOnvifTab):
     __cvp_onvif_tab_name__ = "APIs"
+
+    _API_SPLIT_X: Final[int] = 200
+    _API_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     _response_cache: Dict[Tuple[str, str, str], str]
     _response_error: Dict[Tuple[str, str, str], BaseException]
@@ -164,14 +167,16 @@ class OnvifApisTab(BaseOnvifTab):
 
         return apis
 
-    @staticmethod
     def do_process_select_api(
+        self,
         item: OnvifConfig,
         apis: Dict[str, WsdlOperationProxy],
-        split_x=200,
-        child_flags=RESIZE_X | BORDERS,
     ) -> str:
-        with begin_child_context("API List", (split_x, 0), child_flags=child_flags):
+        with begin_child_context(
+            "API List",
+            size=(self._API_SPLIT_X, 0),
+            child_flags=self._API_CHILD_FLAGS,
+        ):
             if imgui.begin_list_box("##APIList", FIT_SIZE):
                 try:
                     for i, key in enumerate(apis.keys()):

@@ -13,7 +13,6 @@ from cvp.fonts.glyphs import mdi
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.logging.logging import flow_logger as logger
 from cvp.msgs.msg import Msg
 from cvp.popups.confirm import ConfirmPopup
 from cvp.popups.input_text import InputTextPopup
@@ -29,8 +28,7 @@ class FlowMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._layout = _FlowLayout()
-        self._windows = self._layout.create_windows(context)
+        self._layout = _FlowLayout(context)
         self._viewport_flags = ROOT_STATIC_VIEWPORT_FLAGS
         self._initialized_dock_layout = False
         self._menus = (
@@ -42,13 +40,6 @@ class FlowMode(BaseMode):
             ("View", self.on_view_menu),
         )
 
-        self._new_workspace_popup = InputTextPopup(
-            title="New workspace",
-            label="Please enter a workspace name:",
-            ok="Create",
-            cancel="Cancel",
-            target=self.on_new_workspace,
-        )
         self._import_workspace_popup = OpenFilePopup(
             title="Import workspace",
             target=self.on_import_workspace,
@@ -72,7 +63,7 @@ class FlowMode(BaseMode):
             target=self.on_new_variable,
         )
 
-    def on_new_workspace(self, name: str) -> None:
+    def on_new_graph(self, name: str) -> None:
         # graph = self.flows.create_graph(name, append=True)
         # filepath = self.context.home.flows.graph_filepath(graph.key)
         # if filepath.exists():
@@ -124,37 +115,6 @@ class FlowMode(BaseMode):
     def autoscroll(self, value: bool) -> None:
         self.config.logs.autoscroll = value
 
-    def open_workspace(self, uuid: str) -> None:
-        workspace = self.flows.workspaces.get(uuid)
-        if workspace is None:
-            self.context.toast_error(f"Not found workspace: {uuid}", logger)
-            return
-
-        if workspace.opened:
-            self.context.toast_error(f"The workspace is already open: {uuid}", logger)
-            return
-
-        if workspace.open():
-            logger.info(f"Workspace opened successfully: {uuid}")
-        else:
-            self.context.toast_error(f"Workspace open failed: {uuid}", logger)
-
-    def close_workspace(self, uuid: str) -> None:
-        workspace = self.flows.workspaces.get(uuid)
-        if workspace is None:
-            self.context.toast_error(f"Not found workspace: {uuid}", logger)
-            return
-
-        if not workspace.opened:
-            self.context.toast_error(f"The workspace is already closed: {uuid}", logger)
-            return
-
-        try:
-            workspace.close()
-            logger.info(f"Workspace closed successfully: {uuid}")
-        except BaseException as e:
-            self.context.toast_error(f"Workspace close failed: {e}", logger)
-
     @override
     def on_main_menu(self) -> None:
         for name, func in self._menus:
@@ -165,15 +125,15 @@ class FlowMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        if menu_item("New workspace"):
-            self._new_workspace_popup.show()
+        if menu_item("Create new workspace"):
+            self.context.flows.create_new_workspace()
 
         has_any_workspace = bool(self.flows.workspaces)
         if imgui.begin_menu("Open workspace", enabled=has_any_workspace):
             try:
-                for uuid, workspace in self.flows.workspaces.values():
+                for uuid, workspace in self.flows.workspaces.items():
                     if menu_item(workspace.name):
-                        self.open_workspace(uuid)
+                        self._layout.intro.open_workspace(uuid)
             finally:
                 imgui.end_menu()
 
@@ -182,7 +142,7 @@ class FlowMode(BaseMode):
             try:
                 for recent in self.config.recent:
                     if menu_item(recent.name):
-                        self.open_workspace(recent.uuid)
+                        self._layout.intro.open_workspace(recent.uuid)
             finally:
                 imgui.end_menu()
 
@@ -303,5 +263,4 @@ class FlowMode(BaseMode):
             if not self._layout.initialized:
                 self._layout.initialize_dock_layout(dockspace_id, viewport)
 
-        for window in self._windows.values():
-            window.do_process()
+        self._layout.do_process()

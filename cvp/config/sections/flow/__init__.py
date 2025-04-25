@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List, NamedTuple
 
 from cvp.config.sections.bases.aui import AuiWindowConfig
@@ -24,6 +25,7 @@ from cvp.variables import (
 class RecentItem(NamedTuple):
     uuid: str
     name: str
+    updated_at: datetime
 
 
 @dataclass
