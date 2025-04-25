@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Union
+from collections import OrderedDict
+from typing import List, Sequence, Union
 
 from imgui_bundle import imgui
 
@@ -14,40 +15,63 @@ class ModeManager:
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.dashboard import DashboardMode
-        from cvp.apps.player.modes.downloader import DownloaderMode
+        from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.medias import MediasMode
+        from cvp.apps.player.modes.network.downloader import DownloaderMode
+        from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
+        self.binary_text_mode = BinaryTextMode(context)
         self.chat_mode = ChatMode(context)
-        self.hash_mode = HashMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
         self.flow_mode = FlowMode(context)
+        self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
+        self.sock_map = SockMapMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
         self._context = context
         self._modes: List[ModeInterface] = [
+            self.binary_text_mode,
             self.chat_mode,
-            self.hash_mode,
             self.dashboard_mode,
             self.download_mode,
             self.flow_mode,
+            self.hash_mode,
             self.medias_mode,
             self.onvif_mode,
             self.preference_mode,
+            self.sock_map,
             self.tetrix_mode,
             self.wsdiscovery_mode,
         ]
         self._key2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
         self._num2index = {m.get_mode_number(): i for i, m in enumerate(self._modes)}
+
+        self._menu_modes: Sequence[ModeInterface] = (
+            self.dashboard_mode,
+            self.chat_mode,
+            self.flow_mode,
+            self.medias_mode,
+            self.onvif_mode,
+            self.wsdiscovery_mode,
+        )
+        self._submenu_modes = OrderedDict[str, Sequence[ModeInterface]](
+            {
+                "Cryptography": (self.hash_mode,),
+                "Encoding": (self.binary_text_mode,),
+                "Games": (self.tetrix_mode,),
+                "Network": (self.download_mode, self.sock_map),
+            }
+        )
 
     @property
     def mode_key(self) -> str:
@@ -137,31 +161,16 @@ class ModeManager:
             self.mode_key = name
 
     def do_menu_process(self) -> None:
-        self._mode_menu_item(self.dashboard_mode)
-        self._mode_menu_item(self.chat_mode)
-        self._mode_menu_item(self.flow_mode)
-        self._mode_menu_item(self.medias_mode)
-        self._mode_menu_item(self.onvif_mode)
-        self._mode_menu_item(self.wsdiscovery_mode)
+        for menu_mode in self._menu_modes:
+            self._mode_menu_item(menu_mode)
 
-        if imgui.begin_menu("Cryptography"):
-            try:
-                self._mode_menu_item(self.hash_mode)
-            finally:
-                imgui.end_menu()
-
-        if imgui.begin_menu("Utils"):
-            try:
-                self._mode_menu_item(self.download_mode)
-            finally:
-                imgui.end_menu()
-
-        if imgui.begin_menu("Games"):
-            try:
-                self._mode_menu_item(self.tetrix_mode)
-            finally:
-                imgui.end_menu()
+        for submenu, menu_modes in self._submenu_modes.items():
+            if imgui.begin_menu(submenu):
+                try:
+                    for menu_mode in menu_modes:
+                        self._mode_menu_item(menu_mode)
+                finally:
+                    imgui.end_menu()
 
         imgui.separator()
-
         self._mode_menu_item(self.preference_mode)

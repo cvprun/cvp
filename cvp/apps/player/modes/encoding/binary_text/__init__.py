@@ -6,7 +6,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.context.context import Context
-from cvp.hashfunc.checksum import Method
+from cvp.encoding.binary_text import BinaryToTextEncodingMethod
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
@@ -14,25 +14,25 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-class HashMode(BaseMode):
-    __cvp_mode_name__ = "Hash Functions"
+class BinaryTextMode(BaseMode):
+    __cvp_mode_name__ = "Binary-to-Text"
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._methods = [str(m) for m in Method]
+        self._methods = [str(m) for m in BinaryToTextEncodingMethod]
 
     @override
     def do_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 
-    def get_selected_method(self) -> Optional[Method]:
+    def get_selected_method(self) -> Optional[BinaryToTextEncodingMethod]:
         try:
             index = self._methods.index(self.selected)
-            return Method(self._methods[index])
+            return BinaryToTextEncodingMethod(self._methods[index])
         except ValueError:
             return None
 
@@ -59,5 +59,5 @@ class HashMode(BaseMode):
             else:
                 text_centered("Please select a item")
 
-    def do_method_process(self, method: Method) -> None:
+    def do_method_process(self, method: BinaryToTextEncodingMethod) -> None:
         pass

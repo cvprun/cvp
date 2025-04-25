@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# https://en.wikipedia.org/wiki/List_of_hash_functions
 
 import hashlib
 import zlib
