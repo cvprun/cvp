@@ -40,7 +40,7 @@ from cvp.popups.confirm import ConfirmPopup
 from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
-from cvp.variables import FONT_NAME
+from cvp.variables import CVP_TITLE, FONT_NAME
 
 
 class PlayerApplication:
@@ -205,6 +205,8 @@ class PlayerApplication:
             self._validate_accelerate_available()
 
         pygame.init()
+        pygame.display.set_caption(CVP_TITLE)
+        pygame.display.set_allow_screensaver(False)
         logger.info("Initialized all pygame modules.")
 
         icon_path = get_default_icon_path()

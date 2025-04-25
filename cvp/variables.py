@@ -12,6 +12,7 @@ UNKNOWN_TOTAL_SIZE: Final[int] = -1
 NULL_CHAR: Final[int] = 0
 NODOC: Final[str] = ""
 
+CVP_TITLE: Final[str] = "CVP"
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
 CVP_YML_FILENAME: Final[str] = "cvp.yml"
 CVP_EXTENSION: Final[str] = ".cvp"
