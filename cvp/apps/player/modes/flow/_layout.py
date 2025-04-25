@@ -27,6 +27,7 @@ class _FlowLayout:
         from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
         from cvp.apps.player.modes.flow.debug import DebugFlowWindow
         from cvp.apps.player.modes.flow.history import HistoryFlowWindow
+        from cvp.apps.player.modes.flow.intro import IntroFlowWindow
         from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
         from cvp.apps.player.modes.flow.props import PropsFlowWindow
         from cvp.apps.player.modes.flow.tree import TreeFlowWindow
@@ -36,6 +37,7 @@ class _FlowLayout:
         self.catalog = CatalogFlowWindow.get_window_name()
         self.debug = DebugFlowWindow.get_window_name()
         self.history = HistoryFlowWindow.get_window_name()
+        self.intro = IntroFlowWindow.get_window_name()
         self.logging = LoggingFlowWindow.get_window_name()
         self.props = PropsFlowWindow.get_window_name()
         self.tree = TreeFlowWindow.get_window_name()
@@ -44,6 +46,7 @@ class _FlowLayout:
             CatalogFlowWindow,
             DebugFlowWindow,
             HistoryFlowWindow,
+            IntroFlowWindow,
             LoggingFlowWindow,
             PropsFlowWindow,
             TreeFlowWindow,
@@ -87,7 +90,7 @@ class _FlowLayout:
 
         split_result = split_node(dock_center, imgui.Dir.down, bottom_ratio)
         dock_center_bottom = split_result.id_at_dir
-        # dock_center_top = split_result.id_at_opposite_dir
+        dock_center_top = split_result.id_at_opposite_dir
 
         dock_window(self.tree, dock_left_top)
         dock_window(self.catalog, dock_left_bottom)
@@ -97,6 +100,8 @@ class _FlowLayout:
 
         dock_window(self.logging, dock_center_bottom)
         dock_window(self.debug, dock_center_bottom)
+
+        dock_window(self.intro, dock_center_top)
 
         # dock_left_top_node = imgui.internal.dock_builder_get_node(dock_left_top)
         # dock_left_top_node.local_flags |= imgui.DockNodeFlags_.no_docking_split
