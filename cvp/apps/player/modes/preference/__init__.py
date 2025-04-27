@@ -44,7 +44,7 @@ class PreferenceMode(BaseMode):
 
     @override
     def do_process(self) -> None:
-        widget = self._menus.get(self.selected)
+        widget = self._menus.get(self.selected_submenu)
         if widget is not None:
             widget.do_preprocess()
         try:
@@ -63,8 +63,8 @@ class PreferenceMode(BaseMode):
             if imgui.begin_list_box("###MenuList", FIT_SIZE):
                 try:
                     for key in self._menus.keys():
-                        if imgui.selectable(key, key == self.selected)[1]:
-                            self.selected = key
+                        if imgui.selectable(key, key == self.selected_submenu)[1]:
+                            self.selected_submenu = key
                 finally:
                     imgui.end_list_box()
 
@@ -72,7 +72,7 @@ class PreferenceMode(BaseMode):
 
         with begin_child_context("Main"):
             if widget is not None:
-                imgui.text(self.selected)
+                imgui.text(self.selected_submenu)
                 imgui.separator()
                 widget.do_process()
             else:

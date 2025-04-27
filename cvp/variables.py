@@ -99,6 +99,10 @@ MIN_POPUP_OPEN_FILE_HEIGHT: Final[int] = 380
 AUI_PADDING_WIDTH: Final[float] = 8.0
 AUI_PADDING_HEIGHT: Final[float] = 8.0
 
+FAKER_SEED_LENGTH: Final[int] = 16
+FAKER_REPEAT: Final[int] = 10
+FAKER_SEPARATOR: Final[str] = "\\n"
+
 PROCESS_TEARDOWN_TIMEOUT: Final[float] = 2.0
 
 FFMPEG_EXECUTABLE_FILENAME: Final[str] = "ffmpeg"

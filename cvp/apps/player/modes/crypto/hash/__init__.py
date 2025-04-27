@@ -31,7 +31,7 @@ class HashMode(BaseMode):
 
     def get_selected_method(self) -> Optional[Method]:
         try:
-            index = self._methods.index(self.selected)
+            index = self._methods.index(self.selected_submenu)
             return Method(self._methods[index])
         except ValueError:
             return None
@@ -45,9 +45,9 @@ class HashMode(BaseMode):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for method_name in self._methods:
-                        selected = method_name == self.selected
+                        selected = method_name == self.selected_submenu
                         if imgui.selectable(method_name, selected)[1]:
-                            self.selected = method_name
+                            self.selected_submenu = method_name
                 finally:
                     imgui.end_list_box()
 

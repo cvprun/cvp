@@ -13,16 +13,18 @@ INFINITY_HEIGHT_IN_ITEMS: Final[int] = -1
 class ComboResult(NamedTuple):
     changed: bool
     value: int  # NamedTuple already has an 'index' symbol, so replace it with 'value'.
+    item: Optional[str]
 
     @classmethod
-    def from_raw(cls, result):
+    def from_raw(cls, result, *, items: Optional[Sequence[str]] = None):
         assert isinstance(result, tuple)
         assert len(result) == 2
         changed = result[0]
         value = result[1]
         assert isinstance(changed, bool)
         assert isinstance(value, int)
-        return cls(changed, value)
+        item = items[value] if items and 0 <= value < len(items) else None
+        return cls(changed, value, item)
 
     def __bool__(self) -> bool:
         return self.changed
@@ -37,7 +39,7 @@ def combo(
     if not isinstance(items, list):
         items = list(items)
     result = imgui.combo(label, current, items, height_in_items)
-    return ComboResult.from_raw(result)
+    return ComboResult.from_raw(result, items=items)
 
 
 def get_arrow_size(flags: Union[ComboFlags, int] = 0) -> float:
@@ -115,6 +117,7 @@ def combo_with_flags(
             imgui.end_combo()
 
     if selected_index is not None:
-        return ComboResult(changed=True, value=selected_index)
+        item = items[selected_index] if 0 <= selected_index < len(items) else None
+        return ComboResult(changed=True, value=selected_index, item=item)
     else:
-        return ComboResult(changed=False, value=NOT_FOUND_INDEX)
+        return ComboResult(changed=False, value=NOT_FOUND_INDEX, item=None)

@@ -81,7 +81,7 @@ class LayoutPreference(BasePreference):
         shutil.move(src, dest)
 
         self.reload_layout_filenames()
-        self.selected = value
+        self.selected_submenu = value
 
     def on_rename_input_validate(self, value: str) -> bool:
         if not self.get_layout_filepath(self._rename_candidate).is_file():
@@ -122,7 +122,7 @@ class LayoutPreference(BasePreference):
         filename = self.context.home.layouts.generate_nonexistent_filename()
         self.save_layout(filename)
         if select:
-            self.selected = filename
+            self.selected_submenu = filename
         if reload:
             self.reload_layout_filenames()
 
@@ -148,12 +148,12 @@ class LayoutPreference(BasePreference):
             if imgui.button("New"):
                 filename = self.context.home.layouts.generate_nonexistent_filename()
                 self.save_layout(filename)
-                self.selected = filename
+                self.selected_submenu = filename
                 self.reload_layout_filenames()
             imgui.same_line()
-            disabled_delete = self.selected not in self._filenames
+            disabled_delete = self.selected_submenu not in self._filenames
             if button("Del", disabled=disabled_delete):
-                self.show_remove_popup(self.selected)
+                self.show_remove_popup(self.selected_submenu)
             imgui.same_line()
             if button("Clear", disabled=not self._filenames):
                 self._confirm_clear.show()
@@ -161,9 +161,9 @@ class LayoutPreference(BasePreference):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for filename in self._filenames:
-                        selected = filename == self.selected
+                        selected = filename == self.selected_submenu
                         if imgui.selectable(filename, selected)[1]:
-                            self.selected = filename
+                            self.selected_submenu = filename
                 finally:
                     imgui.end_list_box()
 
@@ -171,7 +171,7 @@ class LayoutPreference(BasePreference):
 
         with begin_child_context("Main"):
             try:
-                filename_index = self._filenames.index(self.selected)
+                filename_index = self._filenames.index(self.selected_submenu)
                 assert 0 <= filename_index < len(self._filenames)
                 self.do_filename_process(self._filenames[filename_index])
             except ValueError:

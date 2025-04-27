@@ -89,10 +89,10 @@ class MediasMode(BaseMode):
                 self.medias.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected = self.medias.add_config()[0]
+                self.selected_submenu = self.medias.add_config()[0]
             imgui.same_line()
-            if button("Del", disabled=self.selected not in self.medias):
-                self._remove_candidate = self.selected
+            if button("Del", disabled=self.selected_submenu not in self.medias):
+                self._remove_candidate = self.selected_submenu
                 self._confirm_remove.show()
             imgui.same_line()
             if button("Clear", disabled=not self.medias):
@@ -102,16 +102,16 @@ class MediasMode(BaseMode):
                 try:
                     for key, media in self.medias.items():
                         label = f"{media.name}###{key}"
-                        selected = key == self.selected
+                        selected = key == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = key
+                            self.selected_submenu = key
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if selected_media := self.medias.get(self.selected):
+            if selected_media := self.medias.get(self.selected_submenu):
                 self.do_media_tab_bar(selected_media)
             else:
                 text_centered("Please select a item")

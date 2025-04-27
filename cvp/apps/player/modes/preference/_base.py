@@ -60,9 +60,9 @@ class BasePreference(PreferenceInterface, PreferenceMenuNameProtocol, ABC):
         self._context.set_selected_submenu(type(self), value, suffix=suffix)
 
     @property
-    def selected(self) -> str:
+    def selected_submenu(self) -> str:
         return self.get_selected_submenu()
 
-    @selected.setter
-    def selected(self, value: str) -> None:
+    @selected_submenu.setter
+    def selected_submenu(self, value: str) -> None:
         self.set_selected_submenu(value)

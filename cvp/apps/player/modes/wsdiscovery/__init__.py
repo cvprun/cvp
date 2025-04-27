@@ -184,8 +184,8 @@ class WsDiscoveryMode(BaseMode):
             if button("Reload", disabled=running):
                 self.wsdiscovery.read_all_config_files()
             imgui.same_line()
-            if button("Del", disabled=self.selected not in self.wsdiscovery):
-                self._remove_candidate = self.selected
+            if button("Del", disabled=self.selected_submenu not in self.wsdiscovery):
+                self._remove_candidate = self.selected_submenu
                 self._confirm_remove.show()
             imgui.same_line()
             if button("Clear", disabled=running or not self.wsdiscovery):
@@ -195,16 +195,16 @@ class WsDiscoveryMode(BaseMode):
                 try:
                     for key, wsd in self.wsdiscovery.items():
                         label = f"{wsd.name}###{key}"
-                        selected = key == self.selected
+                        selected = key == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = key
+                            self.selected_submenu = key
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if selected_wsd := self.wsdiscovery.get(self.selected):
+            if selected_wsd := self.wsdiscovery.get(self.selected_submenu):
                 self.do_wsdiscovery_process(selected_wsd)
             else:
                 text_centered("Please select a item")

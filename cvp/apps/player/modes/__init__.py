@@ -18,6 +18,7 @@ class ModeManager:
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
+        from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
@@ -29,6 +30,7 @@ class ModeManager:
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
+        self.faker_mode = FakerMode(context)
         self.flow_mode = FlowMode(context)
         self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
@@ -44,6 +46,7 @@ class ModeManager:
             self.chat_mode,
             self.dashboard_mode,
             self.download_mode,
+            self.faker_mode,
             self.flow_mode,
             self.hash_mode,
             self.medias_mode,
@@ -69,6 +72,7 @@ class ModeManager:
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Games": (self.tetrix_mode,),
+                "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),
             }
         )

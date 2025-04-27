@@ -39,16 +39,16 @@ class NodePreference(BasePreference):
                 try:
                     for path, node in self.nodes.items():
                         label = f"{node.class_name}###{path}"
-                        selected = path == self.selected
+                        selected = path == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = path
+                            self.selected_submenu = path
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if node := self.nodes.get(self.selected):
+            if node := self.nodes.get(self.selected_submenu):
                 self.do_node_process(node)
             else:
                 text_centered("Please select a item")

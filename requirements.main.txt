@@ -1,3 +1,4 @@
+Faker==37.1.0
 PyOpenGL==3.1.9
 PyOpenGL_accelerate==3.1.9
 PyYAML==6.0.2
@@ -25,6 +26,7 @@ sagecipher==0.7.5
 shapely==2.0.7
 supabase==2.15.0
 type-serialize==2.1.0
+tzdata==2025.2
 uvloop==0.21.0
 watchdog==6.0.0
 yaml-translator==1.0.1

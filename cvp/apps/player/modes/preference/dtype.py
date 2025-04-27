@@ -39,16 +39,16 @@ class DtypePreference(BasePreference):
                 try:
                     for path, dtype in self.dtypes.items():
                         label = f"{dtype.class_name}###{path}"
-                        selected = path == self.selected
+                        selected = path == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = path
+                            self.selected_submenu = path
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if dtype := self.dtypes.get(self.selected):
+            if dtype := self.dtypes.get(self.selected_submenu):
                 self.do_dtype_process(dtype)
             else:
                 text_centered("Please select a item")

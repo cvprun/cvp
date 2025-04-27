@@ -13,6 +13,7 @@ from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.display import DisplayConfig
+from cvp.config.sections.faker import FakerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.config.sections.flow import FlowAuiConfig
 from cvp.config.sections.font import FontConfig, FontManagerConfig
@@ -39,6 +40,7 @@ class Config:
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
+    faker: FakerConfig = field(default_factory=FakerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
     flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
     font: FontConfig = field(default_factory=FontConfig)

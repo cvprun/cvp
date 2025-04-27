@@ -7,7 +7,7 @@ from uuid import uuid4
 
 from httpx import Timeout
 from ollama import Client
-from type_serialize import Serializable, deserialize, serialize
+from type_serialize import Serializable
 
 from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
@@ -48,8 +48,12 @@ class Ollama(Serializable):
         self.follow_redirects = follow_redirects
         self.timeout = timeout
         self.model_names = list(model_names if model_names else ())
-        self.details = dict(details if details else {})
+        self._details = dict(details if details else {})
         self._error = error
+
+    @property
+    def details(self):
+        return self._details
 
     def header_as_dict(self) -> Dict[str, str]:
         return {str(k): str(v) for k, v in self.headers}
@@ -65,7 +69,7 @@ class Ollama(Serializable):
             and self.follow_redirects == other.follow_redirects
             and self.timeout == other.timeout
             and self.model_names == other.model_names
-            and self.details == other.details
+            and self._details == other._details
             and self._error == other._error
         )
 
@@ -79,7 +83,7 @@ class Ollama(Serializable):
         result.follow_redirects = copy(self.follow_redirects)
         result.timeout = copy(self.timeout)
         result.model_names = copy(self.model_names)
-        result.details = copy(self.details)
+        result._details = copy(self._details)
         result._error = copy(self._error)
         return result
 
@@ -95,7 +99,7 @@ class Ollama(Serializable):
         result.follow_redirects = deepcopy(self.follow_redirects, memo)
         result.timeout = deepcopy(self.timeout, memo)
         result.model_names = deepcopy(self.model_names, memo)
-        result.details = deepcopy(self.details, memo)
+        result._details = deepcopy(self._details, memo)
         result._error = deepcopy(self._error, memo)
         memo[id(self)] = result
         return result
@@ -110,7 +114,6 @@ class Ollama(Serializable):
             str(self._Keys.follow_redirects): self.follow_redirects,
             str(self._Keys.timeout): self.timeout,
             str(self._Keys.model_names): self.model_names,
-            str(self._Keys.details): {k: serialize(v) for k, v in self.details.items()},
         }
 
     @override
@@ -129,9 +132,7 @@ class Ollama(Serializable):
         self.timeout = float(data.get(self._Keys.timeout, TIMEOUT_INFINITE))
         self.model_names = data.get(self._Keys.model_names, list())
 
-        details = data.get(self._Keys.details, dict())
-        self.details = {k: deserialize(v, ModelDetails) for k, v in details.items()}
-
+        self._details = dict()
         self._error = None
 
     @property
@@ -173,7 +174,7 @@ class Ollama(Serializable):
 
     def show_model(self, model_name: str) -> ModelDetails:
         response = self.client.show(model_name)
-        detail = self.details.get(model_name, ModelDetails())
+        detail = self._details.get(model_name, ModelDetails())
         try:
             modified_at = response.modified_at
             template = response.template
@@ -205,4 +206,4 @@ class Ollama(Serializable):
                 detail.quantization_level = q_level if q_level else str()
             return detail
         finally:
-            self.details[model_name] = detail
+            self._details[model_name] = detail

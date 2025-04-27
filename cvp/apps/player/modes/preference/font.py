@@ -87,16 +87,16 @@ class FontPreference(BasePreference):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for key, font in GlobalFontMapper().items():
-                        selected = key == self.selected
+                        selected = key == self.selected_submenu
                         if imgui.selectable(key, selected)[1]:
-                            self.selected = key
+                            self.selected_submenu = key
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            selected_font = GlobalFontMapper().get(self.selected)
+            selected_font = GlobalFontMapper().get(self.selected_submenu)
             if selected_font is None:
                 text_centered("Please select a item")
             else:

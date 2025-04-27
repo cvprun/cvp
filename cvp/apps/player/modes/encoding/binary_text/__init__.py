@@ -53,7 +53,7 @@ class BinaryTextMode(BaseMode):
 
     def get_method(self, method_name: Optional[str] = None) -> Optional[BinaryToText]:
         if not method_name:
-            method_name = self.selected
+            method_name = self.selected_submenu
         assert isinstance(method_name, str)
 
         try:
@@ -116,13 +116,13 @@ class BinaryTextMode(BaseMode):
                     for method_name in self._methods:
                         display = self.convert_displayable_text(method_name)
                         label = f"{display}##{method_name}"
-                        selected = method_name == self.selected
+                        selected = method_name == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            if self.selected != method_name:
+                            if self.selected_submenu != method_name:
                                 selected_method = self.get_method(method_name)
                                 assert selected_method is not None
                                 self.update_with_last_transcoding(selected_method)
-                            self.selected = method_name
+                            self.selected_submenu = method_name
                 finally:
                     imgui.end_list_box()
 

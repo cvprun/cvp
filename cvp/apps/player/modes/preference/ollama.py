@@ -73,31 +73,31 @@ class OllamaPreference(BasePreference):
                 self.ollamas.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected = self.ollamas.add_new()[0]
+                self.selected_submenu = self.ollamas.add_new()[0]
             imgui.same_line()
-            disabled_delete = self.selected not in self.ollamas
+            disabled_delete = self.selected_submenu not in self.ollamas
             if button("Del", disabled=disabled_delete):
-                self.ollamas.remove(self.selected)
+                self.ollamas.remove(self.selected_submenu)
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for filename, ollama in self.ollamas.items():
                         label = f"{ollama.name}###{filename}"
-                        selected = filename == self.selected
+                        selected = filename == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
-                            self.selected = filename
+                            self.selected_submenu = filename
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if ollama := self.ollamas.get(self.selected):
+            if ollama := self.ollamas.get(self.selected_submenu):
                 if imgui.begin_tab_bar("MainTabBar"):
                     try:
                         if imgui.begin_tab_item("Config")[0]:
                             try:
-                                self.do_ollama_config(self.selected, ollama)
+                                self.do_ollama_config(self.selected_submenu, ollama)
                             finally:
                                 imgui.end_tab_item()
 
