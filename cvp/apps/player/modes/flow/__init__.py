@@ -125,7 +125,7 @@ class FlowMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        if menu_item("Create new workspace"):
+        if menu_item("New workspace"):
             self.context.flows.create_new_workspace()
 
         has_any_workspace = bool(self.flows.workspaces)
@@ -146,7 +146,7 @@ class FlowMode(BaseMode):
             finally:
                 imgui.end_menu()
 
-        # imgui.separator()
+        imgui.separator()
         # has_opened_graph = self._canvases.opened
         # if menu_item("Save graph", enabled=has_opened_graph):
         #     self.save_current_graph()
@@ -155,18 +155,19 @@ class FlowMode(BaseMode):
         #     self.close_current_graph()
         # if menu_item("Close graph", enabled=has_opened_graph):
         #     self.close_current_graph()
-        #
-        # imgui.separator()
-        # if menu_item("Import graph"):
-        #     self._import_graph_popup.show()
-        # if menu_item("Export graph"):
-        #     self._export_graph_popup.show()
-        #
-        # imgui.separator()
-        # if menu_item("Refresh graphs"):
-        #     self.save_current_graph()
-        #     self.refresh_graphs()
-        #
+
+        imgui.separator()
+        if menu_item("Import graph"):
+            # self._import_graph_popup.show()
+            pass
+        if menu_item("Export graph"):
+            # self._export_graph_popup.show()
+            pass
+
+        imgui.separator()
+        if menu_item("Refresh graphs"):
+            self.context.flows.workspaces.read_all_config_files()
+
         # imgui.separator()
         # if menu_item("Close flow window"):
         #     self.close()

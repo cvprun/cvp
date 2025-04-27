@@ -11,7 +11,8 @@ from cvp.flow.workspace import FlowWorkspace
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_WIDTH
-from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
+from cvp.imgui.flags.child import AUTO_RESIZE_X, AUTO_RESIZE_Y, BORDERS
+from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.logging.logging import flow_logger as logger
 from cvp.types.override import override
 
@@ -28,6 +29,10 @@ class IntroFlowWindow(BaseFlowWindow):
     @property
     def config(self):
         return self.context.config.flow_aui
+
+    @property
+    def error_color(self):
+        return self.context.config.appearance.error_color
 
     def open_workspace(self, uuid: str) -> None:
         workspace = self.flows.workspaces.get(uuid)
@@ -63,7 +68,7 @@ class IntroFlowWindow(BaseFlowWindow):
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            if imgui.button("Create new workspace"):
+            if imgui.button("New workspace"):
                 self.context.flows.create_new_workspace()
 
             if imgui.button("Reload workspace"):
@@ -82,18 +87,31 @@ class IntroFlowWindow(BaseFlowWindow):
                 self.do_workspace_process(workspace)
 
     def do_recent_process(self, recent: RecentItem) -> None:
-        with begin_child_context(
-            f"Recent##RecentItem.{recent.uuid}",
-            size=(self._RECENT_ITEM_SPLIT_X, 0),
-            child_flags=self._RECENT_ITEM_CHILD_FLAGS,
-        ):
-            imgui.text(recent.name)
-            imgui.text(recent.updated_at.isoformat())
+        workspace = self.context.flows.workspaces.get(recent.uuid)
+        if workspace is not None:
+            self.do_workspace_process(workspace)
+        else:
+            imgui.text_colored(self.error_color, f"Not found workspace: {recent.uuid}")
 
     def do_workspace_process(self, workspace: FlowWorkspace) -> None:
         with begin_child_context(
-            f"Workspace##Workspace.{workspace.uuid}",
+            f"Workspace##{workspace.uuid}",
             size=(self._RECENT_ITEM_SPLIT_X, 0),
             child_flags=self._RECENT_ITEM_CHILD_FLAGS,
         ):
-            imgui.text(workspace.name)
+            with begin_child_context("Left", child_flags=AUTO_RESIZE_X | AUTO_RESIZE_Y):
+                imgui.text(workspace.name)
+
+                with style_disable_input_context():
+                    imgui.text(workspace.uuid)
+
+            imgui.same_line()
+
+            avail_size = imgui.get_content_region_avail()
+            imgui.begin_horizontal("Horizontal", size=(avail_size.x, 0))
+            try:
+                imgui.spring()
+                if imgui.button("Open", size=(0, avail_size.y)):
+                    workspace.open()
+            finally:
+                imgui.end_horizontal()
