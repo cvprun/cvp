@@ -103,19 +103,19 @@ class OpenFilePopup(PopupBase[str]):
         if imgui.is_window_appearing():
             set_window_min_size(self._min_width, self._min_height)
 
-        if imgui.button(mdi.NF_FA_HOME):
+        if imgui.button(mdi.HOME):
             self._location_text = str(Path.home())
         hovered_tooltip_text("Home Directory")
 
         imgui.same_line()
 
-        if imgui.button(mdi.NF_MD_ARROW_UP_BOLD):
+        if imgui.button(mdi.ARROW_UP_BOLD):
             self._location_text = str(Path(self._location_text).parent)
         hovered_tooltip_text("Parent Directory")
 
         imgui.same_line()
 
-        show_hidden_icon = mdi.NF_FA_EYE if self._show_hidden else mdi.NF_FA_EYE_SLASH
+        show_hidden_icon = mdi.EYE if self._show_hidden else mdi.EYE_OFF
         if imgui.checkbox(show_hidden_icon, self._show_hidden)[0]:
             self._show_hidden = not self._show_hidden
             self._items = self.list_items(self._current_dir, self._show_hidden)
