@@ -8,15 +8,19 @@ from typing import Callable, List, Optional, Union
 import pygame
 from imgui_bundle import imgui
 
+from cvp.fonts.glyphs import mdi
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.button import button
+from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags.child import BORDERS
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.footer_height_to_reverse import footer_height_as_reverse
 from cvp.imgui.input_text import input_text
+from cvp.imgui.push_item_width import item_width
 from cvp.imgui.set_window_min_size import set_window_min_size
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
@@ -99,18 +103,33 @@ class OpenFilePopup(PopupBase[str]):
         if imgui.is_window_appearing():
             set_window_min_size(self._min_width, self._min_height)
 
-        if imgui.button("Parent"):
-            self._location_text = str(Path(self._location_text).parent)
+        if imgui.button(mdi.NF_FA_HOME):
+            self._location_text = str(Path.home())
+        hovered_tooltip_text("Home Directory")
 
         imgui.same_line()
 
-        if imgui.checkbox("Show Hidden", self._show_hidden)[0]:
+        if imgui.button(mdi.NF_MD_ARROW_UP_BOLD):
+            self._location_text = str(Path(self._location_text).parent)
+        hovered_tooltip_text("Parent Directory")
+
+        imgui.same_line()
+
+        show_hidden_icon = mdi.NF_FA_EYE if self._show_hidden else mdi.NF_FA_EYE_SLASH
+        if imgui.checkbox(show_hidden_icon, self._show_hidden)[0]:
             self._show_hidden = not self._show_hidden
             self._items = self.list_items(self._current_dir, self._show_hidden)
+        hovered_tooltip_text("Show Hidden Files and Directories")
 
         imgui.same_line()
 
-        loc_result = input_text("Location", self._location_text, ENTER_RETURNS_TRUE)
+        with item_width(FIT_WIDTH):
+            loc_result = input_text(
+                "##Location",
+                self._location_text,
+                ENTER_RETURNS_TRUE,
+            )
+
         loc_changed = loc_result.changed
         loc_text = loc_result.value
 

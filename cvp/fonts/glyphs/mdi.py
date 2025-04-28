@@ -4,19 +4,28 @@ from typing import Final
 
 from cvp.fonts.types import IconCode
 
-LABEL: Final[IconCode] = IconCode("\U000f0315")
-LABEL_OUTLINE: Final[IconCode] = IconCode("\U000f0316")
+NF_FA_HOME: Final[IconCode] = IconCode("\U0000f015")
+NF_FA_FILE: Final[IconCode] = IconCode("\U000f0450")
+NF_FA_FOLDER: Final[IconCode] = IconCode("\U0000f07b")
+NF_FA_FOLDER_PLUS: Final[IconCode] = IconCode("\U0000eec7")
+NF_FA_EYE: Final[IconCode] = IconCode("\U0000f06e")
+NF_FA_EYE_SLASH: Final[IconCode] = IconCode("\U0000f070")
+NF_FA_REFRESH: Final[IconCode] = IconCode("\U000f0450")
 
-ARROW_RIGHT_BOLD_CIRCLE: Final[IconCode] = IconCode("\U000f0056")
-ARROW_RIGHT_BOLD_CIRCLE_OUTLINE: Final[IconCode] = IconCode("\U000f0057")
+NF_MD_LABEL: Final[IconCode] = IconCode("\U000f0315")
+NF_MD_LABEL_OUTLINE: Final[IconCode] = IconCode("\U000f0316")
 
-ARROW_RIGHT_BOLD_OUTLINE: Final[IconCode] = IconCode("\U000f09c2")
-ARROW_RIGHT_BOLD: Final[IconCode] = IconCode("\U000f0734")
+NF_MD_ARROW_DOWN_BOLD: Final[IconCode] = IconCode("\U000f072e")
+NF_MD_ARROW_LEFT_BOLD: Final[IconCode] = IconCode("\U000f0731")
+NF_MD_ARROW_RIGHT_BOLD: Final[IconCode] = IconCode("\U000f0734")
+NF_MD_ARROW_UP_BOLD: Final[IconCode] = IconCode("\U000f0737")
 
-ARROW_RIGHT_CIRCLE_OUTLINE: Final[IconCode] = IconCode("\U000f0ce0")
-ARROW_RIGHT_CIRCLE: Final[IconCode] = IconCode("\U000f0cdf")
+NF_MD_ARROW_DOWN_BOLD_OUTLINE: Final[IconCode] = IconCode("\U000f09bf")
+NF_MD_ARROW_LEFT_BOLD_OUTLINE: Final[IconCode] = IconCode("\U000f09c0")
+NF_MD_ARROW_RIGHT_BOLD_OUTLINE: Final[IconCode] = IconCode("\U000f09c2")
+NF_MD_ARROW_UP_BOLD_OUTLINE: Final[IconCode] = IconCode("\U000f09c7")
 
-VARIABLE = IconCode("\U000f0ae7")
+VARIABLE: Final[IconCode] = IconCode("\U000f0ae7")
 
 LINK: Final[IconCode] = IconCode("\U000f0337")
 LINK_OFF: Final[IconCode] = IconCode("\U000f0338")

@@ -5,7 +5,7 @@ from os import PathLike
 from typing import Optional, Union
 
 from cvp.assets.fonts import (
-    get_jbm_nl_nfm_r_font_path,
+    get_jbm_font_path,
     get_mdi_font_path,
     get_ngc_b_font_path,
     get_ngc_font_path,
@@ -17,12 +17,12 @@ from cvp.imgui.fonts.font import Font
 def add_mixed_font(
     name: str,
     size: int,
-    ngc_delta=-4,
+    ngc_delta=0,
     mdi_delta=0,
     *,
     use_texture=False,
 ) -> Font:
-    jbm = get_jbm_nl_nfm_r_font_path()
+    jbm = get_jbm_font_path()
     ngc = get_ngc_font_path()
     mdi = get_mdi_font_path()
     builder = FontBuilder(name, size)
@@ -33,7 +33,7 @@ def add_mixed_font(
 
 
 def add_jbm_font(name: str, size: int, *, use_texture=False) -> Font:
-    jbm = get_jbm_nl_nfm_r_font_path()
+    jbm = get_jbm_font_path()
     builder = FontBuilder(name, size)
     builder.add_ttf(jbm)
     return builder.done(use_texture=use_texture)

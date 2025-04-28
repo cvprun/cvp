@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from functools import lru_cache
 from types import MappingProxyType
-from typing import Final
 
-from cvp.fonts.glyphs import mdi
-from cvp.fonts.types import IconMappingProxy
+from cvp.assets.fonts import mdi
+from cvp.fonts.types import IconCode, IconMappingProxy
 
-ALPHA_BOX_OUTLINES: Final[IconMappingProxy] = MappingProxyType(
-    {
+
+def create_alpha_box_outlines():
+    return {
         "": mdi.HELP_BOX_OUTLINE,
         # Underscore
         "_": mdi.MINUS_BOX_OUTLINE,
@@ -77,4 +78,9 @@ ALPHA_BOX_OUTLINES: Final[IconMappingProxy] = MappingProxyType(
         "y": mdi.ALPHA_Y_BOX_OUTLINE,
         "z": mdi.ALPHA_Z_BOX_OUTLINE,
     }
-)
+
+
+@lru_cache
+def alpha_box_outlines() -> IconMappingProxy:
+    data = create_alpha_box_outlines()
+    return MappingProxyType({k: IconCode(v) for k, v in data.items()})

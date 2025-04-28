@@ -5,7 +5,7 @@ from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 
 from cvp.fonts.defaults import (
-    create_jbm_nl_nfm_r_ttf,
+    create_jbm_ttf,
     create_mdi_ttf,
     create_ngc_b_ttf,
     create_ngc_ttf,
@@ -15,7 +15,7 @@ from cvp.fonts.ranges import read_ranges
 
 class TtfTestCase(TestCase):
     def test_jbm_ranges(self):
-        jbm = create_jbm_nl_nfm_r_ttf()
+        jbm = create_jbm_ttf()
         jbm_font_ranges = jbm.get_glyph_ranges()
         jbm_file_ranges = jbm.read_default_ranges()
         self.assertListEqual(jbm_font_ranges, jbm_file_ranges)
@@ -39,7 +39,7 @@ class TtfTestCase(TestCase):
         self.assertListEqual(ngc_b_font_ranges, ngc_b_file_ranges)
 
     def test_write_ranges(self):
-        jbm = create_jbm_nl_nfm_r_ttf()
+        jbm = create_jbm_ttf()
         with TemporaryDirectory() as tmpdir:
             self.assertTrue(os.path.isdir(tmpdir))
             ranges_file = os.path.join(tmpdir, "range")

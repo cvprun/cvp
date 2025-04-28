@@ -101,3 +101,21 @@ class TTF:
         for codepoint, glyph_name in self.get_character_map().items():
             buffer.write(f"0x{codepoint:06x} {glyph_name}\n")
         return path.write_text(buffer.getvalue())
+
+    def write_glyphs_python(self, path: Union[str, PathLike[str]]) -> int:
+        path = path if isinstance(path, Path) else Path(path)
+        assert isinstance(path, Path)
+        symbols = set()
+        buffer = StringIO()
+        buffer.write("# -*- coding: utf-8 -*-\n\n")
+        for codepoint, glyph_name in self.get_character_map().items():
+            symbol = glyph_name.upper().replace("-", "_")
+            assert symbol.isidentifier()
+            symbol_base = symbol
+            symbol_index = 1
+            while symbol in symbols:
+                symbol = f"{symbol_base}_{symbol_index}"
+                symbol_index += 1
+            symbols.add(symbol)
+            buffer.write(f'{symbol} = "\\U{codepoint:08x}"\n')
+        return path.write_text(buffer.getvalue())

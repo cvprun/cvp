@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 
+from functools import lru_cache
 from types import MappingProxyType
-from typing import Final
 
-from cvp.fonts.glyphs import mdi
-from cvp.fonts.types import IconMappingProxy
+from cvp.assets.fonts import mdi
+from cvp.fonts.types import IconCode, IconMappingProxy
 
-ALPHAS: Final[IconMappingProxy] = MappingProxyType(
-    {
+
+def create_alphas():
+    return {
         "": mdi.HELP,
         # Underscore
         "_": mdi.MINUS,
         # Numeric
-        "0": mdi.NUMERIC_0,
+        "0": mdi.ALPHA_O_1,
         "1": mdi.NUMERIC_1,
         "2": mdi.NUMERIC_2,
         "3": mdi.NUMERIC_3,
@@ -77,4 +78,8 @@ ALPHAS: Final[IconMappingProxy] = MappingProxyType(
         "y": mdi.ALPHA_Y,
         "z": mdi.ALPHA_Z,
     }
-)
+
+
+@lru_cache
+def alphas() -> IconMappingProxy:
+    return MappingProxyType({k: IconCode(v) for k, v in create_alphas().items()})
