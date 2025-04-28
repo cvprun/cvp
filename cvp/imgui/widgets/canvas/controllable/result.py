@@ -3,7 +3,7 @@
 from typing import NamedTuple
 
 
-class ControllerResult(NamedTuple):
+class ControllableResult(NamedTuple):
     changed: bool
     pan_x: float = 0.0
     pan_y: float = 0.0

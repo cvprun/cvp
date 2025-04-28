@@ -19,15 +19,15 @@ from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.set_window_font_scale import window_font_scale
+from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
-from cvp.widgets.canvas.controller import CanvasController
 
 
-class FlowCanvas(CanvasController):
+class FlowCanvas(ControllableCanvas):
     _graph_ref: ReferenceType[FlowGraph]
     _config_ref: ReferenceType[FlowAuiConfig]
 

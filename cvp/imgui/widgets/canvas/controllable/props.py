@@ -5,7 +5,7 @@ from cvp.patterns.delta import Delta
 from cvp.types.shapes import Point
 
 
-class ControllerProps:
+class ControllableProps:
     def __init__(self):
         self._pan_x = Delta.from_single_value(0.0)
         self._pan_y = Delta.from_single_value(0.0)

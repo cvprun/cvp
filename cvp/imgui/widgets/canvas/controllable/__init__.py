@@ -19,12 +19,12 @@ from cvp.imgui.flags.mouse_button import (
 from cvp.imgui.input_float2 import input_float2
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.slider_float import slider_float
+from cvp.imgui.widgets.canvas.controllable.props import ControllableProps
+from cvp.imgui.widgets.canvas.controllable.result import ControllableResult
 from cvp.types.shapes import Point, Rect
-from cvp.widgets.canvas.controller.props import ControllerProps
-from cvp.widgets.canvas.controller.result import ControllerResult
 
 
-class CanvasController(ControllerProps):
+class ControllableCanvas(ControllableProps):
     def __init__(self):
         super().__init__()
 
@@ -136,7 +136,7 @@ class CanvasController(ControllerProps):
             finally:
                 imgui.tree_pop()
 
-    def render_controllers(self, dryrun=False, debugging=False) -> ControllerResult:
+    def render_controllers(self, dryrun=False, debugging=False) -> ControllableResult:
         pan = self.drag_pan(dryrun=dryrun)
         zoom = self.slider_zoom(dryrun=dryrun)
 
@@ -148,7 +148,7 @@ class CanvasController(ControllerProps):
             self.tree_debugging()
 
         changed = pan.clicked or zoom.changed
-        return ControllerResult(changed, pan.value0, pan.value1, zoom.value)
+        return ControllableResult(changed, pan.value0, pan.value1, zoom.value)
 
     def point_in_canvas_rect(self, point: Point) -> bool:
         x, y = point
@@ -223,7 +223,7 @@ class CanvasController(ControllerProps):
             y += step * self.zoom
         return retval
 
-    def update_state(self) -> ControllerResult:
+    def update_state(self) -> ControllableResult:
         mouse_pos = imgui.get_mouse_pos()
         screen_pos = imgui.get_cursor_screen_pos()
         region_size = imgui.get_content_region_avail()
@@ -312,4 +312,7 @@ class CanvasController(ControllerProps):
             self._canvas_pos_y = scy
 
         changed = self._pan_x.changed or self._pan_y.changed or self._zoom.changed
-        return ControllerResult(changed, self.pan_x, self.pan_y, self.zoom)
+        return ControllableResult(changed, self.pan_x, self.pan_y, self.zoom)
+
+    def __call__(self):
+        return self.update_state()

@@ -32,7 +32,7 @@ from cvp.yaml.dumpers import IndentListDumper
 
 class FlowManager:
     _workspaces: ResourceManager[FlowWorkspace]
-    _current_workspaces: Optional[str]
+    _focused_workspaces: Optional[str]
 
     _graphs: OrderedDict[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
@@ -50,7 +50,7 @@ class FlowManager:
             reload=reload,
             raise_errors=raise_errors,
         )
-        self._current_workspaces = None
+        self._focused_workspaces = None
 
         self._graphs = OrderedDict()
         self._runners = OrderedDict()
@@ -58,6 +58,9 @@ class FlowManager:
         self._path = path
         self._clipboard_items = None
         self._clipboard_pivot = None
+
+    def set_focused_workspaces(self, uuid: str) -> None:
+        self._focused_workspaces = uuid
 
     def stop_all_runners(self) -> None:
         for runner in self._runners.values():
