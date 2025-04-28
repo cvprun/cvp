@@ -8,7 +8,7 @@ from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
-from cvp.renderer.popup.base import PopupBase
+from cvp.imgui.popups.base import PopupBase
 from cvp.types.override import override
 
 

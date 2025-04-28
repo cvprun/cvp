@@ -14,10 +14,10 @@ from cvp.context.context import Context
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.popups.input_text import InputTextPopup
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.msgs.msg import Msg
-from cvp.popups.confirm import ConfirmPopup
-from cvp.popups.input_text import InputTextPopup
-from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
 
 

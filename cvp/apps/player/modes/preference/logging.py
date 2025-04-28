@@ -8,6 +8,7 @@ from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text import input_text
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.logging.logging import (
     SEVERITIES,
     convert_level_number,
@@ -15,7 +16,6 @@ from cvp.logging.logging import (
     logger,
     set_root_level,
 )
-from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 

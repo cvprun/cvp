@@ -8,9 +8,9 @@ from imgui_bundle import imgui
 from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_colored import text_colored
 from cvp.patterns.proxy import ValueProxy
-from cvp.popups.open_file import OpenFilePopup
 from cvp.resources.download.links.tuples import LinkInfo
 from cvp.resources.download.runner import DownloadRunner
 from cvp.system.platform import SysMach, get_system_machine

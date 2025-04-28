@@ -18,11 +18,11 @@ from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.footer_height_to_reverse import footer_height_as_reverse
 from cvp.imgui.input_text import input_text
+from cvp.imgui.popups.base import PopupBase
 from cvp.imgui.push_item_width import item_width
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
-from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_OPEN_FILE_HEIGHT, MIN_POPUP_OPEN_FILE_WIDTH
 

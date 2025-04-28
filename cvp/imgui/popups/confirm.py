@@ -6,7 +6,7 @@ import pygame
 from imgui_bundle import imgui
 
 from cvp.imgui.button import button
-from cvp.renderer.popup.base import PopupBase
+from cvp.imgui.popups.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_CONFIRM_HEIGHT, MIN_POPUP_CONFIRM_WIDTH
 

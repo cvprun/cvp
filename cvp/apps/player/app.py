@@ -30,13 +30,13 @@ from cvp.context.context import Context
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
-from cvp.popups.confirm import ConfirmPopup
 from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World

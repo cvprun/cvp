@@ -13,9 +13,9 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.text_centered import text_centered
 from cvp.media.config import MediaConfig
-from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 
 

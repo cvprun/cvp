@@ -12,9 +12,9 @@ from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text import input_text
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.spinner import spinner
 from cvp.patterns.proxy import ValueProxy
-from cvp.popups.open_file import OpenFilePopup
 from cvp.types.override import override
 
 

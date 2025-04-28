@@ -19,12 +19,12 @@ from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
+from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.net.address_family import is_ip_address
-from cvp.popups.confirm import ConfirmPopup
 from cvp.types.override import override
 from cvp.variables import (
     WSD_IPV4_MULTICAST_ADDRESS,

@@ -14,10 +14,10 @@ from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import READ_ONLY
 from cvp.imgui.input_text_disabled import input_text_disabled
+from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_colored import text_colored
-from cvp.popups.confirm import ConfirmPopup
-from cvp.popups.input_text import InputTextPopup
 from cvp.types.colors import GREEN_RGBA, RED_RGBA
 from cvp.types.override import override
 

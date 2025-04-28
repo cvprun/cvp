@@ -11,8 +11,8 @@ from cvp.flow.variable import FlowVariable
 from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
+from cvp.imgui.popups.base import PopupBase
 from cvp.imgui.push_item_width import item_width
-from cvp.renderer.popup.base import PopupBase
 from cvp.types.override import override
 from cvp.variables import MIN_POPUP_VARIABLE_HEIGHT, MIN_POPUP_VARIABLE_WIDTH
 

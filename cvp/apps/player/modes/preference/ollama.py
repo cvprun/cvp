@@ -250,6 +250,8 @@ class OllamaPreference(BasePreference):
             if imgui.tree_node("Model info"):
                 try:
                     for mk, mv in model_info.items():
+                        imgui.bullet()
+                        imgui.same_line()
                         input_text_value(mk, mv)
                 finally:
                     imgui.tree_pop()
@@ -262,6 +264,8 @@ class OllamaPreference(BasePreference):
             if imgui.tree_node("Families"):
                 try:
                     for fi, fv in enumerate(families):
+                        imgui.bullet()
+                        imgui.same_line()
                         input_text_value(str(fi), fv)
                 finally:
                     imgui.tree_pop()
