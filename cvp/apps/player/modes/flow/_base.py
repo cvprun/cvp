@@ -13,9 +13,8 @@ class FlowWindowNameProtocol(Protocol):
 
 
 class FlowWindowInterface(ABC):
-    @classmethod
     @abstractmethod
-    def get_window_name(cls) -> str:
+    def get_window_name(self) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -28,10 +27,9 @@ class BaseFlowWindow(FlowWindowInterface, FlowWindowNameProtocol, ABC):
         assert isinstance(self, FlowWindowNameProtocol)
         self._context = context
 
-    @classmethod
     @override
-    def get_window_name(cls) -> str:
-        return cls.__cvp_flow_window_name__
+    def get_window_name(self) -> str:
+        return self.__cvp_flow_window_name__
 
     @property
     def context(self) -> Context:

@@ -31,6 +31,9 @@ from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager:
+    _workspaces: ResourceManager[FlowWorkspace]
+    _current_workspaces: Optional[str]
+
     _graphs: OrderedDict[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
 
@@ -47,6 +50,7 @@ class FlowManager:
             reload=reload,
             raise_errors=raise_errors,
         )
+        self._current_workspaces = None
 
         self._graphs = OrderedDict()
         self._runners = OrderedDict()
