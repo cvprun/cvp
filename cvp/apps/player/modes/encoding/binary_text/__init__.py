@@ -51,7 +51,10 @@ class BinaryTextMode(BaseMode):
         with self.begin_mode_context():
             self.do_child_process()
 
-    def get_method(self, method_name: Optional[str] = None) -> Optional[BinaryToText]:
+    def get_selected_method(
+        self,
+        method_name: Optional[str] = None,
+    ) -> Optional[BinaryToText]:
         if not method_name:
             method_name = self.selected_submenu
         assert isinstance(method_name, str)
@@ -95,7 +98,7 @@ class BinaryTextMode(BaseMode):
             case self._TranscodeDirection.encoding:
                 self.update_encode(method, self._input)
             case self._TranscodeDirection.decoding:
-                self.update_encode(method, self._output)
+                self.update_decode(method, self._output)
 
     def clear_fields(self) -> None:
         self._input = str()
@@ -119,7 +122,7 @@ class BinaryTextMode(BaseMode):
                         selected = method_name == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
                             if self.selected_submenu != method_name:
-                                selected_method = self.get_method(method_name)
+                                selected_method = self.get_selected_method(method_name)
                                 assert selected_method is not None
                                 self.update_with_last_transcoding(selected_method)
                             self.selected_submenu = method_name
@@ -129,7 +132,7 @@ class BinaryTextMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if method := self.get_method():
+            if method := self.get_selected_method():
                 self.do_method_process(method)
             else:
                 text_centered("Please select a item")

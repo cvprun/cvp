@@ -10,7 +10,7 @@ from urllib.parse import ParseResult, urlparse, urlunparse
 
 import httpx
 
-from cvp.hashfunc.checksum import Method
+from cvp.hashfunc.checksum import HashFunction
 from cvp.hashfunc.checksum import checksum as calc_checksum
 from cvp.resources.download.links.tuples import Checksum, ExtractPair, LinkInfo
 
@@ -63,7 +63,8 @@ class DownloadArchive:
                 assert len(checksum) == 2
                 assert isinstance(checksum[0], str)
                 assert isinstance(checksum[1], str)
-                self._checksum = Checksum(Method(checksum[0].lower()), checksum[1])
+                hash_method = HashFunction(checksum[0].lower())
+                self._checksum = Checksum(hash_method, checksum[1])
             else:
                 self._checksum = Checksum.parse(checksum.strip())
         else:

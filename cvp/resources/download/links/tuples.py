@@ -3,7 +3,7 @@
 from typing import NamedTuple, Optional, Sequence, Tuple, Union
 from urllib.parse import ParseResult
 
-from cvp.hashfunc.checksum import Method
+from cvp.hashfunc.checksum import HashFunction
 from cvp.variables import CHECKSUM_DELIMITER
 
 
@@ -13,7 +13,7 @@ class ExtractPair(NamedTuple):
 
 
 class Checksum(NamedTuple):
-    hash_method: Method
+    hash_method: HashFunction
     hash_value: str
 
     def __str__(self) -> str:
@@ -24,7 +24,7 @@ class Checksum(NamedTuple):
         method, value = method_value.split(delimiter, 1)
         assert isinstance(method, str)
         assert isinstance(value, str)
-        return cls(Method(method.strip().lower()), value.strip())
+        return cls(HashFunction(method.strip().lower()), value.strip())
 
 
 class LinkInfo(NamedTuple):

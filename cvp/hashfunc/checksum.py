@@ -8,7 +8,7 @@ from typing import Callable, Dict, Final
 
 
 @unique
-class Method(StrEnum):
+class HashFunction(StrEnum):
     blake2b = auto()
     blake2s = auto()
     crc32 = auto()
@@ -38,24 +38,24 @@ class _Crc32:
         return "{0:x}".format(self._checksum)
 
 
-_HASH_FUNCS: Final[Dict[Method, Callable]] = {
-    Method.blake2b: hashlib.blake2b,
-    Method.blake2s: hashlib.blake2s,
-    Method.crc32: _Crc32,
-    Method.md5: hashlib.md5,
-    Method.sha1: hashlib.sha1,
-    Method.sha224: hashlib.sha224,
-    Method.sha256: hashlib.sha256,
-    Method.sha384: hashlib.sha384,
-    Method.sha3_224: hashlib.sha3_224,
-    Method.sha3_256: hashlib.sha3_256,
-    Method.sha3_384: hashlib.sha3_384,
-    Method.sha3_512: hashlib.sha3_512,
-    Method.sha512: hashlib.sha512,
-    Method.shake_128: hashlib.shake_128,
-    Method.shake_256: hashlib.shake_256,
+_HASH_FUNCS: Final[Dict[HashFunction, Callable]] = {
+    HashFunction.blake2b: hashlib.blake2b,
+    HashFunction.blake2s: hashlib.blake2s,
+    HashFunction.crc32: _Crc32,
+    HashFunction.md5: hashlib.md5,
+    HashFunction.sha1: hashlib.sha1,
+    HashFunction.sha224: hashlib.sha224,
+    HashFunction.sha256: hashlib.sha256,
+    HashFunction.sha384: hashlib.sha384,
+    HashFunction.sha3_224: hashlib.sha3_224,
+    HashFunction.sha3_256: hashlib.sha3_256,
+    HashFunction.sha3_384: hashlib.sha3_384,
+    HashFunction.sha3_512: hashlib.sha3_512,
+    HashFunction.sha512: hashlib.sha512,
+    HashFunction.shake_128: hashlib.shake_128,
+    HashFunction.shake_256: hashlib.shake_256,
 }
 
 
-def checksum(method: Method, data: bytes) -> str:
+def checksum(method: HashFunction, data: bytes) -> str:
     return _HASH_FUNCS[method](data).hexdigest()
