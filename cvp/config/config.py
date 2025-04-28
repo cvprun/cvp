@@ -15,7 +15,7 @@ from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.faker import FakerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
-from cvp.config.sections.flow import FlowAuiConfig
+from cvp.config.sections.flow import FlowConfig
 from cvp.config.sections.font import FontConfig, FontManagerConfig
 from cvp.config.sections.games.tetrix import TetrixConfig
 from cvp.config.sections.graphic import GraphicConfig
@@ -42,7 +42,7 @@ class Config:
     display: DisplayConfig = field(default_factory=DisplayConfig)
     faker: FakerConfig = field(default_factory=FakerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
-    flow_aui: FlowAuiConfig = field(default_factory=FlowAuiConfig)
+    flow: FlowConfig = field(default_factory=FlowConfig)
     font: FontConfig = field(default_factory=FontConfig)
     font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)

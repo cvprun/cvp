@@ -28,7 +28,7 @@ class FlowPreference(BasePreference):
 
     @property
     def config(self):
-        return self.context.config.flow_aui
+        return self.context.config.flow
 
     @staticmethod
     def tree_grid(label: str, grid: Grid) -> None:

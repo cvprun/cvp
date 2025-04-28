@@ -7,7 +7,6 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
 from cvp.config.sections.flow import RecentItem
 from cvp.context.context import Context
-from cvp.flow.workspace import FlowWorkspace
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_WIDTH
@@ -27,7 +26,7 @@ class IntroFlowWindow(BaseFlowWindow):
 
     @property
     def config(self):
-        return self.context.config.flow_aui
+        return self.context.config.flow
 
     @property
     def error_color(self):
@@ -37,10 +36,8 @@ class IntroFlowWindow(BaseFlowWindow):
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
             if imgui.button("New workspace"):
-                self.context.flows.create_new_workspace()
-
-            if imgui.button("Reload workspace"):
-                self.context.flows.workspaces.read_all_config_files(raise_errors=False)
+                # self.context.flows.create_new_workspace()
+                pass
 
             imgui.separator()
 
@@ -48,30 +45,17 @@ class IntroFlowWindow(BaseFlowWindow):
             for recent in self.config.recent:
                 self.do_recent_process(recent)
 
-            imgui.separator()
-
-            imgui.text("Loaded workspaces")
-            for workspace in self.flows.workspaces.values():
-                self.do_workspace_process(workspace)
-
     def do_recent_process(self, recent: RecentItem) -> None:
-        workspace = self.context.flows.workspaces.get(recent.uuid)
-        if workspace is not None:
-            self.do_workspace_process(workspace)
-        else:
-            imgui.text_colored(self.error_color, f"Not found workspace: {recent.uuid}")
-
-    def do_workspace_process(self, workspace: FlowWorkspace) -> None:
         with begin_child_context(
-            f"Workspace##{workspace.uuid}",
+            f"Recent##{recent.path}",
             size=(self._RECENT_ITEM_SPLIT_X, 0),
             child_flags=self._RECENT_ITEM_CHILD_FLAGS,
         ):
             with begin_child_context("Left", child_flags=AUTO_RESIZE_X | AUTO_RESIZE_Y):
-                imgui.text(workspace.name)
+                imgui.text(recent.name)
 
                 with style_disable_input_context():
-                    imgui.text(workspace.uuid)
+                    imgui.text(recent.accessed_at.isoformat())
 
             imgui.same_line()
 
@@ -80,6 +64,6 @@ class IntroFlowWindow(BaseFlowWindow):
             try:
                 imgui.spring()
                 if imgui.button("Open", size=(0, avail_size.y)):
-                    workspace.open()
+                    self.context.open_flow_workspace(recent.path)
             finally:
                 imgui.end_horizontal()

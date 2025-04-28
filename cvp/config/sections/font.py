@@ -3,7 +3,6 @@
 from dataclasses import dataclass, field
 from typing import Tuple
 
-from cvp.config.sections.bases.manager import ManagerWindowConfig
 from cvp.palette.basic import RED, WHITE
 from cvp.types.colors import RGBA
 from cvp.variables import (
@@ -26,7 +25,7 @@ class FontConfig:
 
 
 @dataclass
-class FontManagerConfig(ManagerWindowConfig):
+class FontManagerConfig:
     min_range_select_width: float = MIN_API_SELECT_WIDTH
     max_range_select_width: float = MAX_API_SELECT_WIDTH
     selected_block: Tuple[int, int] = field(default_factory=lambda: (0, 0))

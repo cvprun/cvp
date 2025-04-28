@@ -62,10 +62,10 @@ class TreeFlowWindow(BaseFlowWindow):
                 imgui.tree_pop()
 
     def tree_node(self, graph: FlowGraph, node: FlowNode) -> None:
-        exec_pin_n_icon = self.context.config.flow_aui.pins.exec_n_icon
-        exec_pin_y_icon = self.context.config.flow_aui.pins.exec_y_icon
-        data_pin_n_icon = self.context.config.flow_aui.pins.data_n_icon
-        data_pin_y_icon = self.context.config.flow_aui.pins.data_y_icon
+        exec_pin_n_icon = self.context.config.flow.pins.exec_n_icon
+        exec_pin_y_icon = self.context.config.flow.pins.exec_y_icon
+        data_pin_n_icon = self.context.config.flow.pins.data_n_icon
+        data_pin_y_icon = self.context.config.flow.pins.data_y_icon
         key_ctrl = imgui.get_io().key_ctrl
 
         flags = NODE_FLAGS
@@ -116,8 +116,8 @@ class TreeFlowWindow(BaseFlowWindow):
                 imgui.tree_pop()
 
     def tree_wire(self, graph: FlowGraph, wire: FlowWire) -> None:
-        wire_n_icon = self.context.config.flow_aui.pins.wire_n_icon
-        wire_y_icon = self.context.config.flow_aui.pins.wire_y_icon
+        wire_n_icon = self.context.config.flow.pins.wire_n_icon
+        wire_y_icon = self.context.config.flow.pins.wire_y_icon
         wire_icon = wire_y_icon if wire.connected else wire_n_icon
         key_ctrl = imgui.get_io().key_ctrl
 
@@ -145,7 +145,7 @@ class TreeFlowWindow(BaseFlowWindow):
                 imgui.tree_pop()
 
     def tree_variable(self, graph: FlowGraph, variable: FlowVariable) -> None:
-        variable_icon = self.context.config.flow_aui.pins.variable_icon
+        variable_icon = self.context.config.flow.pins.variable_icon
         key_ctrl = imgui.get_io().key_ctrl
 
         flags = VARIABLE_FLAGS

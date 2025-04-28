@@ -72,15 +72,6 @@ SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
 HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH: Final[int] = 400
 
-MIN_SIDEBAR_WIDTH: Final[float] = 160.0
-MAX_SIDEBAR_WIDTH: Final[float] = 480.0
-
-MIN_SIDEBAR_HEIGHT: Final[float] = 160.0
-MAX_SIDEBAR_HEIGHT: Final[float] = 480.0
-
-MIN_WINDOW_WIDTH: Final[int] = 400
-MIN_WINDOW_HEIGHT: Final[int] = 300
-
 API_SELECT_WIDTH: Final[float] = 180.0
 MIN_API_SELECT_WIDTH: Final[float] = 100.0
 MAX_API_SELECT_WIDTH: Final[float] = 300.0
@@ -158,8 +149,7 @@ CANVAS_ROI_COLOR: Final[RGBA] = 0.0, 0.0, 1.0, 0.3
 CANVAS_ROI_ROUNDING: Final[float] = 0.0
 CANVAS_ROI_THICKNESS: Final[float] = 2.0
 
-FLOW_WORKSPACE_NONAME: Final[str] = "New Workspace"
-FLOW_EXTENSION: Final[str] = ".flow.cvp"
+FLOW_WORKSPACE_FILENAME: Final[str] = ".flow.yml"
 FLOW_PATH_SEPARATOR: Final[str] = "."
 FLOW_PATH_ENCODING: Final[str] = "utf-8"
 

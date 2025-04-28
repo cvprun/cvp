@@ -5,7 +5,7 @@ from weakref import ReferenceType, ref
 
 from imgui_bundle import imgui
 
-from cvp.config.sections.flow import FlowAuiConfig
+from cvp.config.sections.flow import FlowConfig
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import FlowGraph
@@ -29,17 +29,17 @@ from cvp.types.shapes import Rect
 
 class FlowCanvas(ControllableCanvas):
     _graph_ref: ReferenceType[FlowGraph]
-    _config_ref: ReferenceType[FlowAuiConfig]
+    _config_ref: ReferenceType[FlowConfig]
 
     _graph: Optional[FlowGraph]
-    _config: Optional[FlowAuiConfig]
+    _config: Optional[FlowConfig]
 
     _mode: FlowMode
     _connects: List[FlowNodePin]
     _roi: Optional[Rect]
     _selection_stash: Optional[FlowSelection]
 
-    def __init__(self, graph: FlowGraph, config: FlowAuiConfig):
+    def __init__(self, graph: FlowGraph, config: FlowConfig):
         super().__init__()
 
         self._pan_x.update(graph.control.pan_x, no_emit=True)
@@ -115,7 +115,7 @@ class FlowCanvas(ControllableCanvas):
         return self._graph
 
     @property
-    def config(self) -> FlowAuiConfig:
+    def config(self) -> FlowConfig:
         if self._config is None:
             raise ReferenceError("The config instance has expired")
         return self._config

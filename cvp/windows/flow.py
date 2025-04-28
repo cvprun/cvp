@@ -30,7 +30,7 @@ class FlowWindow:
 
     @property
     def window_config(self):
-        return self.context.config.flow_aui
+        return self.context.config.flow
 
     def _process_enabled_edit_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
@@ -250,7 +250,7 @@ class FlowWindow:
         self._canvases.clear()
 
         try:
-            self.context.flows.refresh_flow_graphs()
+            # self.context.flows.refresh_flow_graphs()
             logger.info("Refresh flow graphs")
         except BaseException as e:
             logger.error(e)

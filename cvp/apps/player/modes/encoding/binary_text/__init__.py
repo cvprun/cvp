@@ -103,6 +103,8 @@ class BinaryTextMode(BaseMode):
     def clear_fields(self) -> None:
         self._input = str()
         self._output = str()
+        self._input_error = None
+        self._output_error = None
 
     @staticmethod
     def convert_displayable_text(method_name: str) -> str:

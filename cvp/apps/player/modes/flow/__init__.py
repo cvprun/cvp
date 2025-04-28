@@ -93,7 +93,7 @@ class FlowMode(BaseMode):
 
     @property
     def config(self):
-        return self.context.config.flow_aui
+        return self.context.config.flow
 
     @property
     def flows(self):
@@ -126,23 +126,18 @@ class FlowMode(BaseMode):
 
     def on_file_menu(self) -> None:
         if menu_item("New workspace"):
-            self.context.flows.create_new_workspace()
+            # self.context.flows.create_new_workspace()
+            pass
 
-        has_any_workspace = bool(self.flows.workspaces)
-        if imgui.begin_menu("Open workspace", enabled=has_any_workspace):
-            try:
-                for uuid, workspace in self.flows.workspaces.items():
-                    if menu_item(workspace.name):
-                        self.context.open_flow_workspace(uuid)
-            finally:
-                imgui.end_menu()
+        if menu_item("Open workspace"):
+            pass
 
         has_any_recent = bool(self.config.recent)
         if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
             try:
                 for recent in self.config.recent:
                     if menu_item(recent.name):
-                        self.context.open_flow_workspace(recent.uuid)
+                        self.context.open_flow_workspace(recent.path)
             finally:
                 imgui.end_menu()
 
@@ -166,11 +161,13 @@ class FlowMode(BaseMode):
 
         imgui.separator()
         if menu_item("Refresh graphs"):
-            self.context.flows.workspaces.read_all_config_files()
+            # self.context.flows.workspaces.read_all_config_files()
+            pass
 
-        # imgui.separator()
-        # if menu_item("Close flow window"):
-        #     self.close()
+        imgui.separator()
+        if menu_item("Close flow window", enabled=self.context.opened_flow_workspace()):
+            self.context.close_flow_workspace()
+            pass
 
     def on_edit_menu(self) -> None:
         self._process_disabled_edit_menu()

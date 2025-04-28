@@ -51,9 +51,9 @@ class LoggingFlowWindow(BaseFlowWindow):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        assert 1 <= self.context.config.flow_aui.logs.lines
+        assert 1 <= self.context.config.flow.logs.lines
         self._mouse_wheel = Delta.from_single_value(0.0)
-        maxlen = self.context.config.flow_aui.logs.lines
+        maxlen = self.context.config.flow.logs.lines
         self._records = Deque[_LineRecord](maxlen=maxlen)
         self._handler = _LoggingHandler(self.on_logging)
         logger.addHandler(self._handler)
@@ -61,41 +61,41 @@ class LoggingFlowWindow(BaseFlowWindow):
 
     @property
     def filter(self) -> str:
-        return self.context.config.flow_aui.logs.filter
+        return self.context.config.flow.logs.filter
 
     @filter.setter
     def filter(self, value: str) -> None:
-        self.context.config.flow_aui.logs.filter = value
+        self.context.config.flow.logs.filter = value
 
     @property
     def autoscroll(self) -> bool:
-        return self.context.config.flow_aui.logs.autoscroll
+        return self.context.config.flow.logs.autoscroll
 
     @autoscroll.setter
     def autoscroll(self, value: bool) -> None:
-        self.context.config.flow_aui.logs.autoscroll = value
+        self.context.config.flow.logs.autoscroll = value
 
     @property
     def lines(self) -> int:
-        return self.context.config.flow_aui.logs.lines
+        return self.context.config.flow.logs.lines
 
     @lines.setter
     def lines(self, value: int) -> None:
-        self.context.config.flow_aui.logs.lines = value
+        self.context.config.flow.logs.lines = value
 
     @property
     def level_index(self) -> int:
-        return self.context.config.flow_aui.logs.level_index
+        return self.context.config.flow.logs.level_index
 
     @level_index.setter
     def level_index(self, value: int) -> None:
-        self.context.config.flow_aui.logs.level_index = value
+        self.context.config.flow.logs.level_index = value
 
     def get_level_number(self) -> int:
         return convert_level_number(LEVEL_NAMES[self.level_index])
 
     def get_level_color(self, level: int) -> RGBA:
-        logging_config = self.context.config.flow_aui.logs
+        logging_config = self.context.config.flow.logs
         if ERROR < level <= CRITICAL:
             return logging_config.critical_color
         elif WARNING < level <= ERROR:

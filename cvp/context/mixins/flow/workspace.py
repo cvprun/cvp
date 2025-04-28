@@ -1,37 +1,35 @@
 # -*- coding: utf-8 -*-
 
+from os import PathLike
+from typing import Union
+
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.logging.logging import flow_logger as logger
 
 
 class FlowWorkspaceMixin(BaseContextMixin):
-    def open_flow_workspace(self, uuid: str) -> None:
-        workspace = self._flows.workspaces.get(uuid)
-        if workspace is None:
-            self._msgs.toast_error(f"Not found workspace: {uuid}", logger)
-            return
+    def opened_flow_workspace(self) -> bool:
+        return self._flows.opened
 
-        if workspace.opened:
-            self._msgs.toast_error(f"The workspace is already open: {uuid}", logger)
-            return
-
-        if workspace.open():
-            logger.info(f"Workspace opened successfully: {uuid}")
-        else:
-            self._msgs.toast_error(f"Workspace open failed: {uuid}", logger)
-
-    def close_flow_workspace(self, uuid: str) -> None:
-        workspace = self._flows.workspaces.get(uuid)
-        if workspace is None:
-            self._msgs.toast_error(f"Not found workspace: {uuid}", logger)
-            return
-
-        if not workspace.opened:
-            self._msgs.toast_error(f"The workspace is already closed: {uuid}", logger)
-            return
-
+    def open_flow_workspace(self, path: Union[PathLike, str]) -> None:
         try:
-            workspace.close()
-            logger.info(f"Workspace closed successfully: {uuid}")
+            self._flows.open(path)
+            self._config.flow.add_recent(str(path))
+        except BaseException as e:
+            self._msgs.toast_error(f"Workspace open failed: {e}", logger)
+        else:
+            logger.info("Workspace opened successfully")
+
+    def close_flow_workspace(self) -> None:
+        try:
+            dirpath = str(self._flows.dirpath) if self._flows.dirpath else None
+            self._flows.close()
+
+            assert self._flows.dirpath is None
+            assert dirpath is not None
+
+            self._config.flow.add_recent(dirpath)
         except BaseException as e:
             self._msgs.toast_error(f"Workspace close failed: {e}", logger)
+        else:
+            logger.info("Workspace closed successfully")

@@ -12,7 +12,7 @@ class ManagerTestCase(TestCase):
     def setUp(self):
         self.tmpdir = TemporaryDirectory()
         self.home = HomeDir(self.tmpdir.name)
-        self.manager = FlowManager(self.home.flows)
+        self.manager = FlowManager()
         self.add_operator = "cvp.nodes.defaults.operators.arithmetic.add.AddOperator"
         self.entrypoint = "cvp.nodes.defaults.essential.entrypoint.Entrypoint"
 

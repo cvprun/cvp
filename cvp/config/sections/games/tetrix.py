@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from typing import Final
 
-from cvp.config.sections.bases.window import WindowConfig
 from cvp.palette.basic import FUCHSIA, RED, WHITE
 from cvp.types.colors import RGB
 
@@ -15,7 +14,7 @@ DEFAULT_DROP_INTERVAL_STEP: Final[float] = 0.1
 
 
 @dataclass
-class TetrixConfig(WindowConfig):
+class TetrixConfig:
     board_rows: int = DEFAULT_BOARD_ROWS
     board_cols: int = DEFAULT_BOARD_COLS
     cell_pixels: int = DEFAULT_CELL_PIXELS
