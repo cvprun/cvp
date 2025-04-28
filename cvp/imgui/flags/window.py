@@ -92,14 +92,6 @@ CANVAS_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_scrollbar,
 )
 
-OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
-    WindowFlags.no_move,
-    WindowFlags.always_auto_resize,
-    WindowFlags.no_saved_settings,
-    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
-    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
-)
-
 ROOT_STATIC_VIEWPORT_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_resize,
     WindowFlags.no_move,

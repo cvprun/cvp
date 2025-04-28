@@ -87,9 +87,6 @@ MIN_POPUP_TEXT_INPUT_HEIGHT: Final[int] = 120
 MIN_POPUP_OPEN_FILE_WIDTH: Final[int] = 480
 MIN_POPUP_OPEN_FILE_HEIGHT: Final[int] = 380
 
-AUI_PADDING_WIDTH: Final[float] = 8.0
-AUI_PADDING_HEIGHT: Final[float] = 8.0
-
 FAKER_SEED_LENGTH: Final[int] = 16
 FAKER_REPEAT: Final[int] = 10
 FAKER_SEPARATOR: Final[str] = "\\n"

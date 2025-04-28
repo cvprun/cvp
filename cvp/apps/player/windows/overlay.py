@@ -1,18 +1,29 @@
 # -*- coding: utf-8 -*-
 
 from math import floor
-from typing import Tuple
+from typing import Final, Tuple
 
 from imgui_bundle import imgui
 
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.condition import ALWAYS
-from cvp.imgui.flags.window import OVERLAY_WINDOW_FLAGS
+from cvp.imgui.flags.window import WindowFlags, merge_window_flags
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.text_colored import text_colored
 from cvp.system.usage import SystemUsage
 from cvp.types.colors import RGBA
+
+_OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
+    WindowFlags.no_move,
+    WindowFlags.always_auto_resize,
+    WindowFlags.no_saved_settings,
+    WindowFlags.no_docking,
+    WindowFlags.no_nav,  # no_nav_inputs | no_nav_focus
+    WindowFlags.no_decoration,  # no_title_bar | no_resize | no_scrollbar | no_collapse
+    WindowFlags.no_scroll_with_mouse,
+    WindowFlags.no_bring_to_front_on_focus,
+)
 
 
 class OverlayWindow:
@@ -77,7 +88,7 @@ class OverlayWindow:
         pivot_x, pivot_y = self.window_pivot
         imgui.set_next_window_pos((pos_x, pos_y), ALWAYS, (pivot_x, pivot_y))
         imgui.set_next_window_bg_alpha(self.config.alpha)
-        with begin_context("Overlay", closable=False, flags=OVERLAY_WINDOW_FLAGS):
+        with begin_context("Overlay", closable=False, flags=_OVERLAY_WINDOW_FLAGS):
             io = imgui.get_io()
             framerate_color = self.get_framerate_color(io.framerate)
             text_colored(f"FPS: {floor(io.framerate)}", framerate_color)

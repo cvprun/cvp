@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 from typing import Callable, Sequence, Tuple
 
 from imgui_bundle import imgui
@@ -40,6 +41,10 @@ class FlowMode(BaseMode):
             ("View", self.on_view_menu),
         )
 
+        self._open_workspace_popup = OpenFilePopup(
+            title="Open workspace",
+            target=self.on_open_workspace_popup,
+        )
         self._import_workspace_popup = OpenFilePopup(
             title="Import workspace",
             target=self.on_import_workspace,
@@ -63,6 +68,14 @@ class FlowMode(BaseMode):
             target=self.on_new_variable,
         )
 
+        self._popups = (
+            self._open_workspace_popup,
+            self._import_workspace_popup,
+            self._export_workspace_popup,
+            self._confirm_remove_workspace_popup,
+            self._new_variable_popup,
+        )
+
     def on_new_graph(self, name: str) -> None:
         # graph = self.flows.create_graph(name, append=True)
         # filepath = self.context.home.flows.graph_filepath(graph.key)
@@ -71,6 +84,19 @@ class FlowMode(BaseMode):
         # self.flows.write_graph_yaml(filepath, graph)
         # self._canvases.open(graph)
         pass
+
+    def on_open_workspace_popup(self, file: str) -> None:
+        if not file:
+            return
+
+        path = Path(file)
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+
+        if not path.is_dir():
+            raise NotADirectoryError(f"'{file}' is not a directory")
+
+        self.context.open_flow_workspace(path)
 
     def on_import_workspace(self, file: str) -> None:
         pass
@@ -126,7 +152,7 @@ class FlowMode(BaseMode):
 
     def on_file_menu(self) -> None:
         if menu_item("New workspace"):
-            # self.context.flows.create_new_workspace()
+            self._open_workspace_popup.show()
             pass
 
         if menu_item("Open workspace"):
@@ -166,7 +192,7 @@ class FlowMode(BaseMode):
             pass
 
         imgui.separator()
-        if menu_item("Close flow window", enabled=self.context.opened_flow_workspace()):
+        if menu_item("Close workspace", enabled=self.context.opened_flow_workspace()):
             self.context.close_flow_workspace()
             pass
 
@@ -263,3 +289,6 @@ class FlowMode(BaseMode):
                 self._layout.initialize_dock_layout(dockspace_id, viewport)
 
         self._layout.do_process()
+
+        for popup in self._popups:
+            popup.do_process()

@@ -53,12 +53,6 @@ class OpenFilePopup(PopupBase[str]):
         self._current_dir = str()
         self._items = list()
         self._selected = str()
-
-        self._parent_button_label = "Parent"
-        self._location_input_label = "Location"
-        self._hidden_checkbox_label = "Show Hidden"
-        self._open_button_label = "Open"
-        self._close_button_label = "Close"
         self._show_hidden = show_hidden
 
     @staticmethod
@@ -105,20 +99,18 @@ class OpenFilePopup(PopupBase[str]):
         if imgui.is_window_appearing():
             set_window_min_size(self._min_width, self._min_height)
 
-        if imgui.button(self._parent_button_label):
+        if imgui.button("Parent"):
             self._location_text = str(Path(self._location_text).parent)
 
         imgui.same_line()
 
-        if imgui.checkbox(self._hidden_checkbox_label, self._show_hidden)[0]:
+        if imgui.checkbox("Show Hidden", self._show_hidden)[0]:
             self._show_hidden = not self._show_hidden
             self._items = self.list_items(self._current_dir, self._show_hidden)
 
         imgui.same_line()
 
-        loc_label = self._location_input_label
-        loc_text = self._location_text
-        loc_result = input_text(loc_label, loc_text, ENTER_RETURNS_TRUE)
+        loc_result = input_text("Location", self._location_text, ENTER_RETURNS_TRUE)
         loc_changed = loc_result.changed
         loc_text = loc_result.value
 
@@ -160,7 +152,7 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.separator()
 
-        if imgui.button(self._close_button_label):
+        if imgui.button("Close"):
             imgui.close_current_popup()
             return None
 
@@ -170,7 +162,7 @@ class OpenFilePopup(PopupBase[str]):
         select_dir = os.path.isdir(self._selected)
         enabled_open = select_file or select_dir
 
-        if button(self._open_button_label, disabled=not enabled_open):
+        if button("Open", disabled=not enabled_open):
             if select_file:
                 imgui.close_current_popup()
                 return self._selected
