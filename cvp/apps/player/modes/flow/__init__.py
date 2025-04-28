@@ -9,8 +9,8 @@ from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.flow._layout import _FlowLayout
+from cvp.assets.fonts import mdi
 from cvp.context.context import Context
-from cvp.fonts.glyphs import mdi
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item

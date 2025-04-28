@@ -3,15 +3,7 @@
 from dataclasses import dataclass
 from typing import Final
 
-from cvp.fonts.glyphs.mdi import (
-    CIRCLE,
-    CIRCLE_OUTLINE,
-    LINK,
-    LINK_OFF,
-    NF_MD_ARROW_RIGHT_BOLD,
-    NF_MD_ARROW_RIGHT_BOLD_OUTLINE,
-    VARIABLE,
-)
+from cvp.assets.fonts import mdi
 from cvp.fonts.size import FontSize
 from cvp.types.colors import RGBA
 from cvp.variables import (
@@ -22,13 +14,13 @@ from cvp.variables import (
     FLOW_PIN_SELECTED_COLOR,
 )
 
-EXEC_PIN_UNCONNECTED_ICON: Final[str] = NF_MD_ARROW_RIGHT_BOLD_OUTLINE
-EXEC_PIN_CONNECTED_ICON: Final[str] = NF_MD_ARROW_RIGHT_BOLD
-DATA_PIN_UNCONNECTED_ICON: Final[str] = CIRCLE_OUTLINE
-DATA_PIN_CONNECTED_ICON: Final[str] = CIRCLE
-WIRE_UNCONNECTED_ICON: Final[str] = LINK_OFF
-WIRE_CONNECTED_ICON: Final[str] = LINK
-VARIABLE_ICON: Final[str] = VARIABLE
+EXEC_PIN_UNCONNECTED_ICON: Final[str] = mdi.ARROW_RIGHT_BOLD_OUTLINE
+EXEC_PIN_CONNECTED_ICON: Final[str] = mdi.ARROW_RIGHT_BOLD
+DATA_PIN_UNCONNECTED_ICON: Final[str] = mdi.CIRCLE_BOX_OUTLINE
+DATA_PIN_CONNECTED_ICON: Final[str] = mdi.CIRCLE_OFF_OUTLINE
+WIRE_UNCONNECTED_ICON: Final[str] = mdi.LINK_OFF
+WIRE_CONNECTED_ICON: Final[str] = mdi.LINK
+VARIABLE_ICON: Final[str] = mdi.VARIABLE
 
 
 @dataclass

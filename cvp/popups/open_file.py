@@ -8,7 +8,7 @@ from typing import Callable, List, Optional, Union
 import pygame
 from imgui_bundle import imgui
 
-from cvp.fonts.glyphs import mdi
+from cvp.assets.fonts import mdi
 from cvp.imgui.begin_child import begin_child, end_child
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_WIDTH

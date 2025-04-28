@@ -3,16 +3,8 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.assets.fonts import mdi
 from cvp.context.context import Context
-from cvp.fonts.glyphs.mdi import (
-    BUG,
-    DEBUG_STEP_INTO,
-    DEBUG_STEP_OUT,
-    DEBUG_STEP_OVER,
-    PAUSE,
-    PLAY,
-    STOP,
-)
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -37,25 +29,25 @@ class DebugFlowWindow(BaseFlowWindow):
     @staticmethod
     def do_toolbar_process() -> None:
         opened = False  # TODO: Remove
-        button(f"{PLAY} Run", disabled=not opened)
+        button(f"{mdi.PLAY} Run", disabled=not opened)
 
         imgui.same_line()
-        button(f"{BUG} Debug", disabled=not opened)
+        button(f"{mdi.BUG} Debug", disabled=not opened)
 
         imgui.same_line()
-        button(f"{PAUSE} Pause", disabled=not opened)
+        button(f"{mdi.PAUSE} Pause", disabled=not opened)
 
         imgui.same_line()
-        button(f"{STOP} Stop", disabled=not opened)
+        button(f"{mdi.STOP} Stop", disabled=not opened)
 
         imgui.same_line()
-        button(f"{DEBUG_STEP_OVER} Step Over", disabled=not opened)
+        button(f"{mdi.DEBUG_STEP_OVER} Step Over", disabled=not opened)
 
         imgui.same_line()
-        button(f"{DEBUG_STEP_INTO} Step Into", disabled=not opened)
+        button(f"{mdi.DEBUG_STEP_INTO} Step Into", disabled=not opened)
 
         imgui.same_line()
-        button(f"{DEBUG_STEP_OUT} Step Out", disabled=not opened)
+        button(f"{mdi.DEBUG_STEP_OUT} Step Out", disabled=not opened)
 
     @staticmethod
     def do_logging_process() -> None:

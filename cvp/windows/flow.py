@@ -2,17 +2,9 @@
 
 from imgui_bundle import imgui
 
+from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
-from cvp.fonts.glyphs.mdi import (
-    BUG,
-    DEBUG_STEP_INTO,
-    DEBUG_STEP_OUT,
-    DEBUG_STEP_OVER,
-    PAUSE,
-    PLAY,
-    STOP,
-)
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.text_centered import text_centered
@@ -170,7 +162,7 @@ class FlowWindow:
     def _process_enabled_run_menu(self, canvas: FlowCanvas) -> None:
         assert canvas.opened
 
-        if imgui.begin_menu(f"{PLAY} Run"):
+        if imgui.begin_menu(f"{mdi.PLAY} Run"):
             try:
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
@@ -182,7 +174,7 @@ class FlowWindow:
             finally:
                 imgui.end_menu()
 
-        if imgui.begin_menu(f"{BUG} Debug"):
+        if imgui.begin_menu(f"{mdi.BUG} Debug"):
             try:
                 begin_nodes = canvas.graph.find_begin_nodes()
                 if begin_nodes:
@@ -196,15 +188,15 @@ class FlowWindow:
 
         imgui.separator()
 
-        if menu_item(f"{PAUSE} Pause"):
+        if menu_item(f"{mdi.PAUSE} Pause"):
             pass
-        if menu_item(f"{STOP} Stop"):
+        if menu_item(f"{mdi.STOP} Stop"):
             pass
-        if menu_item(f"{DEBUG_STEP_OVER} Step Over"):
+        if menu_item(f"{mdi.DEBUG_STEP_OVER} Step Over"):
             pass
-        if menu_item(f"{DEBUG_STEP_INTO} Step Into"):
+        if menu_item(f"{mdi.DEBUG_STEP_INTO} Step Into"):
             pass
-        if menu_item(f"{DEBUG_STEP_OUT} Step Out"):
+        if menu_item(f"{mdi.DEBUG_STEP_OUT} Step Out"):
             pass
 
     def _process_add_variable_menu(self, canvas: FlowCanvas) -> None:
