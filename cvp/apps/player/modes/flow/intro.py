@@ -5,7 +5,7 @@ from typing import Final
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
-from cvp.config.sections.flow import RecentItem
+from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -42,17 +42,17 @@ class IntroFlowWindow(BaseFlowWindow):
             imgui.separator()
 
             imgui.text("Recent workspace")
-            for recent in self.config.recent:
+            for recent in self.context.get_flow_workspace_recent_items():
                 self.do_recent_process(recent)
 
     def do_recent_process(self, recent: RecentItem) -> None:
         with begin_child_context(
-            f"Recent##{recent.path}",
+            f"Recent##{recent.value}",
             size=(self._RECENT_ITEM_SPLIT_X, 0),
             child_flags=self._RECENT_ITEM_CHILD_FLAGS,
         ):
             with begin_child_context("Left", child_flags=AUTO_RESIZE_X | AUTO_RESIZE_Y):
-                imgui.text(recent.name)
+                imgui.text(recent.value)
 
                 with style_disable_input_context():
                     imgui.text(recent.accessed_at.isoformat())
@@ -64,6 +64,6 @@ class IntroFlowWindow(BaseFlowWindow):
             try:
                 imgui.spring()
                 if imgui.button("Open", size=(0, avail_size.y)):
-                    self.context.open_flow_workspace(recent.path)
+                    self.context.open_flow_workspace(recent.value)
             finally:
                 imgui.end_horizontal()

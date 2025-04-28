@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Protocol, runtime_checkable
+from datetime import datetime
+from typing import Optional, Protocol, runtime_checkable
 
 from cvp.context.context import Context
 from cvp.types.override import override
@@ -38,3 +39,33 @@ class BaseFlowWindow(FlowWindowInterface, FlowWindowNameProtocol, ABC):
     @property
     def flows(self):
         return self._context.flows
+
+    def get_selected_submenu(self, *, suffix=None) -> str:
+        return self._context.get_selected_submenu(type(self), suffix=suffix)
+
+    def set_selected_submenu(self, value: str, *, suffix=None) -> None:
+        self._context.set_selected_submenu(type(self), value, suffix=suffix)
+
+    @property
+    def selected_submenu(self) -> str:
+        return self.get_selected_submenu()
+
+    @selected_submenu.setter
+    def selected_submenu(self, value: str) -> None:
+        self.set_selected_submenu(value)
+
+    def get_recent_items(self, *, suffix=None) -> str:
+        return self._context.get_recent_items(type(self), suffix=suffix)
+
+    @property
+    def recent_items(self) -> str:
+        return self.get_recent_items()
+
+    def add_recent_item(
+        self,
+        value: str,
+        accessed_at: Optional[datetime] = None,
+        *,
+        suffix=None,
+    ) -> None:
+        self._context.add_recent_item(type(self), value, accessed_at, suffix=suffix)

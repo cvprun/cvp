@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
+from pathlib import Path
 from typing import Union
 
 from cvp.context.mixins._base import BaseContextMixin
@@ -14,7 +15,8 @@ class FlowWorkspaceMixin(BaseContextMixin):
     def open_flow_workspace(self, path: Union[PathLike, str]) -> None:
         try:
             self._flows.open(path)
-            self._config.flow.add_recent(str(path))
+            recent_value = str(Path(path).resolve())
+            self._config.navigation.add_recent_item(type(self), recent_value)
         except BaseException as e:
             self._msgs.toast_error(f"Workspace open failed: {e}", logger)
         else:
@@ -22,14 +24,18 @@ class FlowWorkspaceMixin(BaseContextMixin):
 
     def close_flow_workspace(self) -> None:
         try:
-            dirpath = str(self._flows.dirpath) if self._flows.dirpath else None
+            dirpath = Path(self._flows.dirpath) if self._flows.dirpath else None
             self._flows.close()
 
             assert self._flows.dirpath is None
-            assert dirpath is not None
+            assert isinstance(dirpath, Path)
+            recent_value = str(dirpath.resolve())
 
-            self._config.flow.add_recent(dirpath)
+            self._config.navigation.add_recent_item(type(self), recent_value)
         except BaseException as e:
             self._msgs.toast_error(f"Workspace close failed: {e}", logger)
         else:
             logger.info("Workspace closed successfully")
+
+    def get_flow_workspace_recent_items(self):
+        return self._config.navigation.get_recent_items(type(self))

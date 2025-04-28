@@ -132,10 +132,11 @@ class FlowMode(BaseMode):
         if menu_item("Open workspace"):
             pass
 
-        has_any_recent = bool(self.config.recent)
+        recent_items = self.context.get_flow_workspace_recent_items()
+        has_any_recent = bool(recent_items)
         if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
             try:
-                for recent in self.config.recent:
+                for recent in recent_items:
                     if menu_item(recent.name):
                         self.context.open_flow_workspace(recent.path)
             finally:

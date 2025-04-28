@@ -1,24 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional, Type
-
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.types.colors import RGBA
 
 
 class AppearanceMixin(BaseContextMixin):
-    def get_selected_submenu(self, cls: Type, *, suffix: Optional[Any] = None) -> str:
-        return self._config.appearance.get_selected_submenu(cls, suffix=suffix)
-
-    def set_selected_submenu(
-        self,
-        cls: Type,
-        value: str,
-        *,
-        suffix: Optional[Any] = None,
-    ) -> None:
-        self._config.appearance.set_selected_submenu(cls, value, suffix=suffix)
-
     @property
     def clear_color(self):
         return self._config.appearance.clear_color

@@ -21,6 +21,7 @@ from cvp.config.sections.games.tetrix import TetrixConfig
 from cvp.config.sections.graphic import GraphicConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.logging import LoggingConfig
+from cvp.config.sections.navigation import NavigationConfig
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.overlay import OverlayConfig
 from cvp.config.sections.process import ProcessConfig
@@ -48,6 +49,7 @@ class Config:
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
+    navigation: NavigationConfig = field(default_factory=NavigationConfig)
     onvif: OnvifConfig = field(default_factory=OnvifConfig)
     overlay: OverlayConfig = field(default_factory=OverlayConfig)
     process: ProcessConfig = field(default_factory=ProcessConfig)
