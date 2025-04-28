@@ -13,7 +13,6 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags.child import AUTO_RESIZE_X, AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.push_style_color import style_disable_input_context
-from cvp.logging.logging import flow_logger as logger
 from cvp.types.override import override
 
 
@@ -33,37 +32,6 @@ class IntroFlowWindow(BaseFlowWindow):
     @property
     def error_color(self):
         return self.context.config.appearance.error_color
-
-    def open_workspace(self, uuid: str) -> None:
-        workspace = self.flows.workspaces.get(uuid)
-        if workspace is None:
-            self.context.toast_error(f"Not found workspace: {uuid}", logger)
-            return
-
-        if workspace.opened:
-            self.context.toast_error(f"The workspace is already open: {uuid}", logger)
-            return
-
-        if workspace.open():
-            logger.info(f"Workspace opened successfully: {uuid}")
-        else:
-            self.context.toast_error(f"Workspace open failed: {uuid}", logger)
-
-    def close_workspace(self, uuid: str) -> None:
-        workspace = self.flows.workspaces.get(uuid)
-        if workspace is None:
-            self.context.toast_error(f"Not found workspace: {uuid}", logger)
-            return
-
-        if not workspace.opened:
-            self.context.toast_error(f"The workspace is already closed: {uuid}", logger)
-            return
-
-        try:
-            workspace.close()
-            logger.info(f"Workspace closed successfully: {uuid}")
-        except BaseException as e:
-            self.context.toast_error(f"Workspace close failed: {e}", logger)
 
     @override
     def do_process(self) -> None:

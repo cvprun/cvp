@@ -133,7 +133,7 @@ class FlowMode(BaseMode):
             try:
                 for uuid, workspace in self.flows.workspaces.items():
                     if menu_item(workspace.name):
-                        self._layout.intro.open_workspace(uuid)
+                        self.context.open_flow_workspace(uuid)
             finally:
                 imgui.end_menu()
 
@@ -142,7 +142,7 @@ class FlowMode(BaseMode):
             try:
                 for recent in self.config.recent:
                     if menu_item(recent.name):
-                        self._layout.intro.open_workspace(recent.uuid)
+                        self.context.open_flow_workspace(recent.uuid)
             finally:
                 imgui.end_menu()
 

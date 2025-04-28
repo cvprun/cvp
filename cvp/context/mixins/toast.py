@@ -4,7 +4,6 @@ from logging import Logger
 from typing import Optional, Union
 
 from cvp.context.mixins._base import BaseContextMixin
-from cvp.logging.logging import DEBUG, ERROR, INFO, WARNING, convert_level_number
 
 
 class ToastMixin(BaseContextMixin):
@@ -14,18 +13,16 @@ class ToastMixin(BaseContextMixin):
         level: Optional[Union[int, str]] = None,
         logger: Optional[Logger] = None,
     ):
-        if logger is not None:
-            logger.log(convert_level_number(level), message)
-        return self._msg_queue.append_toast(message, level)
+        return self._msgs.toast(message, level, logger)
 
     def toast_error(self, message: str, logger: Optional[Logger] = None):
-        return self.toast(message, ERROR, logger=logger)
+        return self._msgs.toast_error(message, logger)
 
     def toast_warning(self, message: str, logger: Optional[Logger] = None):
-        return self.toast(message, WARNING, logger=logger)
+        return self._msgs.toast_warning(message, logger)
 
     def toast_info(self, message: str, logger: Optional[Logger] = None):
-        return self.toast(message, INFO, logger=logger)
+        return self._msgs.toast_info(message, logger)
 
     def toast_debug(self, message: str, logger: Optional[Logger] = None):
-        return self.toast(message, DEBUG, logger=logger)
+        return self._msgs.toast_debug(message, logger)

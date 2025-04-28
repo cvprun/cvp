@@ -110,7 +110,7 @@ class Context(ContextMixins):
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
-        self._msg_queue = MsgQueue()
+        self._msgs = MsgQueue()
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
         self._downloader = DownloadManager(
             self._home.downloads,
@@ -193,8 +193,8 @@ class Context(ContextMixins):
         return self._config
 
     @property
-    def mq(self):
-        return self._msg_queue
+    def msgs(self):
+        return self._msgs
 
     @property
     def ollamas(self):

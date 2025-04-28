@@ -315,7 +315,7 @@ class PlayerApplication:
             with self._profiler:
                 for event in pygame.event.get():
                     self.on_event(event)
-                for msg in self._context.mq.get():
+                for msg in self._context.msgs.get():
                     self.on_msg(msg)
 
                 self.on_keyboard(get_pressed())
@@ -488,7 +488,7 @@ class PlayerApplication:
             save_screenshot(filename, channels=3)
             message = f"Screenshot saved: {str(filename)}"
             logger.info(message)
-            self._context.mq.append_toast(message)
+            self._context.msgs.append_toast(message)
         except BaseException as e:
             logger.error(f"Error saving screenshot: {e}")
-            self._context.mq.append_toast("Failed to save screenshot")
+            self._context.msgs.append_toast("Failed to save screenshot")

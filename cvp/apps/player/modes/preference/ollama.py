@@ -122,7 +122,7 @@ class OllamaPreference(BasePreference):
             imgui.text_colored(self.context.error_color, str(ollama.error))
             if button("Remove"):
                 self.ollamas.remove(filename)
-                self.context.mq.append_toast("Remove ollama file")
+                self.context.msgs.append_toast("Remove ollama file")
             return
 
         ollama.name = input_text_value("Ollama Name", ollama.name)

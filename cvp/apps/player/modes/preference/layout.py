@@ -112,11 +112,11 @@ class LayoutPreference(BasePreference):
 
     def load_layout(self, filename: str) -> None:
         imgui.load_ini_settings_from_disk(str(self.get_layout_filepath(filename)))
-        self.context.mq.append_toast(f"Load layout file: '{filename}'")
+        self.context.msgs.append_toast(f"Load layout file: '{filename}'")
 
     def save_layout(self, filename: str) -> None:
         imgui.save_ini_settings_to_disk(str(self.get_layout_filepath(filename)))
-        self.context.mq.append_toast(f"Save layout file: '{filename}'")
+        self.context.msgs.append_toast(f"Save layout file: '{filename}'")
 
     def save_new_layout(self, *, select=False, reload=False) -> None:
         filename = self.context.home.layouts.generate_nonexistent_filename()
@@ -129,7 +129,7 @@ class LayoutPreference(BasePreference):
     def show_remove_popup(self, filename: str) -> None:
         filepath = self.get_layout_filepath(filename)
         if not filepath.is_file():
-            self.context.mq.append_toast(f"Layout file not found: '{filename}'")
+            self.context.msgs.append_toast(f"Layout file not found: '{filename}'")
             return
 
         self._remove_candidate = filepath

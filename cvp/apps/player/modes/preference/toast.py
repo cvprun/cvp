@@ -95,4 +95,4 @@ class ToastPreference(BasePreference):
                 setattr(self.config, key, value)
 
         if imgui.button("Show Demo Toast"):
-            self.context.mq.append_toast("Demo Toast")
+            self.context.msgs.append_toast("Demo Toast")

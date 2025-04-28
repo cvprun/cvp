@@ -32,7 +32,7 @@ class ContextProtocol(Protocol):
     _chat: ChatManager
     _ollamas: OllamaManager
     _flows: FlowManager
-    _msg_queue: MsgQueue
+    _msgs: MsgQueue
     _supabase: Supabase
     _wsdiscovery: WsDiscoveryManager
 

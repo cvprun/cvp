@@ -183,7 +183,7 @@ class FontPreference(BasePreference):
             if child_focused and imgui.is_mouse_hovering_rect(r_min, r_max):
                 if child_hovered and imgui.is_mouse_clicked(button.MOUSE_BUTTON_LEFT):
                     put_clipboard_text(cp_detail.as_printable_unicode())
-                    self.context.mq.append_toast("Copied to clipboard")
+                    self.context.msgs.append_toast("Copied to clipboard")
 
                 if imgui.begin_tooltip():
                     try:
