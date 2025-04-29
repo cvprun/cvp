@@ -23,6 +23,7 @@ from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
 from cvp.imgui.drag_float2 import drag_float2
+from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.input_dtype import input_dtype
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_disabled import input_text_disabled
@@ -43,7 +44,7 @@ class PropsFlowWindow(BaseFlowWindow):
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            with begin_child_context("Toolbar"):
+            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
             with begin_child_context("Logging"):

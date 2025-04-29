@@ -23,32 +23,42 @@ class _FlowLayout:
     types: Sequence[Type[BaseFlowWindow]]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.flow.catalog import CatalogFlowWindow
         from cvp.apps.player.modes.flow.debug import DebugFlowWindow
+        from cvp.apps.player.modes.flow.dtypes import DtypesFlowWindow
+        from cvp.apps.player.modes.flow.graphs import GraphsFlowWindow
         from cvp.apps.player.modes.flow.history import HistoryFlowWindow
         from cvp.apps.player.modes.flow.intro import IntroFlowWindow
         from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
+        from cvp.apps.player.modes.flow.nodes import NodesFlowWindow
         from cvp.apps.player.modes.flow.props import PropsFlowWindow
         from cvp.apps.player.modes.flow.tree import TreeFlowWindow
 
         self._initialized_dock_layout = False
 
-        self.catalog = CatalogFlowWindow(context)
+        self.dtypes = DtypesFlowWindow(context)
         self.debug = DebugFlowWindow(context)
+        self.graphs = GraphsFlowWindow(context)
         self.history = HistoryFlowWindow(context)
         self.intro = IntroFlowWindow(context)
         self.logging = LoggingFlowWindow(context)
+        self.nodes = NodesFlowWindow(context)
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
 
         self._windows: List[FlowWindowInterface] = [
-            self.catalog,
-            self.debug,
-            self.history,
-            self.intro,
-            self.logging,
-            self.props,
+            # Left Dock
             self.tree,
+            self.graphs,
+            self.nodes,
+            self.dtypes,
+            # Right Dock
+            self.props,
+            self.history,
+            # Bottom Dock
+            self.logging,
+            self.debug,
+            # Main Dock
+            self.intro,
         ]
 
     @property
@@ -89,13 +99,15 @@ class _FlowLayout:
         dock_center_top = split_result.id_at_opposite_dir
 
         dock_window(self.tree.get_window_name(), dock_left_top)
-        dock_window(self.catalog.get_window_name(), dock_left_bottom)
+        dock_window(self.graphs.get_window_name(), dock_left_bottom)
+        dock_window(self.dtypes.get_window_name(), dock_left_bottom)
+        dock_window(self.nodes.get_window_name(), dock_left_bottom)
 
         dock_window(self.props.get_window_name(), dock_right_top)
         dock_window(self.history.get_window_name(), dock_right_bottom)
 
-        dock_window(self.logging.get_window_name(), dock_center_bottom)
         dock_window(self.debug.get_window_name(), dock_center_bottom)
+        dock_window(self.logging.get_window_name(), dock_center_bottom)
 
         dock_window(self.intro.get_window_name(), dock_center_top)
 

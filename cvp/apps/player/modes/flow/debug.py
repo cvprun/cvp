@@ -8,6 +8,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
+from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.types.override import override
 
 
@@ -20,7 +21,7 @@ class DebugFlowWindow(BaseFlowWindow):
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            with begin_child_context("Toolbar"):
+            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
             with begin_child_context("Logging"):
