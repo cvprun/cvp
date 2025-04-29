@@ -97,7 +97,8 @@ class FlowMode(BaseMode):
         if not path.is_dir():
             raise NotADirectoryError(f"'{file}' is not a directory")
 
-        self.context.open_flow_workspace(path)
+        # self.context.open_flow_workspace(path)
+        assert self
 
     def on_import_workspace(self, file: str) -> None:
         pass
@@ -156,15 +157,15 @@ class FlowMode(BaseMode):
             self._open_workspace_popup.show()
             pass
 
-        recent_items = self.context.get_flow_workspace_recent_items()
-        has_any_recent = bool(recent_items)
-        if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
-            try:
-                for recent in recent_items:
-                    if menu_item(recent.value):
-                        self.context.open_flow_workspace(recent.value)
-            finally:
-                imgui.end_menu()
+        # recent_items = self.context.get_flow_workspace_recent_items()
+        # has_any_recent = bool(recent_items)
+        # if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
+        #     try:
+        #         for recent in recent_items:
+        #             if menu_item(recent.value):
+        #                 self.context.open_flow_workspace(recent.value)
+        #     finally:
+        #         imgui.end_menu()
 
         imgui.separator()
         # has_opened_graph = self._canvases.opened
@@ -189,9 +190,9 @@ class FlowMode(BaseMode):
             # self.context.flows.workspaces.read_all_config_files()
             pass
 
-        imgui.separator()
-        if menu_item("Close workspace", enabled=self.context.opened_flow_workspace()):
-            self.context.close_flow_workspace()
+        # imgui.separator()
+        # if menu_item("Close workspace", enabled=self.context.opened_flow_workspace()):
+        #     self.context.close_flow_workspace()
 
     def on_edit_menu(self) -> None:
         self._process_disabled_edit_menu()

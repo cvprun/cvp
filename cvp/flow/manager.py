@@ -4,16 +4,13 @@ from collections import OrderedDict
 from concurrent.futures import Executor
 from copy import deepcopy
 from os import PathLike
-from pathlib import Path
 from typing import Any, Optional, Union
-from uuid import uuid4
 
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.filesystem.permission import test_directory
 from cvp.flow.graph import FlowGraph, GraphKey, GraphName
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
@@ -21,19 +18,15 @@ from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
-from cvp.flow.workspace import FlowWorkspace
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.resources.subdirs.flows import FlowsPath
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
-from cvp.variables import FLOW_WORKSPACE_FILENAME
 from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager:
-    _dirpath: Optional[Path]
-    _workspace: Optional[FlowWorkspace]
-
     _dtype_registry: DtypeRegistry
     _node_registry: NodeRegistry
 
@@ -45,15 +38,12 @@ class FlowManager:
 
     def __init__(
         self,
-        path: Optional[Union[PathLike, str]] = None,
+        path: FlowsPath,
         *,
         no_dtype_defaults=False,
         no_node_defaults=False,
-        workspace_filename=FLOW_WORKSPACE_FILENAME,
     ):
-        self._dirpath = None
-        self._workspace = None
-        self._workspace_filename = workspace_filename
+        self._path = path
 
         self._dtype_registry = DtypeRegistry(no_defaults=no_dtype_defaults)
         self._node_registry = NodeRegistry(no_defaults=no_node_defaults)
@@ -63,80 +53,6 @@ class FlowManager:
 
         self._clipboard_items = None
         self._clipboard_pivot = None
-
-        if path:
-            self.open(path)
-
-    @property
-    def dirpath(self):
-        return self._dirpath
-
-    @property
-    def workspace(self):
-        return self._workspace
-
-    @staticmethod
-    def dumps_workspace_yaml(workspace: FlowWorkspace, encoding="utf-8") -> bytes:
-        return dump(serialize(workspace), Dumper=IndentListDumper).encode(encoding)
-
-    @staticmethod
-    def write_workspace_yaml(
-        filepath: Union[str, PathLike[str]],
-        workspace: FlowWorkspace,
-        encoding="utf-8",
-    ) -> None:
-        with open(filepath, "wb") as f:
-            f.write(FlowManager.dumps_workspace_yaml(workspace, encoding=encoding))
-
-    @staticmethod
-    def loads_workspace_yaml(data: bytes) -> FlowWorkspace:
-        return deserialize(full_load(data), FlowWorkspace)
-
-    def read_workspace_yaml(self, filepath: Union[str, PathLike[str]]) -> FlowWorkspace:
-        with open(filepath, "rb") as f:
-            return self.loads_workspace_yaml(f.read())
-
-    @property
-    def opened(self) -> bool:
-        if self._dirpath is not None:
-            assert self._workspace is not None
-            return True
-        else:
-            assert self._workspace is None
-            return False
-
-    def open(self, path: Union[PathLike, str]) -> None:
-        if self.opened:
-            raise ValueError("The flow workspace has already been opened")
-
-        assert self._dirpath is None
-        assert self._workspace is None
-
-        if isinstance(path, str):
-            path = Path(path)
-        assert isinstance(path, Path)
-
-        test_directory(path)
-
-        workspace_path = path / self._workspace_filename
-        if workspace_path.is_file():
-            workspace = self.read_workspace_yaml(workspace_path)
-        else:
-            workspace = FlowWorkspace(uuid=str(uuid4()), name=path.name)
-            self.write_workspace_yaml(workspace_path, workspace)
-
-        self._dirpath = path
-        self._workspace = workspace
-
-    def close(self) -> None:
-        if not self.opened:
-            raise ValueError("The flow workspace is not open")
-
-        assert self._dirpath is not None
-        assert self._workspace is not None
-
-        self._dirpath = None
-        self._workspace = None
 
     def stop_all_runners(self) -> None:
         for runner in self._runners.values():

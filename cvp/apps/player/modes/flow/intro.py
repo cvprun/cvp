@@ -42,12 +42,12 @@ class IntroFlowWindow(BaseFlowWindow):
             imgui.separator()
 
             imgui.text("Recent workspace")
-            for recent in self.context.get_flow_workspace_recent_items():
-                self.do_recent_process(recent)
+            # for recent in self.context.get_flow_workspace_recent_items():
+            #     self.do_recent_process(recent, i)
 
-    def do_recent_process(self, recent: RecentItem) -> None:
+    def do_recent_process(self, recent: RecentItem, index: int) -> None:
         with begin_child_context(
-            f"Recent##{recent.value}",
+            f"Recent {index}",
             size=(self._RECENT_ITEM_SPLIT_X, 0),
             child_flags=self._RECENT_ITEM_CHILD_FLAGS,
         ):
@@ -64,6 +64,6 @@ class IntroFlowWindow(BaseFlowWindow):
             try:
                 imgui.spring()
                 if imgui.button("Open", size=(0, avail_size.y)):
-                    self.context.open_flow_workspace(recent.value)
+                    pass
             finally:
                 imgui.end_horizontal()
