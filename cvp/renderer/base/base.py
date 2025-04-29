@@ -9,7 +9,6 @@ from cvp.types.override import override
 
 
 class BaseRenderer(RendererInterface):
-    _font_texture: int
     _keymap: Dict[imgui.Key, int]
 
     def __init__(self):
@@ -44,6 +43,5 @@ class BaseRenderer(RendererInterface):
     def render(self, draw_data: imgui.ImDrawData) -> None:
         pass
 
-    @override
     def shutdown(self) -> None:
         self._invalidate_device_objects()

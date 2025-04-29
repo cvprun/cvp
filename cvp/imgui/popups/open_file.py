@@ -26,10 +26,8 @@ from cvp.types.override import override
 
 
 class OpenFilePopup(PopupBase[str]):
-    __cvp_popup_min_width__ = 480
-    __cvp_popup_min_height__ = 380
-
-    _items: List[str]
+    __cvp_popup_min_width__ = 520
+    __cvp_popup_min_height__ = 420
 
     def __init__(
         self,
@@ -58,7 +56,7 @@ class OpenFilePopup(PopupBase[str]):
 
         self._location_text = str(self.location_path(directory))
         self._current_dir = str()
-        self._items = list()
+        self._items: List[str] = list()
         self._selected = str()
         self._show_hidden = show_hidden
 
@@ -116,10 +114,16 @@ class OpenFilePopup(PopupBase[str]):
         imgui.same_line()
 
         show_hidden_icon = mdi.EYE if self._show_hidden else mdi.EYE_OFF
-        if imgui.checkbox(show_hidden_icon, self._show_hidden)[0]:
+        if imgui.button(show_hidden_icon):
             self._show_hidden = not self._show_hidden
             self._items = self.list_items(self._current_dir, self._show_hidden)
         hovered_tooltip_text("Show Hidden Files and Directories")
+
+        imgui.same_line()
+
+        if imgui.button(mdi.REFRESH):
+            self._items = self.list_items(self._current_dir, self._show_hidden)
+        hovered_tooltip_text("Refresh Current Directory")
 
         imgui.same_line()
 
@@ -155,13 +159,14 @@ class OpenFilePopup(PopupBase[str]):
                     selected = item_path == self._selected
 
                     if os.path.isfile(item_path):
-                        if imgui.selectable(item, selected, ALLOW_DOUBLE_CLICK)[0]:
+                        label = f"{mdi.FILE} {item}"
+                        if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
                             if imgui.is_mouse_double_clicked(0):
                                 imgui.close_current_popup()
                                 return item_path
                     elif os.path.isdir(item_path):
-                        label = item + "/"
+                        label = f"{mdi.FOLDER} {item}/"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
                             if imgui.is_mouse_double_clicked(0):

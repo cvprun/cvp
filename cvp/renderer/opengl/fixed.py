@@ -84,8 +84,6 @@ class FixedPipelineRenderer(BaseRenderer):
         GL.glLoadIdentity()
 
         for commands in draw_data.cmd_lists:
-            idx_buffer = commands.idx_buffer.data_address()
-
             GL.glVertexPointer(
                 2,
                 GL.GL_FLOAT,
@@ -121,17 +119,23 @@ class FixedPipelineRenderer(BaseRenderer):
                 GL.glScissor(int(x), int(fb_height - w), int(z - x), int(w - y))
 
                 if imgui.INDEX_SIZE == 2:
-                    gltype = GL.GL_UNSIGNED_SHORT
+                    gl_type = GL.GL_UNSIGNED_SHORT
                 else:
-                    gltype = GL.GL_UNSIGNED_INT
+                    gl_type = GL.GL_UNSIGNED_INT
+
+                # ----------------------------------------------------------------------
+                # https://github.com/ocornut/imgui/issues/4863
+                # https://github.com/ocornut/imgui/issues/4845#issuecomment-1003329113
+                idx_buffer = commands.idx_buffer.data_address()
+                offset = idx_buffer + (command.idx_offset * imgui.INDEX_SIZE)
+                # ----------------------------------------------------------------------
 
                 GL.glDrawElements(
                     GL.GL_TRIANGLES,
                     command.elem_count,
-                    gltype,
-                    c_void_p(idx_buffer),
+                    gl_type,
+                    c_void_p(offset),
                 )
-                idx_buffer += command.elem_count * imgui.INDEX_SIZE
 
         restore_common_gl_state(common_gl_state_tuple)
 

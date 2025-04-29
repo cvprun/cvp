@@ -21,7 +21,3 @@ class RendererInterface(ABC):
     @abstractmethod
     def refresh_font_texture(self) -> None:
         raise NotImplementedError
-
-    @abstractmethod
-    def shutdown(self) -> None:
-        raise NotImplementedError
