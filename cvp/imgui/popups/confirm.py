@@ -40,14 +40,14 @@ class ConfirmPopup(PopupBase[bool]):
             centered=centered,
         )
 
-        self._label = label if label else str()
-        self._ok_button_label = ok if ok else "Ok"
-        self._cancel_button_label = cancel if cancel else "Cancel"
+        self.label = label if label else str()
+        self.ok_button_label = ok if ok else "Ok"
+        self.cancel_button_label = cancel if cancel else "Cancel"
 
     @override
     def on_process(self) -> Optional[bool]:
-        if self._label:
-            imgui.text(self._label)
+        if self.label:
+            imgui.text(self.label)
 
         if pygame.key.get_pressed()[pygame.K_RETURN]:
             imgui.close_current_popup()
@@ -56,11 +56,11 @@ class ConfirmPopup(PopupBase[bool]):
             imgui.close_current_popup()
             return False
 
-        if button(self._cancel_button_label):
+        if button(self.cancel_button_label):
             imgui.close_current_popup()
             return False
         imgui.same_line()
-        if button(self._ok_button_label):
+        if button(self.ok_button_label):
             imgui.close_current_popup()
             return True
 

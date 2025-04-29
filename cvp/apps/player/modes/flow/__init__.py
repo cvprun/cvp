@@ -44,6 +44,7 @@ class FlowMode(BaseMode):
         self._open_workspace_popup = OpenFilePopup(
             title="Open workspace",
             target=self.on_open_workspace_popup,
+            select_directory=True,
         )
         self._import_workspace_popup = OpenFilePopup(
             title="Import workspace",
@@ -151,11 +152,8 @@ class FlowMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        if menu_item("New workspace"):
-            self._open_workspace_popup.show()
-            pass
-
         if menu_item("Open workspace"):
+            self._open_workspace_popup.show()
             pass
 
         recent_items = self.context.get_flow_workspace_recent_items()
@@ -163,8 +161,8 @@ class FlowMode(BaseMode):
         if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
             try:
                 for recent in recent_items:
-                    if menu_item(recent.name):
-                        self.context.open_flow_workspace(recent.path)
+                    if menu_item(recent.value):
+                        self.context.open_flow_workspace(recent.value)
             finally:
                 imgui.end_menu()
 
@@ -194,7 +192,6 @@ class FlowMode(BaseMode):
         imgui.separator()
         if menu_item("Close workspace", enabled=self.context.opened_flow_workspace()):
             self.context.close_flow_workspace()
-            pass
 
     def on_edit_menu(self) -> None:
         self._process_disabled_edit_menu()

@@ -3,6 +3,7 @@
 import os
 from os import PathLike
 from pathlib import Path
+from shutil import rmtree
 from typing import Callable, List, Optional, Union
 
 import pygame
@@ -19,6 +20,8 @@ from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.footer_height_to_reverse import footer_height_as_reverse
 from cvp.imgui.input_text import input_text
 from cvp.imgui.popups._base import PopupBase
+from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.push_item_width import item_width
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
@@ -33,7 +36,6 @@ class OpenFilePopup(PopupBase[str]):
         self,
         title: Optional[str] = None,
         directory: Optional[Union[str, PathLike]] = None,
-        show_hidden=False,
         flags: Union[WindowFlags, int] = 0,
         *,
         target: Optional[Callable[[str], None]] = None,
@@ -42,6 +44,8 @@ class OpenFilePopup(PopupBase[str]):
         min_width: Optional[int] = None,
         min_height: Optional[int] = None,
         centered=True,
+        show_hidden=False,
+        select_directory=False,
     ):
         super().__init__(
             title=title,
@@ -58,7 +62,50 @@ class OpenFilePopup(PopupBase[str]):
         self._current_dir = str()
         self._items: List[str] = list()
         self._selected = str()
+        self._filter = str()
         self._show_hidden = show_hidden
+        self._select_directory = select_directory
+
+        self._create_directory_popup = InputTextPopup(
+            title="New Directory",
+            label="Enter a new folder name",
+            ok="Make",
+            cancel="Cancel",
+            validate=self.on_create_directory_validator,
+            target=self.on_create_directory,
+        )
+        self._remove_item_popup = ConfirmPopup(
+            title="Delete",
+            label="Delete item?",
+            ok="Delete",
+            cancel="Cancel",
+            target=self.on_remove_item,
+        )
+
+    def on_create_directory_validator(self, value: str) -> bool:
+        return not os.path.exists(os.path.join(self._current_dir, value))
+
+    def on_create_directory(self, value: str) -> None:
+        if not value:
+            return
+
+        path = os.path.join(self._current_dir, value)
+        if os.path.exists(path):
+            return
+
+        os.makedirs(path, exist_ok=True)
+
+    def on_remove_item(self, value: bool) -> None:
+        if not value:
+            return
+
+        if not os.path.exists(self._selected):
+            return
+
+        if os.path.isfile(self._selected):
+            os.remove(self._selected)
+        elif os.path.isdir(self._selected):
+            rmtree(self._selected)
 
     @staticmethod
     def location_path(path: Optional[Union[str, PathLike]] = None) -> Path:
@@ -101,50 +148,82 @@ class OpenFilePopup(PopupBase[str]):
 
     @override
     def on_process(self) -> Optional[str]:
-        if imgui.button(mdi.HOME):
+        try:
+            return self.on_main_process()
+        finally:
+            self._create_directory_popup.do_process()
+            self._remove_item_popup.do_process()
+
+    def on_main_process(self) -> Optional[str]:
+        if button(mdi.HOME):
             self._location_text = str(Path.home())
         hovered_tooltip_text("Home Directory")
 
         imgui.same_line()
 
-        if imgui.button(mdi.ARROW_UP_BOLD):
+        if button(mdi.ARROW_UP_BOLD):
             self._location_text = str(Path(self._location_text).parent)
         hovered_tooltip_text("Parent Directory")
 
         imgui.same_line()
 
+        if button(mdi.FOLDER_PLUS):
+            self._create_directory_popup.show()
+        hovered_tooltip_text("New Directory")
+
+        imgui.same_line()
+
+        if button(mdi.CLOSE, disabled=not self._selected):
+            if os.path.isfile(self._selected):
+                name = os.path.basename(self._selected)
+                self._remove_item_popup.label = f"Delete '{name}' file?"
+                self._remove_item_popup.show()
+            elif os.path.isdir(self._selected):
+                name = os.path.basename(self._selected)
+                self._remove_item_popup.label = f"Delete '{name}' directory?"
+                self._remove_item_popup.show()
+        hovered_tooltip_text("New Directory")
+
+        imgui.same_line()
+
         show_hidden_icon = mdi.EYE if self._show_hidden else mdi.EYE_OFF
-        if imgui.button(show_hidden_icon):
+        if button(show_hidden_icon):
             self._show_hidden = not self._show_hidden
             self._items = self.list_items(self._current_dir, self._show_hidden)
         hovered_tooltip_text("Show Hidden Files and Directories")
 
         imgui.same_line()
 
-        if imgui.button(mdi.REFRESH):
+        if button(mdi.REFRESH):
             self._items = self.list_items(self._current_dir, self._show_hidden)
         hovered_tooltip_text("Refresh Current Directory")
 
         imgui.same_line()
 
         with item_width(FIT_WIDTH):
-            loc_result = input_text(
+            filter_result = imgui.input_text_with_hint(
+                "##Filter",
+                "Filter",
+                self._filter,
+            )
+            if filter_result[0]:
+                self._filter = filter_result[1]
+
+        with item_width(FIT_WIDTH):
+            if location_result := input_text(
                 "##Location",
                 self._location_text,
                 ENTER_RETURNS_TRUE,
-            )
-
-        loc_changed = loc_result.changed
-        loc_text = loc_result.value
-
-        if loc_changed:
-            if os.path.isfile(loc_text):
-                imgui.close_current_popup()
-                return loc_text
-            elif os.path.isdir(loc_text):
-                self._location_text = loc_text
-            else:
-                logger.warning(f"Invalid location: '{loc_text}'")
+            ):
+                location_text = location_result.value
+                if os.path.isfile(location_text):
+                    if not self._select_directory:
+                        imgui.close_current_popup()
+                        return location_text
+                elif os.path.isdir(location_text):
+                    self._location_text = location_text
+                else:
+                    logger.warning(f"Invalid location: '{location_text}'")
 
         if begin_child("Files", (0, footer_height_as_reverse()), BORDERS):
             try:
@@ -155,10 +234,15 @@ class OpenFilePopup(PopupBase[str]):
                     self._items = self.list_items(self._current_dir, self._show_hidden)
 
                 for item in self._items:
+                    if self._filter and item.find(self._filter) == -1:
+                        continue
+
                     item_path = os.path.join(self._location_text, item)
                     selected = item_path == self._selected
 
                     if os.path.isfile(item_path):
+                        if self._select_directory:
+                            continue
                         label = f"{mdi.FILE} {item}"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
@@ -176,22 +260,32 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.separator()
 
-        if imgui.button("Close"):
+        if button("Close"):
             imgui.close_current_popup()
             return None
+
+        if self._select_directory:
+            imgui.same_line()
+            if button("Select current location"):
+                imgui.close_current_popup()
+                return self._location_text
 
         imgui.same_line()
 
         select_file = os.path.isfile(self._selected)
         select_dir = os.path.isdir(self._selected)
-        enabled_open = select_file or select_dir
 
-        if button("Open", disabled=not enabled_open):
+        if button("Select", disabled=not select_file and not select_dir):
             if select_file:
+                assert self._select_directory
                 imgui.close_current_popup()
                 return self._selected
             elif select_dir:
-                self._location_text = self._selected
+                if self._select_directory:
+                    imgui.close_current_popup()
+                    return self._selected
+                else:
+                    self._location_text = self._selected
 
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             imgui.close_current_popup()

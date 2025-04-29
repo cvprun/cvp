@@ -16,7 +16,7 @@ class FlowWorkspaceMixin(BaseContextMixin):
         try:
             self._flows.open(path)
             recent_value = str(Path(path).resolve())
-            self._config.navigation.add_recent_item(type(self), recent_value)
+            self._config.navigation.add_recent_item(FlowWorkspaceMixin, recent_value)
         except BaseException as e:
             self._msgs.toast_error(f"Workspace open failed: {e}", logger)
         else:
@@ -31,11 +31,11 @@ class FlowWorkspaceMixin(BaseContextMixin):
             assert isinstance(dirpath, Path)
             recent_value = str(dirpath.resolve())
 
-            self._config.navigation.add_recent_item(type(self), recent_value)
+            self._config.navigation.add_recent_item(FlowWorkspaceMixin, recent_value)
         except BaseException as e:
             self._msgs.toast_error(f"Workspace close failed: {e}", logger)
         else:
             logger.info("Workspace closed successfully")
 
     def get_flow_workspace_recent_items(self):
-        return self._config.navigation.get_recent_items(type(self))
+        return self._config.navigation.get_recent_items(FlowWorkspaceMixin)

@@ -6,6 +6,7 @@ import pygame
 from imgui_bundle import imgui
 
 from cvp.imgui.button import button
+from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.popups._base import PopupBase
@@ -45,49 +46,41 @@ class InputTextPopup(PopupBase[str]):
             centered=centered,
         )
 
-        self._label = label if label else str()
-        self._text = text if text else str()
-        self._ok_button_label = ok if ok else "Ok"
-        self._cancel_button_label = cancel if cancel else "Cancel"
-        self._validate = validate
-
-    @property
-    def text(self) -> str:
-        return self._text
-
-    @text.setter
-    def text(self, value: str) -> None:
-        self._text = value
+        self.label = label if label else str()
+        self.text = text if text else str()
+        self.ok_button_label = ok if ok else "Ok"
+        self.cancel_button_label = cancel if cancel else "Cancel"
+        self.validate = validate
 
     @override
     def on_process(self) -> Optional[str]:
-        if self._label:
-            imgui.text(self._label)
+        if self.label:
+            imgui.text(self.label)
 
         if imgui.is_window_appearing():
             imgui.set_keyboard_focus_here()
 
-        with item_width(-1):
-            self._text = input_text_value("##Text", self._text)
+        with item_width(FIT_WIDTH):
+            self.text = input_text_value("##Text", self.text)
 
         if pygame.key.get_pressed()[pygame.K_RETURN]:
             imgui.close_current_popup()
-            return self._text
+            return self.text
         if pygame.key.get_pressed()[pygame.K_ESCAPE]:
             imgui.close_current_popup()
             return None
 
         validate = True
-        if self._validate is not None:
-            validate = bool(self._validate(self._text))
+        if self.validate is not None:
+            validate = bool(self.validate(self.text))
 
-        if button(self._cancel_button_label):
+        if button(self.cancel_button_label):
             imgui.close_current_popup()
             return None
         imgui.same_line()
-        enabled_ok_button = bool(self._text) and validate
-        if button(self._ok_button_label, disabled=not enabled_ok_button):
+        enabled_ok_button = bool(self.text) and validate
+        if button(self.ok_button_label, disabled=not enabled_ok_button):
             imgui.close_current_popup()
-            return self._text
+            return self.text
 
         return None

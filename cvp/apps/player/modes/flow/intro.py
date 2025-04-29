@@ -35,7 +35,7 @@ class IntroFlowWindow(BaseFlowWindow):
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            if imgui.button("New workspace"):
+            if imgui.button("Open workspace"):
                 # self.context.flows.create_new_workspace()
                 pass
 
@@ -55,7 +55,7 @@ class IntroFlowWindow(BaseFlowWindow):
                 imgui.text(recent.value)
 
                 with style_disable_input_context():
-                    imgui.text(recent.accessed_at.isoformat())
+                    imgui.text(recent.accessed_at)
 
             imgui.same_line()
 

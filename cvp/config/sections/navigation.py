@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any, Dict, List, NamedTuple, NewType, Optional, Type
+from typing import Any, Dict, List, NamedTuple, NewType, Optional, Type, Union
 
 from cvp.itertools.find_index import find_index
 from cvp.variables import MODULE_PATH_SEPARATOR, NOT_FOUND_INDEX
@@ -12,7 +12,7 @@ CategoryKey = NewType("CategoryKey", str)
 
 class RecentItem(NamedTuple):
     value: str
-    accessed_at: datetime
+    accessed_at: str
 
 
 @dataclass
@@ -77,13 +77,15 @@ class NavigationConfig:
         self,
         cls: Type,
         value: str,
-        accessed_at: Optional[datetime] = None,
+        accessed_at: Optional[Union[datetime, str]] = None,
         *,
         suffix: Optional[Any] = None,
     ) -> None:
         if accessed_at is None:
-            accessed_at = datetime.now().astimezone()
-        assert isinstance(accessed_at, datetime)
+            accessed_at = datetime.now().astimezone().isoformat()
+        elif isinstance(accessed_at, datetime):
+            accessed_at = accessed_at.isoformat()
+        assert isinstance(accessed_at, str)
 
         category_key = self.generate_category_key(cls, suffix=suffix)
         items = self.recent_items.get(category_key)
