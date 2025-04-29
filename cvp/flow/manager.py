@@ -18,6 +18,7 @@ from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
+from cvp.logging.logging import flow_logger as logger
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
 from cvp.resources.subdirs.flows import FlowsPath
@@ -33,6 +34,7 @@ class FlowManager:
     _graphs: OrderedDict[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
 
+    _focused_graph_key: Optional[GraphKey]
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
@@ -42,6 +44,8 @@ class FlowManager:
         *,
         no_dtype_defaults=False,
         no_node_defaults=False,
+        reload=False,
+        raise_errors=False,
     ):
         self._path = path
 
@@ -51,20 +55,16 @@ class FlowManager:
         self._graphs = OrderedDict()
         self._runners = OrderedDict()
 
+        self._focused_graph_key = None
         self._clipboard_items = None
         self._clipboard_pivot = None
+
+        if reload:
+            self.read_all_graph_files(raise_errors=raise_errors)
 
     def stop_all_runners(self) -> None:
         for runner in self._runners.values():
             runner.stop()
-
-    @property
-    def graphs(self):
-        return self._graphs
-
-    @property
-    def runners(self):
-        return self._runners
 
     @property
     def dtype_registry(self):
@@ -81,6 +81,24 @@ class FlowManager:
     @property
     def nodes(self):
         return self._node_registry.nodes
+
+    @property
+    def graphs(self):
+        return self._graphs
+
+    @property
+    def runners(self):
+        return self._runners
+
+    @property
+    def focused_graph_key(self):
+        return self._focused_graph_key
+
+    @property
+    def focused_graph(self) -> Optional[FlowGraph]:
+        if self._focused_graph_key is None:
+            return None
+        return self._graphs.get(self._focused_graph_key)
 
     @property
     def has_clipboard(self) -> bool:
@@ -159,6 +177,18 @@ class FlowManager:
         if not graph.key:
             raise ValueError("The 'uuid' of the flow graph does not exist")
         self._graphs[graph.key] = graph
+
+    def list_graph_filenames(self):
+        return self._path.list_first_depth_filenames()
+
+    def read_all_graph_files(self, *, raise_errors=False):
+        for path in self._path.list_first_depth_filepaths():
+            try:
+                self.update_graph_yaml(path)
+            except BaseException as e:
+                if raise_errors:
+                    raise
+                logger.error(f"Failed to read graph file '{path}' - reason: '{e}'")
 
     def add_node(self, graph: FlowGraph, node: Union[str, Node]) -> FlowNode:
         node_template = self._node_registry[node]
