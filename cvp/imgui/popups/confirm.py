@@ -6,34 +6,38 @@ import pygame
 from imgui_bundle import imgui
 
 from cvp.imgui.button import button
-from cvp.imgui.popups.base import PopupBase
+from cvp.imgui.popups._base import PopupBase
 from cvp.types.override import override
-from cvp.variables import MIN_POPUP_CONFIRM_HEIGHT, MIN_POPUP_CONFIRM_WIDTH
 
 
 class ConfirmPopup(PopupBase[bool]):
+    __cvp_popup_min_width__ = 280
+    __cvp_popup_min_height__ = 80
+
     def __init__(
         self,
         title: Optional[str] = None,
         label: Optional[str] = None,
         ok: Optional[str] = None,
         cancel: Optional[str] = None,
-        centered=True,
         flags=imgui.WindowFlags_.always_auto_resize,
         *,
-        min_width=MIN_POPUP_CONFIRM_WIDTH,
-        min_height=MIN_POPUP_CONFIRM_HEIGHT,
         target: Optional[Callable[[bool], None]] = None,
         oneshot: Optional[bool] = None,
+        identifier: Optional[str] = None,
+        min_width: Optional[int] = None,
+        min_height: Optional[int] = None,
+        centered=True,
     ):
         super().__init__(
-            title,
-            centered,
-            flags,
-            min_width=min_width,
-            min_height=min_height,
+            title=title,
+            flags=flags,
             target=target,
             oneshot=oneshot,
+            identifier=identifier,
+            min_width=min_width,
+            min_height=min_height,
+            centered=centered,
         )
 
         self._label = label if label else str()

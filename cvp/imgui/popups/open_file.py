@@ -18,16 +18,17 @@ from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.footer_height_to_reverse import footer_height_as_reverse
 from cvp.imgui.input_text import input_text
-from cvp.imgui.popups.base import PopupBase
+from cvp.imgui.popups._base import PopupBase
 from cvp.imgui.push_item_width import item_width
-from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.types.override import override
-from cvp.variables import MIN_POPUP_OPEN_FILE_HEIGHT, MIN_POPUP_OPEN_FILE_WIDTH
 
 
 class OpenFilePopup(PopupBase[str]):
+    __cvp_popup_min_width__ = 480
+    __cvp_popup_min_height__ = 380
+
     _items: List[str]
 
     def __init__(
@@ -35,22 +36,24 @@ class OpenFilePopup(PopupBase[str]):
         title: Optional[str] = None,
         directory: Optional[Union[str, PathLike]] = None,
         show_hidden=False,
-        centered=True,
         flags: Union[WindowFlags, int] = 0,
         *,
-        min_width=MIN_POPUP_OPEN_FILE_WIDTH,
-        min_height=MIN_POPUP_OPEN_FILE_HEIGHT,
         target: Optional[Callable[[str], None]] = None,
         oneshot: Optional[bool] = None,
+        identifier: Optional[str] = None,
+        min_width: Optional[int] = None,
+        min_height: Optional[int] = None,
+        centered=True,
     ):
         super().__init__(
-            title,
-            centered,
-            flags,
-            min_width=min_width,
-            min_height=min_height,
+            title=title,
+            flags=flags,
             target=target,
             oneshot=oneshot,
+            identifier=identifier,
+            min_width=min_width,
+            min_height=min_height,
+            centered=centered,
         )
 
         self._location_text = str(self.location_path(directory))
@@ -100,9 +103,6 @@ class OpenFilePopup(PopupBase[str]):
 
     @override
     def on_process(self) -> Optional[str]:
-        if imgui.is_window_appearing():
-            set_window_min_size(self._min_width, self._min_height)
-
         if imgui.button(mdi.HOME):
             self._location_text = str(Path.home())
         hovered_tooltip_text("Home Directory")

@@ -8,11 +8,14 @@ from imgui_bundle import imgui
 
 from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
-from cvp.imgui.popups.base import PopupBase
+from cvp.imgui.popups._base import PopupBase
 from cvp.types.override import override
 
 
 class ProgressPopup(PopupBase[None]):
+    __cvp_popup_min_width__ = 280
+    __cvp_popup_min_height__ = 80
+
     def __init__(
         self,
         target: Callable,
@@ -22,10 +25,25 @@ class ProgressPopup(PopupBase[None]):
         label: Optional[str] = None,
         cancel: Optional[str] = None,
         close: Optional[str] = None,
-        centered=True,
         flags: Union[WindowFlags, int] = 0,
+        *,
+        oneshot: Optional[bool] = None,
+        identifier: Optional[str] = None,
+        min_width: Optional[int] = None,
+        min_height: Optional[int] = None,
+        centered=True,
     ):
-        super().__init__(title, centered, flags)
+        super().__init__(
+            title=title,
+            flags=flags,
+            target=target,
+            oneshot=oneshot,
+            identifier=identifier,
+            min_width=min_width,
+            min_height=min_height,
+            centered=centered,
+        )
+
         self.label = label if label else str()
         self.cancel_button_label = cancel if cancel else "Cancel"
         self.close_button_label = close if close else "Close"

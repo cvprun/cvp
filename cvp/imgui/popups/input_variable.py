@@ -7,39 +7,43 @@ from imgui_bundle import imgui
 
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.variable import FlowVariable
+from cvp.flow.variable import FlowVariable, VariableName
 from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
-from cvp.imgui.popups.base import PopupBase
+from cvp.imgui.popups._base import PopupBase
 from cvp.imgui.push_item_width import item_width
 from cvp.types.override import override
-from cvp.variables import MIN_POPUP_VARIABLE_HEIGHT, MIN_POPUP_VARIABLE_WIDTH
 
 
 class InputVariablePopup(PopupBase[FlowVariable]):
+    __cvp_popup_min_width__ = 360
+    __cvp_popup_min_height__ = 240
+
     def __init__(
         self,
         title: Optional[str] = None,
         label: Optional[str] = None,
         ok: Optional[str] = None,
         cancel: Optional[str] = None,
-        centered=True,
         flags: Union[WindowFlags, int] = WindowFlags.always_auto_resize,
         *,
-        min_width=MIN_POPUP_VARIABLE_WIDTH,
-        min_height=MIN_POPUP_VARIABLE_HEIGHT,
         target: Optional[Callable[[FlowVariable], None]] = None,
         oneshot: Optional[bool] = None,
+        identifier: Optional[str] = None,
+        min_width: Optional[int] = None,
+        min_height: Optional[int] = None,
+        centered=True,
     ):
         super().__init__(
-            title,
-            centered,
-            flags,
-            min_width=min_width,
-            min_height=min_height,
+            title=title,
+            flags=flags,
             target=target,
             oneshot=oneshot,
+            identifier=identifier,
+            min_width=min_width,
+            min_height=min_height,
+            centered=centered,
         )
 
         self._label = label if label else str()
@@ -60,7 +64,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         return self._name
 
     def create_variable(self):
-        return FlowVariable(self._name, self._dtype.path)
+        return FlowVariable(VariableName(self._name), self._dtype)
 
     @override
     def on_process(self) -> Optional[FlowVariable]:
