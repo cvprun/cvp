@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from contextlib import contextmanager
 from typing import Any, NamedTuple
 
 from OpenGL import GL
@@ -107,3 +108,12 @@ def restore_common_gl_state(state: GlCommonState) -> None:
         state.last_viewport[2],
         state.last_viewport[3],
     )
+
+
+@contextmanager
+def common_gl_state_context():
+    common_gl_state_tuple = get_common_gl_state()
+    try:
+        yield common_gl_state_tuple
+    finally:
+        restore_common_gl_state(common_gl_state_tuple)
