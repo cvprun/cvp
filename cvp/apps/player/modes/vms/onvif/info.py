@@ -2,7 +2,7 @@
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.onvif._base import BaseOnvifTab
+from cvp.apps.player.modes.vms.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value

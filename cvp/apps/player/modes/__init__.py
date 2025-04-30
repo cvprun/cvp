@@ -27,13 +27,13 @@ class ModeManager:
         from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
-        from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
-        from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.system.terminal import TerminalMode
-        from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
+        from cvp.apps.player.modes.vms.medias import MediasMode
+        from cvp.apps.player.modes.vms.onvif import OnvifMode
+        from cvp.apps.player.modes.vms.wsdiscovery import WsDiscoveryMode
 
         # ==============================================================================
         # region: Initialize Mode Instances
@@ -73,9 +73,6 @@ class ModeManager:
             self.chat_mode,
             self.files_mode,
             self.canvas_mode,
-            self.medias_mode,
-            self.onvif_mode,
-            self.wsdiscovery_mode,
         )
         self._submenu_modes = OrderedDict(
             {
@@ -87,6 +84,7 @@ class ModeManager:
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),
                 "System": (self.terminal_mode,),
+                "VMS": (self.medias_mode, self.onvif_mode, self.wsdiscovery_mode),
             }
         )
 

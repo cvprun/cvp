@@ -6,8 +6,8 @@ from typing import Any, Dict, Final, Sequence, Tuple
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.onvif._base import BaseOnvifTab
-from cvp.apps.player.modes.onvif._operation import WsdlOperation
+from cvp.apps.player.modes.vms.onvif._base import BaseOnvifTab
+from cvp.apps.player.modes.vms.onvif._operation import WsdlOperation
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
