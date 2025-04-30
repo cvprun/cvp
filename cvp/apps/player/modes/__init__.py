@@ -21,6 +21,7 @@ class ModeManager:
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
+        from cvp.apps.player.modes.files import FilesMode
         from cvp.apps.player.modes.flows.dtype import DtypeMode
         from cvp.apps.player.modes.flows.flow import FlowMode
         from cvp.apps.player.modes.flows.node import NodeMode
@@ -44,6 +45,7 @@ class ModeManager:
         self.download_mode = DownloaderMode(context)
         self.dtype_mode = DtypeMode(context)
         self.faker_mode = FakerMode(context)
+        self.files_mode = FilesMode(context)
         self.flow_mode = FlowMode(context)
         self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
@@ -67,6 +69,7 @@ class ModeManager:
         self._menu_modes = (
             self.dashboard_mode,
             self.chat_mode,
+            self.files_mode,
             self.canvas_mode,
             self.medias_mode,
             self.onvif_mode,
