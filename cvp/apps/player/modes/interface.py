@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 from pygame import Event
 from pygame.key import ScancodeWrapper
@@ -38,3 +39,12 @@ class ModeInterface(ABC):
     @abstractmethod
     def do_process(self) -> None:
         raise NotImplementedError
+
+
+def retrieve_mode_instances(o: Any):
+    result = list()
+    for key in dir(o):
+        if value := getattr(o, key, None):
+            if isinstance(value, ModeInterface):
+                result.append(value)
+    return result

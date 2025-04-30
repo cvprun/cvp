@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import List, Sequence, Union
+from typing import Any, List, Sequence, Union
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.interface import ModeInterface
+from cvp.apps.player.modes.interface import ModeInterface, retrieve_mode_instances
 from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
 
 
 class ModeManager:
+    _menu_modes: Sequence[ModeInterface]
+    _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
+
     def __init__(self, context: Context):
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.crypto.hash import HashMode
+        from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flows.dtype import DtypeMode
@@ -28,53 +32,44 @@ class ModeManager:
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
+        # ==============================================================================
+        # [IMPORTANT]
+        # Do not change the initialize order!
         self.binary_text_mode = BinaryTextMode(context)
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
-        self.faker_mode = FakerMode(context)
         self.dtype_mode = DtypeMode(context)
+        self.faker_mode = FakerMode(context)
         self.flow_mode = FlowMode(context)
-        self.node_mode = NodeMode(context)
         self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
+        self.object_tracker_mode = ObjectTrackerMode(context)
+        self.node_mode = NodeMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
         self.sock_map = SockMapMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
-
-        self._context = context
-        self._modes: List[ModeInterface] = [
-            self.binary_text_mode,
-            self.chat_mode,
-            self.dashboard_mode,
-            self.download_mode,
-            self.faker_mode,
-            self.dtype_mode,
-            self.flow_mode,
-            self.node_mode,
-            self.hash_mode,
-            self.medias_mode,
-            self.onvif_mode,
-            self.preference_mode,
-            self.sock_map,
-            self.tetrix_mode,
-            self.wsdiscovery_mode,
-        ]
+        # ------------------------------------------------------------------------------
+        # Retrieves and stores all ModeInterface instances assigned to `self`
+        self._modes = retrieve_mode_instances(self)
         self._key2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
         self._num2index = {m.get_mode_number(): i for i, m in enumerate(self._modes)}
+        # ==============================================================================
 
-        self._menu_modes: Sequence[ModeInterface] = (
+        self._context = context
+        self._menu_modes = (
             self.dashboard_mode,
             self.chat_mode,
             self.medias_mode,
             self.onvif_mode,
             self.wsdiscovery_mode,
         )
-        self._submenu_modes = OrderedDict[str, Sequence[ModeInterface]](
+        self._submenu_modes = OrderedDict(
             {
                 "Cryptography": (self.hash_mode,),
+                "Computer Vision": (self.object_tracker_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Flows": (self.dtype_mode, self.flow_mode, self.node_mode),
                 "Games": (self.tetrix_mode,),
