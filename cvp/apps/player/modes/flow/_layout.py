@@ -5,6 +5,7 @@ from typing import Final, Sequence
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import FlowWindowInterface
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 
 DOCK_SPACE_FLAG: Final[int] = int(imgui.internal.DockNodeFlagsPrivate_.dock_space.value)
@@ -46,7 +47,7 @@ class FlowLayout:
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
 
-        self._canvases = self.create_canvases(context)
+        self._graphs = FlowGraphWindow.create_opened_windows(context)
 
         self._windows = (
             # Left Dock
@@ -63,17 +64,6 @@ class FlowLayout:
             # Main Dock
             self.intro,
         )
-
-    @staticmethod
-    def create_canvases(context: Context):
-        from cvp.apps.player.modes.flow._canvas import CanvasFlowWindow
-
-        result = dict()
-        for key, graph in context.flows.graphs.items():
-            if not graph.opened:
-                continue
-            result[key] = CanvasFlowWindow(context, key)
-        return result
 
     @property
     def initialized(self) -> bool:
@@ -155,20 +145,20 @@ class FlowLayout:
     @property
     def focused_canvas(self):
         if focused_graph_key := self._context.flows.focused_graph_key:
-            return self._canvases.get(focused_graph_key)
+            return self._graphs.get(focused_graph_key)
         else:
             return None
 
     def refresh_graphs(self) -> None:
-        self._canvases.clear()
+        self._graphs.clear()
         try:
             self._context.flows.graphs.clear()
             self._context.flows.read_all_graph_files()
         finally:
-            self._canvases = self.create_canvases(self._context)
+            self._graphs = FlowGraphWindow.create_opened_windows(self._context)
 
     def do_process(self) -> None:
         for window in self._windows:
             window.do_process()
-        for canvas in self._canvases.values():
+        for canvas in self._graphs.values():
             canvas.do_process()

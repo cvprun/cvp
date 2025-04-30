@@ -4,7 +4,6 @@ from typing import Final, List, Optional
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flow._base import BaseFlowWindow
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
@@ -25,6 +24,7 @@ from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.set_window_font_scale import window_font_scale
+from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
@@ -33,9 +33,7 @@ from cvp.types.override import override
 from cvp.types.shapes import Rect
 
 
-class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
-    __cvp_flow_window_name__ = "Canvas"
-
+class FlowGraphWindow(ControllableCanvas):
     _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
     _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
 
@@ -45,12 +43,12 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
     _selection_stash: Optional[FlowSelection]
 
     def __init__(self, context: Context, graph_key: GraphKey):
-        ControllableCanvas.__init__(self)
-        BaseFlowWindow.__init__(self, context)
+        super().__init__()
 
+        self._context = context
         self._graph_key = graph_key
 
-        graph = self.context.flows.graphs[graph_key]
+        graph = context.flows.graphs[graph_key]
         self._pan_x.update(graph.control.pan_x, no_emit=True)
         self._pan_y.update(graph.control.pan_y, no_emit=True)
         self._zoom.update(graph.control.zoom, no_emit=True)
@@ -59,7 +57,7 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         graph.update_wires_io()
         graph.update_wires_polyline()
 
-        max_history = self.context.config.flow.max_history
+        max_history = context.config.flow.max_history
         # TODO: If modified at runtime, related changes must be updated accordingly.
 
         self._history = FlowHistory(max_history=max_history)
@@ -81,10 +79,23 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
             target=self.on_new_variable,
         )
 
+    @classmethod
+    def create_opened_windows(cls, context: Context):
+        result = dict()
+        for key, graph in context.flows.graphs.items():
+            if not graph.opened:
+                continue
+            result[key] = cls(context, key)
+        return result
+
     def on_new_variable(self, name: str) -> None:
         if not name:
             raise ValueError("Variable name cannot be empty")
         self.graph.add_variable(name, self._drag_dtype)
+
+    @property
+    def context(self):
+        return self._context
 
     @property
     def graph(self):
@@ -134,11 +145,12 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
             f"Cursor: {self._history.cursor_index}\n"
         )
 
-    @override
     def get_window_name(self) -> str:
-        return self.__cvp_flow_window_name__ + f"###GraphKey.{self._graph_key}"
+        class_name = type(self).__name__
+        graph = self.context.flows.graphs.get(self._graph_key)
+        graph_name = graph.name if graph else class_name
+        return f"{graph_name}###{class_name}/{self._graph_key}"
 
-    @override
     def do_process(self) -> None:
         visible, opened = imgui.begin(self.get_window_name(), self.graph.opened)
         self.graph.opened = opened
@@ -148,7 +160,10 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
 
         try:
             if visible:
-                self.do_child_process()
+                if self._graph_key in self.context.flows.graphs:
+                    self.do_child_process()
+                else:
+                    text_centered(f"Not found {self._graph_key} graph")
         finally:
             imgui.end()
         self._new_variable_popup.do_process()
