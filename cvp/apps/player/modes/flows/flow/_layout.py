@@ -7,17 +7,10 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.flows.flow._base import FlowWindowInterface
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
+from cvp.imgui.dock_builder import dock_window, split_node
 
 DOCK_SPACE_FLAG: Final[int] = int(imgui.internal.DockNodeFlagsPrivate_.dock_space.value)
 DOCKING_ENABLE_FLAG: Final[int] = int(imgui.ConfigFlags_.docking_enable.value)
-
-
-def split_node(node_id: int, split_dir: imgui.Dir, ratio: float):
-    return imgui.internal.dock_builder_split_node(node_id, split_dir, ratio)
-
-
-def dock_window(window_name: str, node_id: int) -> None:
-    imgui.internal.dock_builder_dock_window(window_name, node_id)
 
 
 class FlowLayout:

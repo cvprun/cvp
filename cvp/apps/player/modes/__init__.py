@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import Any, List, Sequence, Union
+from typing import Sequence, Union
 
 from imgui_bundle import imgui
 
@@ -15,6 +15,7 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
+        from cvp.apps.player.modes.canvas import CanvasMode
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
@@ -33,9 +34,11 @@ class ModeManager:
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         # ==============================================================================
-        # [IMPORTANT]
-        # Do not change the initialize order!
+        # region: Initialize Mode Instances
+        # [IMPORTANT] Do not change the initialize order!
+
         self.binary_text_mode = BinaryTextMode(context)
+        self.canvas_mode = CanvasMode(context)
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
@@ -44,24 +47,27 @@ class ModeManager:
         self.flow_mode = FlowMode(context)
         self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
-        self.object_tracker_mode = ObjectTrackerMode(context)
         self.node_mode = NodeMode(context)
+        self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
         self.sock_map = SockMapMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
+
         # ------------------------------------------------------------------------------
         # Retrieves and stores all ModeInterface instances assigned to `self`
         self._modes = retrieve_mode_instances(self)
         self._key2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
         self._num2index = {m.get_mode_number(): i for i, m in enumerate(self._modes)}
+        # endregion: Initialize Mode Instances
         # ==============================================================================
 
         self._context = context
         self._menu_modes = (
             self.dashboard_mode,
             self.chat_mode,
+            self.canvas_mode,
             self.medias_mode,
             self.onvif_mode,
             self.wsdiscovery_mode,
