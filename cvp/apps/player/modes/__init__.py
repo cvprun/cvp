@@ -32,6 +32,7 @@ class ModeManager:
         from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
+        from cvp.apps.player.modes.system.terminal import TerminalMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         # ==============================================================================
@@ -54,6 +55,7 @@ class ModeManager:
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
         self.sock_map = SockMapMode(context)
+        self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
@@ -77,13 +79,14 @@ class ModeManager:
         )
         self._submenu_modes = OrderedDict(
             {
-                "Cryptography": (self.hash_mode,),
                 "Computer Vision": (self.object_tracker_mode,),
+                "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Flows": (self.dtype_mode, self.flow_mode, self.node_mode),
                 "Games": (self.tetrix_mode,),
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),
+                "System": (self.terminal_mode,),
             }
         )
 
