@@ -8,7 +8,7 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.flow._layout import FlowLayout
+from cvp.apps.player.modes.flows.flow._layout import FlowLayout
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.imgui.dockspace import dockspace_over_viewport_context

@@ -4,7 +4,7 @@ from typing import Final, Optional
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context

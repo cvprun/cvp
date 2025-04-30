@@ -16,7 +16,7 @@ class ModeManager:
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
-        from cvp.apps.player.modes.flow import FlowMode
+        from cvp.apps.player.modes.flows.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.medias import MediasMode

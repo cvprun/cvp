@@ -4,7 +4,7 @@ from typing import Final, Optional, Sequence
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flow._base import FlowWindowInterface
+from cvp.apps.player.modes.flows.flow._base import FlowWindowInterface
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 
@@ -25,15 +25,15 @@ class FlowLayout:
     _main_dock_id: Optional[int]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.flow.debug import DebugFlowWindow
-        from cvp.apps.player.modes.flow.dtypes import DtypesFlowWindow
-        from cvp.apps.player.modes.flow.graphs import GraphsFlowWindow
-        from cvp.apps.player.modes.flow.history import HistoryFlowWindow
-        from cvp.apps.player.modes.flow.intro import IntroFlowWindow
-        from cvp.apps.player.modes.flow.logging import LoggingFlowWindow
-        from cvp.apps.player.modes.flow.nodes import NodesFlowWindow
-        from cvp.apps.player.modes.flow.props import PropsFlowWindow
-        from cvp.apps.player.modes.flow.tree import TreeFlowWindow
+        from cvp.apps.player.modes.flows.flow.debug import DebugFlowWindow
+        from cvp.apps.player.modes.flows.flow.dtypes import DtypesFlowWindow
+        from cvp.apps.player.modes.flows.flow.graphs import GraphsFlowWindow
+        from cvp.apps.player.modes.flows.flow.history import HistoryFlowWindow
+        from cvp.apps.player.modes.flows.flow.intro import IntroFlowWindow
+        from cvp.apps.player.modes.flows.flow.logging import LoggingFlowWindow
+        from cvp.apps.player.modes.flows.flow.nodes import NodesFlowWindow
+        from cvp.apps.player.modes.flows.flow.props import PropsFlowWindow
+        from cvp.apps.player.modes.flows.flow.tree import TreeFlowWindow
 
         self._context = context
         self._initialized_dock_layout = False

@@ -4,7 +4,7 @@ from typing import Optional
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.config.sections.canvas.axis import Axis
 from cvp.context.context import Context
