@@ -27,6 +27,7 @@ class ModeManager:
         from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
+        from cvp.apps.player.modes.mp import MediaPlayerMode
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.preference import PreferenceMode
@@ -49,6 +50,7 @@ class ModeManager:
         self.files_mode = FilesMode(context)
         self.flow_mode = FlowMode(context)
         self.hash_mode = HashMode(context)
+        self.media_player_mode = MediaPlayerMode(context)
         self.medias_mode = MediasMode(context)
         self.node_mode = NodeMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
