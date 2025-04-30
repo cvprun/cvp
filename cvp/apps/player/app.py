@@ -24,7 +24,6 @@ from cvp.apps.player.windows.toast import ToastWindow
 from cvp.assets.icons import get_default_icon_path
 from cvp.chrono.filename import short_datetime_name
 from cvp.chrono.tznow import tznow
-from cvp.config.sections.proxies.graphic import ForceEglProxy, UseAccelerateProxy
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
 from cvp.imgui.flags.key import KeyFlags
@@ -150,7 +149,7 @@ class PlayerApplication:
     def _raise_force_egl_error(self, error: Error) -> None:
         fixer = AutoFixer[Optional[bool], Error](
             context=self._context,
-            config_proxy=ForceEglProxy(self.config.graphic),
+            config_proxy=self.config.graphic.create_force_egl_proxy(),
             config_section_path="graphic.force_egl",
             not_exists_value=None,
             update_value=True,
@@ -177,7 +176,7 @@ class PlayerApplication:
         # <OpenGL.platform.baseplatform.glGenTextures object at 0x7b0a5ec96800>
         fixer = AutoFixer[Optional[bool], ValueError](
             context=self._context,
-            config_proxy=UseAccelerateProxy(self.config.graphic),
+            config_proxy=self.config.graphic.create_use_accelerate_proxy(),
             config_section_path="graphic.use_accelerate",
             not_exists_value=None,
             update_value=False,

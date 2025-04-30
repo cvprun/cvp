@@ -42,14 +42,6 @@ class FontPreference(BasePreference):
         return self.context.config.font_manager
 
     @property
-    def min_range_select_width(self) -> float:
-        return self.config.min_range_select_width
-
-    @property
-    def max_range_select_width(self) -> float:
-        return self.config.max_range_select_width
-
-    @property
     def selected_block(self) -> Tuple[int, int]:
         return self.config.selected_block
 
