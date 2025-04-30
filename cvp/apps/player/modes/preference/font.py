@@ -39,7 +39,7 @@ class FontPreference(BasePreference):
 
     @property
     def config(self):
-        return self.context.config.font_manager
+        return self.context.config.font
 
     @property
     def selected_block(self) -> Tuple[int, int]:

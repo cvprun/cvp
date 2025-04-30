@@ -16,7 +16,7 @@ from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.faker import FakerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.config.sections.flow import FlowConfig
-from cvp.config.sections.font import FontConfig, FontManagerConfig
+from cvp.config.sections.font import FontConfig
 from cvp.config.sections.games.tetrix import TetrixConfig
 from cvp.config.sections.graphic import GraphicConfig
 from cvp.config.sections.keyring import KeyringConfig
@@ -45,7 +45,6 @@ class Config:
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
     flow: FlowConfig = field(default_factory=FlowConfig)
     font: FontConfig = field(default_factory=FontConfig)
-    font_manager: FontManagerConfig = field(default_factory=FontManagerConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
