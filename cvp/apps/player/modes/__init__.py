@@ -16,7 +16,9 @@ class ModeManager:
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
+        from cvp.apps.player.modes.flows.dtype import DtypeMode
         from cvp.apps.player.modes.flows.flow import FlowMode
+        from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.medias import MediasMode
@@ -31,7 +33,9 @@ class ModeManager:
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
         self.faker_mode = FakerMode(context)
+        self.dtype_mode = DtypeMode(context)
         self.flow_mode = FlowMode(context)
+        self.node_mode = NodeMode(context)
         self.hash_mode = HashMode(context)
         self.medias_mode = MediasMode(context)
         self.onvif_mode = OnvifMode(context)
@@ -47,7 +51,9 @@ class ModeManager:
             self.dashboard_mode,
             self.download_mode,
             self.faker_mode,
+            self.dtype_mode,
             self.flow_mode,
+            self.node_mode,
             self.hash_mode,
             self.medias_mode,
             self.onvif_mode,
@@ -62,7 +68,6 @@ class ModeManager:
         self._menu_modes: Sequence[ModeInterface] = (
             self.dashboard_mode,
             self.chat_mode,
-            self.flow_mode,
             self.medias_mode,
             self.onvif_mode,
             self.wsdiscovery_mode,
@@ -71,6 +76,7 @@ class ModeManager:
             {
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
+                "Flows": (self.dtype_mode, self.flow_mode, self.node_mode),
                 "Games": (self.tetrix_mode,),
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),
