@@ -7,13 +7,24 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.flows.flow._base import FlowWindowInterface
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
-from cvp.imgui.dock_builder import dock_window, split_node
-
-DOCK_SPACE_FLAG: Final[int] = int(imgui.internal.DockNodeFlagsPrivate_.dock_space.value)
-DOCKING_ENABLE_FLAG: Final[int] = int(imgui.ConfigFlags_.docking_enable.value)
+from cvp.imgui.dock_builder import (
+    add_dock_space_node,
+    dock_window,
+    enabled_docking_flag,
+    finish,
+    remove_node,
+    set_node_size,
+    split_node,
+)
 
 
 class FlowLayout:
+    _LEFT_RATIO: Final[float] = 0.15
+    _RIGHT_RATIO: Final[float] = 0.15
+    _LEFT_UP_RATIO: Final[float] = 0.60
+    _RIGHT_UP_RATIO: Final[float] = 0.60
+    _BOTTOM_RATIO: Final[float] = 0.25
+
     _windows: Sequence[FlowWindowInterface]
     _main_dock_id: Optional[int]
 
@@ -68,32 +79,27 @@ class FlowLayout:
         self,
         dockspace_id: int,
         viewport: imgui.Viewport,
-        left_ratio=0.15,
-        right_ratio=0.15,
-        left_up_ratio=0.60,
-        right_up_ratio=0.60,
-        bottom_ratio=0.25,
     ) -> None:
-        imgui.internal.dock_builder_add_node(dockspace_id, DOCK_SPACE_FLAG)
-        imgui.internal.dock_builder_set_node_size(dockspace_id, viewport.work_size)
+        add_dock_space_node(dockspace_id)
+        set_node_size(dockspace_id, viewport.work_size)
 
-        split_result = split_node(dockspace_id, imgui.Dir.left, left_ratio)
+        split_result = split_node(dockspace_id, imgui.Dir.left, self._LEFT_RATIO)
         dock_left = split_result.id_at_dir
         dock_main_right = split_result.id_at_opposite_dir
 
-        split_result = split_node(dock_main_right, imgui.Dir.right, right_ratio)
+        split_result = split_node(dock_main_right, imgui.Dir.right, self._RIGHT_RATIO)
         dock_right = split_result.id_at_dir
         dock_center = split_result.id_at_opposite_dir
 
-        split_result = split_node(dock_left, imgui.Dir.up, left_up_ratio)
+        split_result = split_node(dock_left, imgui.Dir.up, self._LEFT_UP_RATIO)
         dock_left_top = split_result.id_at_dir
         dock_left_bottom = split_result.id_at_opposite_dir
 
-        split_result = split_node(dock_right, imgui.Dir.up, right_up_ratio)
+        split_result = split_node(dock_right, imgui.Dir.up, self._RIGHT_UP_RATIO)
         dock_right_top = split_result.id_at_dir
         dock_right_bottom = split_result.id_at_opposite_dir
 
-        split_result = split_node(dock_center, imgui.Dir.down, bottom_ratio)
+        split_result = split_node(dock_center, imgui.Dir.down, self._BOTTOM_RATIO)
         dock_center_bottom = split_result.id_at_dir
         dock_center_top = split_result.id_at_opposite_dir
 
@@ -123,22 +129,18 @@ class FlowLayout:
         dockspace_id: int,
         viewport: imgui.Viewport,
     ) -> None:
-        if not self.enabled_docking():
+        if not enabled_docking_flag():
             return
 
         if self._initialized_dock_layout:
             return
 
-        imgui.internal.dock_builder_remove_node(dockspace_id)
+        remove_node(dockspace_id)
         try:
             self._initialize_dock_layout(dockspace_id, viewport)
         finally:
-            imgui.internal.dock_builder_finish(dockspace_id)
+            finish(dockspace_id)
             self._initialized_dock_layout = True
-
-    @staticmethod
-    def enabled_docking() -> bool:
-        return bool(imgui.get_io().config_flags & DOCKING_ENABLE_FLAG)
 
     @property
     def focused_graph_window(self):
