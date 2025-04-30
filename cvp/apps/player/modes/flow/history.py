@@ -19,6 +19,10 @@ class HistoryFlowWindow(BaseFlowWindow):
     def __init__(self, context: Context):
         super().__init__(context)
 
+    @property
+    def focused_graph(self):
+        return self._context.flows.focused_graph
+
     @override
     def do_process(self) -> None:
         with begin_context(self.get_window_name()):

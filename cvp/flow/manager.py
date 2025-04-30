@@ -94,6 +94,10 @@ class FlowManager:
     def focused_graph_key(self):
         return self._focused_graph_key
 
+    @focused_graph_key.setter
+    def focused_graph_key(self, value: GraphKey) -> None:
+        self._focused_graph_key = value
+
     @property
     def focused_graph(self) -> Optional[FlowGraph]:
         if self._focused_graph_key is None:

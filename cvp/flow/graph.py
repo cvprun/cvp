@@ -40,6 +40,7 @@ class FlowGraph(Serializable):
         docs = auto()
         icon = auto()
         lock = auto()
+        opened = auto()
         color = auto()
         nodes = auto()
         wires = auto()
@@ -55,6 +56,7 @@ class FlowGraph(Serializable):
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         lock=False,
+        opened=False,
         color: RGBA = WHITE_RGBA,
         nodes: Optional[Iterable[FlowNode]] = None,
         wires: Optional[Iterable[FlowWire]] = None,
@@ -70,6 +72,7 @@ class FlowGraph(Serializable):
         self.docs = docs if docs else str()
         self.icon = icon if icon else IconCode(str())
         self.lock = lock
+        self.opened = opened
         self.color = color
         self.nodes = self.__create_nodes(nodes)
         self.wires = self.__create_wires(wires)
@@ -112,6 +115,7 @@ class FlowGraph(Serializable):
             and self.docs == other.docs
             and self.icon == other.icon
             and self.lock == other.lock
+            and self.opened == other.opened
             and self.color == other.color
             and self.nodes == other.nodes
             and self.wires == other.wires
@@ -129,6 +133,7 @@ class FlowGraph(Serializable):
         result.docs = copy(self.docs)
         result.icon = copy(self.icon)
         result.lock = copy(self.lock)
+        result.opened = copy(self.opened)
         result.color = copy(self.color)
         result.nodes = copy(self.nodes)
         result.wires = copy(self.wires)
@@ -149,6 +154,7 @@ class FlowGraph(Serializable):
         result.docs = deepcopy(self.docs, memo)
         result.icon = deepcopy(self.icon, memo)
         result.lock = deepcopy(self.lock, memo)
+        result.opened = deepcopy(self.opened, memo)
         result.color = deepcopy(self.color, memo)
         result.nodes = deepcopy(self.nodes, memo)
         result.wires = deepcopy(self.wires, memo)
@@ -168,6 +174,7 @@ class FlowGraph(Serializable):
             str(self._Keys.docs): str(self.docs),
             str(self._Keys.icon): str(self.icon),
             str(self._Keys.lock): bool(self.lock),
+            str(self._Keys.opened): bool(self.opened),
             str(self._Keys.color): list(float(c) for c in self.color),
             str(self._Keys.nodes): serialize(self.nodes.as_list()),
             str(self._Keys.wires): serialize(self.wires.as_list()),
@@ -187,6 +194,7 @@ class FlowGraph(Serializable):
         self.docs = str(data.get(self._Keys.docs, str()))
         self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.lock = bool(data.get(self._Keys.lock, False))
+        self.opened = bool(data.get(self._Keys.opened, False))
         self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))
 
         assert len(self.color) == 4

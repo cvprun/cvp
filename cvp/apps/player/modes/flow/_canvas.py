@@ -5,6 +5,7 @@ from typing import Final, List, Optional
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
@@ -17,10 +18,12 @@ from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
-from cvp.imgui.begin import begin_context
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
+from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
+from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.logging.logging import flow_logger as logger
@@ -32,6 +35,9 @@ from cvp.types.shapes import Rect
 
 class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
     __cvp_flow_window_name__ = "Canvas"
+
+    _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
+    _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
 
     _mode: FlowMode
     _connects: List[FlowNodePin]
@@ -66,6 +72,19 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
 
         self._drag_dtype = Dtype.any()
         self._variable_key = str()
+
+        self._new_variable_popup = InputTextPopup(
+            title="New variable",
+            label="Please enter a variable name:",
+            ok="Add",
+            cancel="Cancel",
+            target=self.on_new_variable,
+        )
+
+    def on_new_variable(self, name: str) -> None:
+        if not name:
+            raise ValueError("Variable name cannot be empty")
+        self.graph.add_variable(name, self._drag_dtype)
 
     @property
     def graph(self):
@@ -116,52 +135,62 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         )
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            self.do_child_process()
+    def get_window_name(self) -> str:
+        return self.__cvp_flow_window_name__ + f"###GraphKey.{self._graph_key}"
 
-    _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
-    _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
+    @override
+    def do_process(self) -> None:
+        visible, opened = imgui.begin(self.get_window_name(), self.graph.opened)
+        self.graph.opened = opened
+
+        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
+            self.context.flows.focused_graph_key = self._graph_key
+
+        try:
+            if visible:
+                self.do_child_process()
+        finally:
+            imgui.end()
+        self._new_variable_popup.do_process()
 
     def do_child_process(self) -> None:
-        # self.do_process_canvas()
-        #
-        # if imgui.begin_drag_drop_target():
-        #     try:
-        #         if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
-        #             self._drag_dtype = self.context.flows.dtypes[payload.type]
-        #             # self._add_variable_popup.show()
-        #
-        #         if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
-        #             node = self.context.flows.add_node(self.graph, payload.type)
-        #             self.update_node_roi(node)
-        #             self.save_history("Add a new node", payload.type)
-        #
-        #         if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_VARIABLE):
-        #             self._variable_key = payload.type
-        #             imgui.open_popup(self._ADD_VARIABLE_NODE_MENU)
-        #     finally:
-        #         imgui.end_drag_drop_target()
-        #
-        # if imgui.begin_popup_context_window(self._ADD_VARIABLE_NODE_MENU):
-        #     try:
-        #         self._process_add_variable_menu()
-        #     finally:
-        #         imgui.end_popup()
-        #
-        # if imgui.begin_popup_context_window(self._MOUSE_RIGHT_BUTTON_MENU):
-        #     try:
-        #         self._process_enabled_edit_menu()
-        #         imgui.separator()
-        #         self._process_enabled_layout_menu()
-        #         imgui.separator()
-        #         self._process_enabled_align_menu()
-        #         self._process_enabled_distribute_menu()
-        #     finally:
-        #         imgui.end_popup()
-        #
-        # self.draw()
-        pass
+        self.do_process_canvas()
+
+        if imgui.begin_drag_drop_target():
+            try:
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
+                    self._drag_dtype = self.context.flows.dtypes[payload.type]
+                    self._new_variable_popup.show()
+
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
+                    node = self.context.flows.add_node(self.graph, payload.type)
+                    self.update_node_roi(node)
+                    self.save_history("Add a new node", payload.type)
+
+                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_VARIABLE):
+                    self._variable_key = payload.type
+                    imgui.open_popup(self._ADD_VARIABLE_NODE_MENU)
+            finally:
+                imgui.end_drag_drop_target()
+
+        if imgui.begin_popup_context_window(self._ADD_VARIABLE_NODE_MENU):
+            try:
+                self.do_add_variable_menu()
+            finally:
+                imgui.end_popup()
+
+        if imgui.begin_popup_context_window(self._MOUSE_RIGHT_BUTTON_MENU):
+            try:
+                self.do_edit_menu()
+                imgui.separator()
+                self.do_layer_menu()
+                imgui.separator()
+                self.do_align_menu()
+                self.do_distribute_menu()
+            finally:
+                imgui.end_popup()
+
+        self.draw()
 
     def on_canvas_events(self) -> None:
         # ctrl_down = self.ctrl_down
@@ -232,12 +261,200 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         pass
 
     # ==================================================================================
-    # History Operations
+    # region: Context Menu Operations
+    # ==================================================================================
+
+    def do_edit_menu(self) -> None:
+        undoable = self.history.undoable
+        redoable = self.history.redoable
+        selected_any = bool(self.graph.selection)
+        has_clipboard = self.context.flows.has_clipboard
+
+        if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
+            self.undo_history()
+        if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
+            self.redo_history()
+
+        imgui.separator()
+        if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
+            self.context.flows.clipboard_items = self.graph.selection.deepcopy()
+            self.context.flows.clipboard_pivot = self.graph.selection.group_pos
+            self.graph.remove_selected_items()
+            self.save_history("Cut selected items")
+        if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
+            self.context.flows.clipboard_items = self.graph.selection.deepcopy()
+            px, py = self.graph.selection.group_pos
+            px += self.config.paste_margin
+            py += self.config.paste_margin
+            self.context.flows.clipboard_pivot = px, py
+        if menu_item("Paste", shortcut="Ctrl+V", enabled=has_clipboard):
+            self.graph.unselect_all_items()
+            self.graph.paste_selection(
+                self.context.flows.clipboard_items,
+                self.context.flows.clipboard_pivot,
+                selected=True,
+            )
+            px, py = self.context.flows.clipboard_pivot
+            px += self.config.paste_margin
+            py += self.config.paste_margin
+            self.context.flows.clipboard_pivot = px, py
+            self.save_history("Paste selected items")
+
+        imgui.separator()
+        if menu_item("Delete", shortcut="Del", enabled=selected_any):
+            self.graph.remove_selected_items()
+            self.save_history("Remove selected items")
+
+        imgui.separator()
+        if menu_item("Reset control"):
+            self.reset_controllers()
+
+        imgui.separator()
+        if menu_item("Select all"):
+            self.graph.unselect_all_items()
+            self.graph.select_all_items()
+        if menu_item("Select nodes"):
+            self.graph.unselect_all_items()
+            self.graph.select_all_nodes()
+        if menu_item("Select wires"):
+            self.graph.unselect_all_items()
+            self.graph.select_all_wires()
+        if menu_item("Select pins"):
+            self.graph.unselect_all_items()
+            self.graph.select_all_pins()
+
+    def do_layer_menu(self) -> None:
+        selected_items = self.graph.selection
+        selected_any = bool(selected_items)
+        single_item = 1 == len(selected_items)
+
+        if menu_item("To Front", enabled=selected_any):
+            self.graph.items_to_front(list(selected_items.values()))
+            self.save_history("To front items")
+        if menu_item("To Back", enabled=selected_any):
+            self.graph.items_to_back(list(selected_items.values()))
+            self.save_history("To back items")
+
+        if menu_item("Bring Forward", enabled=single_item):
+            assert 1 == len(selected_items)
+            self.graph.item_bring_forward(selected_items.first)
+            self.save_history("Bring forward items")
+        if menu_item("Send Backward", enabled=single_item):
+            assert 1 == len(selected_items)
+            self.graph.item_send_backward(selected_items.first)
+            self.save_history("Send backward items")
+
+    def do_align_menu(self) -> None:
+        nodes = self.graph.selection.nodes
+        multiple_item = 2 <= len(nodes)
+
+        if imgui.begin_menu("Align", enabled=multiple_item):
+            pivot = nodes[-1]
+            try:
+                if menu_item("Left"):
+                    self.graph.nodes_align_left(nodes, pivot)
+                    self.save_history("Align left nodes")
+                if menu_item("Center"):
+                    self.graph.nodes_align_center(nodes, pivot)
+                    self.save_history("Align center nodes")
+                if menu_item("Right"):
+                    self.graph.nodes_align_right(nodes, pivot)
+                    self.save_history("Align right nodes")
+
+                imgui.separator()
+                if menu_item("Top"):
+                    self.graph.nodes_align_top(nodes, pivot)
+                    self.save_history("Align top nodes")
+                if menu_item("Middle"):
+                    self.graph.nodes_align_middle(nodes, pivot)
+                    self.save_history("Align middle nodes")
+                if menu_item("Bottom"):
+                    self.graph.nodes_align_bottom(nodes, pivot)
+                    self.save_history("Align bottom nodes")
+            finally:
+                imgui.end_menu()
+
+    def do_distribute_menu(self) -> None:
+        nodes = self.graph.selection.nodes
+        multiple_item = 2 <= len(nodes)
+
+        if imgui.begin_menu("Distribute", enabled=multiple_item):
+            assert self is not None
+            if menu_item("Horizontal"):
+                self.graph.nodes_distribute_horizontal(nodes)
+                self.save_history("Distribute horizontal nodes")
+            if menu_item("Vertical"):
+                self.graph.nodes_distribute_vertical(nodes)
+                self.save_history("Distribute vertical nodes")
+            imgui.end_menu()
+
+    def do_run_menu(self) -> None:
+        if imgui.begin_menu(f"{mdi.PLAY} Run"):
+            try:
+                begin_nodes = self.graph.find_begin_nodes()
+                if begin_nodes:
+                    for node in begin_nodes:
+                        if menu_item(node.name):
+                            self.context.start_flow_thread(self.graph, node)
+                else:
+                    menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
+
+        if imgui.begin_menu(f"{mdi.BUG} Debug"):
+            try:
+                begin_nodes = self.graph.find_begin_nodes()
+                if begin_nodes:
+                    for node in begin_nodes:
+                        if menu_item(node.name):
+                            pass
+                else:
+                    menu_item("[Empty]", enabled=False)
+            finally:
+                imgui.end_menu()
+
+        imgui.separator()
+
+        if menu_item(f"{mdi.PAUSE} Pause"):
+            pass
+        if menu_item(f"{mdi.STOP} Stop"):
+            pass
+        if menu_item(f"{mdi.DEBUG_STEP_OVER} Step Over"):
+            pass
+        if menu_item(f"{mdi.DEBUG_STEP_INTO} Step Into"):
+            pass
+        if menu_item(f"{mdi.DEBUG_STEP_OUT} Step Out"):
+            pass
+
+    def do_deploy_menu(self) -> None:
+        assert self
+        menu_item("Upload to ...", enabled=False)
+
+    def do_add_variable_menu(self) -> None:
+        menu_item(f"Add {self._variable_key} variable node", enabled=False)
+        imgui.separator()
+
+        if menu_item("Setter"):
+            node = self.context.flows.add_setter_node(self.graph, self._variable_key)
+            self.update_node_roi(node)
+            self.save_history("Add setter variable node", self._variable_key)
+
+        if menu_item("Getter"):
+            node = self.context.flows.add_getter_node(self.graph, self._variable_key)
+            self.update_node_roi(node)
+            self.save_history("Add getter variable node", self._variable_key)
+
+    # ==================================================================================
+    # endregion: Context Menu Operations
+    # ==================================================================================
+    # region: History Operations
     # ==================================================================================
 
     @property
     def history(self):
         return self._history
+
+    # endregion
 
     def clear_history(self) -> None:
         logger.info("Clear history")
@@ -282,8 +499,21 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         self.load_history(self._history.cursor_index + 1, no_logging=True)
 
     # ==================================================================================
-    # Public Operations
+    # endregion: History Operations
     # ==================================================================================
+    # region: Public Operations
+    # ==================================================================================
+
+    def save_graph(self) -> None:
+        try:
+            self.context.save_flow_graph(self.graph)
+            logger.info(f"The flow graph was successfully saved: '{self.graph.key}'")
+        except BaseException as e:
+            logger.error(f"Failed to save the flow graph: '{self.graph.key}' -> '{e}'")
+
+    def close_graph(self):
+        self.graph.opened = False
+        logger.info(f"Close the flow graph: '{self.graph.key}'")
 
     def reset_controllers(self):
         logger.info("Reset controllers")
@@ -313,7 +543,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         self.graph.update_wires_polyline()
 
     # ==================================================================================
-    # Draw Operations
+    # endregion: Public Operations
+    # ==================================================================================
+    # region: Draw Operations
     # ==================================================================================
 
     def draw(self) -> None:
@@ -385,7 +617,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         self._draw_list.add_line((x1, y1), (x2, y2), color, axis_y.thickness)
 
     # ==================================================================================
-    # Update state
+    # endregion: Draw Operations
+    # ==================================================================================
+    # region: Update state
     # ==================================================================================
 
     def update_nodes_state(self) -> None:
@@ -524,7 +758,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
                 self.graph.update_selected_item(node)
 
     # ==================================================================================
-    # Style properties
+    # endregion: Update state
+    # ==================================================================================
+    # region: Style properties
     # ==================================================================================
 
     @property
@@ -623,7 +859,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         return imgui.get_color_u32(self.get_anchor_color(anchor))
 
     # ==================================================================================
-    # Node Operations
+    # endregion: Style properties
+    # ==================================================================================
+    # region: Node Operations
     # ==================================================================================
 
     def update_nodes_rois(self) -> None:
@@ -839,7 +1077,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
                     self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
 
     # ==================================================================================
-    # Arc Operations
+    # endregion: Node Operations
+    # ==================================================================================
+    # region: Arc Operations
     # ==================================================================================
 
     def draw_wires(self) -> None:
@@ -880,7 +1120,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         self._draw_list.add_circle_filled(eax, eay, radius, end_color)
 
     # ==================================================================================
-    # Pin Operations
+    # endregion: Arc Operations
+    # ==================================================================================
+    # region: Pin Operations
     # ==================================================================================
 
     def draw_pin_connect(self, connect: FlowNodePin) -> None:
@@ -907,7 +1149,9 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
             self.draw_pin_connect(connect)
 
     # ==================================================================================
-    # ROI Operations
+    # endregion: Pin Operation
+    # ==================================================================================
+    # region: ROI Operations
     # ==================================================================================
 
     def draw_roi_box(self) -> None:
@@ -921,3 +1165,7 @@ class CanvasFlowWindow(ControllableCanvas, BaseFlowWindow):
         thickness = self.config.roi.thickness
         self._draw_list.add_rect_filled(x1, y1, x2, y2, color)
         self._draw_list.add_rect(x1, y1, x2, y2, color, rounding, 0, thickness)
+
+    # ==================================================================================
+    # endregion: ROI Operations
+    # ==================================================================================

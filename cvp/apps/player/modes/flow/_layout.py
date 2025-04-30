@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, List, Sequence, Type
+from typing import Final, Sequence
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flow._base import BaseFlowWindow, FlowWindowInterface
+from cvp.apps.player.modes.flow._base import FlowWindowInterface
 from cvp.context.context import Context
 
 DOCK_SPACE_FLAG: Final[int] = int(imgui.internal.DockNodeFlagsPrivate_.dock_space.value)
@@ -19,8 +19,8 @@ def dock_window(window_name: str, node_id: int) -> None:
     imgui.internal.dock_builder_dock_window(window_name, node_id)
 
 
-class _FlowLayout:
-    types: Sequence[Type[BaseFlowWindow]]
+class FlowLayout:
+    _windows: Sequence[FlowWindowInterface]
 
     def __init__(self, context: Context):
         from cvp.apps.player.modes.flow.debug import DebugFlowWindow
@@ -33,6 +33,7 @@ class _FlowLayout:
         from cvp.apps.player.modes.flow.props import PropsFlowWindow
         from cvp.apps.player.modes.flow.tree import TreeFlowWindow
 
+        self._context = context
         self._initialized_dock_layout = False
 
         self.dtypes = DtypesFlowWindow(context)
@@ -45,7 +46,9 @@ class _FlowLayout:
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
 
-        self._windows: List[FlowWindowInterface] = [
+        self._canvases = self.create_canvases(context)
+
+        self._windows = (
             # Left Dock
             self.tree,
             self.graphs,
@@ -59,7 +62,18 @@ class _FlowLayout:
             self.debug,
             # Main Dock
             self.intro,
-        ]
+        )
+
+    @staticmethod
+    def create_canvases(context: Context):
+        from cvp.apps.player.modes.flow._canvas import CanvasFlowWindow
+
+        result = dict()
+        for key, graph in context.flows.graphs.items():
+            if not graph.opened:
+                continue
+            result[key] = CanvasFlowWindow(context, key)
+        return result
 
     @property
     def initialized(self) -> bool:
@@ -116,10 +130,6 @@ class _FlowLayout:
         # dock_left_top_node.local_flags |= imgui.DockNodeFlags_.no_resize
         # dock_left_top_node.local_flags |= imgui.DockNodeFlags_.no_undocking
 
-    @staticmethod
-    def enabled_docking() -> bool:
-        return bool(imgui.get_io().config_flags & DOCKING_ENABLE_FLAG)
-
     def initialize_dock_layout(
         self,
         dockspace_id: int,
@@ -138,6 +148,27 @@ class _FlowLayout:
             imgui.internal.dock_builder_finish(dockspace_id)
             self._initialized_dock_layout = True
 
+    @staticmethod
+    def enabled_docking() -> bool:
+        return bool(imgui.get_io().config_flags & DOCKING_ENABLE_FLAG)
+
+    @property
+    def focused_canvas(self):
+        if focused_graph_key := self._context.flows.focused_graph_key:
+            return self._canvases.get(focused_graph_key)
+        else:
+            return None
+
+    def refresh_graphs(self) -> None:
+        self._canvases.clear()
+        try:
+            self._context.flows.graphs.clear()
+            self._context.flows.read_all_graph_files()
+        finally:
+            self._canvases = self.create_canvases(self._context)
+
     def do_process(self) -> None:
         for window in self._windows:
             window.do_process()
+        for canvas in self._canvases.values():
+            canvas.do_process()

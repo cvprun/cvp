@@ -153,7 +153,7 @@ class Context(ContextMixins):
 
     def save_all(self) -> None:
         self.save_config()
-        self.save_graphs()
+        self.save_flow_graphs()
         self.save_ollamas()
         self.save_wsdiscovery()
         self.save_medias()
@@ -162,14 +162,14 @@ class Context(ContextMixins):
         self._config.write_yaml(self._home.cvp_yml)
         logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
 
-    def save_graph(self, graph: FlowGraph) -> None:
+    def save_flow_graph(self, graph: FlowGraph) -> None:
         filepath = self._home.flows.graph_filepath(graph.key)
         self._flows.write_graph_yaml(filepath, graph)
         logger.info(f"Save the graph file: '{str(filepath)}'")
 
-    def save_graphs(self) -> None:
+    def save_flow_graphs(self) -> None:
         for graph in self._flows.graphs.values():
-            self.save_graph(graph)
+            self.save_flow_graph(graph)
         logger.info("Save all graph files")
 
     def save_ollamas(self) -> None:

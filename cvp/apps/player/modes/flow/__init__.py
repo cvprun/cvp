@@ -8,14 +8,13 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.flow._layout import _FlowLayout
+from cvp.apps.player.modes.flow._layout import FlowLayout
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
-from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
@@ -29,7 +28,7 @@ class FlowMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._layout = _FlowLayout(context)
+        self._layout = FlowLayout(context)
         self._viewport_flags = ROOT_STATIC_VIEWPORT_FLAGS
         self._initialized_dock_layout = False
         self._menus = (
@@ -61,20 +60,21 @@ class FlowMode(BaseMode):
             cancel="Cancel",
             target=self.on_confirm_remove_workspace,
         )
-        self._new_variable_popup = InputTextPopup(
-            title="New variable",
-            label="Please enter a variable name:",
-            ok="Add",
-            cancel="Cancel",
-            target=self.on_new_variable,
-        )
+
+        # self._new_variable_popup = InputTextPopup(
+        #     title="New variable",
+        #     label="Please enter a variable name:",
+        #     ok="Add",
+        #     cancel="Cancel",
+        #     target=self.on_new_variable,
+        # )
 
         self._popups = (
             self._open_workspace_popup,
             self._import_workspace_popup,
             self._export_workspace_popup,
             self._confirm_remove_workspace_popup,
-            self._new_variable_popup,
+            # self._new_variable_popup,
         )
 
     def on_new_graph(self, name: str) -> None:
@@ -109,15 +109,14 @@ class FlowMode(BaseMode):
     def on_confirm_remove_workspace(self, value: bool) -> None:
         pass
 
-    def on_new_variable(self, name: str) -> None:
-        # if not name:
-        #     raise ValueError("Variable name cannot be empty")
-        # canvas = self._canvases.canvas
-        # if canvas is None:
-        #     raise ValueError("Canvas cannot be none")
-        # with canvas:
-        #     canvas.graph.add_variable(name, self._drag_dtype)
-        pass
+    # def on_new_variable(self, name: str) -> None:
+    #     if not name:
+    #         raise ValueError("Variable name cannot be empty")
+    #     canvas = self._canvases.canvas
+    #     if canvas is None:
+    #         raise ValueError("Canvas cannot be none")
+    #     with canvas:
+    #         canvas.graph.add_variable(name, self._drag_dtype)
 
     @property
     def config(self):
@@ -195,30 +194,44 @@ class FlowMode(BaseMode):
         #     self.context.close_flow_workspace()
 
     def on_edit_menu(self) -> None:
-        self._process_disabled_edit_menu()
+        if canvas := self._layout.focused_canvas:
+            canvas.do_edit_menu()
+        else:
+            self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        self._process_disabled_layer_menu()
-        imgui.separator()
-        self._process_disabled_align_menu()
-        self._process_disabled_distribute_menu()
+        if canvas := self._layout.focused_canvas:
+            canvas.do_layer_menu()
+            imgui.separator()
+            canvas.do_align_menu()
+            canvas.do_distribute_menu()
+        else:
+            self.do_disabled_layer_menu()
+            imgui.separator()
+            self.do_disabled_align_menu()
+            self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        self._process_disabled_run_menu()
+        if canvas := self._layout.focused_canvas:
+            canvas.do_run_menu()
+        else:
+            self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        self._process_disabled_deploy_menu()
+        if canvas := self._layout.focused_canvas:
+            canvas.do_deploy_menu()
+        else:
+            self.do_disabled_deploy_menu()
 
     def on_view_menu(self) -> None:
         if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
             self.autoscroll = autoscroll.state
-
         imgui.separator()
         if show_layout := menu_item("Show Layout", selected=self.show_layout):
             self.show_layout = show_layout.state
 
     @staticmethod
-    def _process_disabled_edit_menu() -> None:
+    def do_disabled_edit_menu() -> None:
         menu_item("Undo", shortcut="Ctrl+Z", enabled=False)
         menu_item("Redo", shortcut="Ctrl+Y", enabled=False)
         imgui.separator()
@@ -236,22 +249,22 @@ class FlowMode(BaseMode):
         menu_item("Select pins", enabled=False)
 
     @staticmethod
-    def _process_disabled_layer_menu() -> None:
+    def do_disabled_layer_menu() -> None:
         menu_item("To Front", enabled=False)
         menu_item("To Back", enabled=False)
         menu_item("Bring Forward", enabled=False)
         menu_item("Send Backward", enabled=False)
 
     @staticmethod
-    def _process_disabled_align_menu() -> None:
+    def do_disabled_align_menu() -> None:
         imgui.begin_menu("Align", enabled=False)
 
     @staticmethod
-    def _process_disabled_distribute_menu() -> None:
+    def do_disabled_distribute_menu() -> None:
         imgui.begin_menu("Distribute", enabled=False)
 
     @staticmethod
-    def _process_disabled_run_menu() -> None:
+    def do_disabled_run_menu() -> None:
         imgui.begin_menu(f"{mdi.PLAY} Run", enabled=False)
         imgui.begin_menu(f"{mdi.BUG} Debug", enabled=False)
         imgui.separator()
@@ -262,7 +275,7 @@ class FlowMode(BaseMode):
         menu_item(f"{mdi.DEBUG_STEP_OUT} Step Out", enabled=False)
 
     @staticmethod
-    def _process_disabled_deploy_menu() -> None:
+    def do_disabled_deploy_menu() -> None:
         menu_item("Upload to ...", enabled=False)
 
     @override
