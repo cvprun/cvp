@@ -121,7 +121,7 @@ class LoggingFlowWindow(BaseFlowWindow):
         self._records = new_lines
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()

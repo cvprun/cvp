@@ -19,7 +19,7 @@ class FlowWindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         raise NotImplementedError
 
 

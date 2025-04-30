@@ -12,6 +12,7 @@ from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
+from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
@@ -22,13 +23,16 @@ class DebugFlowWindow(BaseFlowWindow):
         super().__init__(context)
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
             with begin_child_context("Logging"):
-                self.do_logging_process()
+                if window is not None:
+                    self.do_logging_process()
+                else:
+                    text_centered("Please select a graph")
 
     @staticmethod
     def do_toolbar_process() -> None:

@@ -21,7 +21,7 @@ class GraphsFlowWindow(BaseFlowWindow):
         self._filter = str()
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             self.do_child_process()
 

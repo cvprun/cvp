@@ -35,7 +35,6 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.nodes.node import NodeName
 from cvp.types.override import override
-from cvp.widgets.canvas.tabs import FlowCanvasTabs
 
 
 class PropsFlowWindow(BaseFlowWindow):
@@ -45,36 +44,30 @@ class PropsFlowWindow(BaseFlowWindow):
         super().__init__(context)
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
-            with begin_child_context("Logging"):
-                self.do_logging_process()
+            with begin_child_context("Properties"):
+                if window is not None:
+                    self.do_properties_process(window)
+                else:
+                    text_centered("Please select a graph")
 
     @staticmethod
     def do_toolbar_process() -> None:
         pass
 
-    @staticmethod
-    def do_logging_process() -> None:
-        pass
-
-    def on_item(self, item: FlowCanvasTabs) -> None:
-        graph = item.graph
-        if graph is None:
-            text_centered("Please select a graph")
-            return
-
-        selected_items = graph.selection
+    def do_properties_process(self, window: FlowGraphWindow) -> None:
+        selected_items = window.graph.selection
         selected_nodes = selected_items.nodes
         selected_pins = selected_items.pins
         selected_wires = selected_items.wires
         selected_variables = selected_items.variables
 
         if len(selected_items) == 0:
-            self.on_graph_cursor(graph)
+            self.on_graph_cursor(window.graph)
         elif len(selected_items) == 1:
             if selected_items.nodes:
                 assert 1 == len(selected_nodes)
@@ -93,7 +86,7 @@ class PropsFlowWindow(BaseFlowWindow):
                 assert 0 == len(selected_pins)
                 assert 1 == len(selected_wires)
                 assert 0 == len(selected_variables)
-                self.on_wire_item(graph, selected_wires[0])
+                self.on_wire_item(window.graph, selected_wires[0])
             elif selected_items.variables:
                 assert 0 == len(selected_nodes)
                 assert 0 == len(selected_pins)
@@ -104,7 +97,7 @@ class PropsFlowWindow(BaseFlowWindow):
                 assert False, "Inaccessible section"
         else:
             assert 2 <= len(selected_items)
-            self.on_multiple_items(graph, selected_items)
+            self.on_multiple_items(window.graph, selected_items)
 
     @staticmethod
     def input_icon(label: str, icon: str) -> None:

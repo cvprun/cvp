@@ -12,8 +12,8 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.flags.selectable import ALLOW_DOUBLE_CLICK
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.types.override import override
-from cvp.widgets.canvas.tabs import FlowCanvasTabs
 
 
 class HistoryFlowWindow(BaseFlowWindow):
@@ -27,40 +27,28 @@ class HistoryFlowWindow(BaseFlowWindow):
         return self._context.flows.focused_graph
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
-            with begin_child_context("Logging"):
-                self.do_logging_process()
+            with begin_child_context("History"):
+                if window is not None:
+                    self.do_history_process(window)
+                else:
+                    text_centered("Please select a graph")
 
     @staticmethod
     def do_toolbar_process() -> None:
         pass
 
     @staticmethod
-    def do_logging_process() -> None:
-        pass
-
-    @staticmethod
-    def on_item(item: FlowCanvasTabs) -> None:
-        canvas = item.canvas
-        if canvas is None:
-            text_centered("Please select a graph")
-            return
-
-        flags = ALLOW_DOUBLE_CLICK
-        cursor_index = canvas.history.cursor_index
-        for i, record in enumerate(canvas.history):
-            if imgui.selectable(f"[{i}] {record.title}", i == cursor_index, flags)[0]:
+    def do_history_process(window: FlowGraphWindow) -> None:
+        for i, record in enumerate(window.history):
+            label = f"[{i}] {record.title}"
+            selected = i == window.history.cursor_index
+            if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                 if imgui.is_mouse_double_clicked(0):
-                    with canvas:
-                        canvas.load_history(i)
-
-            if record.details and imgui.is_item_hovered():
-                if imgui.begin_tooltip():
-                    try:
-                        imgui.text_unformatted(record.details)
-                    finally:
-                        imgui.end_tooltip()
+                    window.load_history(i)
+            if record.details:
+                hovered_tooltip_text(record.details)

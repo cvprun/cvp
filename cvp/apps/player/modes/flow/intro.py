@@ -34,7 +34,7 @@ class IntroFlowWindow(BaseFlowWindow):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             if imgui.button("Open workspace"):
                 # self.context.flows.create_new_workspace()

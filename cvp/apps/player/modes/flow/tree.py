@@ -23,7 +23,6 @@ from cvp.imgui.flags.tree_node import (
 )
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
-from cvp.widgets.canvas.tabs import FlowCanvasTabs
 
 
 class TreeFlowWindow(BaseFlowWindow):
@@ -33,26 +32,20 @@ class TreeFlowWindow(BaseFlowWindow):
         super().__init__(context)
 
     @override
-    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
+    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
-            self.do_child_process()
+            if window is not None:
+                self.do_child_process(window)
+            else:
+                text_centered("Please select a graph")
 
-    @staticmethod
-    def do_child_process() -> None:
-        pass
-
-    def on_item(self, item: FlowCanvasTabs) -> None:
-        graph = item.graph
-        if graph is None:
-            text_centered("Please select a graph")
-            return
-
-        graph_label = f"{graph.name}###{graph.key}"
+    def do_child_process(self, window: FlowGraphWindow) -> None:
+        graph_label = f"{window.graph.name}###{window.graph.key}"
         if imgui.tree_node_ex(graph_label, CATEGORY_FLAGS):
             try:
-                self.tree_nodes(graph)
-                self.tree_wires(graph)
-                self.tree_variables(graph)
+                self.tree_nodes(window.graph)
+                self.tree_wires(window.graph)
+                self.tree_variables(window.graph)
             finally:
                 imgui.tree_pop()
 
