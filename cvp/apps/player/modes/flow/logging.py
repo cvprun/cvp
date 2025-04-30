@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from logging import CRITICAL, DEBUG, ERROR, INFO, NOTSET, WARNING, Handler, LogRecord
-from typing import Callable, Deque, NamedTuple
+from typing import Callable, Deque, NamedTuple, Optional
 from weakref import finalize
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -120,7 +121,7 @@ class LoggingFlowWindow(BaseFlowWindow):
         self._records = new_lines
 
     @override
-    def do_process(self) -> None:
+    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()

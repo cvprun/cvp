@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Protocol, runtime_checkable
+from typing import Optional, Protocol, runtime_checkable
 
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.types.override import override
 
@@ -18,7 +19,7 @@ class FlowWindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self) -> None:
+    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
         raise NotImplementedError
 
 

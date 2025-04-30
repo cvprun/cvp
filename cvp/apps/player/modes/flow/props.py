@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.config.sections.canvas.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphName
@@ -42,7 +45,7 @@ class PropsFlowWindow(BaseFlowWindow):
         super().__init__(context)
 
     @override
-    def do_process(self) -> None:
+    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()

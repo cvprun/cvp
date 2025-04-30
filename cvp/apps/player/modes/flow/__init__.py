@@ -194,17 +194,17 @@ class FlowMode(BaseMode):
         #     self.context.close_flow_workspace()
 
     def on_edit_menu(self) -> None:
-        if canvas := self._layout.focused_canvas:
-            canvas.do_edit_menu()
+        if graph_window := self._layout.focused_graph_window:
+            graph_window.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if canvas := self._layout.focused_canvas:
-            canvas.do_layer_menu()
+        if graph_window := self._layout.focused_graph_window:
+            graph_window.do_layer_menu()
             imgui.separator()
-            canvas.do_align_menu()
-            canvas.do_distribute_menu()
+            graph_window.do_align_menu()
+            graph_window.do_distribute_menu()
         else:
             self.do_disabled_layer_menu()
             imgui.separator()
@@ -212,14 +212,14 @@ class FlowMode(BaseMode):
             self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if canvas := self._layout.focused_canvas:
-            canvas.do_run_menu()
+        if graph_window := self._layout.focused_graph_window:
+            graph_window.do_run_menu()
         else:
             self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        if canvas := self._layout.focused_canvas:
-            canvas.do_deploy_menu()
+        if graph_window := self._layout.focused_graph_window:
+            graph_window.do_deploy_menu()
         else:
             self.do_disabled_deploy_menu()
 

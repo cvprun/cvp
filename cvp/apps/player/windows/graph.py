@@ -98,6 +98,10 @@ class FlowGraphWindow(ControllableCanvas):
         return self._context
 
     @property
+    def graph_key(self):
+        return self._graph_key
+
+    @property
     def graph(self):
         return self.context.flows.graphs[self._graph_key]
 

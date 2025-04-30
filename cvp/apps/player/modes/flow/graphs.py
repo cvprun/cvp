@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional
+
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.drag_types import DRAG_FLOW_GRAPH
@@ -18,7 +21,7 @@ class GraphsFlowWindow(BaseFlowWindow):
         self._filter = str()
 
     @override
-    def do_process(self) -> None:
+    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             self.do_child_process()
 

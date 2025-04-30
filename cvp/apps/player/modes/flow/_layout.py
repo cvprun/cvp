@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Sequence
+from typing import Final, Optional, Sequence
 
 from imgui_bundle import imgui
 
@@ -22,6 +22,7 @@ def dock_window(window_name: str, node_id: int) -> None:
 
 class FlowLayout:
     _windows: Sequence[FlowWindowInterface]
+    _main_dock_id: Optional[int]
 
     def __init__(self, context: Context):
         from cvp.apps.player.modes.flow.debug import DebugFlowWindow
@@ -36,6 +37,7 @@ class FlowLayout:
 
         self._context = context
         self._initialized_dock_layout = False
+        self._main_dock_id = None
 
         self.dtypes = DtypesFlowWindow(context)
         self.debug = DebugFlowWindow(context)
@@ -46,8 +48,6 @@ class FlowLayout:
         self.nodes = NodesFlowWindow(context)
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
-
-        self._graphs = FlowGraphWindow.create_opened_windows(context)
 
         self._windows = (
             # Left Dock
@@ -64,6 +64,8 @@ class FlowLayout:
             # Main Dock
             self.intro,
         )
+
+        self._graph_windows = FlowGraphWindow.create_opened_windows(context)
 
     @property
     def initialized(self) -> bool:
@@ -114,6 +116,9 @@ class FlowLayout:
         dock_window(self.logging.get_window_name(), dock_center_bottom)
 
         dock_window(self.intro.get_window_name(), dock_center_top)
+        for gw in self._graph_windows.values():
+            dock_window(gw.get_window_name(), dock_center_top)
+        self._main_dock_id = dock_center_top
 
         # dock_left_top_node = imgui.internal.dock_builder_get_node(dock_left_top)
         # dock_left_top_node.local_flags |= imgui.DockNodeFlags_.no_docking_split
@@ -143,22 +148,29 @@ class FlowLayout:
         return bool(imgui.get_io().config_flags & DOCKING_ENABLE_FLAG)
 
     @property
-    def focused_canvas(self):
+    def focused_graph_window(self):
         if focused_graph_key := self._context.flows.focused_graph_key:
-            return self._graphs.get(focused_graph_key)
+            return self._graph_windows.get(focused_graph_key)
         else:
             return None
 
     def refresh_graphs(self) -> None:
-        self._graphs.clear()
-        try:
-            self._context.flows.graphs.clear()
-            self._context.flows.read_all_graph_files()
-        finally:
-            self._graphs = FlowGraphWindow.create_opened_windows(self._context)
+        prev_keys = set(self._graph_windows.keys())
+        self._graph_windows.clear()
+
+        # -----------------------------------------
+        self._context.flows.graphs.clear()
+        self._context.flows.read_all_graph_files()
+        # -----------------------------------------
+
+        self._graph_windows = FlowGraphWindow.create_opened_windows(self._context)
+        for gw_key, gw in self._graph_windows.items():
+            if self._main_dock_id is not None and gw_key not in prev_keys:
+                dock_window(gw.get_window_name(), self._main_dock_id)
 
     def do_process(self) -> None:
+        fgw = self.focused_graph_window
         for window in self._windows:
-            window.do_process()
-        for canvas in self._graphs.values():
-            canvas.do_process()
+            window.do_process(fgw)
+        for gw in self._graph_windows.values():
+            gw.do_process()

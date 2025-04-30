@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
+from typing import Final, Optional
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flow._base import BaseFlowWindow
+from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
@@ -33,7 +34,7 @@ class IntroFlowWindow(BaseFlowWindow):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self) -> None:
+    def do_process(self, graph: Optional[FlowGraphWindow]) -> None:
         with begin_context(self.get_window_name()):
             if imgui.button("Open workspace"):
                 # self.context.flows.create_new_workspace()
