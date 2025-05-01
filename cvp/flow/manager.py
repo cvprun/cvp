@@ -149,11 +149,6 @@ class FlowManager:
 
         return graph
 
-    def remove_graph(self, uuid: GraphKey) -> FlowGraph:
-        if uuid in self._graphs:
-            raise KeyError(f"Not exists flow graph: '{uuid}'")
-        return self._graphs.pop(uuid)
-
     @staticmethod
     def dumps_graph_yaml(graph: FlowGraph, encoding="utf-8") -> bytes:
         return dump(serialize(graph), Dumper=IndentListDumper).encode(encoding)

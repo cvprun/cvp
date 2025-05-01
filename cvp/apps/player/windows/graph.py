@@ -200,6 +200,8 @@ class FlowGraphWindow(ControllableCanvas):
 
         if imgui.begin_popup_context_window(self._MOUSE_RIGHT_BUTTON_MENU):
             try:
+                self.do_file_menu()
+                imgui.separator()
                 self.do_edit_menu()
                 imgui.separator()
                 self.do_layer_menu()
@@ -282,6 +284,15 @@ class FlowGraphWindow(ControllableCanvas):
     # ==================================================================================
     # region: Context Menu Operations
     # ==================================================================================
+
+    def do_file_menu(self) -> None:
+        if menu_item("Save graph"):
+            self.context.save_flow_graph(self.graph)
+        if menu_item("Save and close graph"):
+            self.context.save_flow_graph(self.graph)
+            self.graph.opened = False
+        if menu_item("Force close graph"):
+            self.graph.opened = False
 
     def do_edit_menu(self) -> None:
         undoable = self.history.undoable

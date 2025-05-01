@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import os
+from enum import StrEnum, auto, unique
 from os import PathLike
 from pathlib import Path
 from shutil import rmtree
 from typing import Callable, List, Optional, Union
 
-import pygame
 from imgui_bundle import imgui
 
 from cvp.assets.fonts import mdi
@@ -32,6 +32,12 @@ class OpenFilePopup(PopupBase[str]):
     __cvp_popup_min_width__ = 520
     __cvp_popup_min_height__ = 420
 
+    @unique
+    class OpenMode(StrEnum):
+        select_file = auto()
+        select_directory = auto()
+        input_filename = auto()
+
     def __init__(
         self,
         title: Optional[str] = None,
@@ -43,9 +49,9 @@ class OpenFilePopup(PopupBase[str]):
         identifier: Optional[str] = None,
         min_width: Optional[int] = None,
         min_height: Optional[int] = None,
+        open_mode=OpenMode.select_file,
         centered=True,
         show_hidden=False,
-        select_directory=False,
     ):
         super().__init__(
             title=title,
@@ -62,9 +68,10 @@ class OpenFilePopup(PopupBase[str]):
         self._current_dir = str()
         self._items: List[str] = list()
         self._selected = str()
+        self._filename = str()
         self._filter = str()
         self._show_hidden = show_hidden
-        self._select_directory = select_directory
+        self._open_mode = open_mode
 
         self._create_directory_popup = InputTextPopup(
             title="New Directory",
@@ -126,6 +133,7 @@ class OpenFilePopup(PopupBase[str]):
         self._current_dir = str()
         self._items = list()
         self._selected = str()
+        self._filename = str()
 
     @staticmethod
     def list_items(location: Union[str, PathLike], show_hidden=False) -> List[str]:
@@ -149,12 +157,12 @@ class OpenFilePopup(PopupBase[str]):
     @override
     def on_process(self) -> Optional[str]:
         try:
-            return self.on_main_process()
+            return self.do_main_process()
         finally:
             self._create_directory_popup.do_process()
             self._remove_item_popup.do_process()
 
-    def on_main_process(self) -> Optional[str]:
+    def do_main_process(self) -> Optional[str]:
         if button(mdi.HOME):
             self._location_text = str(Path.home())
         hovered_tooltip_text("Home Directory")
@@ -217,7 +225,7 @@ class OpenFilePopup(PopupBase[str]):
             ):
                 location_text = location_result.value
                 if os.path.isfile(location_text):
-                    if not self._select_directory:
+                    if self._open_mode == self.OpenMode.select_directory:
                         imgui.close_current_popup()
                         return location_text
                 elif os.path.isdir(location_text):
@@ -225,27 +233,33 @@ class OpenFilePopup(PopupBase[str]):
                 else:
                     logger.warning(f"Invalid location: '{location_text}'")
 
-        if begin_child("Files", (0, footer_height_as_reverse()), BORDERS):
+        files_child_height = footer_height_as_reverse()
+        if self._open_mode == self.OpenMode.input_filename:
+            files_child_height *= 2
+
+        if begin_child("Files", (FIT_WIDTH, files_child_height), BORDERS):
             try:
                 if self._current_dir != self._location_text:
                     # Update items
                     self._current_dir = self._location_text
                     self._selected = str()
+                    self._filename = str()
                     self._items = self.list_items(self._current_dir, self._show_hidden)
 
                 for item in self._items:
                     if self._filter and item.find(self._filter) == -1:
                         continue
 
-                    item_path = os.path.join(self._location_text, item)
+                    item_path = os.path.join(self._current_dir, item)
                     selected = item_path == self._selected
 
                     if os.path.isfile(item_path):
-                        if self._select_directory:
+                        if self._open_mode == self.OpenMode.select_directory:
                             continue
                         label = f"{mdi.FILE} {item}"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
+                            self._filename = item
                             if imgui.is_mouse_double_clicked(0):
                                 imgui.close_current_popup()
                                 return item_path
@@ -253,6 +267,7 @@ class OpenFilePopup(PopupBase[str]):
                         label = f"{mdi.FOLDER} {item}/"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
                             self._selected = item_path
+                            self._filename = item
                             if imgui.is_mouse_double_clicked(0):
                                 self._location_text = item_path
             finally:
@@ -260,42 +275,75 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.separator()
 
+        if self._open_mode == self.OpenMode.input_filename:
+            with item_width(FIT_WIDTH):
+                if filename_result := input_text("##Filename", self._filename):
+                    self._filename = filename_result.value
+                    self._selected = os.path.join(self._current_dir, self._filename)
+
         if button("Close"):
             imgui.close_current_popup()
             return None
 
-        if self._select_directory:
-            imgui.same_line()
-            if button("Select current location"):
-                imgui.close_current_popup()
-                return self._location_text
+        select_file = os.path.isfile(self._selected)
+        select_dir = os.path.isdir(self._selected)
+        assert select_file != select_dir or (not select_file and not select_dir)
 
         imgui.same_line()
 
-        select_file = os.path.isfile(self._selected)
-        select_dir = os.path.isdir(self._selected)
+        match self._open_mode:
+            case self.OpenMode.select_file:
+                if button("Select", disabled=not select_file and not select_dir):
+                    if select_file:
+                        imgui.close_current_popup()
+                        return self._selected
+                    elif select_dir:
+                        self._location_text = self._selected
+                    else:
+                        assert False, "Inaccessible section"
 
-        if button("Select", disabled=not select_file and not select_dir):
-            if select_file:
-                assert self._select_directory
-                imgui.close_current_popup()
-                return self._selected
-            elif select_dir:
-                if self._select_directory:
+                if imgui.is_key_pressed(imgui.Key.enter):
+                    if select_file:
+                        imgui.close_current_popup()
+                        return self._selected
+                    elif select_dir:
+                        self._location_text = self._selected
+
+            case self.OpenMode.select_directory:
+                assert not select_file, "Regular files are filtered out from the list"
+                if button("Select Directory", disabled=not select_dir):
                     imgui.close_current_popup()
                     return self._selected
-                else:
+
+                imgui.same_line()
+                if button("Select Current Location"):
+                    imgui.close_current_popup()
+                    return self._current_dir
+
+                if select_dir and imgui.is_key_pressed(imgui.Key.enter):
                     self._location_text = self._selected
 
-        if pygame.key.get_pressed()[pygame.K_ESCAPE]:
+            case self.OpenMode.input_filename:
+                if not self._filename:
+                    button("Filename is required", disabled=True)
+                else:
+                    assert self._filename
+                    filepath = os.path.join(self._current_dir, self._filename)
+                    assert self._selected == filepath
+                    if os.path.exists(filepath):
+                        button("Existing files cannot be selected", disabled=True)
+                    else:
+                        if button("Create New File"):
+                            imgui.close_current_popup()
+                            return filepath
+
+                if select_dir and imgui.is_key_pressed(imgui.Key.enter):
+                    self._location_text = self._selected
+            case _:
+                assert False, "Inaccessible section"
+
+        if imgui.is_key_pressed(imgui.Key.escape):
             imgui.close_current_popup()
             return None
-
-        if self._selected and pygame.key.get_pressed()[pygame.K_RETURN]:
-            if select_file:
-                imgui.close_current_popup()
-                return self._selected
-            elif select_dir:
-                self._location_text = self._selected
 
         return None

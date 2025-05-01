@@ -49,11 +49,6 @@ class FlowMode(BaseMode):
             cancel="Cancel",
             target=self.on_new_graph,
         )
-        self._open_graph_popup = OpenFilePopup(
-            title="Open graph",
-            target=self.on_open_graph_popup,
-            select_directory=True,
-        )
         self._import_graph_popup = OpenFilePopup(
             title="Import graph",
             target=self.on_import_graph,
@@ -61,6 +56,7 @@ class FlowMode(BaseMode):
         self._export_graph_popup = OpenFilePopup(
             title="Export graph",
             target=self.on_export_graph,
+            open_mode=OpenFilePopup.OpenMode.input_filename,
         )
         self._confirm_remove_graph_popup = ConfirmPopup(
             title="Remove graph",
@@ -80,7 +76,6 @@ class FlowMode(BaseMode):
 
         self._popups = (
             self._new_graph_popup,
-            self._open_graph_popup,
             self._import_graph_popup,
             self._export_graph_popup,
             self._confirm_remove_graph_popup,
@@ -163,9 +158,7 @@ class FlowMode(BaseMode):
         if menu_item("New Graph"):
             self._new_graph_popup.show()
 
-        if menu_item("Open Graph"):
-            self._open_graph_popup.show()
-
+        # imgui.separator()
         # recent_items = self.context.get_flow_graph_recent_items()
         # has_any_recent = bool(recent_items)
         # if imgui.begin_menu("Recent graph", enabled=has_any_recent):
@@ -177,31 +170,22 @@ class FlowMode(BaseMode):
         #         imgui.end_menu()
 
         imgui.separator()
-        # has_opened_graph = self._canvases.opened
-        # if menu_item("Save graph", enabled=has_opened_graph):
-        #     self.save_current_graph()
-        # if menu_item("Save and close graph", enabled=has_opened_graph):
-        #     self.save_current_graph()
-        #     self.close_current_graph()
-        # if menu_item("Close graph", enabled=has_opened_graph):
-        #     self.close_current_graph()
+        focused_graph_window = self._layout.focused_graph_window
+        if focused_graph_window is not None:
+            focused_graph_window.do_file_menu()
+        else:
+            self.do_disabled_file_menu()
 
         imgui.separator()
+        has_focused = bool(focused_graph_window)
         if menu_item("Import graph"):
-            # self._import_graph_popup.show()
-            pass
-        if menu_item("Export graph"):
-            # self._export_graph_popup.show()
-            pass
+            self._import_graph_popup.show()
+        if menu_item("Export graph", enabled=has_focused):
+            self._export_graph_popup.show()
 
         imgui.separator()
         if menu_item("Refresh graphs"):
-            # self.context.flows.graph.read_all_config_files()
-            pass
-
-        # imgui.separator()
-        # if menu_item("Close graph", enabled=self.context.opened_flow_graph()):
-        #     self.context.close_flow_graph()
+            self.context.flows.read_all_graph_files()
 
     def on_edit_menu(self) -> None:
         if graph_window := self._layout.focused_graph_window:
@@ -239,6 +223,12 @@ class FlowMode(BaseMode):
         imgui.separator()
         if show_layout := menu_item("Show Layout", selected=self.show_layout):
             self.show_layout = show_layout.state
+
+    @staticmethod
+    def do_disabled_file_menu() -> None:
+        menu_item("Save graph", enabled=False)
+        menu_item("Save and close graph", enabled=False)
+        menu_item("Force close graph", enabled=False)
 
     @staticmethod
     def do_disabled_edit_menu() -> None:

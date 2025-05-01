@@ -16,9 +16,5 @@ class FlowsPath(YamlFormatPath):
         super().__init__(*path)
         self._graphs_dirname = graphs_dirname
 
-    @property
-    def graph_dirpath(self):
-        return self / self._graphs_dirname
-
     def get_graph_filepath(self, key: str):
-        return self.graph_dirpath / key
+        return self.make_object_path(self._graphs_dirname, key)
