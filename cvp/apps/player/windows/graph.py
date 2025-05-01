@@ -167,7 +167,7 @@ class FlowGraphWindow(ControllableCanvas):
             self.graph.opened = opened
 
         if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
-            self.context.flows.focused_graph_key = self._graph_key
+            self.context.flows.focused_key = self._graph_key
 
         try:
             if visible:

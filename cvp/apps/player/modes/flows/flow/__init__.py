@@ -139,14 +139,14 @@ class FlowMode(BaseMode):
         #         imgui.end_menu()
 
         imgui.separator()
-        focused_graph_window = self._layout.focused_graph_window
-        if focused_graph_window is not None:
-            focused_graph_window.do_file_menu()
+        focused_window = self._layout.focused_window
+        if focused_window is not None:
+            focused_window.do_file_menu()
         else:
             self.do_disabled_file_menu()
 
         imgui.separator()
-        has_focused = bool(focused_graph_window)
+        has_focused = bool(focused_window)
         if menu_item("Import graph"):
             self._import_graph_popup.show()
         if menu_item("Export graph", enabled=has_focused):
@@ -157,17 +157,17 @@ class FlowMode(BaseMode):
             self.context.flows.read_all_graph_files()
 
     def on_edit_menu(self) -> None:
-        if graph_window := self._layout.focused_graph_window:
-            graph_window.do_edit_menu()
+        if window := self._layout.focused_window:
+            window.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if graph_window := self._layout.focused_graph_window:
-            graph_window.do_layer_menu()
+        if window := self._layout.focused_window:
+            window.do_layer_menu()
             imgui.separator()
-            graph_window.do_align_menu()
-            graph_window.do_distribute_menu()
+            window.do_align_menu()
+            window.do_distribute_menu()
         else:
             self.do_disabled_layer_menu()
             imgui.separator()
@@ -175,14 +175,14 @@ class FlowMode(BaseMode):
             self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if graph_window := self._layout.focused_graph_window:
-            graph_window.do_run_menu()
+        if window := self._layout.focused_window:
+            window.do_run_menu()
         else:
             self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        if graph_window := self._layout.focused_graph_window:
-            graph_window.do_deploy_menu()
+        if window := self._layout.focused_window:
+            window.do_deploy_menu()
         else:
             self.do_disabled_deploy_menu()
 

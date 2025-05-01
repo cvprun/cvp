@@ -3,8 +3,8 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
-from cvp.config.sections.canvas.axis import Axis
-from cvp.config.sections.canvas.grid import Grid
+from cvp.canvas.axis import Axis
+from cvp.canvas.grid import Grid
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins

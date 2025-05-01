@@ -6,7 +6,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
 from cvp.apps.player.windows.graph import FlowGraphWindow
-from cvp.config.sections.canvas.axis import Axis
+from cvp.canvas.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphName
 from cvp.flow.line_type import (

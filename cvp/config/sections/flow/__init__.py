@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass, field
 
-from cvp.config.sections.canvas.anchors import Anchors
-from cvp.config.sections.canvas.axis import Axis
-from cvp.config.sections.canvas.grid import Grid
-from cvp.config.sections.canvas.roi import Roi
+from cvp.canvas.anchor import Anchor
+from cvp.canvas.axis import Axis
+from cvp.canvas.grid import Grid
+from cvp.canvas.roi import Roi
 from cvp.config.sections.flow.logs import Logs
 from cvp.config.sections.flow.nodes import Nodes
 from cvp.config.sections.flow.pins import Pins
@@ -35,6 +35,6 @@ class FlowConfig:
     nodes: Nodes = field(default_factory=Nodes)
     pins: Pins = field(default_factory=Pins)
     wires: Wires = field(default_factory=Wires)
-    anchors: Anchors = field(default_factory=Anchors)
+    anchors: Anchor = field(default_factory=Anchor)
 
     roi: Roi = field(default_factory=Roi)

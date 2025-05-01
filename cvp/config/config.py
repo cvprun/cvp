@@ -8,6 +8,7 @@ from type_serialize import deserialize, serialize
 from yaml import dump, full_load
 
 from cvp.config.sections.appearance import AppearanceConfig
+from cvp.config.sections.canvas import CanvasConfig
 from cvp.config.sections.chat import ChatConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
@@ -36,6 +37,7 @@ from cvp.yaml.dumpers import DefaultDumper
 @dataclass
 class Config:
     appearance: AppearanceConfig = field(default_factory=AppearanceConfig)
+    canvas: CanvasConfig = field(default_factory=CanvasConfig)
     chat: ChatConfig = field(default_factory=ChatConfig)
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
     context: ContextConfig = field(default_factory=ContextConfig)

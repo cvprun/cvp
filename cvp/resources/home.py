@@ -6,6 +6,7 @@ from typing import Union
 from cvp.logging.logging import logger
 from cvp.resources.subdirs.bin import BinPath
 from cvp.resources.subdirs.cache import CachePath
+from cvp.resources.subdirs.canvases import CanvasesPath
 from cvp.resources.subdirs.chat import ChatPath
 from cvp.resources.subdirs.downloads import DownloadsPath
 from cvp.resources.subdirs.flows import FlowsPath
@@ -33,6 +34,7 @@ class HomeDir(PathFlavour):
 
         self.bin = BinPath.classname_subdir(self)
         self.cache = CachePath.classname_subdir(self)
+        self.canvases = CanvasesPath.classname_subdir(self)
         self.chat = ChatPath.classname_subdir(self)
         self.downloads = DownloadsPath.classname_subdir(self)
         self.flows = FlowsPath.classname_subdir(self)
@@ -50,6 +52,7 @@ class HomeDir(PathFlavour):
         self._dirs = [
             self.bin,
             self.cache,
+            self.canvases,
             self.chat,
             self.downloads,
             self.flows,

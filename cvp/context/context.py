@@ -6,6 +6,7 @@ from os import PathLike
 from threading import Event
 from typing import Optional, Union
 
+from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context.mixins import ContextMixins
@@ -108,6 +109,7 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
+        self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
         self._msgs = MsgQueue()
@@ -197,6 +199,10 @@ class Context(ContextMixins):
     @property
     def ollamas(self):
         return self._ollamas
+
+    @property
+    def canvases(self):
+        return self._canvases
 
     @property
     def chat(self):

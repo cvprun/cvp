@@ -146,9 +146,9 @@ class FlowLayout:
             self._initialized_dock_layout = True
 
     @property
-    def focused_graph_window(self):
-        if focused_graph_key := self._context.flows.focused_graph_key:
-            return self._graph_windows.get(focused_graph_key)
+    def focused_window(self):
+        if focused_key := self._context.flows.focused_key:
+            return self._graph_windows.get(focused_key)
         else:
             return None
 
@@ -216,9 +216,9 @@ class FlowLayout:
 
         self.sync_graph_windows()
 
-        fgw = self.focused_graph_window
+        focused_window = self.focused_window
         for window in self._windows:
-            window.do_process(fgw)
+            window.do_process(focused_window)
 
         for gw in self._graph_windows.values():
             gw.do_process()

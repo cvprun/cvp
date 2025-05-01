@@ -10,14 +10,14 @@ from uuid import uuid4
 import shapely
 from type_serialize import Serializable, deserialize, serialize
 
+from cvp.canvas.control import ViewControl
+from cvp.canvas.options import DrawingOptions
 from cvp.containers.mapping_deque import MappingDeque
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
-from cvp.flow.control import FlowControl
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
-from cvp.flow.options import FlowOptions
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable, VariableName
@@ -61,8 +61,8 @@ class FlowGraph(Serializable):
         nodes: Optional[Iterable[FlowNode]] = None,
         wires: Optional[Iterable[FlowWire]] = None,
         variables: Optional[Iterable[FlowVariable]] = None,
-        control: Optional[FlowControl] = None,
-        options: Optional[FlowOptions] = None,
+        control: Optional[ViewControl] = None,
+        options: Optional[DrawingOptions] = None,
         tags: Optional[Iterable[str]] = None,
         *,
         selection: Optional[FlowSelection] = None,
@@ -77,8 +77,8 @@ class FlowGraph(Serializable):
         self.nodes = self.__create_nodes(nodes)
         self.wires = self.__create_wires(wires)
         self.variables = self.__create_variables(variables)
-        self.control = control if control else FlowControl()
-        self.options = options if options else FlowOptions()
+        self.control = control if control else ViewControl()
+        self.options = options if options else DrawingOptions()
         self.tags = list(tags if tags else ())
         self._selection = selection if selection else FlowSelection()
 
@@ -221,14 +221,14 @@ class FlowGraph(Serializable):
         self.variables = self.__create_variables(variables)
 
         if control := data.get(self._Keys.control):
-            self.control = deserialize(control, FlowControl)
+            self.control = deserialize(control, ViewControl)
         else:
-            self.control = FlowControl()
+            self.control = ViewControl()
 
         if options := data.get(self._Keys.options):
-            self.options = deserialize(options, FlowOptions)
+            self.options = deserialize(options, DrawingOptions)
         else:
-            self.options = FlowOptions()
+            self.options = DrawingOptions()
 
         self.tags = data.get(self._Keys.tags, list())
         self._selection = FlowSelection()
@@ -441,7 +441,7 @@ class FlowGraph(Serializable):
         mp = shapely.Point(mouse)
         for wire in self.wires:
             distance = shapely.LineString(wire.polyline).distance(mp)
-            if distance <= self.options.wire_hovering_tolerance:
+            if distance <= self.options.line_hovering_tolerance:
                 return wire
         return None
 

@@ -12,7 +12,7 @@ from cvp.variables import (
 
 
 @dataclass
-class Anchors:
+class Anchor:
     selected_color: RGBA = CANVAS_ANCHOR_SELECTED_COLOR
     hovering_color: RGBA = CANVAS_ANCHOR_HOVERING_COLOR
     normal_color: RGBA = CANVAS_ANCHOR_NORMAL_COLOR

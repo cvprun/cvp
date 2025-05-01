@@ -1,0 +1,23 @@
+# -*- coding: utf-8 -*-
+
+from dataclasses import dataclass, field
+from typing import NewType
+from uuid import uuid4
+
+from cvp.canvas.axis import Axis
+from cvp.canvas.grid import Grid
+
+CanvasKey = NewType("CanvasKey", str)
+
+
+@dataclass
+class Canvas:
+    key: CanvasKey = field(default_factory=lambda: CanvasKey(str(uuid4())))
+    workspace: str = field(default_factory=str)
+    opened: bool = False
+
+    grid_x: Grid = field(default_factory=Grid)
+    grid_y: Grid = field(default_factory=Grid)
+
+    axis_x: Axis = field(default_factory=Axis)
+    axis_y: Axis = field(default_factory=Axis)
