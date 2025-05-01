@@ -7,7 +7,7 @@ from ollama import Image, Message, ResponseError
 from cvp.chat.ids import ChatConversationID, ChatMessageID
 from cvp.context.mixins._base import BaseContextMixin
 from cvp.logging.logging import chat_logger as logger
-from cvp.ollama.ollama import Ollama
+from cvp.ollama.ollama import Ollama, OllamaKey
 from cvp.variables import NOT_FOUND_INDEX, UNKNOWN_ERROR_CODE
 
 
@@ -89,10 +89,10 @@ class ChatMixin(BaseContextMixin):
             running=running,
         )
 
-    def request_chat_stream(
+    def request_ollama_chat_stream(
         self,
         conversation_id: ChatConversationID,
-        server_key: str,
+        server_key: OllamaKey,
         model_name: str,
         content: str,
         images: Optional[Sequence[Union[str, bytes]]] = None,

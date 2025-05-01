@@ -1,30 +1,31 @@
 # -*- coding: utf-8 -*-
 
+from pathlib import Path
 from typing import Dict, List, Type, TypeVar
 
 from type_serialize import deserialize, serialize
 
 from cvp.logging.logging import logger
 from cvp.resources.formats.base import BaseFormatPath
-from cvp.variables import RESOURCE_MANAGER_CONFIG_PREFIX
 
+KeyT = TypeVar("KeyT")
 ConfigT = TypeVar("ConfigT")
 
 
-class ResourceManager(Dict[str, ConfigT]):
+class ResourceManager(Dict[KeyT, ConfigT]):
     def __init__(
         self,
-        cls: Type[ConfigT],
+        key_type: Type[KeyT],
+        config_type: Type[ConfigT],
         root_dir: BaseFormatPath,
         *,
         reload=False,
         raise_errors=False,
-        config_prefix=RESOURCE_MANAGER_CONFIG_PREFIX,
     ):
         super().__init__()
-        self._class = cls
+        self._key_type = key_type
+        self._config_type = config_type
         self._root_dir = root_dir
-        self._config_prefix = config_prefix
 
         if reload:
             self.read_all_config_files(raise_errors=raise_errors)
@@ -35,35 +36,34 @@ class ResourceManager(Dict[str, ConfigT]):
 
     @property
     def class_name(self) -> str:
-        return self._class.__name__
-
-    @property
-    def config_prefix(self) -> str:
-        return self._config_prefix
+        return self._config_type.__name__
 
     @property
     def extension(self) -> str:
         return self._root_dir.extension
 
-    def generate_config_filepath(self, key: str):
-        return self._root_dir.make_object_path(key).as_path()
+    def generate_config_filepath(self, key: KeyT) -> Path:
+        return self._root_dir.make_object_path(str(key)).as_path()
 
-    def read_serialized_config_file(self, key: str) -> ConfigT:
-        result = deserialize(self._root_dir.read_object(key), self._class)
-        logger.info(f"Read from {self.class_name} file completed: '{key}'")
+    def read_serialized_config_file(self, key: KeyT) -> ConfigT:
+        result = deserialize(self._root_dir.read_object(str(key)), self._config_type)
+        logger.info(f"Read from {self.class_name} file completed: '{str(key)}'")
         return result
 
-    def write_serialized_config_file(self, config: ConfigT, key: str) -> int:
-        result = self._root_dir.write_object(serialize(config), key)
-        logger.info(f"Write to {self.class_name} file completed: '{key}'")
+    def write_serialized_config_file(self, key: KeyT, config: ConfigT) -> int:
+        result = self._root_dir.write_object(serialize(config), str(key))
+        logger.info(f"Write to {self.class_name} file completed: '{str(key)}'")
         return result
 
     def list_config_filenames(self) -> List[str]:
         return self._root_dir.list_object_filenames()
 
-    def list_config_filekeys(self) -> List[str]:
-        filenames = self.list_config_filenames()
-        return list(map(lambda x: x.removesuffix(self._root_dir.extension), filenames))
+    def list_config_filekeys(self) -> List[KeyT]:
+        result = list()
+        for filename in self.list_config_filenames():
+            name = filename.removesuffix(self._root_dir.extension)
+            result.append(self._key_type(name))  # type: ignore[call-arg]
+        return result
 
     def read_all_config_files(self, *, raise_errors=False) -> None:
         for key in self.list_config_filekeys():
@@ -78,7 +78,7 @@ class ResourceManager(Dict[str, ConfigT]):
     def write_all_config_files(self, *, raise_errors=False) -> None:
         for key, config in self.items():
             try:
-                self.write_serialized_config_file(config, key)
+                self.write_serialized_config_file(key, config)
             except BaseException as e:
                 if raise_errors:
                     raise
@@ -90,18 +90,18 @@ class ResourceManager(Dict[str, ConfigT]):
         self.clear()
         self.read_all_config_files(raise_errors=raise_errors)
 
-    def exists_config_file(self, key: str) -> bool:
+    def exists_config_file(self, key: KeyT) -> bool:
         return self.generate_config_filepath(key).is_file()
 
-    def add(self, key: str, config: ConfigT) -> None:
-        self.write_serialized_config_file(config, key)
+    def add(self, key: KeyT, config: ConfigT) -> None:
+        self.write_serialized_config_file(key, config)
         self.__setitem__(key, config)
 
-    def remove(self, key: str) -> None:
+    def remove(self, key: KeyT) -> None:
         path = self.generate_config_filepath(key)
         if path.is_file():
             path.unlink()
-            logger.info(f"Removed {self.class_name} file: '{key}'")
+            logger.info(f"Removed {self.class_name} file: '{str(key)}'")
         self.__delitem__(key)
 
     def remove_all(self) -> None:

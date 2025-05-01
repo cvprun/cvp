@@ -2,7 +2,7 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, NewType, Optional, Sequence, Tuple
 from uuid import uuid4
 
 from httpx import Timeout
@@ -13,13 +13,15 @@ from cvp.ollama.details import ModelDetails
 from cvp.types.override import override
 from cvp.variables import TIMEOUT_INFINITE
 
+OllamaKey = NewType("OllamaKey", str)
+
 
 class Ollama(Serializable):
     model_names: List[str]
 
     @unique
     class _Keys(StrEnum):
-        uuid = auto()
+        key = auto()
         name_ = "name"
         url = auto()
         headers = auto()
@@ -30,7 +32,7 @@ class Ollama(Serializable):
 
     def __init__(
         self,
-        uuid: Optional[str] = None,
+        key: Optional[OllamaKey] = None,
         name: Optional[str] = None,
         url: Optional[str] = None,
         headers: Optional[Sequence[Tuple[str, str]]] = None,
@@ -41,7 +43,7 @@ class Ollama(Serializable):
         error: Optional[BaseException] = None,
         details: Optional[Dict[str, ModelDetails]] = None,
     ):
-        self.uuid = uuid if uuid else str(uuid4())
+        self.key = key if key else OllamaKey(str(uuid4()))
         self.name = name if name else str()
         self.url = url if url else str()
         self.headers = list(headers if headers else ())
@@ -62,7 +64,7 @@ class Ollama(Serializable):
         if not isinstance(other, type(self)):
             return False
         return (
-            self.uuid == other.uuid
+            self.key == other.key
             and self.name == other.name
             and self.url == other.url
             and self.headers == other.headers
@@ -76,7 +78,7 @@ class Ollama(Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.uuid = copy(self.uuid)
+        result.key = copy(self.key)
         result.name = copy(self.name)
         result.url = copy(self.url)
         result.headers = copy(self.headers)
@@ -92,7 +94,7 @@ class Ollama(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.uuid = deepcopy(self.uuid, memo)
+        result.key = deepcopy(self.key, memo)
         result.name = deepcopy(self.name, memo)
         result.url = deepcopy(self.url, memo)
         result.headers = deepcopy(self.headers, memo)
@@ -107,7 +109,7 @@ class Ollama(Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.uuid): self.uuid,
+            str(self._Keys.key): self.key,
             str(self._Keys.name_): self.name,
             str(self._Keys.url): self.url,
             str(self._Keys.headers): self.header_as_dict(),
@@ -121,7 +123,7 @@ class Ollama(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.uuid = str(data.get(self._Keys.uuid, str()))
+        self.key = OllamaKey(data.get(self._Keys.key, str()))
         self.name = str(data.get(self._Keys.name_, str()))
         self.url = str(data.get(self._Keys.url, str()))
 

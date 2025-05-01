@@ -17,7 +17,7 @@ class ClientTestCase(TestCase):
         self.tmpdir = TemporaryDirectory()
         self.home = HomeDir(self.tmpdir.name)
         self.config = OnvifConfig()
-        self.root_dir = self.home.onvifs.get_client_root_dir(self.config.uuid)
+        self.root_dir = self.home.onvifs.get_client_root_dir(self.config.key)
         self.keyring = RootKeyring()
         self.client = OnvifClient(self.config, self.root_dir)
 

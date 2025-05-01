@@ -4,10 +4,13 @@ import os
 from copy import deepcopy
 from dataclasses import dataclass
 from tempfile import TemporaryDirectory
+from typing import NewType
 from unittest import TestCase, main
 
 from cvp.resources.formats.yaml import YamlFormatPath
 from cvp.resources.manager.manager import ResourceManager
+
+TestKey = NewType("TestKey", str)
 
 
 @dataclass
@@ -19,7 +22,7 @@ class ManagerTestCase(TestCase):
     def setUp(self):
         self.tmpdir = TemporaryDirectory()
         self.root_path = YamlFormatPath(self.tmpdir.name)
-        self.manager = ResourceManager[TestConfig](TestConfig, self.root_path)
+        self.manager = ResourceManager(TestKey, TestConfig, self.root_path)
 
     def tearDown(self):
         self.tmpdir.cleanup()
@@ -28,13 +31,13 @@ class ManagerTestCase(TestCase):
         self.assertTrue(os.path.isdir(self.tmpdir.name))
         self.assertTrue(self.manager.root_dir.is_dir())
 
-        filename0 = "filename0"
+        filename0 = TestKey("filename0")
         self.manager.add(filename0, TestConfig(100))
         self.assertTrue(self.manager.exists_config_file(filename0))
         self.assertIn(filename0, self.manager)
         self.assertEqual(1, len(self.manager))
 
-        filename1 = "filename1"
+        filename1 = TestKey("filename1")
         self.manager.add(filename1, TestConfig(200))
         self.assertTrue(self.manager.exists_config_file(filename1))
         self.assertIn(filename1, self.manager)

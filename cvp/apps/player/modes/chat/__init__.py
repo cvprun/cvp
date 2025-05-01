@@ -24,6 +24,7 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.text_right_align import text_disabled_right_align
+from cvp.ollama.ollama import OllamaKey
 from cvp.types.override import override
 from cvp.variables import (
     CHAT_TITLE_NONAME,
@@ -112,10 +113,14 @@ class ChatMode(BaseMode):
 
     def request_chat_completion(self) -> None:
         try:
-            self._conversation_id = self.context.request_chat_stream(
+            chat_config = self.context.config.chat
+            server_key = OllamaKey(chat_config.selected_server_key)
+            model_name = chat_config.selected_model_name
+
+            self._conversation_id = self.context.request_ollama_chat_stream(
                 conversation_id=self._conversation_id,
-                server_key=self.context.config.chat.selected_server_key,
-                model_name=self.context.config.chat.selected_model_name,
+                server_key=server_key,
+                model_name=model_name,
                 content=self._input_text,
                 images=None,
                 stream=True,

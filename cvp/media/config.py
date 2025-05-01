@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import Tuple
+from typing import NewType, Tuple
 from uuid import uuid4
 
 from cvp.variables import MEDIA_FRAME_HEIGHT, MEDIA_FRAME_WIDTH, MEDIA_INSPECT_TIMEOUT
 
+MediaKey = NewType("MediaKey", str)
+
 
 @dataclass
 class MediaConfig:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
+    key: MediaKey = field(default_factory=lambda: MediaKey(str(uuid4())))
     name: str = field(default_factory=str)
     opened: bool = False
     file: str = field(default_factory=str)

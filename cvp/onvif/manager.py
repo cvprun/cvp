@@ -4,44 +4,47 @@ from typing import Dict, Optional, Tuple
 from uuid import uuid4
 
 from cvp.onvif.client import OnvifClient
-from cvp.onvif.config import OnvifConfig
+from cvp.onvif.config import OnvifConfig, OnvifKey
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.variables import ONVIF_ADDRESS, ONVIF_NONAME
 
 
-class OnvifManager(ResourceManager[OnvifConfig]):
-    _clients: Dict[str, OnvifClient]
+class OnvifManager(ResourceManager[OnvifKey, OnvifConfig]):
+    _clients: Dict[OnvifKey, OnvifClient]
 
     def __init__(self, path: OnvifsPath, *, reload=False, raise_errors=False):
         super().__init__(
-            cls=OnvifConfig,
+            key_type=OnvifKey,
+            config_type=OnvifConfig,
             root_dir=path,
             reload=reload,
             raise_errors=raise_errors,
         )
         self._clients = dict()
 
-    def has_client(self, uuid: str) -> bool:
-        return uuid in self._clients
+    def has_client(self, key: OnvifKey) -> bool:
+        return key in self._clients
 
-    def add_client(self, uuid: str, client: OnvifClient) -> None:
-        self._clients[uuid] = client
+    def add_client(self, key: OnvifKey, client: OnvifClient) -> None:
+        self._clients[key] = client
 
-    def get_client(self, uuid: str) -> Optional[OnvifClient]:
-        return self._clients.get(uuid)
+    def get_client(self, key: OnvifKey) -> Optional[OnvifClient]:
+        return self._clients.get(key)
 
-    def pop_client(self, uuid: str) -> OnvifClient:
-        return self._clients.pop(uuid)
+    def pop_client(self, key: OnvifKey) -> OnvifClient:
+        return self._clients.pop(key)
 
     def add_config(
         self,
         name=ONVIF_NONAME,
         address=ONVIF_ADDRESS,
         *,
-        uuid: Optional[str] = None,
-    ) -> Tuple[str, OnvifConfig]:
-        uuid = uuid if uuid else str(uuid4())
-        config = OnvifConfig(uuid=uuid, name=name, address=address)
-        self.add(uuid, config)
-        return uuid, config
+        key: Optional[OnvifKey] = None,
+    ) -> Tuple[OnvifKey, OnvifConfig]:
+        key = key if key else OnvifKey(str(uuid4()))
+        assert key
+
+        config = OnvifConfig(key=key, name=name, address=address)
+        self.add(key, config)
+        return key, config

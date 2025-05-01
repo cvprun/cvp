@@ -58,14 +58,14 @@ class MediaInfoTab(BaseMediaTab):
 
     @override
     def do_process(self, media: MediaConfig) -> None:
-        input_text_disabled("UUID", media.uuid)
+        input_text_disabled("UUID", media.key)
 
         media.name = input_text_value("Name", media.name)
         media.file = input_text_value("File", media.file)
 
-        spawnable = self.context.medias.spawnable(media.uuid)
-        stoppable = self.context.medias.stoppable(media.uuid)
-        removable = self.context.medias.removable(media.uuid)
+        spawnable = self.context.medias.spawnable(media.key)
+        stoppable = self.context.medias.stoppable(media.key)
+        removable = self.context.medias.removable(media.key)
 
         if timeout := input_float("Inspect timeout", media.inspect_timeout, step=1.0):
             media.inspect_timeout = timeout.value
@@ -99,24 +99,24 @@ class MediaInfoTab(BaseMediaTab):
             imgui.text_colored(self.error_color, str(self._inspect_runner.error))
 
         imgui.separator()
-        status = self.context.medias.status(media.uuid)
+        status = self.context.medias.status(media.key)
         imgui.text(f"Process ({status})")
 
         valid_frame_size = media.valid_frame_size
         disabled_spawn = not spawnable or inspect_running or not valid_frame_size
         if button("Spawn", disabled=disabled_spawn):
             self.context.medias.spawn_ffmpeg(
-                key=media.uuid,
+                key=media.key,
                 file=media.file,
                 width=media.frame_width,
                 height=media.frame_height,
             )
         imgui.same_line()
         if button("Stop", disabled=not stoppable or inspect_running):
-            self.context.medias.interrupt(media.uuid)
+            self.context.medias.interrupt(media.key)
         imgui.same_line()
         if button("Remove", disabled=not removable or inspect_running):
-            self.context.medias.removable_pop(media.uuid)
+            self.context.medias.removable_pop(media.key)
 
         imgui.separator()
         imgui.text("Window visibility")
@@ -129,7 +129,7 @@ class MediaInfoTab(BaseMediaTab):
         if not media.opened:
             return
 
-        texture = self.medias.get_latest_texture(media.uuid)
+        texture = self.medias.get_latest_texture(media.key)
         if not texture:
             return
 

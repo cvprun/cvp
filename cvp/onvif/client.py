@@ -88,7 +88,7 @@ class OnvifClient:
                 self._session.auth = HTTPDigestAuth(username, password)
 
         self._services = OnvifServiceMapper(
-            uuid=self._config.uuid,
+            uuid=self._config.key,
             same_host=self._config.same_host,
             address=self._config.address,
             jsons=self._root_dir,
@@ -131,7 +131,7 @@ class OnvifClient:
 
     @property
     def uuid(self):
-        return self._config.uuid
+        return self._config.key
 
     def create_wsdl(
         self,
@@ -145,7 +145,7 @@ class OnvifClient:
 
         result = WsdlClient(
             jsons=self._root_dir,
-            uuid=self._config.uuid,
+            uuid=self._config.key,
             declaration=declaration,
             wsse=self._wsse,
             transport=self._transport,

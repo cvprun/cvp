@@ -20,7 +20,7 @@ class MediaStreamTab(BaseMediaTab):
 
     @override
     def do_process(self, media: MediaConfig) -> None:
-        process = self.context.medias.get_process(media.uuid)
+        process = self.context.medias.get_process(media.key)
         if process is None:
             text_centered("Not found media process")
             return

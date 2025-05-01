@@ -2,8 +2,10 @@
 
 from dataclasses import dataclass, field
 from enum import StrEnum, auto, unique
-from typing import Optional
+from typing import NewType, Optional
 from uuid import uuid4
+
+OnvifKey = NewType("OnvifKey", str)
 
 
 @unique
@@ -14,7 +16,7 @@ class HttpAuth(StrEnum):
 
 @dataclass
 class OnvifConfig:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
+    key: OnvifKey = field(default_factory=lambda: OnvifKey(str(uuid4())))
     name: str = field(default_factory=str)
     address: str = field(default_factory=str)
     username: str = field(default_factory=str)

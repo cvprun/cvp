@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List
+from typing import List, NewType
 
 from cvp.variables import (
     WSD_INVALID_INSTANCE_ID,
@@ -10,10 +10,12 @@ from cvp.variables import (
     WSD_INVALID_METADATA_VERSION,
 )
 
+EprKey = NewType("EprKey", str)
+
 
 @dataclass
 class WsDiscovery:
-    epr: str = field(default_factory=str)  # EndPoint Reference
+    epr: EprKey = field(default_factory=lambda: EprKey(str()))  # EndPoint Reference
     instance_id: int = WSD_INVALID_INSTANCE_ID
     message_number: int = WSD_INVALID_MESSAGE_NUMBER
     metadata_version: int = WSD_INVALID_METADATA_VERSION

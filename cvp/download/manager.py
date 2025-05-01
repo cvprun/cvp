@@ -4,12 +4,12 @@ from pathlib import Path
 from typing import Optional, Tuple
 from uuid import uuid4
 
-from cvp.download.item import DownloadItem
+from cvp.download.item import DownloadItem, DownloadKey
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.downloads import DownloadsPath
 
 
-class DownloadManager(ResourceManager[DownloadItem]):
+class DownloadManager(ResourceManager[DownloadKey, DownloadItem]):
     def __init__(
         self,
         path: DownloadsPath,
@@ -19,7 +19,8 @@ class DownloadManager(ResourceManager[DownloadItem]):
         raise_errors=False,
     ):
         super().__init__(
-            cls=DownloadItem,
+            key_type=DownloadKey,
+            config_type=DownloadItem,
             root_dir=path,
             reload=reload,
             raise_errors=raise_errors,
@@ -30,9 +31,11 @@ class DownloadManager(ResourceManager[DownloadItem]):
         self,
         url: str,
         *,
-        uuid: Optional[str] = None,
-    ) -> Tuple[str, DownloadItem]:
-        uuid = uuid if uuid else str(uuid4())
-        item = DownloadItem(uuid=uuid, url=url)
-        self.add(uuid, item)
-        return uuid, item
+        key: Optional[DownloadKey] = None,
+    ) -> Tuple[DownloadKey, DownloadItem]:
+        key = key if key else DownloadKey(str(uuid4()))
+        assert key
+
+        item = DownloadItem(key=key, url=url)
+        self.add(key, item)
+        return key, item

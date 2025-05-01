@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import os.path
 from typing import Dict, Mapping, Optional, Sequence, Tuple, Union
 from uuid import uuid4
@@ -7,7 +8,7 @@ from weakref import ReferenceType, ref
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.gl.textures.texture import Texture
 from cvp.logging.logging import logger
-from cvp.media.config import MediaConfig
+from cvp.media.config import MediaConfig, MediaKey
 from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process
 from cvp.net.uri.parser import is_file_scheme
@@ -22,33 +23,35 @@ from cvp.variables import (
 )
 
 
-class MediaManager(ResourceManager[MediaConfig]):
-    _ffmpeg_config: ReferenceType[FFmpegConfig]
-    _textures: Dict[str, Texture]
+class MediaManager(ResourceManager[MediaKey, MediaConfig]):
+    _config: ReferenceType[FFmpegConfig]
+    _processes: ProcessManager[MediaKey, FrameReaderProcess]
+    _textures: Dict[MediaKey, Texture]
 
     def __init__(
         self,
-        path: MediasPath,
+        medias_path: MediasPath,
         processes_path: ProcessesPath,
-        ffmpeg_config: FFmpegConfig,
+        config: FFmpegConfig,
         *,
         reload=False,
         raise_errors=False,
     ):
         super().__init__(
-            cls=MediaConfig,
-            root_dir=path,
+            key_type=MediaKey,
+            config_type=MediaConfig,
+            root_dir=medias_path,
             reload=reload,
             raise_errors=raise_errors,
         )
         self._processes_path = processes_path
-        self._ffmpeg_config = ref(ffmpeg_config)
-        self._processes = ProcessManager[str, FrameReaderProcess]()
+        self._config = ref(config)
+        self._processes = ProcessManager()
         self._textures = dict()
 
     @property
     def ffmpeg_config(self) -> FFmpegConfig:
-        config = self._ffmpeg_config()
+        config = self._config()
         if config is None:
             raise ReferenceError("Expired ffmpeg config reference")
         return config
@@ -77,29 +80,31 @@ class MediaManager(ResourceManager[MediaConfig]):
         self,
         name=MEDIA_NONAME,
         *,
-        uuid: Optional[str] = None,
-    ) -> Tuple[str, MediaConfig]:
-        uuid = uuid if uuid else str(uuid4())
-        config = MediaConfig(uuid=uuid, name=name)
-        self.add(uuid, config)
-        return uuid, config
+        key: Optional[MediaKey] = None,
+    ) -> Tuple[MediaKey, MediaConfig]:
+        key = key if key else MediaKey(str(uuid4()))
+        assert key
 
-    def spawnable(self, key: str) -> bool:
+        config = MediaConfig(key=key, name=name)
+        self.add(key, config)
+        return key, config
+
+    def spawnable(self, key: MediaKey) -> bool:
         return self._processes.spawnable(key)
 
-    def stoppable(self, key: str) -> bool:
+    def stoppable(self, key: MediaKey) -> bool:
         return self._processes.stoppable(key)
 
-    def removable(self, key: str) -> bool:
+    def removable(self, key: MediaKey) -> bool:
         return self._processes.removable(key)
 
-    def status(self, key: str):
+    def status(self, key: MediaKey):
         return self._processes.status(key)
 
-    def interrupt(self, key: str) -> None:
+    def interrupt(self, key: MediaKey) -> None:
         return self._processes.interrupt(key)
 
-    def removable_pop(self, key: str):
+    def removable_pop(self, key: MediaKey):
         process = self._processes.removable_pop(key)
         texture = self._textures.pop(key)
         assert texture.opened
@@ -113,10 +118,10 @@ class MediaManager(ResourceManager[MediaConfig]):
     def processes(self):
         return self._processes
 
-    def get_process(self, key: str):
+    def get_process(self, key: MediaKey):
         return self._processes.get(key)
 
-    def get_texture(self, key: str):
+    def get_texture(self, key: MediaKey):
         return self._textures.get(key)
 
     def _spawn(
@@ -166,7 +171,7 @@ class MediaManager(ResourceManager[MediaConfig]):
             MEDIA_FRAME_PIPE_STDOUT,
         )
 
-    def _spawn_with_file(self, key: str, file: str, width: int, height: int):
+    def _spawn_with_file(self, key: MediaKey, file: str, width: int, height: int):
         args = (
             "-hide_banner",
             "-re",
@@ -178,7 +183,7 @@ class MediaManager(ResourceManager[MediaConfig]):
         frame_shape = width, height, MEDIA_FRAME_RGB24_CHANNELS
         return self._spawn(key, args, frame_shape)
 
-    def _spawn_with_rtsp(self, key: str, url: str, width: int, height: int):
+    def _spawn_with_rtsp(self, key: MediaKey, url: str, width: int, height: int):
         args = (
             "-hide_banner",
             "-fflags",
@@ -196,7 +201,7 @@ class MediaManager(ResourceManager[MediaConfig]):
         frame_shape = width, height, MEDIA_FRAME_RGB24_CHANNELS
         return self._spawn(key, args, frame_shape)
 
-    def _spawn_with_auto(self, key: str, file: str, width: int, height: int):
+    def _spawn_with_auto(self, key: MediaKey, file: str, width: int, height: int):
         if os.path.isfile(file) or is_file_scheme(file):
             return self._spawn_with_file(key, file, width, height)
         else:
@@ -204,7 +209,7 @@ class MediaManager(ResourceManager[MediaConfig]):
 
     def spawn_ffmpeg(
         self,
-        key: str,
+        key: MediaKey,
         file: str,
         width: int,
         height: int,
@@ -228,7 +233,7 @@ class MediaManager(ResourceManager[MediaConfig]):
 
         return process
 
-    def update_texture(self, key: str) -> int:
+    def update_texture(self, key: MediaKey) -> int:
         process = self.get_process(key)
         if process is None:
             raise KeyError(f"Process is not exists: '{key}'")
@@ -249,7 +254,7 @@ class MediaManager(ResourceManager[MediaConfig]):
 
         return texture.texture
 
-    def get_latest_texture(self, key: str) -> Optional[int]:
+    def get_latest_texture(self, key: MediaKey) -> Optional[int]:
         try:
             return self.update_texture(key)
         except (KeyError, ValueError):

@@ -37,7 +37,7 @@ class OnvifClientTab(BaseOnvifTab):
 
     @override
     def do_process(self, onvif: OnvifConfig) -> None:
-        has_client = self.onvifs.has_client(onvif.uuid)
+        has_client = self.onvifs.has_client(onvif.key)
         update_client_running = self._update_client_runner.running
         has_error = bool(self._update_client_runner.error)
         disabled_remove = not has_client or update_client_running
@@ -50,12 +50,12 @@ class OnvifClientTab(BaseOnvifTab):
         if button("Remove ONVIF Client", disabled=disabled_remove):
             assert has_client
             assert not update_client_running
-            self.context.onvifs.pop_client(onvif.uuid)
+            self.context.onvifs.pop_client(onvif.key)
 
         if has_error:
             text_colored(str(self._update_client_runner.error), self.error_color)
 
-        client = self.context.onvifs.get_client(onvif.uuid)
+        client = self.context.onvifs.get_client(onvif.key)
         if client is None:
             return
 

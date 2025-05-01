@@ -3,9 +3,12 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import StrEnum, auto, unique
+from typing import NewType
 from uuid import uuid4
 
 from cvp.variables import UNKNOWN_TOTAL_SIZE
+
+DownloadKey = NewType("DownloadKey", str)
 
 
 @unique
@@ -22,7 +25,7 @@ class DownloadState(StrEnum):
 
 @dataclass
 class DownloadItem:
-    uuid: str = field(default_factory=lambda: str(uuid4()))
+    key: DownloadKey = field(default_factory=lambda: DownloadKey(str(uuid4())))
     url: str = field(default_factory=str)
     dest: str = field(default_factory=str)
     total: int = UNKNOWN_TOTAL_SIZE

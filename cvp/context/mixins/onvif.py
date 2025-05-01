@@ -50,20 +50,20 @@ class OnvifMixin(BaseContextMixin):
 
         client = OnvifClient(
             config=config,
-            root_dir=self._home.onvifs.get_client_root_dir(config.uuid),
+            root_dir=self._home.onvifs.get_client_root_dir(config.key),
             wsdl_cache_dir=self._home.wsdl,
-            password=self._keyring.onvif.get(config.uuid),
+            password=self._keyring.onvif.get(config.key),
         )
         if append:
-            self._onvifs.add_client(config.uuid, client)
+            self._onvifs.add_client(config.key, client)
         return client
 
     def get_onvif_client(self, config: OnvifConfig) -> OnvifClient:
-        client = self._onvifs.get_client(config.uuid)
+        client = self._onvifs.get_client(config.key)
         if client is not None:
             if client.config == config:
                 return client
-            self._onvifs.pop_client(config.uuid)
+            self._onvifs.pop_client(config.key)
         return self.create_onvif_client(config, append=True)
 
     def initialize_onvif_clients(self) -> None:

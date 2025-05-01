@@ -39,10 +39,10 @@ class OnvifAuthTab(BaseOnvifTab):
         onvif.username = input_text_value("Username", onvif.username)
 
         password_flags = ENTER_RETURNS_TRUE if self._show_password else PASSWORD
-        prev_password = self.context.keyring.onvif.get_or_empty(onvif.uuid)
+        prev_password = self.context.keyring.onvif.get_or_empty(onvif.key)
         next_password = input_text_value("Password", prev_password, password_flags)
         if prev_password != next_password:
-            self.context.keyring.onvif.set(onvif.uuid, next_password)
+            self.context.keyring.onvif.set(onvif.key, next_password)
 
         show_password = imgui.checkbox("Show Password", self._show_password)
         show_password_changed = show_password[0]

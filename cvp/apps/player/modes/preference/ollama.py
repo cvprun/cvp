@@ -57,10 +57,10 @@ class OllamaPreference(BasePreference):
         return self.context.ollamas
 
     def get_selected_submenu_model(self, ollama: Ollama) -> str:
-        return self.get_selected_submenu(suffix=ollama.uuid)
+        return self.get_selected_submenu(suffix=ollama.key)
 
     def set_selected_submenu_model(self, ollama: Ollama, value: str) -> None:
-        self.set_selected_submenu(value, suffix=ollama.uuid)
+        self.set_selected_submenu(value, suffix=ollama.key)
 
     @override
     def do_process(self) -> None:
