@@ -15,12 +15,11 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.annotation.video import VideoAnnotationMode
+        from cvp.apps.player.modes.canvas import CanvasMode
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.cms.datasets import DatasetsMode
         from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
-        from cvp.apps.player.modes.cv.canvas import CanvasMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
@@ -62,7 +61,6 @@ class ModeManager:
         self.sock_map = SockMapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
-        self.video_annotation_mode = VideoAnnotationMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
         # ------------------------------------------------------------------------------
@@ -74,15 +72,14 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.dashboard_mode, self.chat_mode
+        self._menu_modes = self.dashboard_mode, self.chat_mode, self.canvas_mode
         self._submenu_modes = OrderedDict(
             {
-                "Annotation": (self.video_annotation_mode,),
                 "CMS": (self.files_mode,),
-                "Computer Vision": (self.canvas_mode, self.object_tracker_mode),
+                "Computer Vision": (self.object_tracker_mode,),
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
-                "Flows": (self.dtype_mode, self.flow_mode, self.node_mode),
+                "Flows": (self.flow_mode, self.dtype_mode, self.node_mode),
                 "Games": (self.tetrix_mode,),
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),

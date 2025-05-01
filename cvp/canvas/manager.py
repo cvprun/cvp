@@ -21,11 +21,11 @@ class CanvasManager(ResourceManager[CanvasKey, Canvas]):
         self._focused_key = None
 
     @property
-    def focused_canvas_key(self):
+    def focused_key(self):
         return self._focused_key
 
-    @focused_canvas_key.setter
-    def focused_canvas_key(self, value: CanvasKey) -> None:
+    @focused_key.setter
+    def focused_key(self, value: CanvasKey) -> None:
         self._focused_key = value
 
     @property

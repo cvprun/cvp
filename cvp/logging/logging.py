@@ -23,6 +23,7 @@ from sys import stdout
 from typing import Final, Optional, Sequence, Union
 
 from cvp.logging.variables import (
+    CVP_CANVAS_LOGGER_NAME,
     CVP_CHAT_LOGGER_NAME,
     CVP_DOWNLOAD_LOGGER_NAME,
     CVP_EVENT_LOGGER_NAME,
@@ -49,6 +50,7 @@ from cvp.system.environ_keys import CVP_HOME
 
 logger = getLogger(CVP_LOGGER_NAME)
 
+canvas_logger = getLogger(CVP_CANVAS_LOGGER_NAME)
 chat_logger = getLogger(CVP_CHAT_LOGGER_NAME)
 download_logger = getLogger(CVP_DOWNLOAD_LOGGER_NAME)
 event_logger = getLogger(CVP_EVENT_LOGGER_NAME)

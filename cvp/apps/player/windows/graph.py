@@ -183,7 +183,7 @@ class FlowGraphWindow(ControllableCanvas):
         self._new_variable_popup.do_process()
 
     def do_child_process(self) -> None:
-        self.do_process_canvas()
+        self.do_canvas_process()
 
         if payload := accept_target():
             assert payload is not None
@@ -497,8 +497,6 @@ class FlowGraphWindow(ControllableCanvas):
     def history(self):
         return self._history
 
-    # endregion
-
     def clear_history(self) -> None:
         logger.info("Clear history")
         self._history.clear_history()
@@ -575,7 +573,7 @@ class FlowGraphWindow(ControllableCanvas):
             self.graph.control.pan_y = result.pan_y
             self.graph.control.zoom = result.zoom
 
-    def do_process_canvas(self) -> None:
+    def do_canvas_process(self) -> None:
         if result := self.update_state():
             self.graph.control.pan_x = result.pan_x
             self.graph.control.pan_y = result.pan_y

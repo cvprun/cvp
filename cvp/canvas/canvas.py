@@ -5,7 +5,9 @@ from typing import NewType
 from uuid import uuid4
 
 from cvp.canvas.axis import Axis
+from cvp.canvas.control import ViewControl
 from cvp.canvas.grid import Grid
+from cvp.canvas.options import DrawingOptions
 
 CanvasKey = NewType("CanvasKey", str)
 
@@ -21,3 +23,6 @@ class Canvas:
 
     axis_x: Axis = field(default_factory=Axis)
     axis_y: Axis = field(default_factory=Axis)
+
+    control: ViewControl = field(default_factory=ViewControl)
+    options: DrawingOptions = field(default_factory=DrawingOptions)
