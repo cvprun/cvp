@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Callable, Sequence, Tuple
+from uuid import uuid4
 
 from imgui_bundle import imgui
 from pygame.event import Event
@@ -15,6 +16,7 @@ from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
@@ -40,25 +42,32 @@ class FlowMode(BaseMode):
             ("View", self.on_view_menu),
         )
 
-        self._open_workspace_popup = OpenFilePopup(
-            title="Open workspace",
-            target=self.on_open_workspace_popup,
+        self._new_graph_popup = InputTextPopup(
+            title="New graph",
+            label="Please enter a graph name:",
+            ok="Create",
+            cancel="Cancel",
+            target=self.on_new_graph,
+        )
+        self._open_graph_popup = OpenFilePopup(
+            title="Open graph",
+            target=self.on_open_graph_popup,
             select_directory=True,
         )
-        self._import_workspace_popup = OpenFilePopup(
-            title="Import workspace",
-            target=self.on_import_workspace,
+        self._import_graph_popup = OpenFilePopup(
+            title="Import graph",
+            target=self.on_import_graph,
         )
-        self._export_workspace_popup = OpenFilePopup(
-            title="Export workspace",
-            target=self.on_export_workspace,
+        self._export_graph_popup = OpenFilePopup(
+            title="Export graph",
+            target=self.on_export_graph,
         )
-        self._confirm_remove_workspace_popup = ConfirmPopup(
-            title="Remove workspace",
-            label="Are you sure you want to remove workspace?",
+        self._confirm_remove_graph_popup = ConfirmPopup(
+            title="Remove graph",
+            label="Are you sure you want to remove graph?",
             ok="Remove",
             cancel="Cancel",
-            target=self.on_confirm_remove_workspace,
+            target=self.on_confirm_remove_graph,
         )
 
         # self._new_variable_popup = InputTextPopup(
@@ -70,23 +79,26 @@ class FlowMode(BaseMode):
         # )
 
         self._popups = (
-            self._open_workspace_popup,
-            self._import_workspace_popup,
-            self._export_workspace_popup,
-            self._confirm_remove_workspace_popup,
+            self._new_graph_popup,
+            self._open_graph_popup,
+            self._import_graph_popup,
+            self._export_graph_popup,
+            self._confirm_remove_graph_popup,
             # self._new_variable_popup,
         )
 
     def on_new_graph(self, name: str) -> None:
-        # graph = self.flows.create_graph(name, append=True)
-        # filepath = self.context.home.flows.graph_filepath(graph.key)
-        # if filepath.exists():
-        #     raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
-        # self.flows.write_graph_yaml(filepath, graph)
-        # self._canvases.open(graph)
-        pass
+        key = str(uuid4())
+        filepath = self.context.home.flows.get_graph_filepath(key)
+        if filepath.exists():
+            raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
 
-    def on_open_workspace_popup(self, file: str) -> None:
+        graph = self.context.flows.create_graph(name, key=key, append=True, opened=True)
+        filepath.parent.mkdir(parents=True, exist_ok=True)
+        self.context.flows.write_graph_yaml(filepath, graph)
+        self._layout.create_graph_window(graph.key)
+
+    def on_open_graph_popup(self, file: str) -> None:
         if not file:
             return
 
@@ -97,16 +109,16 @@ class FlowMode(BaseMode):
         if not path.is_dir():
             raise NotADirectoryError(f"'{file}' is not a directory")
 
-        # self.context.open_flow_workspace(path)
+        # self.context.open_flow_graph(path)
         assert self
 
-    def on_import_workspace(self, file: str) -> None:
+    def on_import_graph(self, file: str) -> None:
         pass
 
-    def on_export_workspace(self, file: str) -> None:
+    def on_export_graph(self, file: str) -> None:
         pass
 
-    def on_confirm_remove_workspace(self, value: bool) -> None:
+    def on_confirm_remove_graph(self, value: bool) -> None:
         pass
 
     # def on_new_variable(self, name: str) -> None:
@@ -121,10 +133,6 @@ class FlowMode(BaseMode):
     @property
     def config(self):
         return self.context.config.flow
-
-    @property
-    def flows(self):
-        return self.context.flows
 
     @property
     def show_layout(self) -> bool:
@@ -152,17 +160,19 @@ class FlowMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        if menu_item("Open workspace"):
-            self._open_workspace_popup.show()
-            pass
+        if menu_item("New Graph"):
+            self._new_graph_popup.show()
 
-        # recent_items = self.context.get_flow_workspace_recent_items()
+        if menu_item("Open Graph"):
+            self._open_graph_popup.show()
+
+        # recent_items = self.context.get_flow_graph_recent_items()
         # has_any_recent = bool(recent_items)
-        # if imgui.begin_menu("Recent workspace", enabled=has_any_recent):
+        # if imgui.begin_menu("Recent graph", enabled=has_any_recent):
         #     try:
         #         for recent in recent_items:
         #             if menu_item(recent.value):
-        #                 self.context.open_flow_workspace(recent.value)
+        #                 self.context.open_flow_graph(recent.value)
         #     finally:
         #         imgui.end_menu()
 
@@ -186,12 +196,12 @@ class FlowMode(BaseMode):
 
         imgui.separator()
         if menu_item("Refresh graphs"):
-            # self.context.flows.workspaces.read_all_config_files()
+            # self.context.flows.graph.read_all_config_files()
             pass
 
         # imgui.separator()
-        # if menu_item("Close workspace", enabled=self.context.opened_flow_workspace()):
-        #     self.context.close_flow_workspace()
+        # if menu_item("Close graph", enabled=self.context.opened_flow_graph()):
+        #     self.context.close_flow_graph()
 
     def on_edit_menu(self) -> None:
         if graph_window := self._layout.focused_graph_window:

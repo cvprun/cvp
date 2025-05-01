@@ -137,6 +137,7 @@ CANVAS_ROI_THICKNESS: Final[float] = 2.0
 
 FLOW_PATH_SEPARATOR: Final[str] = "."
 FLOW_PATH_ENCODING: Final[str] = "utf-8"
+FLOW_GRAPHS_DIRNAME: Final[str] = "graphs"
 
 FLOW_BACKGROUND_COLOR: Final[RGBA] = 0.5, 0.5, 0.5, 1.0
 FLOW_MAX_HISTORY: Final[int] = 20

@@ -232,6 +232,7 @@ stillimage
 strfmt
 strftime
 strptime
+subdirs
 subfile
 subpath
 surfaceable

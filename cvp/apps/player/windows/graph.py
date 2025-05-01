@@ -583,7 +583,10 @@ class FlowGraphWindow(ControllableCanvas):
 
     def fill(self) -> None:
         color = imgui.get_color_u32(self.config.background_color)
-        self._draw_list.add_rect_filled(*self.canvas_roi, color)
+        x1, y1, x2, y2 = self.canvas_roi
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_rect_filled(p1, p2, color)
 
     def draw_grid_x(self) -> None:
         grid_x = self.config.grid_x
@@ -619,7 +622,10 @@ class FlowGraphWindow(ControllableCanvas):
         y1 = origin_y
         x2 = self.cx + self.cw
         y2 = origin_y
-        self._draw_list.add_line((x1, y1), (x2, y2), color, axis_x.thickness)
+
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_line(p1, p2, color, axis_x.thickness)
 
     def draw_axis_y(self) -> None:
         axis_y = self.config.axis_y
@@ -633,7 +639,10 @@ class FlowGraphWindow(ControllableCanvas):
         y1 = self.cy
         x2 = origin_x
         y2 = self.cy + self.ch
-        self._draw_list.add_line((x1, y1), (x2, y2), color, axis_y.thickness)
+
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_line(p1, p2, color, axis_y.thickness)
 
     # ==================================================================================
     # endregion: Draw Operations
@@ -1016,30 +1025,35 @@ class FlowGraphWindow(ControllableCanvas):
         background_color = self.node_background_color_u32
 
         nx1, ny1, nx2, ny2 = node_roi
+        np1 = nx1, ny1
+        np2 = nx2, ny2
         zoom = self.zoom
-        header_roi = nx1, ny1, nx2, ny1 + node.head_height * zoom
 
-        self._draw_list.add_rect_filled(*node_roi, background_color, rounding)
-        self._draw_list.add_rect_filled(*header_roi, node_color, rounding)
-        self._draw_list.add_rect(*node_roi, line_color, rounding, 0, thickness)
+        header_roi = nx1, ny1, nx2, ny1 + node.head_height * zoom
+        hp1 = header_roi[0], header_roi[1]
+        hp2 = header_roi[2], header_roi[3]
+
+        self._draw_list.add_rect_filled(np1, np2, background_color, rounding)
+        self._draw_list.add_rect_filled(hp1, hp2, node_color, rounding)
+        self._draw_list.add_rect(np1, np2, line_color, rounding, 0, thickness)
 
         if True:  # with self.icon_font:
             x1 = nx1 + node.icon_pos[0] * zoom
             y1 = ny1 + node.icon_pos[1] * zoom
-            self._draw_list.add_text(x1, y1, label_color, node.icon)
+            self._draw_list.add_text((x1, y1), label_color, node.icon)
             if self.node_show_layout:
                 x2 = x1 + node.icon_size[0] * zoom
                 y2 = y1 + node.icon_size[1] * zoom
-                self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
+                self._draw_list.add_rect((x1, y1), (x2, y2), layout_color)
 
         if True:  # with self.title_font:
             x1 = nx1 + node.name_pos[0] * zoom
             y1 = ny1 + node.name_pos[1] * zoom
-            self._draw_list.add_text(x1, y1, label_color, node.name)
+            self._draw_list.add_text((x1, y1), label_color, node.name)
             if self.node_show_layout:
                 x2 = x1 + node.name_size[0] * zoom
                 y2 = y1 + node.name_size[1] * zoom
-                self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
+                self._draw_list.add_rect((x1, y1), (x2, y2), layout_color)
 
         visible_exec_inputs = [p for p in node.exec_inputs if not p.hidden]
         visible_exec_outputs = [p for p in node.exec_outputs if not p.hidden]
@@ -1064,11 +1078,11 @@ class FlowGraphWindow(ControllableCanvas):
                 pin_icon = exec_pin_y_icon if pin.connected else exec_pin_n_icon
                 pin_rgba = self.get_pin_color(pin)
                 pin_color = imgui.get_color_u32(pin_rgba)
-                self._draw_list.add_text(x1, y1, pin_color, pin_icon)
+                self._draw_list.add_text((x1, y1), pin_color, pin_icon)
                 if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
                     y2 = y1 + pin.icon_size[1] * zoom
-                    self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
+                    self._draw_list.add_rect((x1, y1), (x2, y2), layout_color)
 
             data_pin_n_icon = self.config.pins.data_n_icon
             data_pin_y_icon = self.config.pins.data_y_icon
@@ -1079,21 +1093,21 @@ class FlowGraphWindow(ControllableCanvas):
                 pin_icon = data_pin_y_icon if pin.connected else data_pin_n_icon
                 pin_rgba = self.get_pin_color(pin)
                 pin_color = imgui.get_color_u32(pin_rgba)
-                self._draw_list.add_text(x1, y1, pin_color, pin_icon)
+                self._draw_list.add_text((x1, y1), pin_color, pin_icon)
                 if self.node_show_layout:
                     x2 = x1 + pin.icon_size[0] * zoom
                     y2 = y1 + pin.icon_size[1] * zoom
-                    self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
+                    self._draw_list.add_rect((x1, y1), (x2, y2), layout_color)
 
         if True:  # with self.text_font:
             for pin in visible_pins:
                 x1 = nx1 + pin.name_pos[0] * zoom
                 y1 = ny1 + pin.name_pos[1] * zoom
-                self._draw_list.add_text(x1, y1, label_color, pin.name)
+                self._draw_list.add_text((x1, y1), label_color, pin.name)
                 if self.node_show_layout:
                     x2 = x1 + pin.name_size[0] * zoom
                     y2 = y1 + pin.name_size[1] * zoom
-                    self._draw_list.add_rect(x1, y1, x2, y2, layout_color)
+                    self._draw_list.add_rect((x1, y1), (x2, y2), layout_color)
 
     # ==================================================================================
     # endregion: Node Operations
@@ -1114,8 +1128,8 @@ class FlowGraphWindow(ControllableCanvas):
     def draw_wire(self, wire: FlowWire) -> None:
         color = self.get_wire_color_u32(wire)
         thickness = self.get_wire_thickness(wire)
-        polyline = [self.canvas_to_screen_coords(p) for p in wire.polyline]
-        self._draw_list.add_polyline(polyline, color, 0, thickness)
+        points = [self.canvas_to_screen_coords(p) for p in wire.polyline]
+        self._draw_list.add_polyline(points, color, 0, thickness)
 
     def draw_bezier_cubic_anchors(self, wire: FlowWire) -> None:
         assert wire.is_bezier_cubic_line_type
@@ -1131,12 +1145,12 @@ class FlowGraphWindow(ControllableCanvas):
         start_color = self.get_anchor_color_u32(wire.start_anchor)
         sax, say = self.canvas_to_screen_coords(start)
         draw_dotted_line(self._draw_list, sx, sy, sax, say, start_color)
-        self._draw_list.add_circle_filled(sax, say, radius, start_color)
+        self._draw_list.add_circle_filled((sax, say), radius, start_color)
 
         end_color = self.get_anchor_color_u32(wire.end_anchor)
         eax, eay = self.canvas_to_screen_coords(end)
         draw_dotted_line(self._draw_list, ex, ey, eax, eay, end_color)
-        self._draw_list.add_circle_filled(eax, eay, radius, end_color)
+        self._draw_list.add_circle_filled((eax, eay), radius, end_color)
 
     # ==================================================================================
     # endregion: Arc Operations
@@ -1182,8 +1196,10 @@ class FlowGraphWindow(ControllableCanvas):
         color = imgui.get_color_u32(self.config.roi.color)
         rounding = self.config.roi.rounding
         thickness = self.config.roi.thickness
-        self._draw_list.add_rect_filled(x1, y1, x2, y2, color)
-        self._draw_list.add_rect(x1, y1, x2, y2, color, rounding, 0, thickness)
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_rect_filled(p1, p2, color)
+        self._draw_list.add_rect(p1, p2, color, rounding, 0, thickness)
 
     # ==================================================================================
     # endregion: ROI Operations

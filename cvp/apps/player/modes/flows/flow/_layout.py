@@ -7,6 +7,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.flows.flow._base import FlowWindowInterface
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
+from cvp.flow.graph import GraphKey
 from cvp.imgui.dock_builder import (
     add_dock_space_node,
     dock_window,
@@ -162,6 +163,13 @@ class FlowLayout:
         for gw_key, gw in self._graph_windows.items():
             if self._main_dock_id is not None and gw_key not in prev_keys:
                 dock_window(gw.get_window_name(), self._main_dock_id)
+
+    def create_graph_window(self, key: GraphKey):
+        graph_windows = FlowGraphWindow(self._context, key)
+        self._graph_windows[key] = graph_windows
+        if self._main_dock_id is not None:
+            dock_window(graph_windows.get_window_name(), self._main_dock_id)
+        return graph_windows
 
     def do_process(self) -> None:
         fgw = self.focused_graph_window

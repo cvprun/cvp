@@ -15,25 +15,27 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.canvas import CanvasMode
+        from cvp.apps.player.modes.annotation.video import VideoAnnotationMode
         from cvp.apps.player.modes.chat import ChatMode
+        from cvp.apps.player.modes.cms.datasets import DatasetsMode
+        from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
+        from cvp.apps.player.modes.cv.canvas import CanvasMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
-        from cvp.apps.player.modes.files import FilesMode
         from cvp.apps.player.modes.flows.dtype import DtypeMode
         from cvp.apps.player.modes.flows.flow import FlowMode
         from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
-        from cvp.apps.player.modes.mp import MediaPlayerMode
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.system.terminal import TerminalMode
         from cvp.apps.player.modes.vms.medias import MediasMode
         from cvp.apps.player.modes.vms.onvif import OnvifMode
+        from cvp.apps.player.modes.vms.player import MediaPlayerMode
         from cvp.apps.player.modes.vms.wsdiscovery import WsDiscoveryMode
 
         # ==============================================================================
@@ -47,6 +49,7 @@ class ModeManager:
         self.download_mode = DownloaderMode(context)
         self.dtype_mode = DtypeMode(context)
         self.faker_mode = FakerMode(context)
+        self.datasets_mode = DatasetsMode(context)
         self.files_mode = FilesMode(context)
         self.flow_mode = FlowMode(context)
         self.hash_mode = HashMode(context)
@@ -59,6 +62,7 @@ class ModeManager:
         self.sock_map = SockMapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
+        self.video_annotation_mode = VideoAnnotationMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
         # ------------------------------------------------------------------------------
@@ -70,15 +74,12 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = (
-            self.dashboard_mode,
-            self.chat_mode,
-            self.files_mode,
-            self.canvas_mode,
-        )
+        self._menu_modes = self.dashboard_mode, self.chat_mode
         self._submenu_modes = OrderedDict(
             {
-                "Computer Vision": (self.object_tracker_mode,),
+                "Annotation": (self.video_annotation_mode,),
+                "CMS": (self.files_mode,),
+                "Computer Vision": (self.canvas_mode, self.object_tracker_mode),
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Flows": (self.dtype_mode, self.flow_mode, self.node_mode),
@@ -86,7 +87,12 @@ class ModeManager:
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),
                 "System": (self.terminal_mode,),
-                "VMS": (self.medias_mode, self.onvif_mode, self.wsdiscovery_mode),
+                "VMS": (
+                    self.media_player_mode,
+                    self.medias_mode,
+                    self.onvif_mode,
+                    self.wsdiscovery_mode,
+                ),
             }
         )
 

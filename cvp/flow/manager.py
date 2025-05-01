@@ -5,6 +5,7 @@ from concurrent.futures import Executor
 from copy import deepcopy
 from os import PathLike
 from typing import Any, Optional, Union
+from uuid import uuid4
 
 from type_serialize import deserialize, serialize
 from yaml import dump, full_load
@@ -132,13 +133,13 @@ class FlowManager:
         self,
         name: Optional[str] = None,
         *,
-        template: Optional[str] = None,
+        key: Optional[str] = None,
         append=False,
+        opened=False,
     ) -> FlowGraph:
-        template = template if template else str()
-        assert isinstance(template, str)
-
-        graph = FlowGraph(key=None, name=GraphName(name) if name else None)
+        graph_key = GraphKey(key if key else str(uuid4()))
+        graph_name = GraphName(name) if name else None
+        graph = FlowGraph(key=graph_key, name=graph_name, opened=opened)
         assert is_uuid4(graph.key)
 
         if append:
