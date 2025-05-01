@@ -5,7 +5,7 @@ from unittest import TestCase, main
 from cvp.inspect.member import get_attribute_keys
 
 
-class TestAttributes:
+class TempAttrs:
     def __init__(self):
         self.value0 = 0
         self.value1_ = 0
@@ -30,13 +30,13 @@ class TestAttributes:
 
 class MemberTestCase(TestCase):
     def test_get_attribute_keys(self):
-        obj = TestAttributes()
+        obj = TempAttrs()
         attrs = {key: getattr(obj, key) for key in get_attribute_keys(obj)}
         self.assertIsNotNone(attrs.pop("value0"))
         self.assertIsNotNone(attrs.pop("value1_"))
         self.assertIsNotNone(attrs.pop("_value2"))
         self.assertIsNotNone(attrs.pop("_value3_"))
-        self.assertIsNotNone(attrs.pop(f"_{TestAttributes.__name__}__value4"))
+        self.assertIsNotNone(attrs.pop(f"_{TempAttrs.__name__}__value4"))
         self.assertIsNotNone(attrs.pop("value5__"))
         self.assertEqual(0, len(attrs))  # It's more intuitive than `assertFalse(attrs)`
 

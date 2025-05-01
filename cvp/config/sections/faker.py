@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from functools import lru_cache
-from locale import getdefaultlocale
+from locale import getlocale
 from secrets import choice
 from string import ascii_letters, digits
 
@@ -11,7 +11,7 @@ from cvp.variables import FAKER_REPEAT, FAKER_SEED_LENGTH, FAKER_SEPARATOR
 
 @lru_cache
 def _default_locale() -> str:
-    locale = getdefaultlocale()[0]
+    locale = getlocale()[0]
     return locale if locale else str()
 
 

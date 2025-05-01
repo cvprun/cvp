@@ -4,6 +4,8 @@ from typing import Final, List, Optional
 
 from imgui_bundle import imgui
 
+from cvp.apps.player.widgets.flows.drag_target import accept_target
+from cvp.apps.player.widgets.flows.drag_types import DragTypes
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
@@ -18,7 +20,6 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
-from cvp.imgui.drag_types import DRAG_FLOW_DTYPE, DRAG_FLOW_NODE, DRAG_FLOW_VARIABLE
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
@@ -175,7 +176,7 @@ class FlowGraphWindow(ControllableCanvas):
                 else:
                     text_centered(f"Not found {self._graph_key} graph")
         except BaseException as e:
-            logger.error(e)
+            logger.exception(e)
         finally:
             imgui.end()
 
@@ -184,22 +185,25 @@ class FlowGraphWindow(ControllableCanvas):
     def do_child_process(self) -> None:
         self.do_process_canvas()
 
-        if imgui.begin_drag_drop_target():
-            try:
-                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_DTYPE):
-                    self._drag_dtype = self.context.flows.dtypes[payload.type]
-                    self._new_variable_popup.show()
+        if payload := accept_target():
+            assert payload is not None
+            assert payload.value is not None
 
-                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_NODE):
-                    node = self.context.flows.add_node(self.graph, payload.type)
+            match payload.type:
+                case DragTypes.flow_graph:
+                    pass
+                case DragTypes.flow_node:
+                    node = self.context.flows.add_node(self.graph, payload.value)
                     self.update_node_roi(node)
-                    self.save_history("Add a new node", payload.type)
-
-                if payload := imgui.accept_drag_drop_payload_py_id(DRAG_FLOW_VARIABLE):
-                    self._variable_key = payload.type
+                    self.save_history("Add a new node", payload.value)
+                case DragTypes.flow_dtype:
+                    self._drag_dtype = self.context.flows.dtypes[payload.value]
+                    self._new_variable_popup.show()
+                case DragTypes.flow_variable:
+                    self._variable_key = payload.value
                     imgui.open_popup(self._ADD_VARIABLE_NODE_MENU)
-            finally:
-                imgui.end_drag_drop_target()
+                case _:
+                    assert False, "Inaccessible section"
 
         if imgui.begin_popup_context_window(self._ADD_VARIABLE_NODE_MENU):
             try:

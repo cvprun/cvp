@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Optional, Sequence
+from typing import Final, Optional, Sequence, Union
 
 from imgui_bundle import imgui
 
@@ -17,6 +17,8 @@ from cvp.imgui.dock_builder import (
     set_node_size,
     split_node,
 )
+from cvp.imgui.dockspace import dockspace_over_viewport_context
+from cvp.imgui.flags.dock_node import PASSTHRU_CENTRAL_NODE, DockNodeFlags
 
 
 class FlowLayout:
@@ -190,7 +192,28 @@ class FlowLayout:
         window_keys = set(self._graph_windows.keys())
         assert graph_keys == window_keys
 
-    def do_process(self) -> None:
+    def do_process(
+        self,
+        dock_space_id: Optional[Union[str, int]] = None,
+        viewport: Optional[imgui.Viewport] = None,
+        flags: Union[DockNodeFlags, int] = PASSTHRU_CENTRAL_NODE,
+        window_class: Optional[imgui.WindowClass] = None,
+    ) -> None:
+        if viewport is None:
+            viewport = imgui.get_main_viewport()
+        assert isinstance(viewport, imgui.Viewport)
+
+        with dockspace_over_viewport_context(
+            dock_space_id=dock_space_id,
+            viewport=viewport,
+            flags=flags,
+            window_class=window_class,
+        ) as dockspace_id:
+            assert isinstance(dockspace_id, int)
+            assert 0 <= dockspace_id
+            if not self._initialized_dock_layout:
+                self.initialize_dock_layout(dockspace_id, viewport)
+
         self.sync_graph_windows()
 
         fgw = self.focused_graph_window

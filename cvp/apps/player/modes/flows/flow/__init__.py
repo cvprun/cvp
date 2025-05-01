@@ -1,23 +1,17 @@
 # -*- coding: utf-8 -*-
 
-from pathlib import Path
 from typing import Callable, Sequence, Tuple
 
 from imgui_bundle import imgui
-from pygame.event import Event
-from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.flows.flow._layout import FlowLayout
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
-from cvp.imgui.dockspace import dockspace_over_viewport_context
-from cvp.imgui.flags.window import ROOT_STATIC_VIEWPORT_FLAGS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.popups.open_file import OpenFilePopup
-from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
 
@@ -30,8 +24,6 @@ class FlowMode(BaseMode):
     def __init__(self, context: Context):
         super().__init__(context)
         self._layout = FlowLayout(context)
-        self._viewport_flags = ROOT_STATIC_VIEWPORT_FLAGS
-        self._initialized_dock_layout = False
         self._menus = (
             ("File", self.on_file_menu),
             ("Edit", self.on_edit_menu),
@@ -83,20 +75,6 @@ class FlowMode(BaseMode):
 
     def on_new_graph(self, name: str) -> None:
         self.context.flows.create_graph(name=name, append=True, opened=True)
-
-    def on_open_graph_popup(self, file: str) -> None:
-        if not file:
-            return
-
-        path = Path(file)
-        if not path.exists():
-            path.mkdir(parents=True, exist_ok=True)
-
-        if not path.is_dir():
-            raise NotADirectoryError(f"'{file}' is not a directory")
-
-        # self.context.open_flow_graph(path)
-        assert self
 
     def on_import_graph(self, file: str) -> None:
         pass
@@ -270,26 +248,7 @@ class FlowMode(BaseMode):
         menu_item("Upload to ...", enabled=False)
 
     @override
-    def do_event(self, event: Event) -> bool:
-        return False
-
-    @override
-    def do_msg(self, msg: Msg) -> bool:
-        return False
-
-    @override
-    def on_keyboard(self, keys: ScancodeWrapper) -> None:
-        pass
-
-    @override
     def do_process(self) -> None:
-        viewport = imgui.get_main_viewport()
-        with dockspace_over_viewport_context(viewport=viewport) as dockspace_id:
-            assert isinstance(dockspace_id, int)
-            assert 0 <= dockspace_id
-            if not self._layout.initialized:
-                self._layout.initialize_dock_layout(dockspace_id, viewport)
-
         self._layout.do_process()
 
         for popup in self._popups:

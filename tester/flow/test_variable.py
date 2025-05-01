@@ -7,11 +7,11 @@ from unittest import TestCase, main
 from type_serialize import deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.variable import FlowVariable
+from cvp.flow.variable import FlowVariable, VariableName
 
 
 @dataclass
-class TestValue:
+class _TestValue:
     value0: int = 100
     value1: str = "test"
     value2: List[int] = field(default_factory=lambda: [1, 2, 3])
@@ -25,11 +25,11 @@ class VariableTestCase(TestCase):
         dtype = Dtype(int)
         persistent = True
         docs = "docs"
-        value = TestValue()
-        initial = TestValue(200, "test2")
+        value = _TestValue()
+        initial = _TestValue(200, "test2")
 
         var1 = FlowVariable(
-            name=name,
+            name=VariableName(name),
             dtype=dtype,
             docs=docs,
             value=value,

@@ -5,10 +5,10 @@ from typing import Optional
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
+from cvp.apps.player.widgets.flows.selectable_graph import selectable_graph
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
-from cvp.imgui.drag_types import DRAG_FLOW_GRAPH
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.push_item_width import align_right_side_context
 from cvp.types.override import override
@@ -39,14 +39,6 @@ class GraphsFlowWindow(BaseFlowWindow):
             if self._filter and graph.name.find(self._filter) == -1:
                 continue
 
-            if imgui.selectable(f"{graph.name}###{graph.key}", p_selected=False):
+            if selectable_graph(graph, use_drag_source=True):
                 if not graph.opened and imgui.is_mouse_double_clicked(MOUSE_LEFT):
                     graph.opened = True
-
-            if imgui.begin_drag_drop_source():
-                try:
-                    data = graph.key.encode()
-                    imgui.set_drag_drop_payload(DRAG_FLOW_GRAPH, data, len(data))
-                    imgui.text(graph.name)
-                finally:
-                    imgui.end_drag_drop_source()

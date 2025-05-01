@@ -5,6 +5,7 @@ from typing import Optional
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
+from cvp.apps.player.widgets.flows.selectable_variable import drag_variable_source
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph
@@ -12,7 +13,6 @@ from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
 from cvp.imgui.begin import begin_context
-from cvp.imgui.drag_types import DRAG_FLOW_VARIABLE
 from cvp.imgui.flags.tree_node import (
     ARC_FLAGS,
     CATEGORY_FLAGS,
@@ -156,13 +156,7 @@ class TreeFlowWindow(BaseFlowWindow):
                 graph.unselect_all_items()
             graph.flip_select_item(variable)
 
-        if imgui.begin_drag_drop_source():
-            try:
-                payload = variable.name.encode()
-                imgui.set_drag_drop_payload(DRAG_FLOW_VARIABLE, payload, len(payload))
-                imgui.text(variable.name)
-            finally:
-                imgui.end_drag_drop_source()
+        drag_variable_source(variable)
 
         imgui.same_line(imgui.get_cursor_pos_x())
 

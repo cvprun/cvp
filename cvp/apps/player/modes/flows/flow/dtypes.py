@@ -5,10 +5,10 @@ from typing import Optional
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
+from cvp.apps.player.widgets.flows.selectable_dtype import selectable_dtype
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
-from cvp.imgui.drag_types import DRAG_FLOW_DTYPE
 from cvp.imgui.push_item_width import align_right_side_context
 from cvp.types.override import override
 
@@ -38,11 +38,4 @@ class DtypesFlowWindow(BaseFlowWindow):
             if self._filter and dtype.path.find(self._filter) == -1:
                 continue
 
-            imgui.selectable(dtype.path, p_selected=False)
-            if imgui.begin_drag_drop_source():
-                try:
-                    data = dtype.path.encode()
-                    imgui.set_drag_drop_payload(DRAG_FLOW_DTYPE, data, len(data))
-                    imgui.text(dtype.path)
-                finally:
-                    imgui.end_drag_drop_source()
+            selectable_dtype(dtype, use_drag_source=True)
