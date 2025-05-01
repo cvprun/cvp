@@ -163,14 +163,11 @@ class Context(ContextMixins):
         logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
 
     def save_flow_graph(self, graph: FlowGraph) -> None:
-        filepath = self._home.flows.get_graph_filepath(graph.key)
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        self._flows.write_graph_yaml(filepath, graph)
-        logger.info(f"Save the graph file: '{str(filepath)}'")
+        self._flows.write_graph_file(graph)
+        logger.info(f"Save the graph file: '{graph.key}'")
 
     def save_all_flow_graphs(self) -> None:
-        for graph in self._flows.graphs.values():
-            self.save_flow_graph(graph)
+        self._flows.write_all_graph_file(raise_errors=False)
         logger.info("Save all graph files")
 
     def save_all_ollamas(self) -> None:

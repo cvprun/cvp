@@ -2,7 +2,6 @@
 
 from pathlib import Path
 from typing import Callable, Sequence, Tuple
-from uuid import uuid4
 
 from imgui_bundle import imgui
 from pygame.event import Event
@@ -83,15 +82,7 @@ class FlowMode(BaseMode):
         )
 
     def on_new_graph(self, name: str) -> None:
-        key = str(uuid4())
-        filepath = self.context.home.flows.get_graph_filepath(key)
-        if filepath.exists():
-            raise FileExistsError(f"Graph file already exists: '{str(filepath)}'")
-
-        graph = self.context.flows.create_graph(name, key=key, append=True, opened=True)
-        filepath.parent.mkdir(parents=True, exist_ok=True)
-        self.context.flows.write_graph_yaml(filepath, graph)
-        self._layout.create_graph_window(graph.key)
+        self.context.flows.create_graph(name=name, append=True, opened=True)
 
     def on_open_graph_popup(self, file: str) -> None:
         if not file:

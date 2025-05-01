@@ -9,7 +9,7 @@ from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.drag_types import DRAG_FLOW_NODE
-from cvp.imgui.push_item_width import align_right_side
+from cvp.imgui.push_item_width import align_right_side_context
 from cvp.types.override import override
 
 
@@ -26,10 +26,10 @@ class NodesFlowWindow(BaseFlowWindow):
             self.do_child_process()
 
     def do_child_process(self) -> None:
-        with align_right_side():
+        with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",
-                "Filter...",
+                "Filter nodes ...",
                 self._filter,
             )
             self._filter = filter_result[1]

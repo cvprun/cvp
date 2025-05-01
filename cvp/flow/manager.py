@@ -3,12 +3,8 @@
 from collections import OrderedDict
 from concurrent.futures import Executor
 from copy import deepcopy
-from os import PathLike
 from typing import Any, Optional, Union
 from uuid import uuid4
-
-from type_serialize import deserialize, serialize
-from yaml import dump, full_load
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
@@ -19,20 +15,19 @@ from cvp.flow.runner import FlowRunner
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
-from cvp.logging.logging import flow_logger as logger
 from cvp.nodes.node import Node
 from cvp.nodes.registry.registry import NodeRegistry
+from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.flows import FlowsPath
 from cvp.strings.is_uuid import is_uuid4
 from cvp.types.shapes import Point
-from cvp.yaml.dumpers import IndentListDumper
 
 
 class FlowManager:
     _dtype_registry: DtypeRegistry
     _node_registry: NodeRegistry
 
-    _graphs: OrderedDict[GraphKey, FlowGraph]
+    _graphs: ResourceManager[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
 
     _focused_graph_key: Optional[GraphKey]
@@ -53,7 +48,13 @@ class FlowManager:
         self._dtype_registry = DtypeRegistry(no_defaults=no_dtype_defaults)
         self._node_registry = NodeRegistry(no_defaults=no_node_defaults)
 
-        self._graphs = OrderedDict()
+        self._graphs = ResourceManager(
+            key_type=GraphKey,
+            config_type=FlowGraph,
+            root_dir=path,
+            reload=reload,
+            raise_errors=raise_errors,
+        )
         self._runners = OrderedDict()
 
         self._focused_graph_key = None
@@ -133,11 +134,11 @@ class FlowManager:
         self,
         name: Optional[str] = None,
         *,
-        key: Optional[str] = None,
+        key: Optional[GraphKey] = None,
         append=False,
         opened=False,
     ) -> FlowGraph:
-        graph_key = GraphKey(key if key else str(uuid4()))
+        graph_key = key if key else GraphKey(str(uuid4()))
         graph_name = GraphName(name) if name else None
         graph = FlowGraph(key=graph_key, name=graph_name, opened=opened)
         assert is_uuid4(graph.key)
@@ -145,50 +146,24 @@ class FlowManager:
         if append:
             assert graph.key
             assert graph.key not in self._graphs
-            self._graphs[graph.key] = graph
+            self._graphs.add(graph_key, graph)
 
         return graph
 
-    @staticmethod
-    def dumps_graph_yaml(graph: FlowGraph, encoding="utf-8") -> bytes:
-        return dump(serialize(graph), Dumper=IndentListDumper).encode(encoding)
+    def write_graph_file(self, graph: FlowGraph) -> int:
+        return self._graphs.write_serialized_config_file(graph.key, graph)
 
-    @staticmethod
-    def write_graph_yaml(
-        filepath: Union[str, PathLike[str]],
-        graph: FlowGraph,
-        encoding="utf-8",
-    ) -> None:
-        with open(filepath, "wb") as f:
-            f.write(FlowManager.dumps_graph_yaml(graph, encoding=encoding))
-
-    @staticmethod
-    def loads_graph_yaml(data: bytes) -> FlowGraph:
-        result = deserialize(full_load(data), FlowGraph)
-        result.update_wires_io(force=True)
-        return result
-
-    def read_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> FlowGraph:
-        with open(filepath, "rb") as f:
-            return self.loads_graph_yaml(f.read())
-
-    def update_graph_yaml(self, filepath: Union[str, PathLike[str]]) -> None:
-        graph = self.read_graph_yaml(filepath)
-        if not graph.key:
-            raise ValueError("The 'uuid' of the flow graph does not exist")
-        self._graphs[graph.key] = graph
+    def write_all_graph_file(self, *, raise_errors=False) -> None:
+        return self._graphs.write_all_config_files(raise_errors=raise_errors)
 
     def list_graph_filenames(self):
-        return self._path.list_first_depth_filenames()
+        return self._graphs.list_config_filenames()
+
+    def list_graph_keys(self):
+        return self._graphs.list_config_filekeys()
 
     def read_all_graph_files(self, *, raise_errors=False):
-        for path in self._path.list_first_depth_filepaths():
-            try:
-                self.update_graph_yaml(path)
-            except BaseException as e:
-                if raise_errors:
-                    raise
-                logger.error(f"Failed to read graph file '{path}' - reason: '{e}'")
+        self._graphs.read_all_config_files(raise_errors=raise_errors)
 
     def add_node(self, graph: FlowGraph, node: Union[str, Node]) -> FlowNode:
         node_template = self._node_registry[node]

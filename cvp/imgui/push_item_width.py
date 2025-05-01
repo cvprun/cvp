@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 
 
 @contextmanager
-def item_width(width: Union[int, float]):
+def item_width_context(width: Union[int, float]):
     imgui.push_item_width(width)
     try:
         yield
@@ -16,7 +16,7 @@ def item_width(width: Union[int, float]):
 
 
 @contextmanager
-def align_right_side():
+def align_right_side_context():
     imgui.push_item_width(-imgui.FLT_MIN)
     try:
         yield

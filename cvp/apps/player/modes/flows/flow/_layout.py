@@ -171,9 +171,31 @@ class FlowLayout:
             dock_window(graph_windows.get_window_name(), self._main_dock_id)
         return graph_windows
 
+    def remove_graph_window(self, key: GraphKey):
+        return self._graph_windows.pop(key)
+
+    def sync_graph_windows(self) -> None:
+        graph_keys = set(self._context.flows.graphs.keys())
+        window_keys = set(self._graph_windows.keys())
+        if graph_keys == window_keys:
+            return
+
+        for remove_key in window_keys - graph_keys:
+            self.remove_graph_window(remove_key)
+
+        for create_key in graph_keys - window_keys:
+            self.create_graph_window(create_key)
+
+        graph_keys = set(self._context.flows.graphs.keys())
+        window_keys = set(self._graph_windows.keys())
+        assert graph_keys == window_keys
+
     def do_process(self) -> None:
+        self.sync_graph_windows()
+
         fgw = self.focused_graph_window
         for window in self._windows:
             window.do_process(fgw)
+
         for gw in self._graph_windows.values():
             gw.do_process()

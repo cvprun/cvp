@@ -12,7 +12,7 @@ from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.popups._base import PopupBase
-from cvp.imgui.push_item_width import item_width
+from cvp.imgui.push_item_width import item_width_context
 from cvp.types.override import override
 
 
@@ -74,7 +74,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         if imgui.is_window_appearing():
             imgui.set_keyboard_focus_here()
 
-        with item_width(-1):
+        with item_width_context(-1):
             self._name = input_text_value("Name", self._name)
 
         if pygame.key.get_pressed()[pygame.K_RETURN]:

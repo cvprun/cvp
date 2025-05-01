@@ -22,7 +22,7 @@ from cvp.imgui.input_text import input_text
 from cvp.imgui.popups._base import PopupBase
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
-from cvp.imgui.push_item_width import item_width
+from cvp.imgui.push_item_width import item_width_context
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.logging import logger
 from cvp.types.override import override
@@ -208,7 +208,7 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.same_line()
 
-        with item_width(FIT_WIDTH):
+        with item_width_context(FIT_WIDTH):
             filter_result = imgui.input_text_with_hint(
                 "##Filter",
                 "Filter",
@@ -217,7 +217,7 @@ class OpenFilePopup(PopupBase[str]):
             if filter_result[0]:
                 self._filter = filter_result[1]
 
-        with item_width(FIT_WIDTH):
+        with item_width_context(FIT_WIDTH):
             if location_result := input_text(
                 "##Location",
                 self._location_text,
@@ -276,7 +276,7 @@ class OpenFilePopup(PopupBase[str]):
         imgui.separator()
 
         if self._open_mode == self.OpenMode.input_filename:
-            with item_width(FIT_WIDTH):
+            with item_width_context(FIT_WIDTH):
                 if filename_result := input_text("##Filename", self._filename):
                     self._filename = filename_result.value
                     self._selected = os.path.join(self._current_dir, self._filename)

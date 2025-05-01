@@ -232,6 +232,9 @@ class ControllableCanvas(ControllableProps):
         cx, cy = screen_pos.x, screen_pos.y
         cw, ch = region_size.x, region_size.y
 
+        if cw == 0 or ch == 0:
+            raise ValueError("Invalid region size")
+
         assert isinstance(mx, float)
         assert isinstance(my, float)
         assert isinstance(cx, float)
@@ -313,6 +316,3 @@ class ControllableCanvas(ControllableProps):
 
         changed = self._pan_x.changed or self._pan_y.changed or self._zoom.changed
         return ControllableResult(changed, self.pan_x, self.pan_y, self.zoom)
-
-    def __call__(self):
-        return self.update_state()

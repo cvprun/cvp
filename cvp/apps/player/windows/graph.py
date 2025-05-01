@@ -23,6 +23,7 @@ from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.input_text import InputTextPopup
+from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
@@ -156,8 +157,13 @@ class FlowGraphWindow(ControllableCanvas):
         return f"{graph_name}###{class_name}/{self._graph_key}"
 
     def do_process(self) -> None:
-        visible, opened = imgui.begin(self.get_window_name(), self.graph.opened)
-        self.graph.opened = opened
+        if not self.graph.opened:
+            return
+
+        with style_window_padding_context(0.0, 0.0):
+            visible, opened = imgui.begin(self.get_window_name(), self.graph.opened)
+            assert isinstance(opened, bool)
+            self.graph.opened = opened
 
         if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
             self.context.flows.focused_graph_key = self._graph_key
@@ -168,8 +174,11 @@ class FlowGraphWindow(ControllableCanvas):
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._graph_key} graph")
+        except BaseException as e:
+            logger.error(e)
         finally:
             imgui.end()
+
         self._new_variable_popup.do_process()
 
     def do_child_process(self) -> None:

@@ -14,7 +14,7 @@ from cvp.imgui.button import button
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.push_item_width import item_width
+from cvp.imgui.push_item_width import item_width_context
 from cvp.imgui.text_colored import text_colored
 from cvp.onvif.client import OnvifClient
 from cvp.onvif.config import OnvifConfig
@@ -133,7 +133,7 @@ class OnvifApisTab(BaseOnvifTab):
         except ValueError:
             binding_index = NOT_FOUND_INDEX
 
-        with item_width(-1):
+        with item_width_context(-1):
             binding_result = imgui.combo(
                 "## Binding",
                 binding_index,
