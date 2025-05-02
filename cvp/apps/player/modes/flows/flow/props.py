@@ -18,7 +18,7 @@ from cvp.flow.line_type import (
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
-from cvp.flow.variable import FlowVariable, VariableName
+from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.flow.wire import FlowWire
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
@@ -253,7 +253,7 @@ class PropsFlowWindow(BaseFlowWindow):
         input_text_disabled("Type", type(variable).__name__)
         input_text_disabled("Dtype", variable.dtype.path)
 
-        variable.name = VariableName(input_text_value("Name", variable.name))
+        variable.key = VariableKey(input_text_value("Key", variable.key))
         variable.docs = input_text_value("Docs", variable.docs)
 
         if imgui.radio_button("Persistent", variable.persistent):

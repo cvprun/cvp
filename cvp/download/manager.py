@@ -31,11 +31,14 @@ class DownloadManager(ResourceManager[DownloadKey, DownloadItem]):
         self,
         url: str,
         *,
-        key: Optional[DownloadKey] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[DownloadKey, DownloadItem]:
-        key = key if key else DownloadKey(str(uuid4()))
-        assert key
+        if not uuid:
+            uuid = str(uuid4())
+        assert isinstance(uuid, str)
 
-        item = DownloadItem(key=key, url=url)
-        self.add(key, item)
-        return key, item
+        item = DownloadItem(uuid=uuid, url=url)
+        assert uuid == str(item.key)
+
+        self.add(item.key, item)
+        return item.key, item

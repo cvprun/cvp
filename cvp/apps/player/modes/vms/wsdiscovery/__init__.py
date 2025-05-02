@@ -309,7 +309,7 @@ class WsDiscoveryMode(BaseMode):
                 if has_onvif_scope:
                     imgui.same_line()
                     if imgui.button(f"Use ONVIF## Use ONVIF[{i}]"):
-                        self.context.onvifs.add_config(name=wsd.name, address=xaddr)
+                        self.context.onvifs.add_onvif(name=wsd.name, address=xaddr)
 
                 imgui.same_line()
                 input_text_disabled(f"##XAddr[{i}]", xaddr)

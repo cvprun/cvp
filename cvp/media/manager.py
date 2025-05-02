@@ -76,18 +76,21 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
     def logging_newline_size(self) -> int:
         return self.ffmpeg_config.logging_newline_size
 
-    def add_config(
+    def add_media(
         self,
         name=MEDIA_NONAME,
         *,
-        key: Optional[MediaKey] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[MediaKey, MediaConfig]:
-        key = key if key else MediaKey(str(uuid4()))
-        assert key
+        if not uuid:
+            uuid = str(uuid4())
+        assert isinstance(uuid, str)
 
-        config = MediaConfig(key=key, name=name)
-        self.add(key, config)
-        return key, config
+        config = MediaConfig(uuid=uuid, name=name)
+        assert uuid == str(config.key)
+
+        self.add(config.key, config)
+        return config.key, config
 
     def spawnable(self, key: MediaKey) -> bool:
         return self._processes.spawnable(key)

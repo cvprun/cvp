@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 
 from cvp.dtypes.defaults.typing import get_typing_any
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.variable import FlowVariable, VariableName
+from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.imgui.button import button
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.input_text_value import input_text_value
@@ -64,7 +64,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         return self._name
 
     def create_variable(self):
-        return FlowVariable(VariableName(self._name), self._dtype)
+        return FlowVariable(VariableKey(self._name), self._dtype)
 
     @override
     def on_process(self) -> Optional[FlowVariable]:

@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from type_serialize import deserialize, serialize
 
 from cvp.dtypes.dtype import Dtype
-from cvp.flow.variable import FlowVariable, VariableName
+from cvp.flow.variable import FlowVariable, VariableKey
 
 
 @dataclass
@@ -29,7 +29,7 @@ class VariableTestCase(TestCase):
         initial = _TestValue(200, "test2")
 
         var1 = FlowVariable(
-            name=VariableName(name),
+            key=VariableKey(name),
             dtype=dtype,
             docs=docs,
             value=value,

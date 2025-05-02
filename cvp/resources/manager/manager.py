@@ -73,7 +73,7 @@ class ResourceManager(Dict[KeyT, ConfigT]):
                 if raise_errors:
                     raise
                 cls = self.class_name
-                logger.error(f"Failed to read {cls} file '{key}' - reason: '{e}'")
+                logger.exception(f"Failed to read {cls} file '{key}' - reason: '{e}'")
 
     def write_all_config_files(self, *, raise_errors=False) -> None:
         for key, config in self.items():

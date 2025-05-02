@@ -11,13 +11,21 @@ MediaKey = NewType("MediaKey", str)
 
 @dataclass
 class MediaConfig:
-    key: MediaKey = field(default_factory=lambda: MediaKey(str(uuid4())))
+    uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
     opened: bool = False
     file: str = field(default_factory=str)
     frame_width: int = MEDIA_FRAME_WIDTH
     frame_height: int = MEDIA_FRAME_HEIGHT
     inspect_timeout: float = MEDIA_INSPECT_TIMEOUT
+
+    @property
+    def key(self):
+        return MediaKey(self.uuid)
+
+    @key.setter
+    def key(self, value: MediaKey) -> None:
+        self.uuid = str(value)
 
     @property
     def frame_size(self) -> Tuple[int, int]:

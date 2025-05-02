@@ -25,7 +25,7 @@ class DownloadState(StrEnum):
 
 @dataclass
 class DownloadItem:
-    key: DownloadKey = field(default_factory=lambda: DownloadKey(str(uuid4())))
+    uuid: str = field(default_factory=lambda: str(uuid4()))
     url: str = field(default_factory=str)
     dest: str = field(default_factory=str)
     total: int = UNKNOWN_TOTAL_SIZE
@@ -37,6 +37,14 @@ class DownloadItem:
     eta: float = 0.0
     error: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
+
+    @property
+    def key(self):
+        return DownloadKey(self.uuid)
+
+    @key.setter
+    def key(self, value: DownloadKey) -> None:
+        self.uuid = str(value)
 
     @property
     def has_error(self) -> bool:

@@ -94,7 +94,7 @@ class OnvifMode(BaseMode):
                 self.onvifs.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected_submenu = self.onvifs.add_config()[0]
+                self.selected_submenu = self.onvifs.add_onvif()[0]
             imgui.same_line()
             if button("Del", disabled=self.selected_submenu not in self.onvifs):
                 self._remove_candidate = self.selected_submenu

@@ -16,7 +16,7 @@ class HttpAuth(StrEnum):
 
 @dataclass
 class OnvifConfig:
-    key: OnvifKey = field(default_factory=lambda: OnvifKey(str(uuid4())))
+    uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
     address: str = field(default_factory=str)
     username: str = field(default_factory=str)
@@ -31,6 +31,14 @@ class OnvifConfig:
     # GUI Handling
     select_binding: str = field(default_factory=str)
     select_api: str = field(default_factory=str)
+
+    @property
+    def key(self):
+        return OnvifKey(self.uuid)
+
+    @key.setter
+    def key(self, value: OnvifKey) -> None:
+        self.uuid = str(value)
 
     @property
     def is_http_basic(self):

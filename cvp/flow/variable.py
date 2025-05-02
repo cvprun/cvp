@@ -12,14 +12,14 @@ from cvp.memory.copy import CopyMethod, copy_flexible
 from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
 
-VariableName = NewType("VariableName", str)
+VariableKey = NewType("VariableKey", str)
 
 
 class FlowVariable(ValueProxy[ValueT], Serializable):
 
     @unique
     class _Keys(StrEnum):
-        name_ = "name"
+        key = auto()
         dtype = auto()
         docs = auto()
 
@@ -35,7 +35,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
 
     def __init__(
         self,
-        name: VariableName,
+        key: VariableKey,
         dtype: Dtype,
         docs: Optional[str] = None,
         value: Any = None,
@@ -47,10 +47,10 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         selected=False,
         hovering=False,
     ):
-        if not name:
-            raise ValueError("The 'name' argument is required")
+        if not key:
+            raise ValueError("The 'key' argument is required")
 
-        self.name = name
+        self.key = key
         self.dtype = dtype
         self.docs = docs if docs else str()
 
@@ -70,13 +70,13 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
 
     def __str__(self) -> str:
         """In `cvp.flow` module, this return value is used as a key value."""
-        return self.name
+        return self.key
 
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
             return False
         return (
-            self.name == other.name
+            self.key == other.key
             and self.dtype == other.dtype
             and self.docs == other.docs
             and self._value == other._value
@@ -89,7 +89,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.name = copy(self.name)
+        result.key = copy(self.key)
         result.dtype = copy(self.dtype)
         result.docs = copy(self.docs)
         result._value = copy(self._value)
@@ -106,7 +106,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.name = deepcopy(self.name, memo)
+        result.key = deepcopy(self.key, memo)
         result.dtype = deepcopy(self.dtype, memo)
         result.docs = deepcopy(self.docs, memo)
         result._value = deepcopy(self._value, memo)
@@ -122,7 +122,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.name_): str(self.name),
+            str(self._Keys.key): str(self.key),
             str(self._Keys.dtype): serialize(self.dtype),
             str(self._Keys.docs): self.docs,
             str(self._Keys.value_): dumps(self._value),
@@ -140,17 +140,17 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
         self._value = loads(data.get(self._Keys.value_, None))
         self._initial = loads(data.get(self._Keys.initial, None))
 
-        name = data.get(self._Keys.name_)
-        if not name:
-            raise ValueError(f"The '{self._Keys.name_}' attribute is required")
-        if not isinstance(name, str):
-            raise TypeError(f"The '{self._Keys.name_}' attribute only allows str type")
+        key = data.get(self._Keys.key)
+        if not key:
+            raise ValueError(f"The '{self._Keys.key}' attribute is required")
+        if not isinstance(key, str):
+            raise TypeError(f"The '{self._Keys.key}' attribute only allows str type")
 
         dtype = data.get(self._Keys.dtype)
         if not dtype:
             raise ValueError(f"The '{self._Keys.dtype}' attribute is required")
 
-        self.name = VariableName(name)
+        self.key = VariableKey(key)
         self.dtype = deserialize(dtype, Dtype)
         self.docs = data.get(self._Keys.docs, str())
 
@@ -220,7 +220,7 @@ class FlowVariable(ValueProxy[ValueT], Serializable):
 
     def as_unformatted_text(self) -> str:
         return (
-            f"Name: {self.name}\n"
+            f"Key: {self.key}\n"
             f"Docs: {self.docs}\n"
             f"Data Type: {self.dtype}\n"
             f"Value: {str(self._value)}\n"

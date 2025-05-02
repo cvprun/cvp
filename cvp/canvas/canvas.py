@@ -14,7 +14,7 @@ CanvasKey = NewType("CanvasKey", str)
 
 @dataclass
 class Canvas:
-    key: CanvasKey = field(default_factory=lambda: CanvasKey(str(uuid4())))
+    uuid: str = field(default_factory=lambda: str(uuid4()))
     workspace: str = field(default_factory=str)
     opened: bool = False
 
@@ -26,3 +26,11 @@ class Canvas:
 
     control: ViewControl = field(default_factory=ViewControl)
     options: DrawingOptions = field(default_factory=DrawingOptions)
+
+    @property
+    def key(self):
+        return CanvasKey(self.uuid)
+
+    @key.setter
+    def key(self, value: CanvasKey) -> None:
+        self.uuid = str(value)

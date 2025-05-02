@@ -15,8 +15,8 @@ from cvp.imgui.selectable import selectable
 def drag_variable_source(variable: FlowVariable, cond: Union[Cond, int] = 0):
     if begin_source():
         try:
-            set_payload(DRAG_FLOW_VARIABLE, variable.name, cond)
-            imgui.text(variable.name)
+            set_payload(DRAG_FLOW_VARIABLE, variable.key, cond)
+            imgui.text(variable.key)
         finally:
             end_source()
 
@@ -30,7 +30,7 @@ def selectable_variable(
     use_drag_source=False,
     drag_cond: Union[Cond, int] = 0,
 ):
-    result = selectable(variable.name, selected, flags, size)
+    result = selectable(variable.key, selected, flags, size)
     if use_drag_source:
         drag_variable_source(variable, drag_cond)
     return result

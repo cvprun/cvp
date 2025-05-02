@@ -89,7 +89,7 @@ class MediasMode(BaseMode):
                 self.medias.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected_submenu = self.medias.add_config()[0]
+                self.selected_submenu = self.medias.add_media()[0]
             imgui.same_line()
             if button("Del", disabled=self.selected_submenu not in self.medias):
                 self._remove_candidate = self.selected_submenu

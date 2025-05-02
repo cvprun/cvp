@@ -16,7 +16,7 @@ from typing import (
 from cvp.flow.graph import FlowGraph
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
-from cvp.flow.variable import FlowVariable, VariableName
+from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.nodes.record import NodeRecord
 from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
@@ -40,7 +40,7 @@ class FlowMemory:
     _datas: Deque[Any]
     _pins: Dict[PinKey, int]
     _wires: Dict[WireKey, int]
-    _vars: Dict[VariableName, ValueProxy]
+    _vars: Dict[VariableKey, ValueProxy]
 
     def __init__(self):
         self._datas = deque()
@@ -84,7 +84,7 @@ class FlowMemory:
 
     def __insert_shared_variables(
         self,
-        variables: Mapping[VariableName, FlowVariable],
+        variables: Mapping[VariableKey, FlowVariable],
     ) -> None:
         for key, val in variables.items():
             self._vars[key] = val

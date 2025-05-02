@@ -148,7 +148,7 @@ class TreeFlowWindow(BaseFlowWindow):
         if variable.selected:
             flags |= SELECTED
 
-        label = f"({variable.dtype.class_name}) {variable.name}"
+        label = f"({variable.dtype.class_name}) {variable.key}"
         imgui.tree_node_ex(label, flags)
 
         if imgui.is_item_clicked() and not imgui.is_item_toggled_open():

@@ -15,7 +15,7 @@ EprKey = NewType("EprKey", str)
 
 @dataclass
 class WsDiscovery:
-    epr: EprKey = field(default_factory=lambda: EprKey(str()))  # EndPoint Reference
+    epr: str = field(default_factory=str)  # EndPoint Reference
     instance_id: int = WSD_INVALID_INSTANCE_ID
     message_number: int = WSD_INVALID_MESSAGE_NUMBER
     metadata_version: int = WSD_INVALID_METADATA_VERSION
@@ -25,6 +25,14 @@ class WsDiscovery:
     name: str = field(default_factory=str)
     error: str = field(default_factory=str)
     created_at: datetime = field(default_factory=lambda: datetime.now().astimezone())
+
+    @property
+    def key(self):
+        return EprKey(self.epr)
+
+    @key.setter
+    def key(self, value: EprKey) -> None:
+        self.epr = str(value)
 
     @property
     def has_error(self) -> bool:

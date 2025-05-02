@@ -35,16 +35,19 @@ class OnvifManager(ResourceManager[OnvifKey, OnvifConfig]):
     def pop_client(self, key: OnvifKey) -> OnvifClient:
         return self._clients.pop(key)
 
-    def add_config(
+    def add_onvif(
         self,
         name=ONVIF_NONAME,
         address=ONVIF_ADDRESS,
         *,
-        key: Optional[OnvifKey] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[OnvifKey, OnvifConfig]:
-        key = key if key else OnvifKey(str(uuid4()))
-        assert key
+        if not uuid:
+            uuid = str(uuid4())
+        assert isinstance(uuid, str)
 
-        config = OnvifConfig(key=key, name=name, address=address)
-        self.add(key, config)
-        return key, config
+        config = OnvifConfig(uuid=uuid, name=name, address=address)
+        assert uuid == str(config.key)
+
+        self.add(config.key, config)
+        return config.key, config
