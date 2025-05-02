@@ -48,6 +48,9 @@ MOUSE_WHEEL_OFFSET_SCALE: Final[float] = 0.5
 LOGGING_STEP: Final[int] = 1000
 SLOW_CALLBACK_DURATION: Final[float] = 0.05
 
+SAFETY_FILE_SUFFIX_NEW: Final[str] = ".new.backup"
+SAFETY_FILE_SUFFIX_OLD: Final[str] = ".old.backup"
+
 CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
 CHAT_TITLE_NONAME: Final[str] = "[New chat]"
 CHAT_SERVER_NONAME: Final[str] = "[New server]"
