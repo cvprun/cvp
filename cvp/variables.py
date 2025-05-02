@@ -6,6 +6,7 @@ from cvp.types.colors import RGBA
 from cvp.types.shapes import Size
 
 TIMEOUT_INFINITE: Final[float] = -1.0
+INFINITE: Final[int] = -1
 UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
 UNKNOWN_TOTAL_SIZE: Final[int] = -1
