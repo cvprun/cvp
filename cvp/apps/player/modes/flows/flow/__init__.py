@@ -3,6 +3,7 @@
 from typing import Callable, Sequence, Tuple
 
 from imgui_bundle import imgui
+from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.flows.flow._layout import FlowLayout
@@ -246,6 +247,11 @@ class FlowMode(BaseMode):
     @staticmethod
     def do_disabled_deploy_menu() -> None:
         menu_item("Upload to ...", enabled=False)
+
+    @override
+    def on_keyboard(self, keys: ScancodeWrapper) -> None:
+        if window := self._layout.focused_window:
+            window.do_keyboard_events()
 
     @override
     def do_process(self) -> None:

@@ -22,12 +22,14 @@ from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
+from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
+from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
 from cvp.types.colors import RGBA
@@ -80,6 +82,88 @@ class FlowGraphWindow(ControllableCanvas):
             cancel="Cancel",
             target=self.on_new_variable,
         )
+
+        self._shortcut_escape = Shortcut(
+            KeyFlags.escape,
+            callback=self.do_unselect_all_items,
+        )
+        self._shortcut_delete = Shortcut(
+            KeyFlags.delete,
+            callback=self.do_remove_selected_items,
+        )
+
+        self._shortcut_undo = Shortcut(
+            KeyFlags.z,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_undo,
+        )
+        self._shortcut_redo = Shortcut(
+            KeyFlags.z,
+            ctrl=True,
+            shift=True,
+            alt=False,
+            callback=self.do_redo,
+        )
+        self._shortcut_redo_for_windows = Shortcut(
+            KeyFlags.y,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_redo,
+        )
+
+        self._shortcut_select_all_nodes = Shortcut(
+            KeyFlags.a,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_select_all_nodes,
+        )
+        self._shortcut_select_all_items = Shortcut(
+            KeyFlags.a,
+            ctrl=True,
+            shift=True,
+            alt=False,
+            callback=self.do_select_all_items,
+        )
+
+        self._shortcut_cut = Shortcut(
+            KeyFlags.x,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_cut_selected_items,
+        )
+        self._shortcut_copy = Shortcut(
+            KeyFlags.c,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_copy_selected_items,
+        )
+        self._shortcut_paste = Shortcut(
+            KeyFlags.v,
+            ctrl=True,
+            shift=False,
+            alt=False,
+            callback=self.do_paste_selected_items,
+        )
+
+        # noinspection PyProtectedMember
+        self._shortcuts = [
+            self._shortcut_escape,
+            self._shortcut_delete,
+            self._shortcut_undo,
+            self._shortcut_redo,
+            self._shortcut_redo_for_windows,
+            self._shortcut_select_all_nodes,
+            self._shortcut_select_all_items,
+            self._shortcut_cut,
+            self._shortcut_copy,
+            self._shortcut_paste,
+        ]
 
     @classmethod
     def create_opened_windows(cls, context: Context):
@@ -226,73 +310,58 @@ class FlowGraphWindow(ControllableCanvas):
 
         self.draw()
 
-    def on_canvas_events(self) -> None:
-        # ctrl_down = self.ctrl_down
-        # shift_down = self.shift_down
-        # alt_down = self.alt_down
-        # only_ctrl = ctrl_down and not shift_down and not alt_down
-        # ctrl_shift = ctrl_down and shift_down and not alt_down
-        #
-        # if self.imgui_is_pressed_delete():
-        #     self.graph.remove_selected_items()
-        #     self.save_history("Remove selected items")
-        #     return
-        #
-        # if self.imgui_is_pressed_escape():
-        #     self.graph.unselect_all_items()
-        #     return
-        #
-        # if self.history.undoable:
-        #     if only_ctrl and self.imgui_is_pressed_z():
-        #         self.undo_history()
-        #         return
-        #
-        # if self.history.redoable:
-        #     if only_ctrl and self.imgui_is_pressed_y():
-        #         self.redo_history()
-        #         return
-        #     elif ctrl_shift and self.imgui_is_pressed_z():
-        #         self.redo_history()
-        #         return
-        #
-        # if only_ctrl and self.imgui_is_pressed_a():
-        #     self.graph.select_all_nodes()
-        #     return
-        #
-        # if ctrl_shift and self.imgui_is_pressed_a():
-        #     self.graph.select_all_items()
-        #     return
-        #
-        # if only_ctrl and self.imgui_is_pressed_x():
-        #     self.context.flows.clipboard_items = self.graph.selection.deepcopy()
-        #     self.context.flows.clipboard_pivot = self.graph.selection.group_pos
-        #     self.graph.remove_selected_items()
-        #     self.save_history("Cut selected items")
-        #     return
-        #
-        # if only_ctrl and self.imgui_is_pressed_c():
-        #     self.context.flows.clipboard_items = self.graph.selection.deepcopy()
-        #     px, py = self.graph.selection.group_pos
-        #     px += self.config.paste_margin
-        #     py += self.config.paste_margin
-        #     self.context.flows.clipboard_pivot = px, py
-        #     self.save_history("Copy selected items")
-        #     return
-        #
-        # if only_ctrl and self.imgui_is_pressed_v():
-        #     self.graph.unselect_all_items()
-        #     self.graph.paste_selection(
-        #         self.context.flows.clipboard_items,
-        #         self.context.flows.clipboard_pivot,
-        #         selected=True,
-        #     )
-        #     px, py = self.context.flows.clipboard_pivot
-        #     px += self.config.paste_margin
-        #     py += self.config.paste_margin
-        #     self.context.flows.clipboard_pivot = px, py
-        #     self.save_history("Paste selected items")
-        #     return
-        pass
+    def do_keyboard_events(self) -> None:
+        for shortcut in self._shortcuts:
+            if shortcut():
+                return
+
+    def do_remove_selected_items(self) -> None:
+        self.graph.remove_selected_items()
+        self.save_history("Remove selected items")
+
+    def do_unselect_all_items(self) -> None:
+        self.graph.unselect_all_items()
+
+    def do_undo(self) -> None:
+        if self.history.undoable:
+            self.undo_history()
+
+    def do_redo(self) -> None:
+        if self.history.redoable:
+            self.redo_history()
+
+    def do_select_all_nodes(self) -> None:
+        self.graph.select_all_nodes()
+
+    def do_select_all_items(self) -> None:
+        self.graph.select_all_items()
+
+    def do_cut_selected_items(self) -> None:
+        self.context.flows.clipboard_items = self.graph.selection.deepcopy()
+        self.context.flows.clipboard_pivot = self.graph.selection.group_pos
+        self.graph.remove_selected_items()
+        self.save_history("Cut selected items")
+
+    def do_copy_selected_items(self) -> None:
+        self.context.flows.clipboard_items = self.graph.selection.deepcopy()
+        px, py = self.graph.selection.group_pos
+        px += self.config.paste_margin
+        py += self.config.paste_margin
+        self.context.flows.clipboard_pivot = px, py
+        self.save_history("Copy selected items")
+
+    def do_paste_selected_items(self) -> None:
+        self.graph.unselect_all_items()
+        self.graph.paste_selection(
+            self.context.flows.clipboard_items,
+            self.context.flows.clipboard_pivot,
+            selected=True,
+        )
+        px, py = self.context.flows.clipboard_pivot
+        px += self.config.paste_margin
+        py += self.config.paste_margin
+        self.context.flows.clipboard_pivot = px, py
+        self.save_history("Paste selected items")
 
     # ==================================================================================
     # region: Context Menu Operations
