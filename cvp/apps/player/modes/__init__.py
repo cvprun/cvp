@@ -15,7 +15,6 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.canvas import CanvasMode
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.cms.datasets import DatasetsMode
         from cvp.apps.player.modes.cms.files import FilesMode
@@ -42,7 +41,6 @@ class ModeManager:
         # [IMPORTANT] Do not change the initialize order!
 
         self.binary_text_mode = BinaryTextMode(context)
-        self.canvas_mode = CanvasMode(context)
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
@@ -72,7 +70,7 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.dashboard_mode, self.chat_mode, self.canvas_mode
+        self._menu_modes = self.dashboard_mode, self.chat_mode
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
