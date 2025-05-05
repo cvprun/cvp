@@ -23,7 +23,7 @@ class ModeManager:
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flows.dtype import DtypeMode
-        from cvp.apps.player.modes.flows.flow import FlowMode
+        from cvp.apps.player.modes.flows.flow import MainMode
         from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
@@ -48,7 +48,7 @@ class ModeManager:
         self.faker_mode = FakerMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.files_mode = FilesMode(context)
-        self.flow_mode = FlowMode(context)
+        self.flow_mode = MainMode(context)
         self.hash_mode = HashMode(context)
         self.media_player_mode = MediaPlayerMode(context)
         self.medias_mode = MediasMode(context)

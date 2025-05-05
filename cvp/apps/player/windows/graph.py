@@ -3,6 +3,8 @@
 from typing import Final, List, Optional
 
 from imgui_bundle import imgui
+from pygame.event import Event
+from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.widgets.flows.drag_target import accept_target
 from cvp.apps.player.widgets.flows.drag_types import DragTypes
@@ -33,6 +35,7 @@ from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
+from cvp.msgs.msg import Msg
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
@@ -386,10 +389,22 @@ class FlowGraphWindow(ControllableCanvas):
         self.draw()
 
     # ==================================================================================
+    # region: Event/Message Operations
+    # ==================================================================================
+
+    def do_event(self, event: Event) -> bool:
+        return False
+
+    def do_msg(self, msg: Msg) -> bool:
+        return False
+
+    # ==================================================================================
+    # endregion: Event/Message Operations
+    # ==================================================================================
     # region: Keyboard Operations
     # ==================================================================================
 
-    def do_keyboard_events(self) -> None:
+    def on_keyboard(self, keys: ScancodeWrapper) -> None:
         for shortcut in self._shortcuts:
             if shortcut():
                 return
