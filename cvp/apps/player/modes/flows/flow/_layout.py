@@ -147,8 +147,8 @@ class FlowLayout:
 
     @property
     def focused_window(self):
-        if focused_key := self._context.flows.focused_key:
-            return self._graph_windows.get(focused_key)
+        if focused_key := self._context.config.navigation.focused_key:
+            return self._graph_windows.get(GraphKey(focused_key))
         else:
             return None
 

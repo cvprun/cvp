@@ -4,7 +4,6 @@ from imgui_bundle import imgui
 
 from cvp.canvas.canvas import CanvasKey
 from cvp.context.context import Context
-from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.text_centered import text_centered
@@ -47,6 +46,14 @@ class CanvasWindow(ControllableCanvas):
         return self.context.canvases[self._canvas_key]
 
     @property
+    def focused_key(self):
+        return CanvasKey(self.context.config.navigation.focused_key)
+
+    @focused_key.setter
+    def focused_key(self, value: CanvasKey) -> None:
+        self.context.config.navigation.focused_key = str(value)
+
+    @property
     def config(self):
         return self.context.config.canvas
 
@@ -56,7 +63,7 @@ class CanvasWindow(ControllableCanvas):
 
     def get_window_name(self) -> str:
         class_name = type(self).__name__
-        canvas = self.context.flows.canvass.get(self._canvas_key)
+        canvas = self.context.canvases.get(self._canvas_key)
         canvas_name = canvas.name if canvas else class_name
         return f"{canvas_name}###{class_name}/{self._canvas_key}"
 
@@ -69,12 +76,12 @@ class CanvasWindow(ControllableCanvas):
             assert isinstance(opened, bool)
             self.canvas.opened = opened
 
-        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
-            self.context.flows.focused_key = self._canvas_key
-
         try:
             if visible:
                 if self._canvas_key in self.context.flows.canvass:
+                    self.do_canvas_process()
+                    if self.focusing:
+                        self.focused_key = self._canvas_key
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._canvas_key} canvas")
@@ -84,7 +91,7 @@ class CanvasWindow(ControllableCanvas):
             imgui.end()
 
     def do_child_process(self) -> None:
-        self.do_canvas_process()
+        pass
 
     def do_process_controllers(self, debugging=False) -> None:
         if result := self.render_controllers(debugging=debugging):

@@ -244,6 +244,14 @@ class FlowGraphWindow(ControllableCanvas):
         return self.context.flows.graphs[self._graph_key]
 
     @property
+    def focused_key(self):
+        return GraphKey(self.context.config.navigation.focused_key)
+
+    @focused_key.setter
+    def focused_key(self, value: GraphKey) -> None:
+        self.context.config.navigation.focused_key = str(value)
+
+    @property
     def config(self):
         return self.context.config.flow
 
@@ -323,7 +331,7 @@ class FlowGraphWindow(ControllableCanvas):
                 if self._graph_key in self.context.flows.graphs:
                     self.do_canvas_process()
                     if self.focusing:
-                        self.context.flows.focused_key = self._graph_key
+                        self.focused_key = self._graph_key
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._graph_key} graph")

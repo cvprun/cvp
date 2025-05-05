@@ -30,7 +30,6 @@ class FlowManager:
     _graphs: ResourceManager[GraphKey, FlowGraph]
     _runners: OrderedDict[str, FlowRunner]
 
-    _focused_key: Optional[GraphKey]
     _clipboard_items: Optional[FlowSelection]
     _clipboard_pivot: Optional[Point]
 
@@ -57,7 +56,6 @@ class FlowManager:
         )
         self._runners = OrderedDict()
 
-        self._focused_key = None
         self._clipboard_items = None
         self._clipboard_pivot = None
 
@@ -91,20 +89,6 @@ class FlowManager:
     @property
     def runners(self):
         return self._runners
-
-    @property
-    def focused_key(self):
-        return self._focused_key
-
-    @focused_key.setter
-    def focused_key(self, value: GraphKey) -> None:
-        self._focused_key = value
-
-    @property
-    def focused_graph(self) -> Optional[FlowGraph]:
-        if self._focused_key is None:
-            return None
-        return self._graphs.get(self._focused_key)
 
     @property
     def has_clipboard(self) -> bool:
