@@ -21,10 +21,11 @@ from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
-from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
@@ -75,12 +76,51 @@ class FlowGraphWindow(ControllableCanvas):
         self._drag_dtype = Dtype.any()
         self._variable_key = str()
 
+        self._menus = (
+            ("File", self.on_file_menu),
+            ("Edit", self.on_edit_menu),
+            ("Layer", self.on_layer_menu),
+            ("Run", self.on_run_menu),
+            ("Deploy", self.on_deploy_menu),
+            ("View", self.on_view_menu),
+        )
+
+        self._new_graph_popup = InputTextPopup(
+            title="New graph",
+            label="Please enter a graph name:",
+            ok="Create",
+            cancel="Cancel",
+            target=self.on_new_graph,
+        )
+        self._import_graph_popup = OpenFilePopup(
+            title="Import graph",
+            target=self.on_import_graph,
+        )
+        self._export_graph_popup = OpenFilePopup(
+            title="Export graph",
+            target=self.on_export_graph,
+            open_mode=OpenFilePopup.OpenMode.input_filename,
+        )
+        self._confirm_remove_graph_popup = ConfirmPopup(
+            title="Remove graph",
+            label="Are you sure you want to remove graph?",
+            ok="Remove",
+            cancel="Cancel",
+            target=self.on_confirm_remove_graph,
+        )
         self._new_variable_popup = InputTextPopup(
             title="New variable",
             label="Please enter a variable name:",
             ok="Add",
             cancel="Cancel",
             target=self.on_new_variable,
+        )
+        self._popups = (
+            self._new_graph_popup,
+            self._import_graph_popup,
+            self._export_graph_popup,
+            self._confirm_remove_graph_popup,
+            self._new_variable_popup,
         )
 
         self._shortcut_escape = Shortcut(
@@ -174,6 +214,18 @@ class FlowGraphWindow(ControllableCanvas):
             result[key] = cls(context, key)
         return result
 
+    def on_new_graph(self, name: str) -> None:
+        self.context.flows.create_graph(name=name, append=True, opened=True)
+
+    def on_import_graph(self, file: str) -> None:
+        pass
+
+    def on_export_graph(self, file: str) -> None:
+        pass
+
+    def on_confirm_remove_graph(self, value: bool) -> None:
+        pass
+
     def on_new_variable(self, name: str) -> None:
         if not name:
             raise ValueError("Variable name cannot be empty")
@@ -194,6 +246,22 @@ class FlowGraphWindow(ControllableCanvas):
     @property
     def config(self):
         return self.context.config.flow
+
+    @property
+    def show_layout(self) -> bool:
+        return self.config.nodes.show_layout
+
+    @show_layout.setter
+    def show_layout(self, value: bool) -> None:
+        self.config.nodes.show_layout = value
+
+    @property
+    def autoscroll(self) -> bool:
+        return self.config.logs.autoscroll
+
+    @autoscroll.setter
+    def autoscroll(self, value: bool) -> None:
+        self.config.logs.autoscroll = value
 
     @property
     def is_multi_select_mode(self) -> bool:
@@ -250,12 +318,12 @@ class FlowGraphWindow(ControllableCanvas):
             assert isinstance(opened, bool)
             self.graph.opened = opened
 
-        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
-            self.context.flows.focused_key = self._graph_key
-
         try:
             if visible:
                 if self._graph_key in self.context.flows.graphs:
+                    self.do_canvas_process()
+                    if self.focusing:
+                        self.context.flows.focused_key = self._graph_key
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._graph_key} graph")
@@ -264,11 +332,10 @@ class FlowGraphWindow(ControllableCanvas):
         finally:
             imgui.end()
 
-        self._new_variable_popup.do_process()
+        for popup in self._popups:
+            popup.do_process()
 
     def do_child_process(self) -> None:
-        self.do_canvas_process()
-
         if payload := accept_target():
             assert payload is not None
             assert payload.value is not None
@@ -309,6 +376,10 @@ class FlowGraphWindow(ControllableCanvas):
                 imgui.end_popup()
 
         self.draw()
+
+    # ==================================================================================
+    # region: Keyboard Operations
+    # ==================================================================================
 
     def do_keyboard_events(self) -> None:
         for shortcut in self._shortcuts:
@@ -364,8 +435,92 @@ class FlowGraphWindow(ControllableCanvas):
         self.save_history("Paste selected items")
 
     # ==================================================================================
+    # endregion: Keyboard Operations
+    # ==================================================================================
     # region: Context Menu Operations
     # ==================================================================================
+
+    def do_main_menu(self) -> None:
+        for name, func in self._menus:
+            if imgui.begin_menu(name):
+                try:
+                    func()
+                finally:
+                    imgui.end_menu()
+
+    def on_file_menu(self) -> None:
+        if menu_item("New Graph"):
+            self._new_graph_popup.show()
+
+        # imgui.separator()
+        # recent_items = self.context.get_flow_graph_recent_items()
+        # has_any_recent = bool(recent_items)
+        # if imgui.begin_menu("Recent graph", enabled=has_any_recent):
+        #     try:
+        #         for recent in recent_items:
+        #             if menu_item(recent.value):
+        #                 self.context.open_flow_graph(recent.value)
+        #     finally:
+        #         imgui.end_menu()
+
+        imgui.separator()
+        if self.focusing:
+            self.do_file_menu()
+        else:
+            self.do_disabled_file_menu()
+
+        imgui.separator()
+        if menu_item("Import graph"):
+            self._import_graph_popup.show()
+        if menu_item("Export graph", enabled=self.focusing):
+            self._export_graph_popup.show()
+
+        imgui.separator()
+        if menu_item("Refresh graphs"):
+            self.context.flows.read_all_graph_files()
+
+    def on_edit_menu(self) -> None:
+        if self.focusing:
+            self.do_edit_menu()
+        else:
+            self.do_disabled_edit_menu()
+
+    def on_layer_menu(self) -> None:
+        if self.focusing:
+            self.do_layer_menu()
+            imgui.separator()
+            self.do_align_menu()
+            self.do_distribute_menu()
+        else:
+            self.do_disabled_layer_menu()
+            imgui.separator()
+            self.do_disabled_align_menu()
+            self.do_disabled_distribute_menu()
+
+    def on_run_menu(self) -> None:
+        if self.focusing:
+            self.do_run_menu()
+        else:
+            self.do_disabled_run_menu()
+
+    def on_deploy_menu(self) -> None:
+        if self.focusing:
+            self.do_deploy_menu()
+        else:
+            self.do_disabled_deploy_menu()
+
+    def on_view_menu(self) -> None:
+        if autoscroll := menu_item("Autoscroll logs", selected=self.autoscroll):
+            self.autoscroll = autoscroll.state
+        imgui.separator()
+        if show_layout := menu_item("Show Layout", selected=self.show_layout):
+            self.show_layout = show_layout.state
+
+    @staticmethod
+    def do_disabled_file_menu() -> None:
+        menu_item("Save graph", enabled=False)
+        menu_item("Save and close graph", enabled=False)
+        menu_item("Force close graph", enabled=False)
 
     def do_file_menu(self) -> None:
         if menu_item("Save graph"):
@@ -375,6 +530,24 @@ class FlowGraphWindow(ControllableCanvas):
             self.graph.opened = False
         if menu_item("Force close graph"):
             self.graph.opened = False
+
+    @staticmethod
+    def do_disabled_edit_menu() -> None:
+        menu_item("Undo", shortcut="Ctrl+Z", enabled=False)
+        menu_item("Redo", shortcut="Ctrl+Y", enabled=False)
+        imgui.separator()
+        menu_item("Cut", shortcut="Ctrl+X", enabled=False)
+        menu_item("Copy", shortcut="Ctrl+C", enabled=False)
+        menu_item("Paste", shortcut="Ctrl+V", enabled=False)
+        imgui.separator()
+        menu_item("Delete", shortcut="Del", enabled=False)
+        imgui.separator()
+        menu_item("Reset control", enabled=False)
+        imgui.separator()
+        menu_item("Select all", enabled=False)
+        menu_item("Select nodes", enabled=False)
+        menu_item("Select wires", enabled=False)
+        menu_item("Select pins", enabled=False)
 
     def do_edit_menu(self) -> None:
         undoable = self.history.undoable
@@ -435,6 +608,13 @@ class FlowGraphWindow(ControllableCanvas):
             self.graph.unselect_all_items()
             self.graph.select_all_pins()
 
+    @staticmethod
+    def do_disabled_layer_menu() -> None:
+        menu_item("To Front", enabled=False)
+        menu_item("To Back", enabled=False)
+        menu_item("Bring Forward", enabled=False)
+        menu_item("Send Backward", enabled=False)
+
     def do_layer_menu(self) -> None:
         selected_items = self.graph.selection
         selected_any = bool(selected_items)
@@ -455,6 +635,10 @@ class FlowGraphWindow(ControllableCanvas):
             assert 1 == len(selected_items)
             self.graph.item_send_backward(selected_items.first)
             self.save_history("Send backward items")
+
+    @staticmethod
+    def do_disabled_align_menu() -> None:
+        imgui.begin_menu("Align", enabled=False)
 
     def do_align_menu(self) -> None:
         nodes = self.graph.selection.nodes
@@ -486,6 +670,10 @@ class FlowGraphWindow(ControllableCanvas):
             finally:
                 imgui.end_menu()
 
+    @staticmethod
+    def do_disabled_distribute_menu() -> None:
+        imgui.begin_menu("Distribute", enabled=False)
+
     def do_distribute_menu(self) -> None:
         nodes = self.graph.selection.nodes
         multiple_item = 2 <= len(nodes)
@@ -499,6 +687,17 @@ class FlowGraphWindow(ControllableCanvas):
                 self.graph.nodes_distribute_vertical(nodes)
                 self.save_history("Distribute vertical nodes")
             imgui.end_menu()
+
+    @staticmethod
+    def do_disabled_run_menu() -> None:
+        imgui.begin_menu(f"{mdi.PLAY} Run", enabled=False)
+        imgui.begin_menu(f"{mdi.BUG} Debug", enabled=False)
+        imgui.separator()
+        menu_item(f"{mdi.PAUSE} Pause", enabled=False)
+        menu_item(f"{mdi.STOP} Stop", enabled=False)
+        menu_item(f"{mdi.DEBUG_STEP_OVER} Step Over", enabled=False)
+        menu_item(f"{mdi.DEBUG_STEP_INTO} Step Into", enabled=False)
+        menu_item(f"{mdi.DEBUG_STEP_OUT} Step Out", enabled=False)
 
     def do_run_menu(self) -> None:
         if imgui.begin_menu(f"{mdi.PLAY} Run"):
@@ -537,6 +736,10 @@ class FlowGraphWindow(ControllableCanvas):
             pass
         if menu_item(f"{mdi.DEBUG_STEP_OUT} Step Out"):
             pass
+
+    @staticmethod
+    def do_disabled_deploy_menu() -> None:
+        menu_item("Upload to ...", enabled=False)
 
     def do_deploy_menu(self) -> None:
         assert self
