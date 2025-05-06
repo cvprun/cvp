@@ -1,14 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Optional, Sequence
+from typing import Final, Optional
 
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.main._base import WindowInterface
-from cvp.apps.player.windows.graph import FlowGraphWindow
+from cvp.apps.player.modes.main.flow.debug import DebugFlowWindow
+from cvp.apps.player.modes.main.flow.dtypes import DtypesFlowWindow
+from cvp.apps.player.modes.main.flow.graph import FlowGraphWindow
+from cvp.apps.player.modes.main.flow.graphs import GraphsFlowWindow
+from cvp.apps.player.modes.main.flow.history import HistoryFlowWindow
+from cvp.apps.player.modes.main.flow.intro import IntroFlowWindow
+from cvp.apps.player.modes.main.flow.logging import LoggingFlowWindow
+from cvp.apps.player.modes.main.flow.nodes import NodesFlowWindow
+from cvp.apps.player.modes.main.flow.props import PropsFlowWindow
+from cvp.apps.player.modes.main.flow.tree import TreeFlowWindow
+from cvp.apps.player.modes.main.interface import retrieve_window_instances
 from cvp.context.context import Context
 from cvp.flow.graph import GraphKey
 from cvp.imgui.dock_builder import (
@@ -35,25 +44,18 @@ class MainMode(BaseMode):
     _RIGHT_UP_RATIO: Final[float] = 0.60
     _BOTTOM_RATIO: Final[float] = 0.25
 
-    _windows: Sequence[WindowInterface]
     _main_dock_id: Optional[int]
 
     def __init__(self, context: Context):
         super().__init__(context)
 
-        from cvp.apps.player.modes.main.flow.debug import DebugFlowWindow
-        from cvp.apps.player.modes.main.flow.dtypes import DtypesFlowWindow
-        from cvp.apps.player.modes.main.flow.graphs import GraphsFlowWindow
-        from cvp.apps.player.modes.main.flow.history import HistoryFlowWindow
-        from cvp.apps.player.modes.main.flow.intro import IntroFlowWindow
-        from cvp.apps.player.modes.main.flow.logging import LoggingFlowWindow
-        from cvp.apps.player.modes.main.flow.nodes import NodesFlowWindow
-        from cvp.apps.player.modes.main.flow.props import PropsFlowWindow
-        from cvp.apps.player.modes.main.flow.tree import TreeFlowWindow
-
         self._context = context
         self._initialized_dock_layout = False
         self._main_dock_id = None
+
+        # ==============================================================================
+        # region: Initialize Window Instances
+        # [IMPORTANT] Do not change the initialize order!
 
         self.dtypes = DtypesFlowWindow(context)
         self.debug = DebugFlowWindow(context)
@@ -65,23 +67,13 @@ class MainMode(BaseMode):
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
 
-        self._windows = (
-            # Left Dock
-            self.tree,
-            self.graphs,
-            self.nodes,
-            self.dtypes,
-            # Right Dock
-            self.props,
-            self.history,
-            # Bottom Dock
-            self.logging,
-            self.debug,
-            # Main Dock
-            self.intro,
-        )
+        # ------------------------------------------------------------------------------
+        # Retrieves and stores all ModeInterface instances assigned to `self`
+        self._tools = retrieve_window_instances(self)
+        # endregion: Initialize Window Instances
+        # ==============================================================================
 
-        self._graph_windows = FlowGraphWindow.create_opened_windows(context)
+        self._graphs = FlowGraphWindow.create_opened_windows(context)
 
     @property
     def initialized(self) -> bool:
@@ -127,8 +119,8 @@ class MainMode(BaseMode):
         dock_window(self.logging.get_window_name(), dock_center_bottom)
 
         dock_window(self.intro.get_window_name(), dock_center_top)
-        for gw in self._graph_windows.values():
-            dock_window(gw.get_window_name(), dock_center_top)
+        for graph_window in self._graphs.values():
+            dock_window(graph_window.get_window_name(), dock_center_top)
         self._main_dock_id = dock_center_top
 
         # dock_left_top_node = imgui.internal.dock_builder_get_node(dock_left_top)
@@ -157,37 +149,37 @@ class MainMode(BaseMode):
     @property
     def focused_window(self):
         if focused_key := self._context.config.navigation.focused_key:
-            return self._graph_windows.get(GraphKey(focused_key))
+            return self._graphs.get(GraphKey(focused_key))
         else:
             return None
 
     def refresh_graphs(self) -> None:
-        prev_keys = set(self._graph_windows.keys())
-        self._graph_windows.clear()
+        prev_keys = set(self._graphs.keys())
+        self._graphs.clear()
 
         # -----------------------------------------
         self._context.flows.graphs.clear()
         self._context.flows.read_all_graph_files()
         # -----------------------------------------
 
-        self._graph_windows = FlowGraphWindow.create_opened_windows(self._context)
-        for gw_key, gw in self._graph_windows.items():
-            if self._main_dock_id is not None and gw_key not in prev_keys:
-                dock_window(gw.get_window_name(), self._main_dock_id)
+        self._graphs = FlowGraphWindow.create_opened_windows(self._context)
+        for graph_key, graph_window in self._graphs.items():
+            if self._main_dock_id is not None and graph_key not in prev_keys:
+                dock_window(graph_window.get_window_name(), self._main_dock_id)
 
     def create_graph_window(self, key: GraphKey):
         graph_windows = FlowGraphWindow(self._context, key)
-        self._graph_windows[key] = graph_windows
+        self._graphs[key] = graph_windows
         if self._main_dock_id is not None:
             dock_window(graph_windows.get_window_name(), self._main_dock_id)
         return graph_windows
 
     def remove_graph_window(self, key: GraphKey):
-        return self._graph_windows.pop(key)
+        return self._graphs.pop(key)
 
     def sync_graph_windows(self) -> None:
         graph_keys = set(self._context.flows.graphs.keys())
-        window_keys = set(self._graph_windows.keys())
+        window_keys = set(self._graphs.keys())
         if graph_keys == window_keys:
             return
 
@@ -198,22 +190,25 @@ class MainMode(BaseMode):
             self.create_graph_window(create_key)
 
         graph_keys = set(self._context.flows.graphs.keys())
-        window_keys = set(self._graph_windows.keys())
+        window_keys = set(self._graphs.keys())
         assert graph_keys == window_keys
 
+    @override
     def on_main_menu(self) -> None:
         if window := self.focused_window:
-            window.do_main_menu()
+            window.on_main_menu()
 
+    @override
     def do_event(self, event: Event) -> bool:
         if window := self.focused_window:
-            return window.do_event(event)
+            return window.on_event(event)
         else:
             return False
 
+    @override
     def do_msg(self, msg: Msg) -> bool:
         if window := self.focused_window:
-            return window.do_msg(msg)
+            return window.on_msg(msg)
         else:
             return False
 
@@ -233,5 +228,8 @@ class MainMode(BaseMode):
 
         self.sync_graph_windows()
 
-        for window in self._windows:
-            window.do_process()
+        for tool_window in self._tools:
+            tool_window.do_process()
+
+        for graph_window in self._graphs.values():
+            graph_window.do_process()

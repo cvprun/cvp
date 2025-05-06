@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from abc import ABC, abstractmethod
-from typing import Optional, Protocol, runtime_checkable
+from abc import ABC
+from typing import Protocol, runtime_checkable
 
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
+from cvp.apps.player.modes.main.interface import WindowInterface
 from cvp.context.context import Context
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
@@ -14,32 +15,6 @@ from cvp.types.override import override
 @runtime_checkable
 class WindowNameProtocol(Protocol):
     __cvp_window_name__: str
-
-
-class WindowInterface(ABC):
-    @abstractmethod
-    def get_window_name(self) -> str:
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_main_menu(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def do_event(self, event: Event) -> bool:
-        raise NotImplementedError
-
-    @abstractmethod
-    def do_msg(self, msg: Msg) -> bool:
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_keyboard(self, keys: ScancodeWrapper) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def do_process(self) -> None:
-        raise NotImplementedError
 
 
 class BaseWindow(WindowInterface, WindowNameProtocol, ABC):
@@ -56,11 +31,11 @@ class BaseWindow(WindowInterface, WindowNameProtocol, ABC):
         pass
 
     @override
-    def do_event(self, event: Event) -> bool:
+    def on_event(self, event: Event) -> bool:
         return False
 
     @override
-    def do_msg(self, msg: Msg) -> bool:
+    def on_msg(self, msg: Msg) -> bool:
         return False
 
     @override

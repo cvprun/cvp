@@ -3,9 +3,9 @@
 from typing import Final, List, Optional
 
 from imgui_bundle import imgui
-from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
+from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.widgets.flows.drag_target import accept_target
 from cvp.apps.player.widgets.flows.drag_types import DragTypes
 from cvp.assets.fonts import mdi
@@ -22,6 +22,7 @@ from cvp.flow.selection import FlowSelection
 from cvp.flow.wire import FlowWire
 from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
+from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
@@ -34,13 +35,14 @@ from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
-from cvp.msgs.msg import Msg
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
 
 
-class FlowGraphWindow(ControllableCanvas):
+class FlowGraphWindow(ControllableCanvas, BaseWindow):
+    __cvp_window_name__ = "FlowGraphWindow"
+
     _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
     _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
 
@@ -50,7 +52,8 @@ class FlowGraphWindow(ControllableCanvas):
     _selection_stash: Optional[FlowSelection]
 
     def __init__(self, context: Context, graph_key: GraphKey):
-        super().__init__()
+        ControllableCanvas.__init__(self)
+        BaseWindow.__init__(self, context)
 
         self._context = context
         self._graph_key = graph_key
@@ -248,6 +251,10 @@ class FlowGraphWindow(ControllableCanvas):
         self.context.config.navigation.focused_key = str(value)
 
     @property
+    def has_focused_key(self):
+        return self.context.config.navigation.focused_key == self._graph_key
+
+    @property
     def config(self):
         return self.context.config.flow
 
@@ -307,12 +314,14 @@ class FlowGraphWindow(ControllableCanvas):
             f"Cursor: {self.graph.history.cursor_index}\n"
         )
 
+    @override
     def get_window_name(self) -> str:
-        class_name = type(self).__name__
+        window_name = self.__cvp_window_name__
         graph = self.context.flows.graphs.get(self._graph_key)
-        graph_name = graph.name if graph else class_name
-        return f"{graph_name}###{class_name}/{self._graph_key}"
+        graph_name = graph.name if graph else window_name
+        return f"{graph_name}###{window_name}/{self._graph_key}"
 
+    @override
     def do_process(self) -> None:
         if not self.graph.opened:
             return
@@ -322,12 +331,13 @@ class FlowGraphWindow(ControllableCanvas):
             assert isinstance(opened, bool)
             self.graph.opened = opened
 
+        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
+            self.focused_key = self._graph_key
+
         try:
             if visible:
                 if self._graph_key in self.context.flows.graphs:
                     self.do_canvas_process()
-                    if self.focusing:
-                        self.focused_key = self._graph_key
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._graph_key} graph")
@@ -382,21 +392,10 @@ class FlowGraphWindow(ControllableCanvas):
         self.draw()
 
     # ==================================================================================
-    # region: Event/Message Operations
-    # ==================================================================================
-
-    def do_event(self, event: Event) -> bool:
-        return False
-
-    def do_msg(self, msg: Msg) -> bool:
-        return False
-
-    # ==================================================================================
-    # endregion: Event/Message Operations
-    # ==================================================================================
     # region: Keyboard Operations
     # ==================================================================================
 
+    @override
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         for shortcut in self._shortcuts:
             if shortcut():
@@ -456,7 +455,8 @@ class FlowGraphWindow(ControllableCanvas):
     # region: Context Menu Operations
     # ==================================================================================
 
-    def do_main_menu(self) -> None:
+    @override
+    def on_main_menu(self) -> None:
         for name, func in self._menus:
             if imgui.begin_menu(name):
                 try:
@@ -480,7 +480,7 @@ class FlowGraphWindow(ControllableCanvas):
         #         imgui.end_menu()
 
         imgui.separator()
-        if self.focusing:
+        if self.has_focused_key:
             self.do_file_menu()
         else:
             self.do_disabled_file_menu()
@@ -488,7 +488,7 @@ class FlowGraphWindow(ControllableCanvas):
         imgui.separator()
         if menu_item("Import graph"):
             self._import_graph_popup.show()
-        if menu_item("Export graph", enabled=self.focusing):
+        if menu_item("Export graph", enabled=self.has_focused_key):
             self._export_graph_popup.show()
 
         imgui.separator()
@@ -496,13 +496,13 @@ class FlowGraphWindow(ControllableCanvas):
             self.context.flows.read_all_graph_files()
 
     def on_edit_menu(self) -> None:
-        if self.focusing:
+        if self.has_focused_key:
             self.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if self.focusing:
+        if self.has_focused_key:
             self.do_layer_menu()
             imgui.separator()
             self.do_align_menu()
@@ -514,13 +514,13 @@ class FlowGraphWindow(ControllableCanvas):
             self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if self.focusing:
+        if self.has_focused_key:
             self.do_run_menu()
         else:
             self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        if self.focusing:
+        if self.has_focused_key:
             self.do_deploy_menu()
         else:
             self.do_disabled_deploy_menu()

@@ -4,6 +4,7 @@ from imgui_bundle import imgui
 
 from cvp.canvas.canvas import CanvasKey
 from cvp.context.context import Context
+from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.text_centered import text_centered
@@ -76,12 +77,13 @@ class CanvasWindow(ControllableCanvas):
             assert isinstance(opened, bool)
             self.canvas.opened = opened
 
+        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
+            self.focused_key = self._canvas_key
+
         try:
             if visible:
                 if self._canvas_key in self.context.flows.canvass:
                     self.do_canvas_process()
-                    if self.focusing:
-                        self.focused_key = self._canvas_key
                     self.do_child_process()
                 else:
                     text_centered(f"Not found {self._canvas_key} canvas")

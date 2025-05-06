@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
-
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.widgets.flows.selectable_variable import drag_variable_source
-from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.flow.node import FlowNode
