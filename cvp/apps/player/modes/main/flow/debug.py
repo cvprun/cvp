@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
-
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
-from cvp.apps.player.windows.graph import FlowGraphWindow
+from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
+from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -16,21 +14,25 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-class DebugFlowWindow(BaseFlowWindow):
-    __cvp_flow_window_name__ = "Debug"
+class DebugFlowWindow(BaseWindow):
+    __cvp_window_name__ = "Debug"
 
     def __init__(self, context: Context):
         super().__init__(context)
 
+    @property
+    def focused_graph(self):
+        return self.context.flows.graphs.get(GraphKey(self.focused_key))
+
     @override
-    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
+    def do_process(self) -> None:
         with begin_context(self.get_window_name()):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             imgui.separator()
             with begin_child_context("Logging"):
-                if window is not None:
-                    self.do_logging_process()
+                if graph := self.focused_graph:
+                    self.do_debug_process(graph)
                 else:
                     text_centered("Please select a graph")
 
@@ -58,5 +60,5 @@ class DebugFlowWindow(BaseFlowWindow):
         button(f"{mdi.DEBUG_STEP_OUT} Step Out", disabled=not opened)
 
     @staticmethod
-    def do_logging_process() -> None:
+    def do_debug_process(graph: FlowGraph) -> None:
         pass

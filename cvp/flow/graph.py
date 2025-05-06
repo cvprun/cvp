@@ -16,6 +16,7 @@ from cvp.containers.mapping_deque import MappingDeque
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
+from cvp.flow.history import FlowHistory
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
@@ -23,6 +24,7 @@ from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.flow.wire import FlowWire
 from cvp.fonts.types import IconCode
+from cvp.logging.logging import flow_logger as logger
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Point, Size
@@ -81,6 +83,9 @@ class FlowGraph(Serializable):
         self.options = options if options else DrawingOptions()
         self.tags = list(tags if tags else ())
         self._selection = selection if selection else FlowSelection()
+
+        self._history = FlowHistory(max_history=self.options.max_history)
+        self._history.save_history("Initialize graph", self)
 
     @staticmethod
     def __node_keyable(node: FlowNode) -> str:
@@ -142,6 +147,7 @@ class FlowGraph(Serializable):
         result.options = copy(self.options)
         result.tags = copy(self.tags)
         result._selection = copy(self._selection)
+        result._history = copy(self._history)
         return result
 
     def __deepcopy__(self, memo: Optional[Dict[int, Any]] = None):
@@ -163,6 +169,7 @@ class FlowGraph(Serializable):
         result.options = deepcopy(self.options, memo)
         result.tags = deepcopy(self.tags, memo)
         result._selection = deepcopy(self._selection, memo)
+        result._history = deepcopy(self._history, memo)
         memo[id(self)] = result
         return result
 
@@ -233,6 +240,9 @@ class FlowGraph(Serializable):
         self.tags = data.get(self._Keys.tags, list())
         self._selection = FlowSelection()
 
+        self._history = FlowHistory(max_history=self.options.max_history)
+        self._history.save_history("Deserialized graph", self)
+
     @property
     def selection(self):
         return self._selection
@@ -240,6 +250,10 @@ class FlowGraph(Serializable):
     @property
     def selected_wire_only(self) -> Optional[FlowWire]:
         return self._selection.selected_wire_only
+
+    @property
+    def history(self):
+        return self._history
 
     def restore(self, other: "FlowGraph") -> None:
         if self.key != other.key:
@@ -255,6 +269,49 @@ class FlowGraph(Serializable):
         self.options = other.options
         self.tags = other.tags
         self._selection = other._selection
+        self._history = other._history
+
+    def clear_history(self) -> None:
+        logger.info("Clear history")
+        self.history.clear_history()
+
+    def save_history(
+        self,
+        title: str,
+        details: Optional[str] = None,
+        *,
+        no_logging=False,
+    ) -> None:
+        if not no_logging:
+            logger.info(title)
+            if details:
+                logger.debug(details)
+
+        self.history.save_history(
+            title=title,
+            value=self,
+            details=details,
+            max_history=self.options.max_history,
+        )
+
+    def load_history(self, index: int, *, no_logging=False) -> None:
+        if not no_logging:
+            logger.info(f"Load history: {index}")
+        self.restore(self.history.load_history(index))
+
+    def undo_history(self, *, no_logging=False) -> None:
+        if not self.history.undoable:
+            raise ValueError("History is not undoable")
+        if not no_logging:
+            logger.info("Undo history")
+        self.load_history(self.history.cursor_index - 1, no_logging=True)
+
+    def redo_history(self, *, no_logging=False) -> None:
+        if not self.history.redoable:
+            raise ValueError("History is not redoable")
+        if not no_logging:
+            logger.info("Redo history")
+        self.load_history(self.history.cursor_index + 1, no_logging=True)
 
     def paste_selection(
         self,

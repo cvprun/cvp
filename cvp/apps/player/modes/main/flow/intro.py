@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Optional
+from typing import Final
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
-from cvp.apps.player.windows.graph import FlowGraphWindow
+from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
@@ -16,8 +15,8 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.types.override import override
 
 
-class IntroFlowWindow(BaseFlowWindow):
-    __cvp_flow_window_name__ = "Intro"
+class IntroFlowWindow(BaseWindow):
+    __cvp_window_name__ = "Intro"
 
     _RECENT_ITEM_SPLIT_X: Final[float] = FIT_WIDTH
     _RECENT_ITEM_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y | BORDERS
@@ -34,7 +33,7 @@ class IntroFlowWindow(BaseFlowWindow):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
+    def do_process(self) -> None:
         with begin_context(self.get_window_name()):
             if imgui.button("Open workspace"):
                 # self.context.flows.create_new_workspace()

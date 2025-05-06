@@ -14,7 +14,6 @@ from cvp.dtypes.dtype import Dtype
 from cvp.flow.anchor import FlowAnchor
 from cvp.flow.connection import FlowConnection
 from cvp.flow.graph import GraphKey
-from cvp.flow.history import FlowHistory
 from cvp.flow.mode import FlowMode
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
@@ -64,12 +63,6 @@ class FlowGraphWindow(ControllableCanvas):
         graph.clear_state()
         graph.update_wires_io()
         graph.update_wires_polyline()
-
-        max_history = context.config.flow.max_history
-        # TODO: If modified at runtime, related changes must be updated accordingly.
-
-        self._history = FlowHistory(max_history=max_history)
-        self._history.save_history("Initialize graph", graph)
 
         self._mode = FlowMode.normal
         self._connects = list()
@@ -310,8 +303,8 @@ class FlowGraphWindow(ControllableCanvas):
             f"Mode: {self._mode.name}\n"
             f"Connects: {self._connects}\n"
             f"ROI: {self._roi}\n"
-            f"History: {len(self._history)}\n"
-            f"Cursor: {self._history.cursor_index}\n"
+            f"History: {len(self.graph.history)}\n"
+            f"Cursor: {self.graph.history.cursor_index}\n"
         )
 
     def get_window_name(self) -> str:
@@ -357,7 +350,7 @@ class FlowGraphWindow(ControllableCanvas):
                 case DragTypes.flow_node:
                     node = self.context.flows.add_node(self.graph, payload.value)
                     self.update_node_roi(node)
-                    self.save_history("Add a new node", payload.value)
+                    self.graph.save_history("Add a new node", payload.value)
                 case DragTypes.flow_dtype:
                     self._drag_dtype = self.context.flows.dtypes[payload.value]
                     self._new_variable_popup.show()
@@ -411,18 +404,18 @@ class FlowGraphWindow(ControllableCanvas):
 
     def do_remove_selected_items(self) -> None:
         self.graph.remove_selected_items()
-        self.save_history("Remove selected items")
+        self.graph.save_history("Remove selected items")
 
     def do_unselect_all_items(self) -> None:
         self.graph.unselect_all_items()
 
     def do_undo(self) -> None:
-        if self.history.undoable:
-            self.undo_history()
+        if self.graph.history.undoable:
+            self.graph.undo_history()
 
     def do_redo(self) -> None:
-        if self.history.redoable:
-            self.redo_history()
+        if self.graph.history.redoable:
+            self.graph.redo_history()
 
     def do_select_all_nodes(self) -> None:
         self.graph.select_all_nodes()
@@ -434,7 +427,7 @@ class FlowGraphWindow(ControllableCanvas):
         self.context.flows.clipboard_items = self.graph.selection.deepcopy()
         self.context.flows.clipboard_pivot = self.graph.selection.group_pos
         self.graph.remove_selected_items()
-        self.save_history("Cut selected items")
+        self.graph.save_history("Cut selected items")
 
     def do_copy_selected_items(self) -> None:
         self.context.flows.clipboard_items = self.graph.selection.deepcopy()
@@ -442,7 +435,7 @@ class FlowGraphWindow(ControllableCanvas):
         px += self.config.paste_margin
         py += self.config.paste_margin
         self.context.flows.clipboard_pivot = px, py
-        self.save_history("Copy selected items")
+        self.graph.save_history("Copy selected items")
 
     def do_paste_selected_items(self) -> None:
         self.graph.unselect_all_items()
@@ -455,7 +448,7 @@ class FlowGraphWindow(ControllableCanvas):
         px += self.config.paste_margin
         py += self.config.paste_margin
         self.context.flows.clipboard_pivot = px, py
-        self.save_history("Paste selected items")
+        self.graph.save_history("Paste selected items")
 
     # ==================================================================================
     # endregion: Keyboard Operations
@@ -573,22 +566,22 @@ class FlowGraphWindow(ControllableCanvas):
         menu_item("Select pins", enabled=False)
 
     def do_edit_menu(self) -> None:
-        undoable = self.history.undoable
-        redoable = self.history.redoable
+        undoable = self.graph.history.undoable
+        redoable = self.graph.history.redoable
         selected_any = bool(self.graph.selection)
         has_clipboard = self.context.flows.has_clipboard
 
         if menu_item("Undo", shortcut="Ctrl+Z", enabled=undoable):
-            self.undo_history()
+            self.graph.undo_history()
         if menu_item("Redo", shortcut="Ctrl+Y", enabled=redoable):
-            self.redo_history()
+            self.graph.redo_history()
 
         imgui.separator()
         if menu_item("Cut", shortcut="Ctrl+X", enabled=selected_any):
             self.context.flows.clipboard_items = self.graph.selection.deepcopy()
             self.context.flows.clipboard_pivot = self.graph.selection.group_pos
             self.graph.remove_selected_items()
-            self.save_history("Cut selected items")
+            self.graph.save_history("Cut selected items")
         if menu_item("Copy", shortcut="Ctrl+C", enabled=selected_any):
             self.context.flows.clipboard_items = self.graph.selection.deepcopy()
             px, py = self.graph.selection.group_pos
@@ -606,12 +599,12 @@ class FlowGraphWindow(ControllableCanvas):
             px += self.config.paste_margin
             py += self.config.paste_margin
             self.context.flows.clipboard_pivot = px, py
-            self.save_history("Paste selected items")
+            self.graph.save_history("Paste selected items")
 
         imgui.separator()
         if menu_item("Delete", shortcut="Del", enabled=selected_any):
             self.graph.remove_selected_items()
-            self.save_history("Remove selected items")
+            self.graph.save_history("Remove selected items")
 
         imgui.separator()
         if menu_item("Reset control"):
@@ -645,19 +638,19 @@ class FlowGraphWindow(ControllableCanvas):
 
         if menu_item("To Front", enabled=selected_any):
             self.graph.items_to_front(list(selected_items.values()))
-            self.save_history("To front items")
+            self.graph.save_history("To front items")
         if menu_item("To Back", enabled=selected_any):
             self.graph.items_to_back(list(selected_items.values()))
-            self.save_history("To back items")
+            self.graph.save_history("To back items")
 
         if menu_item("Bring Forward", enabled=single_item):
             assert 1 == len(selected_items)
             self.graph.item_bring_forward(selected_items.first)
-            self.save_history("Bring forward items")
+            self.graph.save_history("Bring forward items")
         if menu_item("Send Backward", enabled=single_item):
             assert 1 == len(selected_items)
             self.graph.item_send_backward(selected_items.first)
-            self.save_history("Send backward items")
+            self.graph.save_history("Send backward items")
 
     @staticmethod
     def do_disabled_align_menu() -> None:
@@ -672,24 +665,24 @@ class FlowGraphWindow(ControllableCanvas):
             try:
                 if menu_item("Left"):
                     self.graph.nodes_align_left(nodes, pivot)
-                    self.save_history("Align left nodes")
+                    self.graph.save_history("Align left nodes")
                 if menu_item("Center"):
                     self.graph.nodes_align_center(nodes, pivot)
-                    self.save_history("Align center nodes")
+                    self.graph.save_history("Align center nodes")
                 if menu_item("Right"):
                     self.graph.nodes_align_right(nodes, pivot)
-                    self.save_history("Align right nodes")
+                    self.graph.save_history("Align right nodes")
 
                 imgui.separator()
                 if menu_item("Top"):
                     self.graph.nodes_align_top(nodes, pivot)
-                    self.save_history("Align top nodes")
+                    self.graph.save_history("Align top nodes")
                 if menu_item("Middle"):
                     self.graph.nodes_align_middle(nodes, pivot)
-                    self.save_history("Align middle nodes")
+                    self.graph.save_history("Align middle nodes")
                 if menu_item("Bottom"):
                     self.graph.nodes_align_bottom(nodes, pivot)
-                    self.save_history("Align bottom nodes")
+                    self.graph.save_history("Align bottom nodes")
             finally:
                 imgui.end_menu()
 
@@ -705,10 +698,10 @@ class FlowGraphWindow(ControllableCanvas):
             assert self is not None
             if menu_item("Horizontal"):
                 self.graph.nodes_distribute_horizontal(nodes)
-                self.save_history("Distribute horizontal nodes")
+                self.graph.save_history("Distribute horizontal nodes")
             if menu_item("Vertical"):
                 self.graph.nodes_distribute_vertical(nodes)
-                self.save_history("Distribute vertical nodes")
+                self.graph.save_history("Distribute vertical nodes")
             imgui.end_menu()
 
     @staticmethod
@@ -775,67 +768,15 @@ class FlowGraphWindow(ControllableCanvas):
         if menu_item("Setter"):
             node = self.context.flows.add_setter_node(self.graph, self._variable_key)
             self.update_node_roi(node)
-            self.save_history("Add setter variable node", self._variable_key)
+            self.graph.save_history("Add setter variable node", self._variable_key)
 
         if menu_item("Getter"):
             node = self.context.flows.add_getter_node(self.graph, self._variable_key)
             self.update_node_roi(node)
-            self.save_history("Add getter variable node", self._variable_key)
+            self.graph.save_history("Add getter variable node", self._variable_key)
 
     # ==================================================================================
     # endregion: Context Menu Operations
-    # ==================================================================================
-    # region: History Operations
-    # ==================================================================================
-
-    @property
-    def history(self):
-        return self._history
-
-    def clear_history(self) -> None:
-        logger.info("Clear history")
-        self._history.clear_history()
-
-    def save_history(
-        self,
-        title: str,
-        details: Optional[str] = None,
-        *,
-        no_logging=False,
-    ) -> None:
-        if not no_logging:
-            logger.info(title)
-            if details:
-                logger.debug(details)
-
-        self._history.save_history(
-            title=title,
-            graph=self.graph,
-            details=details,
-            max_history=self.config.max_history,
-        )
-
-    def load_history(self, index: int, *, no_logging=False) -> None:
-        if not no_logging:
-            logger.info(f"Load history: {index}")
-        self.graph.restore(self._history.load_history(index))
-
-    def undo_history(self, *, no_logging=False) -> None:
-        if not self._history.undoable:
-            raise ValueError("History is not undoable")
-        if not no_logging:
-            logger.info("Undo history")
-        self.load_history(self._history.cursor_index - 1, no_logging=True)
-
-    def redo_history(self, *, no_logging=False) -> None:
-        if not self._history.redoable:
-            raise ValueError("History is not redoable")
-        if not no_logging:
-            logger.info("Redo history")
-        self.load_history(self._history.cursor_index + 1, no_logging=True)
-
-    # ==================================================================================
-    # endregion: History Operations
     # ==================================================================================
     # region: Public Operations
     # ==================================================================================
@@ -1036,7 +977,7 @@ class FlowGraphWindow(ControllableCanvas):
 
         if self.changed_left_up:
             self._mode = FlowMode.normal
-            self.save_history("The nodes has been moved")
+            self.graph.save_history("The nodes has been moved")
 
     def _update_nodes_state_for_pin_connecting(self) -> None:
         assert not self.is_pan_mode
@@ -1061,7 +1002,7 @@ class FlowGraphWindow(ControllableCanvas):
             if connect_pairs:
                 for out_conn, in_conn in connect_pairs:
                     self.graph.connect_pins(out_conn, in_conn, no_reorder=True)
-                self.save_history("The pins has been connected")
+                self.graph.save_history("The pins has been connected")
 
     def _update_nodes_state_for_anchor_moving(self) -> None:
         assert not self.is_pan_mode
@@ -1078,7 +1019,7 @@ class FlowGraphWindow(ControllableCanvas):
             assert selected_wire is not None
             selected_wire.start_anchor.selected = False
             selected_wire.end_anchor.selected = False
-            self.save_history("The anchor has been moved")
+            self.graph.save_history("The anchor has been moved")
 
     def _update_nodes_state_for_selection_box(self) -> None:
         assert not self.is_pan_mode

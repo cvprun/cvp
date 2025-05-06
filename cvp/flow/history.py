@@ -2,14 +2,12 @@
 
 from collections import deque
 from copy import deepcopy
-from typing import Deque, NamedTuple, Optional
-
-from cvp.flow.graph import FlowGraph
+from typing import Any, Deque, NamedTuple, Optional
 
 
 class HistoryItem(NamedTuple):
     title: str
-    graph: FlowGraph
+    graph: Any
     details: str
 
 
@@ -81,7 +79,7 @@ class FlowHistory:
     def save_history(
         self,
         title: str,
-        graph: FlowGraph,
+        value: Any,
         details: Optional[str] = None,
         *,
         max_history: Optional[int] = None,
@@ -96,13 +94,13 @@ class FlowHistory:
         if details is None:
             details = str()
 
-        item = HistoryItem(title, deepcopy(graph), details)
+        item = HistoryItem(title, deepcopy(value), details)
         self._records.append(item)
         if not freeze_latest:
             self._eof = len(self._records)
         return item
 
-    def load_history(self, index: int, *, freeze_latest=False) -> FlowGraph:
+    def load_history(self, index: int, *, freeze_latest=False) -> Any:
         index = self.normalize_index(index)
         item = self._records[index]
         if not freeze_latest:

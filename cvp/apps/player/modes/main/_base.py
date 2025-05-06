@@ -6,18 +6,17 @@ from typing import Optional, Protocol, runtime_checkable
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
-from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
 
 @runtime_checkable
-class FlowWindowNameProtocol(Protocol):
-    __cvp_flow_window_name__: str
+class WindowNameProtocol(Protocol):
+    __cvp_window_name__: str
 
 
-class FlowWindowInterface(ABC):
+class WindowInterface(ABC):
     @abstractmethod
     def get_window_name(self) -> str:
         raise NotImplementedError
@@ -39,18 +38,18 @@ class FlowWindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
+    def do_process(self) -> None:
         raise NotImplementedError
 
 
-class BaseFlowWindow(FlowWindowInterface, FlowWindowNameProtocol, ABC):
+class BaseWindow(WindowInterface, WindowNameProtocol, ABC):
     def __init__(self, context: Context):
-        assert isinstance(self, FlowWindowNameProtocol)
+        assert isinstance(self, WindowNameProtocol)
         self._context = context
 
     @override
     def get_window_name(self) -> str:
-        return self.__cvp_flow_window_name__
+        return self.__cvp_window_name__
 
     @override
     def on_main_menu(self) -> None:
@@ -71,3 +70,21 @@ class BaseFlowWindow(FlowWindowInterface, FlowWindowNameProtocol, ABC):
     @property
     def context(self) -> Context:
         return self._context
+
+    @property
+    def focused_key(self) -> str:
+        return self._context.config.navigation.focused_key
+
+    def get_selected_submenu(self, *, suffix=None) -> str:
+        return self._context.get_selected_submenu(type(self), suffix=suffix)
+
+    def set_selected_submenu(self, value: str, *, suffix=None) -> None:
+        self._context.set_selected_submenu(type(self), value, suffix=suffix)
+
+    @property
+    def selected_submenu(self) -> str:
+        return self.get_selected_submenu()
+
+    @selected_submenu.setter
+    def selected_submenu(self, value: str) -> None:
+        self.set_selected_submenu(value)

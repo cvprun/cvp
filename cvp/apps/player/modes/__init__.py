@@ -23,10 +23,10 @@ class ModeManager:
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flows.dtype import DtypeMode
-        from cvp.apps.player.modes.flows.flow import MainMode
         from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
+        from cvp.apps.player.modes.main import MainMode
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.preference import PreferenceMode

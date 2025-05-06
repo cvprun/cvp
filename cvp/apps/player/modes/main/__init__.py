@@ -7,7 +7,7 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.flows.flow._base import FlowWindowInterface
+from cvp.apps.player.modes.main._base import WindowInterface
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
 from cvp.flow.graph import GraphKey
@@ -35,21 +35,21 @@ class MainMode(BaseMode):
     _RIGHT_UP_RATIO: Final[float] = 0.60
     _BOTTOM_RATIO: Final[float] = 0.25
 
-    _windows: Sequence[FlowWindowInterface]
+    _windows: Sequence[WindowInterface]
     _main_dock_id: Optional[int]
 
     def __init__(self, context: Context):
         super().__init__(context)
 
-        from cvp.apps.player.modes.flows.flow.debug import DebugFlowWindow
-        from cvp.apps.player.modes.flows.flow.dtypes import DtypesFlowWindow
-        from cvp.apps.player.modes.flows.flow.graphs import GraphsFlowWindow
-        from cvp.apps.player.modes.flows.flow.history import HistoryFlowWindow
-        from cvp.apps.player.modes.flows.flow.intro import IntroFlowWindow
-        from cvp.apps.player.modes.flows.flow.logging import LoggingFlowWindow
-        from cvp.apps.player.modes.flows.flow.nodes import NodesFlowWindow
-        from cvp.apps.player.modes.flows.flow.props import PropsFlowWindow
-        from cvp.apps.player.modes.flows.flow.tree import TreeFlowWindow
+        from cvp.apps.player.modes.main.flow.debug import DebugFlowWindow
+        from cvp.apps.player.modes.main.flow.dtypes import DtypesFlowWindow
+        from cvp.apps.player.modes.main.flow.graphs import GraphsFlowWindow
+        from cvp.apps.player.modes.main.flow.history import HistoryFlowWindow
+        from cvp.apps.player.modes.main.flow.intro import IntroFlowWindow
+        from cvp.apps.player.modes.main.flow.logging import LoggingFlowWindow
+        from cvp.apps.player.modes.main.flow.nodes import NodesFlowWindow
+        from cvp.apps.player.modes.main.flow.props import PropsFlowWindow
+        from cvp.apps.player.modes.main.flow.tree import TreeFlowWindow
 
         self._context = context
         self._initialized_dock_layout = False
@@ -234,4 +234,4 @@ class MainMode(BaseMode):
         self.sync_graph_windows()
 
         for window in self._windows:
-            window.do_process(None)
+            window.do_process()

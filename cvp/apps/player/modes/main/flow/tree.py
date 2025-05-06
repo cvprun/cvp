@@ -4,11 +4,11 @@ from typing import Optional
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.flows.flow._base import BaseFlowWindow
+from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.widgets.flows.selectable_variable import drag_variable_source
 from cvp.apps.player.windows.graph import FlowGraphWindow
 from cvp.context.context import Context
-from cvp.flow.graph import FlowGraph
+from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
@@ -25,27 +25,31 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-class TreeFlowWindow(BaseFlowWindow):
-    __cvp_flow_window_name__ = "Tree"
+class TreeFlowWindow(BaseWindow):
+    __cvp_window_name__ = "Tree"
 
     def __init__(self, context: Context):
         super().__init__(context)
 
+    @property
+    def focused_graph(self):
+        return self.context.flows.graphs.get(GraphKey(self.focused_key))
+
     @override
-    def do_process(self, window: Optional[FlowGraphWindow]) -> None:
+    def do_process(self) -> None:
         with begin_context(self.get_window_name()):
-            if window is not None:
-                self.do_child_process(window)
+            if graph := self.focused_graph:
+                self.do_child_process(graph)
             else:
                 text_centered("Please select a graph")
 
-    def do_child_process(self, window: FlowGraphWindow) -> None:
-        graph_label = f"{window.graph.name}###{window.graph.key}"
+    def do_child_process(self, graph: FlowGraph) -> None:
+        graph_label = f"{graph.name}###{graph.key}"
         if imgui.tree_node_ex(graph_label, CATEGORY_FLAGS):
             try:
-                self.tree_nodes(window.graph)
-                self.tree_wires(window.graph)
-                self.tree_variables(window.graph)
+                self.tree_nodes(graph)
+                self.tree_wires(graph)
+                self.tree_variables(graph)
             finally:
                 imgui.tree_pop()
 
