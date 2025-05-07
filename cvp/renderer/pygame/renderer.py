@@ -133,6 +133,7 @@ class PygameRenderer(FixedPipelineRenderer):
         for char in event.unicode:
             codepoint = ord(char)
             if NULL_CHAR != codepoint and BMP.contain(codepoint):
+                # self.io.want_text_input
                 self.io.add_input_character(codepoint)
 
         self.update_key_state(event.key, down=True)

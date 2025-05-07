@@ -39,6 +39,9 @@ buildconf
 burple
 byterange
 casteljau
+chieuch
+choseong
+cieuc
 cmov
 colorkey
 copytb
@@ -98,12 +101,14 @@ greyblue
 hdcp
 hexdigest
 hideable
+hieuh
 hline
 hqvga
 hsxga
 hvga
 hwaccels
 hwsurface
+ieung
 imageable
 indentless
 infiles
@@ -114,6 +119,8 @@ isnode
 isoformat
 isync
 jaraco
+jongseong
+jungseong
 kdci
 keyboardable
 keyformat
@@ -121,6 +128,8 @@ keyformatversions
 keymod
 keyrings
 kflat
+khieukh
+kiyeok
 kwallet
 lalt
 lavendar
@@ -145,6 +154,7 @@ maxtail
 mbutton
 meipass
 metadatastream
+mieum
 mmsh
 mmst
 mmxext
@@ -155,6 +165,7 @@ muxing
 namehint
 nanum
 navyblue
+nieun
 nobuffer
 nocov
 noframe
@@ -176,6 +187,8 @@ paletted
 paletted
 passthru
 perrywinkle
+phieuph
+pieup
 popens
 popindex
 popright
@@ -209,6 +222,7 @@ reorderable
 requestable
 returncode
 rgbx
+rieul
 rightbracket
 rightparen
 rmeta
@@ -220,6 +234,7 @@ rtmpts
 sameq
 scrollock
 setend
+sios
 smoothscale
 sntsc
 spal
@@ -227,6 +242,11 @@ spawnable
 spua
 sqcif
 srcalpha
+ssangcieuc
+ssangkiyeok
+ssangpieup
+ssangsios
+ssangtikeut
 ssse
 stillimage
 strfmt
@@ -244,6 +264,8 @@ targetduration
 terracota
 tetri
 tetrix
+thieuth
+tikeut
 timename
 toupe
 tptz
