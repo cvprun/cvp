@@ -5,13 +5,13 @@ from os import environ
 from typing import Callable, Optional
 
 
-class DemoInterface(ABC):
+class SimpleDemoInterface(ABC):
     @abstractmethod
     def on_frame(self) -> None:
         raise NotImplementedError
 
 
-class DemoBase(DemoInterface):
+class SimpleDemoBase(SimpleDemoInterface):
     def __init__(
         self,
         frame_callback: Optional[Callable[[], None]] = None,
@@ -93,5 +93,9 @@ def run_simple_demo(
     force_egl: Optional[bool] = False,
     use_accelerate: Optional[bool] = False,
 ) -> None:
-    demo = DemoBase(frame_callback, force_egl=force_egl, use_accelerate=use_accelerate)
+    demo = SimpleDemoBase(
+        frame_callback,
+        force_egl=force_egl,
+        use_accelerate=use_accelerate,
+    )
     demo.run()

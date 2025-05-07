@@ -2,7 +2,7 @@
 
 from imgui_bundle import imgui
 
-from cvp.renderer.pygame.demo import run_simple_demo
+from cvp.renderer.pygame.demos.simple import run_simple_demo
 
 
 def on_frame() -> None:
