@@ -3,10 +3,18 @@
 # https://unicode.org/Public/UNIDATA/Jamo.txt
 # U+1100..U+11FF (256 code points)
 
-from typing import Final, Sequence
+from typing import Final, Sequence, Union
 
 HANGUL_JAMO_BEGIN: Final[int] = 0x1100  # 'ᄀ'
 HANGUL_JAMO_END: Final[int] = 0x11FF  # 'ᇿ'
+
+
+def is_hangul_jamo_unicode(char: Union[str, int]) -> bool:
+    if isinstance(char, str):
+        char = ord(char)
+    assert isinstance(char, int)
+    return HANGUL_JAMO_BEGIN <= char <= HANGUL_JAMO_END
+
 
 HANGUL_CHOSEONG_KIYEOK: Final[int] = 0x1100  # G
 HANGUL_CHOSEONG_SSANGKIYEOK: Final[int] = 0x1101  # GG
@@ -28,7 +36,7 @@ HANGUL_CHOSEONG_THIEUTH: Final[int] = 0x1110  # T
 HANGUL_CHOSEONG_PHIEUPH: Final[int] = 0x1111  # P
 HANGUL_CHOSEONG_HIEUH: Final[int] = 0x1112  # H
 
-HANGUL_CHOSEONG: Final[Sequence[int]] = (
+MODERN_HANGUL_CHOSEONG: Final[Sequence[int]] = (
     HANGUL_CHOSEONG_KIYEOK,
     HANGUL_CHOSEONG_SSANGKIYEOK,
     HANGUL_CHOSEONG_NIEUN,
@@ -50,6 +58,7 @@ HANGUL_CHOSEONG: Final[Sequence[int]] = (
     HANGUL_CHOSEONG_HIEUH,
 )
 
+HANGUL_JUNGSEONG_FILLER: Final[int] = 0x1160  # (UNUSED)
 HANGUL_JUNGSEONG_A: Final[int] = 0x1161  # A
 HANGUL_JUNGSEONG_AE: Final[int] = 0x1162  # AE
 HANGUL_JUNGSEONG_YA: Final[int] = 0x1163  # YA
@@ -72,7 +81,7 @@ HANGUL_JUNGSEONG_EU: Final[int] = 0x1173  # EU
 HANGUL_JUNGSEONG_YI: Final[int] = 0x1174  # YI
 HANGUL_JUNGSEONG_I: Final[int] = 0x1175  # I
 
-HANGUL_JUNGSEONG: Final[Sequence[int]] = (
+MODERN_HANGUL_JUNGSEONG: Final[Sequence[int]] = (
     HANGUL_JUNGSEONG_A,
     HANGUL_JUNGSEONG_AE,
     HANGUL_JUNGSEONG_YA,
@@ -124,7 +133,7 @@ HANGUL_JONGSEONG_THIEUTH: Final[int] = 0x11C0  # T
 HANGUL_JONGSEONG_PHIEUPH: Final[int] = 0x11C1  # P
 HANGUL_JONGSEONG_HIEUH: Final[int] = 0x11C2  # H
 
-HANGUL_JONGSEONG: Final[Sequence[int]] = (
+MODERN_HANGUL_JONGSEONG: Final[Sequence[int]] = (
     HANGUL_JONGSEONG_KIYEOK,
     HANGUL_JONGSEONG_SSANGKIYEOK,
     HANGUL_JONGSEONG_KIYEOK_SIOS,
@@ -157,19 +166,24 @@ HANGUL_JONGSEONG: Final[Sequence[int]] = (
 NONE_JONGSEONG: Final[str] = ""
 
 # fmt: off
-CHOSEONG: Final[Sequence[str]] = (
+MODERN_CHOSEONG: Final[Sequence[str]] = (
     "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ",
     "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"
 )
-JUNGSEONG: Final[Sequence[str]] = (
+
+MODERN_JUNGSEONG: Final[Sequence[str]] = (
     "ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ",
     "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ", "ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ",
     "ㅣ"
 )
-CHOSEONG_COMPATIBLE_JONGSEONG: Final[Sequence[str]] = (
-    NONE_JONGSEONG,
+
+MODERN_JONGSEONG_AS_CHOSEONG: Final[Sequence[str]] = (
     "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ",
     "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ",
     "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"
+)
+
+MODERN_JONGSEONG_AS_CHOSEONG_WITH_NONE: Final[Sequence[str]] = (
+    NONE_JONGSEONG, *MODERN_JONGSEONG_AS_CHOSEONG
 )
 # fmt: on

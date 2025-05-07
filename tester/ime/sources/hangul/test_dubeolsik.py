@@ -5,18 +5,21 @@ from unittest import TestCase, main
 
 from hgtk.checker import is_hangul
 
-from cvp.ime.sources.hangul import HangulInputHandler, create_qwerty_hangul_mapping
+from cvp.ime.sources.hangul.dubeolsik import (
+    DubeolsikHangulInputHandler,
+    create_dubeolsik_hangul_mapping,
+)
 
 
-class HangulTestCase(TestCase):
+class DubeolsikTestCase(TestCase):
     def test_decompose(self):
-        handler = HangulInputHandler()
+        handler = DubeolsikHangulInputHandler()
 
         # noinspection SpellCheckingInspection
         self.assertEqual("ㅎㅏㄴㄱㅡㄹ", handler.decompose("한글"))
 
     def test_qwerty_hangul_mapping(self):
-        mapping = create_qwerty_hangul_mapping()
+        mapping = create_dubeolsik_hangul_mapping()
         self.assertTrue(all([k.isalpha() for k in mapping.keys()]))
         self.assertTrue(all([is_hangul(k) for k in mapping.values()]))
         self.assertTrue(all([not is_hangul(k) for k in digits]))
@@ -25,7 +28,7 @@ class HangulTestCase(TestCase):
         self.assertTrue(all([not is_hangul(k) for k in whitespace]))
 
     def test_add(self):
-        handler = HangulInputHandler()
+        handler = DubeolsikHangulInputHandler()
         self.assertSequenceEqual(("",), handler.add("ㅎ"))
         self.assertEqual("ㅎ", handler.get_composing())
 

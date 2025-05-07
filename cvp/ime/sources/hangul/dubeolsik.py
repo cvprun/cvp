@@ -8,7 +8,7 @@ from cvp.ime.sources._base import BaseInputHandler
 from cvp.types.override import override
 
 
-def create_qwerty_hangul_mapping():
+def create_dubeolsik_hangul_mapping():
     return {
         "q": "ㅂ",
         "w": "ㅈ",
@@ -65,9 +65,13 @@ def create_qwerty_hangul_mapping():
     }
 
 
-class HangulInputHandler(BaseInputHandler):
+class DubeolsikHangulInputHandler(BaseInputHandler):
+    """
+    https://en.wikipedia.org/wiki/Keyboard_layout#Dubeolsik
+    """
+
     __cvp_ime_method_name__ = "hangul"
-    __cvp_ime_keyboard_layout__ = "qwerty"
+    __cvp_ime_keyboard_layout__ = "dubeolsik"  # QWERTY
     __cvp_ime_language__ = "korean"
 
     def __init__(
@@ -77,7 +81,7 @@ class HangulInputHandler(BaseInputHandler):
     ):
         super().__init__()
         self._composing = composing if composing else str()
-        self._keyboard_mapping = create_qwerty_hangul_mapping()
+        self._keyboard_mapping = create_dubeolsik_hangul_mapping()
 
     @staticmethod
     def compose(text: str, compose_code=hgtk.text.DEFAULT_COMPOSE_CODE) -> str:
@@ -111,9 +115,8 @@ class HangulInputHandler(BaseInputHandler):
             self._composing = hangul_text
             return (str(),)
 
-        composed_hangul_text = hgtk.letter.compose(
-            self._composing + hangul_text,
-        )
+        # TODO: ERROR!!
+        composed_hangul_text = hgtk.text.compose(self._composing + hangul_text)
 
         match len(composed_hangul_text):
             case 1:

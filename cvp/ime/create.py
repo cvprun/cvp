@@ -9,9 +9,9 @@ from cvp.ime.interface import InputHandlerInterface
 @lru_cache
 def get_all_input_handler_types() -> Sequence[Type[InputHandlerInterface]]:
     from cvp.ime.sources.english import EnglishInputHandler
-    from cvp.ime.sources.hangul import HangulInputHandler
+    from cvp.ime.sources.hangul.dubeolsik import DubeolsikHangulInputHandler
 
-    return EnglishInputHandler, HangulInputHandler
+    return EnglishInputHandler, DubeolsikHangulInputHandler
 
 
 def create_all_input_handlers() -> Dict[str, InputHandlerInterface]:
