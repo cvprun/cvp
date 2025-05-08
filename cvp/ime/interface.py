@@ -18,7 +18,19 @@ class InputHandlerInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def has_composing(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
     def get_composing(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def del_composing(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def clear_composing(self) -> None:
         raise NotImplementedError
 
     @abstractmethod

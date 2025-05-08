@@ -31,5 +31,23 @@ class BaseInputHandler(InputHandlerInterface, InputHandlerNameProtocol, ABC):
         return self.__cvp_ime_language__
 
     @override
+    def has_composing(self) -> bool:
+        return False
+
+    @override
     def get_composing(self) -> str:
         return str()
+
+    @override
+    def del_composing(self) -> None:
+        pass
+
+    @override
+    def clear_composing(self) -> None:
+        pass
+
+    def pop_composing(self) -> str:
+        try:
+            return self.get_composing()
+        finally:
+            self.clear_composing()

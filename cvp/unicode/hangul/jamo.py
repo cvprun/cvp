@@ -58,6 +58,14 @@ MODERN_HANGUL_CHOSEONG: Final[Sequence[int]] = (
     HANGUL_CHOSEONG_HIEUH,
 )
 
+
+def is_modern_hangul_choseong_unicode(char: Union[str, int]) -> bool:
+    if isinstance(char, str):
+        char = ord(char)
+    assert isinstance(char, int)
+    return MODERN_HANGUL_CHOSEONG[0] <= char <= MODERN_HANGUL_CHOSEONG[-1]
+
+
 HANGUL_JUNGSEONG_FILLER: Final[int] = 0x1160  # (UNUSED)
 HANGUL_JUNGSEONG_A: Final[int] = 0x1161  # A
 HANGUL_JUNGSEONG_AE: Final[int] = 0x1162  # AE
@@ -104,6 +112,14 @@ MODERN_HANGUL_JUNGSEONG: Final[Sequence[int]] = (
     HANGUL_JUNGSEONG_YI,
     HANGUL_JUNGSEONG_I,
 )
+
+
+def is_modern_hangul_jungseong_unicode(char: Union[str, int]) -> bool:
+    if isinstance(char, str):
+        char = ord(char)
+    assert isinstance(char, int)
+    return MODERN_HANGUL_JUNGSEONG[0] <= char <= MODERN_HANGUL_JUNGSEONG[-1]
+
 
 HANGUL_JONGSEONG_KIYEOK: Final[int] = 0x11A8  # G
 HANGUL_JONGSEONG_SSANGKIYEOK: Final[int] = 0x11A9  # GG
@@ -163,27 +179,24 @@ MODERN_HANGUL_JONGSEONG: Final[Sequence[int]] = (
     HANGUL_JONGSEONG_HIEUH,
 )
 
-NONE_JONGSEONG: Final[str] = ""
 
-# fmt: off
-MODERN_CHOSEONG: Final[Sequence[str]] = (
-    "ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ",
-    "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"
-)
+def is_modern_hangul_jongseong_unicode(char: Union[str, int]) -> bool:
+    if isinstance(char, str):
+        char = ord(char)
+    assert isinstance(char, int)
+    return MODERN_HANGUL_JONGSEONG[0] <= char <= MODERN_HANGUL_JONGSEONG[-1]
 
-MODERN_JUNGSEONG: Final[Sequence[str]] = (
-    "ㅏ", "ㅐ", "ㅑ", "ㅒ", "ㅓ", "ㅔ", "ㅕ", "ㅖ", "ㅗ", "ㅘ",
-    "ㅙ", "ㅚ", "ㅛ", "ㅜ", "ㅝ", "ㅞ", "ㅟ", "ㅠ", "ㅡ", "ㅢ",
-    "ㅣ"
-)
 
-MODERN_JONGSEONG_AS_CHOSEONG: Final[Sequence[str]] = (
-    "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ",
-    "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ",
-    "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"
-)
+def is_modern_hangul_jamo_unicode(char: Union[str, int]) -> bool:
+    if isinstance(char, str):
+        char = ord(char)
+    assert isinstance(char, int)
 
-MODERN_JONGSEONG_AS_CHOSEONG_WITH_NONE: Final[Sequence[str]] = (
-    NONE_JONGSEONG, *MODERN_JONGSEONG_AS_CHOSEONG
-)
-# fmt: on
+    if is_modern_hangul_choseong_unicode(char):
+        return True
+    elif is_modern_hangul_jungseong_unicode(char):
+        return True
+    elif is_modern_hangul_jongseong_unicode(char):
+        return True
+    else:
+        return False
