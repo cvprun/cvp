@@ -6,7 +6,6 @@ WSDiscovery==2.1.2
 coloredlogs==15.0.1
 distro==1.9.0
 fonttools==4.54.1
-hgtk==0.2.1
 httpx==0.28.1
 imgui-bundle==1.6.2
 keyring==25.6.0

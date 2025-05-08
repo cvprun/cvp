@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from string import ascii_letters
 from unittest import TestCase, main
 
 from cvp.ime.sources.hangul.dubeolsik.mapping import (
@@ -15,6 +16,11 @@ from cvp.unicode.hangul.compatibility_jamo import (
 
 
 class MappingTestCase(TestCase):
+    def test_all_keys(self):
+        letters = set(ascii_letters)
+        mapping = set(create_dubeolsik_hangul_mapping().keys())
+        self.assertSetEqual(letters, mapping)
+
     def test_total(self):
         mapping = create_dubeolsik_hangul_mapping()
         self.assertTrue(all([k.isalpha() for k in mapping.keys()]))

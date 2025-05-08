@@ -7,13 +7,18 @@ from cvp.unicode.hangul.combinator import compose_hangul_syllable
 
 
 @dataclass
-class HangulSyllables:
+class HangulComponents:
     choseong: Optional[str] = None
     jungseong: Optional[str] = None
     jongseong: Optional[str] = None
 
     def __bool__(self):
         return bool(self.choseong) or bool(self.jungseong) or bool(self.jongseong)
+
+    def __iter__(self):
+        yield self.choseong
+        yield self.jungseong
+        yield self.jongseong
 
     def clear(self):
         self.choseong = None

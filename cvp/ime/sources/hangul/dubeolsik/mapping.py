@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 from types import MappingProxyType
-from typing import Dict
+from typing import Dict, Final, Set
 
 
 @lru_cache
@@ -81,3 +81,10 @@ def create_dubeolsik_hangul_mapping() -> MappingProxyType[str, str]:
     total.update(consonants)
     total.update(vowels)
     return MappingProxyType(total)
+
+
+# fmt: off
+DUBEOLSIK_CONSONANTS: Final[Set[str]] = set(create_dubeolsik_hangul_consonants_mapping().values())  # noqa: E501
+DUBEOLSIK_VOWELS: Final[Set[str]] = set(create_dubeolsik_hangul_vowels_mapping().values())  # noqa: E501
+DUBEOLSIK_JAMOS: Final[Set[str]] = set(create_dubeolsik_hangul_mapping().values())
+# fmt: on

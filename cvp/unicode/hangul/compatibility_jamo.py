@@ -2,7 +2,7 @@
 # https://en.wikipedia.org/wiki/Hangul_Compatibility_Jamo
 # U+3130..U+318F (96 code points)
 
-from typing import Final, Sequence, Union
+from typing import Final, Sequence, Set, Union
 
 HANGUL_COMPATIBILITY_JAMO_BEGIN: Final[int] = 0x3130
 HANGUL_COMPATIBILITY_JAMO_END: Final[int] = 0x318F
@@ -34,6 +34,10 @@ MODERN_JONGSEONG_AS_CHOSEONG: Final[Sequence[str]] = (
 )
 # fmt: on
 
+MODERN_CHOSEONG_SET: Final[Set[str]] = set(MODERN_CHOSEONG)
+MODERN_JUNGSEONG_SET: Final[Set[str]] = set(MODERN_JUNGSEONG)
+MODERN_JONGSEONG_AS_CHOSEONG_SET: Final[Set[str]] = set(MODERN_JONGSEONG_AS_CHOSEONG)
+
 
 def is_modern_hangul_compatibility_choseong_unicode(char: Union[str, int]) -> bool:
     if isinstance(char, str):
@@ -47,14 +51,3 @@ def is_modern_hangul_compatibility_jungseong_unicode(char: Union[str, int]) -> b
         char = ord(char)
     assert isinstance(char, int)
     return ord(MODERN_JUNGSEONG[0]) <= char <= ord(MODERN_JUNGSEONG[-1])
-
-
-def is_modern_hangul_compatibility_jongseong_unicode(char: Union[str, int]) -> bool:
-    if isinstance(char, str):
-        char = ord(char)
-    assert isinstance(char, int)
-    return (
-        ord(MODERN_JONGSEONG_AS_CHOSEONG[0])
-        <= char
-        <= ord(MODERN_JONGSEONG_AS_CHOSEONG[-1])
-    )
