@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Sequence
 
 import hgtk
 from overrides import override

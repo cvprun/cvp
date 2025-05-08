@@ -53,4 +53,8 @@ def is_modern_hangul_compatibility_jongseong_unicode(char: Union[str, int]) -> b
     if isinstance(char, str):
         char = ord(char)
     assert isinstance(char, int)
-    return ord(MODERN_JONGSEONG_AS_CHOSEONG[0]) <= char <= ord(MODERN_JONGSEONG_AS_CHOSEONG[-1])  # noqa: E501
+    return (
+        ord(MODERN_JONGSEONG_AS_CHOSEONG[0])
+        <= char
+        <= ord(MODERN_JONGSEONG_AS_CHOSEONG[-1])
+    )

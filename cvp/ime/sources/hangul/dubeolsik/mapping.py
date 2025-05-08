@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from types import MappingProxyType
+from typing import Dict
 
 
 @lru_cache
@@ -76,7 +77,7 @@ def create_dubeolsik_hangul_vowels_mapping() -> MappingProxyType[str, str]:
 def create_dubeolsik_hangul_mapping() -> MappingProxyType[str, str]:
     consonants = create_dubeolsik_hangul_consonants_mapping()
     vowels = create_dubeolsik_hangul_vowels_mapping()
-    total = dict()
+    total: Dict[str, str] = dict()
     total.update(consonants)
     total.update(vowels)
     return MappingProxyType(total)
