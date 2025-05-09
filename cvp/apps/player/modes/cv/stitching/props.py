@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import fields, is_dataclass
 from typing import Final, List
 
 from imgui_bundle import imgui
@@ -20,7 +19,8 @@ from cvp.cv.stitching.types import (
     WARP_KEYS,
     WAVE_CORRECT_KEYS,
 )
-from cvp.inspect.docstring import get_attribute_docstring
+from cvp.imgui.tooltip import hovered_tooltip_text
+from cvp.inspect.docstring import generate_dataclass_fields_docs
 
 # [IMPORTANT]
 # The data type required for the imgui combo is 'list'.
@@ -36,30 +36,17 @@ _WAVE_CORRECT_CHOICES: Final[List[str]] = list(WAVE_CORRECT_KEYS)
 _BLEND_CHOICES: Final[List[str]] = list(BLEND_KEYS)
 
 
-def generate_stitcher_props_tooltips(props: StitcherProps):
-    assert is_dataclass(props)
-    cls = type(props)
-    result = dict()
-    for field in fields(cls):  # type: ignore[arg-type]
-        result[field.name] = get_attribute_docstring(cls, field.name)
-    return result
-
-
 class StitchingPropsWidget:
     def __init__(self, props: StitcherProps):
         super().__init__()
         self._props = props
-        self._tooltips = generate_stitcher_props_tooltips(props)
+        self._tooltips = generate_dataclass_fields_docs(props)
         self.clicked_stitch = False
         self.changed_stitcher_mode = False
 
     def _hovered_tooltip(self, key: str):
-        if imgui.is_item_hovered():
-            if imgui.begin_tooltip():
-                try:
-                    imgui.text(self._tooltips[key])
-                finally:
-                    imgui.end_tooltip()
+        if help_text := self._tooltips.get(key):
+            hovered_tooltip_text(help_text)
 
     def _main(self) -> None:
         self.changed_stitcher_mode, self._props.stitcher_mode_index = imgui.combo(

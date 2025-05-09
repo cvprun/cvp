@@ -19,6 +19,10 @@ class WindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def on_status_menu(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def on_event(self, event: Event) -> bool:
         raise NotImplementedError
 

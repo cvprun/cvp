@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from ast import AnnAssign, Expr, parse
+from dataclasses import fields, is_dataclass
 from inspect import cleandoc, getsource
-from typing import Optional
+from typing import Any, Dict, Optional
 
 
 def get_attribute_docstring(cls: type, key: str) -> Optional[str]:
@@ -38,3 +39,12 @@ def get_attribute_docstring(cls: type, key: str) -> Optional[str]:
         return cleandoc(doc_value)
 
     return None
+
+
+def generate_dataclass_fields_docs(props: Any) -> Dict[str, Optional[str]]:
+    assert is_dataclass(props)
+    cls = type(props)
+    result = dict()
+    for field in fields(cls):  # type: ignore[arg-type]
+        result[field.name] = get_attribute_docstring(cls, field.name)
+    return result

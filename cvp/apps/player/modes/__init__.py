@@ -48,7 +48,7 @@ class ModeManager:
         self.faker_mode = FakerMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.files_mode = FilesMode(context)
-        self.flow_mode = MainMode(context)
+        self.main_mode = MainMode(context)
         self.hash_mode = HashMode(context)
         self.media_player_mode = MediaPlayerMode(context)
         self.medias_mode = MediasMode(context)
@@ -70,14 +70,13 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.dashboard_mode, self.chat_mode
+        self._menu_modes = self.dashboard_mode, self.chat_mode, self.main_mode
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
                 "Computer Vision": (self.object_tracker_mode,),
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
-                "Flows": (self.flow_mode, self.dtype_mode, self.node_mode),
                 "Games": (self.tetrix_mode,),
                 "Generators": (self.faker_mode,),
                 "Network": (self.download_mode, self.sock_map),

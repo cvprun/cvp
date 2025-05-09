@@ -199,6 +199,11 @@ class MainMode(BaseMode):
             window.on_main_menu()
 
     @override
+    def on_status_menu(self) -> None:
+        if window := self.focused_window:
+            window.on_status_menu()
+
+    @override
     def do_event(self, event: Event) -> bool:
         if window := self.focused_window:
             return window.on_event(event)

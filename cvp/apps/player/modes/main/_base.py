@@ -31,6 +31,10 @@ class BaseWindow(WindowInterface, WindowNameProtocol, ABC):
         pass
 
     @override
+    def on_status_menu(self) -> None:
+        pass
+
+    @override
     def on_event(self, event: Event) -> bool:
         return False
 

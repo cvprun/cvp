@@ -25,6 +25,10 @@ class ModeInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def on_status_menu(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def do_event(self, event: Event) -> bool:
         raise NotImplementedError
 

@@ -464,6 +464,8 @@ class PlayerApplication:
                     avail_size = imgui.get_content_region_avail()
                     imgui.begin_horizontal("Horizontal", size=(avail_size.x, 0))
                     try:
+                        self._modes.current_mode.on_status_menu()
+
                         imgui.spring()
                         input_method = self._context.imes.handler
 
