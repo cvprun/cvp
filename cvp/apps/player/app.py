@@ -27,6 +27,7 @@ from cvp.chrono.tznow import tznow
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
 from cvp.imgui.flags.key import KeyFlags
+from cvp.imgui.flags.window import VIEWPORT_SIDE_BAR_FLAGS
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
@@ -374,6 +375,7 @@ class PlayerApplication:
             GL.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT)
 
             self.on_main_menu()
+            self.on_status_bar()
             self.on_popups_process()
             self._modes.current_mode.do_process()
 
@@ -447,6 +449,22 @@ class PlayerApplication:
                             imgui.end_menu()
             finally:
                 imgui.end_main_menu_bar()
+
+    def on_status_bar(self) -> None:
+        if imgui.internal.begin_viewport_side_bar(
+            "##StatusBar",
+            imgui.get_main_viewport(),
+            imgui.Dir.down,
+            imgui.get_frame_height(),
+            VIEWPORT_SIDE_BAR_FLAGS,
+        ):
+            if imgui.begin_menu_bar():
+                try:
+                    imgui.text(self._context.imes.mode.capitalize())
+                    imgui.text(self._context.imes.get_composing())
+                finally:
+                    imgui.end_menu_bar()
+        imgui.end()
 
     def on_popups_process(self) -> None:
         """Where to render the popup object."""
