@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Sequence
+from typing import Optional, Sequence
 
 
 class InputHandlerInterface(ABC):
@@ -26,11 +26,11 @@ class InputHandlerInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def del_composing(self) -> None:
+    def clear_composing(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def clear_composing(self) -> None:
+    def pop(self) -> Optional[str]:
         raise NotImplementedError
 
     @abstractmethod

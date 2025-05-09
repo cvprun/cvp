@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC
-from typing import Protocol, runtime_checkable
+from typing import Optional, Protocol, runtime_checkable
 
 from cvp.ime.interface import InputHandlerInterface
 from cvp.types.override import override
@@ -39,15 +39,9 @@ class BaseInputHandler(InputHandlerInterface, InputHandlerNameProtocol, ABC):
         return str()
 
     @override
-    def del_composing(self) -> None:
-        pass
-
-    @override
     def clear_composing(self) -> None:
         pass
 
-    def pop_composing(self) -> str:
-        try:
-            return self.get_composing()
-        finally:
-            self.clear_composing()
+    @override
+    def pop(self) -> Optional[str]:
+        return None
