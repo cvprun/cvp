@@ -16,6 +16,7 @@ from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
 from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
+from cvp.ime.manager import ImeManager
 from cvp.keyring.root import RootKeyring
 from cvp.logging.logging import (
     convert_level_number,
@@ -108,6 +109,7 @@ class Context(ContextMixins):
             logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
             self._keyring.update_default_filepath(self._home.keyrings)
 
+        self._imes = ImeManager.from_default()
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
@@ -195,6 +197,10 @@ class Context(ContextMixins):
     @property
     def msgs(self):
         return self._msgs
+
+    @property
+    def imes(self):
+        return self._imes
 
     @property
     def ollamas(self):

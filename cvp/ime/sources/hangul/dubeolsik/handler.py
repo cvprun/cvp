@@ -32,12 +32,16 @@ class DubeolsikHangulInputHandler(BaseInputHandler):
         return self._syllable.compose()
 
     @override
-    def clear_composing(self) -> None:
+    def clear(self) -> None:
         self._syllable.clear()
 
     @override
     def pop(self) -> Optional[str]:
         return self._syllable.pop()
+
+    @override
+    def flush(self) -> Sequence[str]:
+        return self._syllable.compose_and_clear()
 
     @override
     def add(self, text: str) -> Sequence[str]:

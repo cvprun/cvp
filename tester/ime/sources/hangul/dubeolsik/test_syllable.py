@@ -18,6 +18,90 @@ class SyllableTestCase(TestCase):
         self.assertEqual("ㅏ", jung)
         self.assertEqual("ㄴ", jong)
 
+    def test_sample_complex_char(self):
+        syllable = DubeolsikHangulSyllable()
+
+        self.assertSequenceEqual((), syllable.push("ㄲ"))
+        self.assertEqual("ㄲ", syllable.choseong)
+        self.assertIsNone(syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("ㄲ", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㅜ"))
+        self.assertEqual("ㄲ", syllable.choseong)
+        self.assertEqual("ㅜ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("꾸", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㅔ"))
+        self.assertEqual("ㄲ", syllable.choseong)
+        self.assertEqual("ㅞ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("꿰", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㄹ"))
+        self.assertEqual("ㄲ", syllable.choseong)
+        self.assertEqual("ㅞ", syllable.jungseong)
+        self.assertEqual("ㄹ", syllable.jongseong)
+        self.assertEqual("꿸", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㅎ"))
+        self.assertEqual("ㄲ", syllable.choseong)
+        self.assertEqual("ㅞ", syllable.jungseong)
+        self.assertEqual("ㅀ", syllable.jongseong)
+        self.assertEqual("꿿", syllable.compose())
+
+        self.assertSequenceEqual(("꿸",), syllable.push("ㅗ"))
+        self.assertEqual("ㅎ", syllable.choseong)
+        self.assertEqual("ㅗ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("호", syllable.compose())
+
+    def test_sample_ga_na_da(self):
+        syllable = DubeolsikHangulSyllable()
+
+        self.assertSequenceEqual((), syllable.push("ㄱ"))
+        self.assertEqual("ㄱ", syllable.choseong)
+        self.assertIsNone(syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("ㄱ", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㅏ"))
+        self.assertEqual("ㄱ", syllable.choseong)
+        self.assertEqual("ㅏ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("가", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㄴ"))
+        self.assertEqual("ㄱ", syllable.choseong)
+        self.assertEqual("ㅏ", syllable.jungseong)
+        self.assertEqual("ㄴ", syllable.jongseong)
+        self.assertEqual("간", syllable.compose())
+
+        self.assertSequenceEqual(("가",), syllable.push("ㅏ"))
+        self.assertEqual("ㄴ", syllable.choseong)
+        self.assertEqual("ㅏ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("나", syllable.compose())
+
+        self.assertSequenceEqual((), syllable.push("ㄷ"))
+        self.assertEqual("ㄴ", syllable.choseong)
+        self.assertEqual("ㅏ", syllable.jungseong)
+        self.assertEqual("ㄷ", syllable.jongseong)
+        self.assertEqual("낟", syllable.compose())
+
+        self.assertSequenceEqual(("나",), syllable.push("ㅏ"))
+        self.assertEqual("ㄷ", syllable.choseong)
+        self.assertEqual("ㅏ", syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("다", syllable.compose())
+
+        self.assertSequenceEqual(("다", "."), syllable.push("."))
+        self.assertIsNone(syllable.choseong)
+        self.assertIsNone(syllable.jungseong)
+        self.assertIsNone(syllable.jongseong)
+        self.assertEqual("", syllable.compose())
+
     def test_sample_hangul(self):
         syllable = DubeolsikHangulSyllable()
 

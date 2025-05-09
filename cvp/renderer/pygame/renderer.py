@@ -1,23 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 import pygame
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.time import get_ticks
 
+from cvp.ime.manager import ImeManager
 from cvp.logging.logging import renderer_logger as logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
 from cvp.unicode.planes import BMP
-from cvp.variables import MOUSE_WHEEL_OFFSET_SCALE, NULL_CHAR
+from cvp.variables import BACKSPACE_CODEPOINT, MOUSE_WHEEL_OFFSET_SCALE, NULL_CODEPOINT
 
 
 class PygameRenderer(FixedPipelineRenderer):
     _events: Dict[int, Callable[[Event], bool]]
 
-    def __init__(self):
+    def __init__(self, *, imes: Optional[ImeManager] = None):
         super().__init__()
 
         display_info = pygame.display.Info()
@@ -39,6 +40,7 @@ class PygameRenderer(FixedPipelineRenderer):
         self._running_seconds = 0.0
         self._mouse_wheel_scale = MOUSE_WHEEL_OFFSET_SCALE
         self._remapper = ImguiBundleKeycodeRemapper()
+        self._imes = imes if imes else ImeManager.from_default()
         self._events = {
             pygame.MOUSEMOTION: self.on_mouse_motion,
             pygame.MOUSEBUTTONDOWN: self.on_mouse_button_down,
@@ -130,16 +132,31 @@ class PygameRenderer(FixedPipelineRenderer):
         return any_ctrl and not any_shift and not any_alt and any_copy
 
     def on_key_down(self, event: Event) -> bool:
+        if event.key == pygame.K_RALT:
+            return True
+
         for char in event.unicode:
             codepoint = ord(char)
-            if NULL_CHAR != codepoint and BMP.contain(codepoint):
-                # self.io.want_text_input
-                self.io.add_input_character(codepoint)
+            if NULL_CODEPOINT != codepoint and BMP.contain(codepoint):
+                if codepoint == BACKSPACE_CODEPOINT:
+                    if self._imes.has_composing():
+                        self._imes.pop_text()
+                    else:
+                        self.io.add_input_character(codepoint)
+                else:
+                    for c in self._imes.add_text(char):
+                        self.io.add_input_character(ord(c))
 
         self.update_key_state(event.key, down=True)
         return True
 
     def on_key_up(self, event: Event) -> bool:
+        if event.key == pygame.K_RALT:
+            self._imes.clear_text()
+            self._imes.change_next_mode()
+            logger.debug(f"Change IME Mode: '{str(self._imes.mode)}'")
+            return True
+
         self.update_key_state(event.key, down=False)
         return True
 

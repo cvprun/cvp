@@ -261,7 +261,7 @@ class PlayerApplication:
         imgui.load_ini_settings_from_disk(gui_ini_path)
         logger.info(f"Loaded imgui configuration information: '{gui_ini_path}'")
 
-        self._renderer = PygameRenderer()
+        self._renderer = PygameRenderer(imes=self._context.imes)
         logger.info("Created a Pygame renderer object.")
 
         io.fonts.clear()

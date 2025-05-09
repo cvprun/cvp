@@ -26,11 +26,15 @@ class InputHandlerInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def clear_composing(self) -> None:
+    def clear(self) -> None:
         raise NotImplementedError
 
     @abstractmethod
     def pop(self) -> Optional[str]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def flush(self) -> Sequence[str]:
         raise NotImplementedError
 
     @abstractmethod

@@ -2,15 +2,16 @@
 
 from unittest import TestCase, main
 
-from cvp.ime.create import create_all_input_handlers
+from cvp.ime.handlers import get_all_input_handler_types
 from cvp.ime.mode import InputMethodMode
 
 
 class CreateTestCase(TestCase):
     def test_same_modes(self):
-        handlers = create_all_input_handlers()
+        handlers = [ht() for ht in get_all_input_handler_types()]
+        names = [h.get_method_name() for h in handlers]
         modes = list(InputMethodMode)
-        self.assertSetEqual(set(handlers.keys()), set(modes))
+        self.assertSetEqual(set(names), set(modes))
 
 
 if __name__ == "__main__":

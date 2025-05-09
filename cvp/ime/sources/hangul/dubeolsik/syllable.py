@@ -35,7 +35,7 @@ class DubeolsikHangulSyllable:
         self.jongseong = jongseong
 
     def __bool__(self):
-        return self.any
+        return bool(self.any)
 
     def __iter__(self):
         yield self.choseong
@@ -48,27 +48,27 @@ class DubeolsikHangulSyllable:
         self.jongseong = None
 
     @property
-    def all(self) -> bool:
-        return bool(self.choseong) and bool(self.jungseong) and bool(self.jongseong)
+    def is_empty(self):
+        return not self.choseong and not self.jungseong and not self.jongseong
 
     @property
-    def any(self) -> bool:
-        return bool(self.choseong) or bool(self.jungseong) or bool(self.jongseong)
+    def any(self):
+        return self.choseong or self.jungseong or self.jongseong
 
     @property
-    def only_choseong(self) -> bool:
-        return bool(self.choseong) and not self.jungseong and not self.jongseong
+    def only_choseong(self):
+        return not self.jungseong and not self.jongseong and self.choseong
 
     @property
-    def only_jungseong(self) -> bool:
-        return not self.choseong and bool(self.jungseong) and not self.jongseong
+    def only_jungseong(self):
+        return not self.choseong and not self.jongseong and self.jungseong
 
     @property
-    def only_jongseong(self) -> bool:
-        return not self.choseong and not self.jungseong and bool(self.jongseong)
+    def only_jongseong(self):
+        return not self.choseong and not self.jungseong and self.jongseong
 
     def compose(self) -> str:
-        if not self.any:
+        if self.is_empty:
             return str()
 
         if self.only_choseong:
@@ -242,7 +242,7 @@ class DubeolsikHangulSyllable:
 
             # --------------------------------------------------------------------------
             case (cho, jung, jong, True) if cho and jung and jong:
-                if complexing := JONGSEONG_COMPLEX_MAP.get(cho):
+                if complexing := JONGSEONG_COMPLEX_MAP.get(jong):
                     if jongseong := complexing.get(text):
                         self.jongseong = jongseong
                         return ()
@@ -252,11 +252,11 @@ class DubeolsikHangulSyllable:
             case (cho, jung, jong, False) if cho and jung and jong:
                 if split_jongseong := JONGSEONG_SPLIT_MAP.get(jong):
                     old_jong, new_cho = split_jongseong
-                    self.jungseong = old_jong
+                    self.jongseong = old_jong
                     return (self.compose_and_clear(choseong=new_cho, jungseong=text),)
                 else:
-                    self.jungseong = None
-                    return (self.compose_and_clear(choseong=jung, jungseong=text),)
+                    self.jongseong = None
+                    return (self.compose_and_clear(choseong=jong, jungseong=text),)
 
             # --------------------------------------------------------------------------
             case _:

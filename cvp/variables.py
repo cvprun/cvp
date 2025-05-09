@@ -10,7 +10,8 @@ INFINITE: Final[int] = -1
 UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
 UNKNOWN_TOTAL_SIZE: Final[int] = -1
-NULL_CHAR: Final[int] = 0
+NULL_CODEPOINT: Final[int] = 0
+BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
 
 CVP_TITLE: Final[str] = "CVP"
