@@ -11,6 +11,7 @@ class InputHandlerNameProtocol(Protocol):
     __cvp_ime_method_name__: str
     __cvp_ime_keyboard_layout__: str
     __cvp_ime_language__: str
+    __cvp_ime_icon__: str
 
 
 class BaseInputHandler(InputHandlerInterface, InputHandlerNameProtocol):
@@ -28,6 +29,10 @@ class BaseInputHandler(InputHandlerInterface, InputHandlerNameProtocol):
     @override
     def get_language(self) -> str:
         return self.__cvp_ime_language__
+
+    @override
+    def get_icon(self) -> str:
+        return self.__cvp_ime_icon__
 
     @override
     def has_composing(self) -> bool:

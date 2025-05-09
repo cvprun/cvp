@@ -61,3 +61,12 @@ def style_item_spacing_context(x: float, y: float):
         yield
     finally:
         imgui.pop_style_var()
+
+
+@contextmanager
+def style_frame_border_size_context(value: float):
+    imgui.push_style_var(style_var.FRAME_BORDER_SIZE, value)
+    try:
+        yield
+    finally:
+        imgui.pop_style_var()

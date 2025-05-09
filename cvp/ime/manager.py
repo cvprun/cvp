@@ -5,12 +5,11 @@ from typing import List, Optional, Sequence
 
 from cvp.ime.handlers import get_all_input_handler_types
 from cvp.ime.interface import InputHandlerInterface
-from cvp.ime.mode import InputMethodMode
 
 
-class ImeManager(OrderedDict[InputMethodMode, InputHandlerInterface]):
+class ImeManager(OrderedDict[str, InputHandlerInterface]):
     def __init__(self, *handlers: InputHandlerInterface):
-        super().__init__([(InputMethodMode(h.get_method_name()), h) for h in handlers])
+        super().__init__([(h.get_method_name(), h) for h in handlers])
         self._mode = list(self.keys())[0]
 
     @classmethod
@@ -22,14 +21,14 @@ class ImeManager(OrderedDict[InputMethodMode, InputHandlerInterface]):
         return self._mode
 
     @mode.setter
-    def mode(self, value: InputMethodMode) -> None:
+    def mode(self, value: str) -> None:
         self._mode = value
 
     @property
     def handler(self) -> InputHandlerInterface:
         return self.__getitem__(self._mode)
 
-    def as_modes(self) -> List[InputMethodMode]:
+    def as_modes(self) -> List[str]:
         return list(self.keys())
 
     def change_next_mode(self) -> None:

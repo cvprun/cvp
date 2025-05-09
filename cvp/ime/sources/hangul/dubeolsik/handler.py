@@ -4,6 +4,7 @@ from typing import Optional, Sequence
 
 from overrides import override
 
+from cvp.assets.fonts.mdi import SYLLABARY_HANGUL
 from cvp.ime.sources._base import BaseInputHandler
 from cvp.ime.sources.hangul.dubeolsik.mapping import create_dubeolsik_hangul_mapping
 from cvp.ime.sources.hangul.dubeolsik.syllable import DubeolsikHangulSyllable
@@ -17,6 +18,7 @@ class DubeolsikHangulInputHandler(BaseInputHandler):
     __cvp_ime_method_name__ = "hangul"
     __cvp_ime_keyboard_layout__ = "dubeolsik"  # QWERTY
     __cvp_ime_language__ = "korean"
+    __cvp_ime_icon__ = SYLLABARY_HANGUL
 
     def __init__(self):
         super().__init__()

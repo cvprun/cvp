@@ -137,6 +137,7 @@ class PygameRenderer(FixedPipelineRenderer):
 
         for char in event.unicode:
             codepoint = ord(char)
+
             if codepoint == NULL_CODEPOINT:
                 continue
             if not BMP.contain(codepoint):
@@ -145,6 +146,7 @@ class PygameRenderer(FixedPipelineRenderer):
             if codepoint == BACKSPACE_CODEPOINT:
                 if self._imes.has_composing():
                     self._imes.pop_text()
+                    return True
                 else:
                     self.io.add_input_character(codepoint)
             else:
@@ -156,7 +158,8 @@ class PygameRenderer(FixedPipelineRenderer):
 
     def on_key_up(self, event: Event) -> bool:
         if event.key == pygame.K_RALT:
-            self._imes.clear_text()
+            for c in self._imes.flush_text():
+                self.io.add_input_character(ord(c))
             self._imes.change_next_mode()
             logger.debug(f"Change IME Mode: '{str(self._imes.mode)}'")
             return True

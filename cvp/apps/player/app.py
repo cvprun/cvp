@@ -31,6 +31,7 @@ from cvp.imgui.flags.window import VIEWPORT_SIDE_BAR_FLAGS
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.push_style_var import style_frame_border_size_context
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
@@ -460,8 +461,20 @@ class PlayerApplication:
         ):
             if imgui.begin_menu_bar():
                 try:
-                    imgui.text(self._context.imes.mode.capitalize())
-                    imgui.text(self._context.imes.get_composing())
+                    avail_size = imgui.get_content_region_avail()
+                    imgui.begin_horizontal("Horizontal", size=(avail_size.x, 0))
+                    try:
+                        imgui.spring()
+                        input_method = self._context.imes.handler
+
+                        imgui.set_next_item_width(avail_size.y)
+                        imgui.text(input_method.get_composing())
+
+                        with style_frame_border_size_context(0.0):
+                            if imgui.small_button(input_method.get_icon()):
+                                self._context.imes.change_next_mode()
+                    finally:
+                        imgui.end_horizontal()
                 finally:
                     imgui.end_menu_bar()
         imgui.end()

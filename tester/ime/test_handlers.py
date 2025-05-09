@@ -3,15 +3,13 @@
 from unittest import TestCase, main
 
 from cvp.ime.handlers import get_all_input_handler_types
-from cvp.ime.mode import InputMethodMode
 
 
 class CreateTestCase(TestCase):
-    def test_same_modes(self):
+    def test_non_conflict_keys(self):
         handlers = [ht() for ht in get_all_input_handler_types()]
-        names = [h.get_method_name() for h in handlers]
-        modes = list(InputMethodMode)
-        self.assertSetEqual(set(names), set(modes))
+        names = set(h.get_method_name() for h in handlers)
+        self.assertEqual(len(handlers), len(names))
 
 
 if __name__ == "__main__":

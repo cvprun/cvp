@@ -18,6 +18,10 @@ class InputHandlerInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
+    def get_icon(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
     def has_composing(self) -> bool:
         raise NotImplementedError
 
