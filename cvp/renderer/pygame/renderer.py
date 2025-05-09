@@ -137,15 +137,19 @@ class PygameRenderer(FixedPipelineRenderer):
 
         for char in event.unicode:
             codepoint = ord(char)
-            if NULL_CODEPOINT != codepoint and BMP.contain(codepoint):
-                if codepoint == BACKSPACE_CODEPOINT:
-                    if self._imes.has_composing():
-                        self._imes.pop_text()
-                    else:
-                        self.io.add_input_character(codepoint)
+            if codepoint == NULL_CODEPOINT:
+                continue
+            if not BMP.contain(codepoint):
+                continue
+
+            if codepoint == BACKSPACE_CODEPOINT:
+                if self._imes.has_composing():
+                    self._imes.pop_text()
                 else:
-                    for c in self._imes.add_text(char):
-                        self.io.add_input_character(ord(c))
+                    self.io.add_input_character(codepoint)
+            else:
+                for c in self._imes.add_text(char):
+                    self.io.add_input_character(ord(c))
 
         self.update_key_state(event.key, down=True)
         return True
