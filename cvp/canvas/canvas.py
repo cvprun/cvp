@@ -16,6 +16,7 @@ CanvasKey = NewType("CanvasKey", str)
 class Canvas:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     workspace: str = field(default_factory=str)
+    name: str = field(default_factory=str)
     opened: bool = False
 
     grid_x: Grid = field(default_factory=Grid)

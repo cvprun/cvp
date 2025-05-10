@@ -29,6 +29,9 @@ from cvp.imgui.dock_builder import (
 )
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.popups.input_text import InputTextPopup
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
@@ -44,7 +47,8 @@ class MainMode(BaseMode):
     _BOTTOM_RATIO: Final[float] = 0.25
 
     _main_dock_id: Optional[int]
-    _menus: Sequence[Tuple[str, Callable[[], None]]]
+    _prefix_menus: Sequence[Tuple[str, Callable[[], None]]]
+    _suffix_menus: Sequence[Tuple[str, Callable[[], None]]]
 
     _tools: Dict[str, WindowInterface]
     _mains: Dict[str, WindowInterface]
@@ -56,7 +60,8 @@ class MainMode(BaseMode):
         self._initialized_dock_layout = False
         self._main_dock_id = None
 
-        self._menus = (("Window", self.on_window_menu),)
+        self._prefix_menus = (("File", self.on_file_menu),)
+        self._suffix_menus = (("Window", self.on_window_menu),)
 
         # ==============================================================================
         # region: Initialize Window Instances
@@ -83,6 +88,65 @@ class MainMode(BaseMode):
         self._mains = dict()
         self._mains.update(flow.GraphFlowWindow.create_opened_windows(context))
         self._mains.update(canvas.CanvasWindow.create_opened_windows(context))
+
+        self._new_canvas_popup = InputTextPopup(
+            title="New canvas",
+            label="Please enter a canvas name:",
+            ok="Create",
+            cancel="Cancel",
+            target=self.on_new_canvas,
+        )
+        self._import_canvas_popup = OpenFilePopup(
+            title="Import canvas",
+            target=self.on_import_canvas,
+        )
+        self._export_canvas_popup = OpenFilePopup(
+            title="Export canvas",
+            target=self.on_export_canvas,
+            open_mode=OpenFilePopup.OpenMode.input_filename,
+        )
+        self._confirm_remove_canvas_popup = ConfirmPopup(
+            title="Remove canvas",
+            label="Are you sure you want to remove canvas?",
+            ok="Remove",
+            cancel="Cancel",
+            target=self.on_confirm_remove_canvas,
+        )
+
+        self._new_graph_popup = InputTextPopup(
+            title="New graph",
+            label="Please enter a graph name:",
+            ok="Create",
+            cancel="Cancel",
+            target=self.on_new_graph,
+        )
+        self._import_graph_popup = OpenFilePopup(
+            title="Import graph",
+            target=self.on_import_graph,
+        )
+        self._export_graph_popup = OpenFilePopup(
+            title="Export graph",
+            target=self.on_export_graph,
+            open_mode=OpenFilePopup.OpenMode.input_filename,
+        )
+        self._confirm_remove_graph_popup = ConfirmPopup(
+            title="Remove graph",
+            label="Are you sure you want to remove graph?",
+            ok="Remove",
+            cancel="Cancel",
+            target=self.on_confirm_remove_graph,
+        )
+
+        self._popups = (
+            self._new_canvas_popup,
+            self._import_canvas_popup,
+            self._export_canvas_popup,
+            self._confirm_remove_canvas_popup,
+            self._new_graph_popup,
+            self._import_graph_popup,
+            self._export_graph_popup,
+            self._confirm_remove_graph_popup,
+        )
 
     @property
     def initialized(self) -> bool:
@@ -176,6 +240,30 @@ class MainMode(BaseMode):
         else:
             return None
 
+    def on_new_canvas(self, name: str) -> None:
+        self.context.canvases.add_new(name=name, opened=True)
+
+    def on_import_canvas(self, file: str) -> None:
+        pass
+
+    def on_export_canvas(self, file: str) -> None:
+        pass
+
+    def on_confirm_remove_canvas(self, value: bool) -> None:
+        pass
+
+    def on_new_graph(self, name: str) -> None:
+        self.context.flows.create_graph(name=name, append=True, opened=True)
+
+    def on_import_graph(self, file: str) -> None:
+        pass
+
+    def on_export_graph(self, file: str) -> None:
+        pass
+
+    def on_confirm_remove_graph(self, value: bool) -> None:
+        pass
+
     def filter_window_key_set(self, cls: Type[WindowInterface]):
         return set(key for key, win in self._mains.items() if isinstance(win, cls))
 
@@ -211,31 +299,67 @@ class MainMode(BaseMode):
 
     @override
     def on_main_menu(self) -> None:
-        if window := self.focused_window:
-            window.on_main_menu()
-
-        for name, func in self._menus:
+        for name, func in self._prefix_menus:
             if imgui.begin_menu(name):
                 try:
                     func()
                 finally:
                     imgui.end_menu()
 
-    def set_opened_windows_with_module(self, module: ModuleType, opened: bool) -> None:
+        if window := self.focused_window:
+            window.on_main_menu()
+
+        for name, func in self._suffix_menus:
+            if imgui.begin_menu(name):
+                try:
+                    func()
+                finally:
+                    imgui.end_menu()
+
+    def on_file_menu(self) -> None:
+        if menu_item("New canvas"):
+            self._new_canvas_popup.show()
+        if menu_item("New graph"):
+            self._new_graph_popup.show()
+
+        imgui.separator()
+        if menu_item("Import canvas"):
+            self._import_canvas_popup.show()
+        if menu_item("Import graph"):
+            self._import_graph_popup.show()
+
+        if menu_item("Export canvas", enabled=False):
+            self._export_canvas_popup.show()
+        if menu_item("Export graph", enabled=False):
+            self._export_graph_popup.show()
+
+        imgui.separator()
+        if menu_item("Refresh canvas"):
+            self.context.canvases.read_all_config_files()
+        if menu_item("Refresh graphs"):
+            self.context.flows.read_all_graph_files()
+
+    def filter_tools_with_module(self, module: ModuleType):
+        result = list()
         for tool in self._tools.values():
             if not tool.__module__.startswith(module.__name__):
                 continue
-            tool.set_opened_window(opened)
+            result.append(tool)
+        return result
 
-    def on_window_menu(self):
-        if imgui.begin_menu("Flows"):
+    def do_window_tool_menu(self, label: str, module: ModuleType):
+        if imgui.begin_menu(label):
             try:
+                tools = self.filter_tools_with_module(module)
                 if menu_item("Show all"):
-                    self.set_opened_windows_with_module(flow, opened=True)
+                    for tool in tools:
+                        tool.set_opened_window(True)
                 if menu_item("Hide all"):
-                    self.set_opened_windows_with_module(flow, opened=False)
+                    for tool in tools:
+                        tool.set_opened_window(False)
+
                 imgui.separator()
-                for tool in self._tools.values():
+                for tool in tools:
                     opened = tool.get_opened_window()
                     if opened is None:
                         continue
@@ -243,6 +367,10 @@ class MainMode(BaseMode):
                         tool.set_opened_window(not opened)
             finally:
                 imgui.end_menu()
+
+    def on_window_menu(self):
+        self.do_window_tool_menu("Canvas", canvas)
+        self.do_window_tool_menu("Flow", flow)
 
     @override
     def on_status_menu(self) -> None:
@@ -278,11 +406,14 @@ class MainMode(BaseMode):
             if not self._initialized_dock_layout:
                 self.initialize_dock_layout(dockspace_id, viewport)
 
-        for tool_window in self._tools.values():
-            tool_window.do_process()
-
         self.sync_graph_windows()
         self.sync_canvas_windows()
 
+        for tool_window in self._tools.values():
+            tool_window.do_process()
+
         for main_window in self._mains.values():
             main_window.do_process()
+
+        for popup in self._popups:
+            popup.do_process()

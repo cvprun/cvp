@@ -24,11 +24,9 @@ class OllamaManager(ResourceManager[OllamaKey, Ollama]):
         name=OLLAMA_NONAME,
         url=OLLAMA_ADDRESS,
         *,
-        key: Optional[OllamaKey] = None,
+        uuid: Optional[str] = None,
     ) -> Tuple[OllamaKey, Ollama]:
-        key = key if key else OllamaKey(str(uuid4()))
-        assert key
-
-        config = Ollama(key=key, name=name, url=url)
-        self.add(key, config)
-        return key, config
+        uuid = uuid if uuid else str(uuid4())
+        config = Ollama(uuid=uuid, name=name, url=url)
+        self.add(config.key, config)
+        return config.key, config

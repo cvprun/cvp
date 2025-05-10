@@ -21,7 +21,7 @@ class Ollama(Serializable):
 
     @unique
     class _Keys(StrEnum):
-        key = auto()
+        uuid = auto()
         name_ = "name"
         url = auto()
         headers = auto()
@@ -32,7 +32,7 @@ class Ollama(Serializable):
 
     def __init__(
         self,
-        key: Optional[OllamaKey] = None,
+        uuid: Optional[str] = None,
         name: Optional[str] = None,
         url: Optional[str] = None,
         headers: Optional[Sequence[Tuple[str, str]]] = None,
@@ -43,7 +43,7 @@ class Ollama(Serializable):
         error: Optional[BaseException] = None,
         details: Optional[Dict[str, ModelDetails]] = None,
     ):
-        self.key = key if key else OllamaKey(str(uuid4()))
+        self.uuid = uuid if uuid else str(uuid4())
         self.name = name if name else str()
         self.url = url if url else str()
         self.headers = list(headers if headers else ())
@@ -53,10 +53,6 @@ class Ollama(Serializable):
         self._details = dict(details if details else {})
         self._error = error
 
-    @property
-    def details(self):
-        return self._details
-
     def header_as_dict(self) -> Dict[str, str]:
         return {str(k): str(v) for k, v in self.headers}
 
@@ -64,7 +60,7 @@ class Ollama(Serializable):
         if not isinstance(other, type(self)):
             return False
         return (
-            self.key == other.key
+            self.uuid == other.uuid
             and self.name == other.name
             and self.url == other.url
             and self.headers == other.headers
@@ -78,7 +74,7 @@ class Ollama(Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.key = copy(self.key)
+        result.uuid = copy(self.uuid)
         result.name = copy(self.name)
         result.url = copy(self.url)
         result.headers = copy(self.headers)
@@ -94,7 +90,7 @@ class Ollama(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.key = deepcopy(self.key, memo)
+        result.uuid = deepcopy(self.uuid, memo)
         result.name = deepcopy(self.name, memo)
         result.url = deepcopy(self.url, memo)
         result.headers = deepcopy(self.headers, memo)
@@ -109,7 +105,7 @@ class Ollama(Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.key): self.key,
+            str(self._Keys.uuid): self.uuid,
             str(self._Keys.name_): self.name,
             str(self._Keys.url): self.url,
             str(self._Keys.headers): self.header_as_dict(),
@@ -123,7 +119,7 @@ class Ollama(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.key = OllamaKey(data.get(self._Keys.key, str()))
+        self.uuid = str(data.get(self._Keys.uuid, str()))
         self.name = str(data.get(self._Keys.name_, str()))
         self.url = str(data.get(self._Keys.url, str()))
 
@@ -136,6 +132,18 @@ class Ollama(Serializable):
 
         self._details = dict()
         self._error = None
+
+    @property
+    def key(self):
+        return OllamaKey(self.uuid)
+
+    @key.setter
+    def key(self, value: OllamaKey) -> None:
+        self.uuid = str(value)
+
+    @property
+    def details(self):
+        return self._details
 
     @property
     def has_error(self) -> bool:

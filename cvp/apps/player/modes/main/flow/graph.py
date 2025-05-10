@@ -25,9 +25,7 @@ from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
-from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
@@ -75,7 +73,6 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         self._variable_key = str()
 
         self._menus = (
-            ("File", self.on_file_menu),
             ("Edit", self.on_edit_menu),
             ("Layer", self.on_layer_menu),
             ("Run", self.on_run_menu),
@@ -83,42 +80,12 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
             ("View", self.on_view_menu),
         )
 
-        self._new_graph_popup = InputTextPopup(
-            title="New graph",
-            label="Please enter a graph name:",
-            ok="Create",
-            cancel="Cancel",
-            target=self.on_new_graph,
-        )
-        self._import_graph_popup = OpenFilePopup(
-            title="Import graph",
-            target=self.on_import_graph,
-        )
-        self._export_graph_popup = OpenFilePopup(
-            title="Export graph",
-            target=self.on_export_graph,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
-        )
-        self._confirm_remove_graph_popup = ConfirmPopup(
-            title="Remove graph",
-            label="Are you sure you want to remove graph?",
-            ok="Remove",
-            cancel="Cancel",
-            target=self.on_confirm_remove_graph,
-        )
         self._new_variable_popup = InputTextPopup(
             title="New variable",
             label="Please enter a variable name:",
             ok="Add",
             cancel="Cancel",
             target=self.on_new_variable,
-        )
-        self._popups = (
-            self._new_graph_popup,
-            self._import_graph_popup,
-            self._export_graph_popup,
-            self._confirm_remove_graph_popup,
-            self._new_variable_popup,
         )
 
         self._shortcut_escape = Shortcut(
@@ -211,18 +178,6 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
                 continue
             result[key] = cls(context, key)
         return result
-
-    def on_new_graph(self, name: str) -> None:
-        self.context.flows.create_graph(name=name, append=True, opened=True)
-
-    def on_import_graph(self, file: str) -> None:
-        pass
-
-    def on_export_graph(self, file: str) -> None:
-        pass
-
-    def on_confirm_remove_graph(self, value: bool) -> None:
-        pass
 
     def on_new_variable(self, name: str) -> None:
         if not name:
@@ -333,8 +288,7 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         finally:
             imgui.end()
 
-        for popup in self._popups:
-            popup.do_process()
+        self._new_variable_popup.do_process()
 
     def do_child_process(self) -> None:
         if payload := accept_target():
@@ -451,37 +405,6 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
                 finally:
                     imgui.end_menu()
 
-    def on_file_menu(self) -> None:
-        if menu_item("New Graph"):
-            self._new_graph_popup.show()
-
-        # imgui.separator()
-        # recent_items = self.context.get_flow_graph_recent_items()
-        # has_any_recent = bool(recent_items)
-        # if imgui.begin_menu("Recent graph", enabled=has_any_recent):
-        #     try:
-        #         for recent in recent_items:
-        #             if menu_item(recent.value):
-        #                 self.context.open_flow_graph(recent.value)
-        #     finally:
-        #         imgui.end_menu()
-
-        imgui.separator()
-        if self.is_focused_in_navigation:
-            self.do_file_menu()
-        else:
-            self.do_disabled_file_menu()
-
-        imgui.separator()
-        if menu_item("Import graph"):
-            self._import_graph_popup.show()
-        if menu_item("Export graph", enabled=self.is_focused_in_navigation):
-            self._export_graph_popup.show()
-
-        imgui.separator()
-        if menu_item("Refresh graphs"):
-            self.context.flows.read_all_graph_files()
-
     def on_edit_menu(self) -> None:
         if self.is_focused_in_navigation:
             self.do_edit_menu()
@@ -518,12 +441,6 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         imgui.separator()
         if show_layout := menu_item("Show Layout", selected=self.show_layout):
             self.show_layout = show_layout.state
-
-    @staticmethod
-    def do_disabled_file_menu() -> None:
-        menu_item("Save graph", enabled=False)
-        menu_item("Save and close graph", enabled=False)
-        menu_item("Force close graph", enabled=False)
 
     def do_file_menu(self) -> None:
         if menu_item("Save graph"):
