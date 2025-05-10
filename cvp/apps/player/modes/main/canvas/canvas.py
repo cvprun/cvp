@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Sequence, Tuple
+from typing import Callable, Final, Sequence, Tuple
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._main import MainWindow
 from cvp.canvas.canvas import CanvasKey
 from cvp.context.context import Context
+from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.popups.open_file import OpenFilePopup
+from cvp.imgui.push_style_var import style_window_padding_context
+from cvp.imgui.set_window_font_scale import window_font_scale
+from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
+from cvp.logging.logging import canvas_logger as logger
 from cvp.types.override import override
 
 
 class CanvasWindow(ControllableCanvas, MainWindow):
     __cvp_window_name__ = "Canvas"
+
+    _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
 
     _menus: Sequence[Tuple[str, Callable[[], None]]]
 
@@ -125,7 +132,47 @@ class CanvasWindow(ControllableCanvas, MainWindow):
 
     @override
     def do_process(self) -> None:
-        pass
+        if not self.canvas.opened:
+            return
+
+        with style_window_padding_context(0.0, 0.0):
+            visible, opened = imgui.begin(self.get_window_name(), self.canvas.opened)
+            assert isinstance(opened, bool)
+            self.canvas.opened = opened
+
+        if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
+            self.focused_key = self._canvas_key
+
+        try:
+            if self.canvas.opened and visible:
+                if self._canvas_key in self.context.canvases:
+                    self.do_canvas_process()
+                    self.do_child_process()
+                else:
+                    text_centered(f"Not found {self._canvas_key} canvas")
+        except BaseException as e:
+            logger.exception(e)
+        finally:
+            imgui.end()
+
+        for popup in self._popups:
+            popup.do_process()
+
+    def do_child_process(self) -> None:
+        if imgui.begin_popup_context_window(self._MOUSE_RIGHT_BUTTON_MENU):
+            try:
+                self.do_file_menu()
+                imgui.separator()
+                self.do_edit_menu()
+                imgui.separator()
+                self.do_layer_menu()
+                imgui.separator()
+                self.do_align_menu()
+                self.do_distribute_menu()
+            finally:
+                imgui.end_popup()
+
+        self.draw()
 
     # ==================================================================================
     # region: Context Menu Operations
@@ -233,4 +280,127 @@ class CanvasWindow(ControllableCanvas, MainWindow):
 
     # ==================================================================================
     # endregion: Context Menu Operations
+    # ==================================================================================
+    # region: Status Bar Operations
+    # ==================================================================================
+
+    @override
+    def on_status_menu(self) -> None:
+        imgui.text(f"Pan:{int(self.pan_x)}x{int(self.pan_y)} Zoom:{self.zoom:.02f}")
+
+    # ==================================================================================
+    # endregion: Status Bar Operations
+    # ==================================================================================
+    # region: Public Operations
+    # ==================================================================================
+
+    def save_canvas(self) -> None:
+        pass
+
+    def close_canvas(self):
+        self.canvas.opened = False
+        logger.info(f"Close the canvas: '{self.canvas.key}'")
+
+    def reset_controllers(self):
+        logger.info("Reset controllers")
+
+        self.pan_x = 0.0
+        self.pan_y = 0.0
+        self.zoom = 1.0
+
+        self.canvas.control.pan_x = 0.0
+        self.canvas.control.pan_y = 0.0
+        self.canvas.control.zoom = 1.0
+
+    def do_process_controllers(self, debugging=False) -> None:
+        if result := self.render_controllers(debugging=debugging):
+            self.canvas.control.pan_x = result.pan_x
+            self.canvas.control.pan_y = result.pan_y
+            self.canvas.control.zoom = result.zoom
+
+    def do_canvas_process(self) -> None:
+        if result := self.update_state():
+            self.canvas.control.pan_x = result.pan_x
+            self.canvas.control.pan_y = result.pan_y
+            self.canvas.control.zoom = result.zoom
+
+    # ==================================================================================
+    # endregion: Public Operations
+    # ==================================================================================
+    # region: Draw Operations
+    # ==================================================================================
+
+    def draw(self) -> None:
+        with window_font_scale(self.zoom):
+            self.fill()
+            self.draw_grid_x()
+            self.draw_grid_y()
+            self.draw_axis_x()
+            self.draw_axis_y()
+
+    def fill(self) -> None:
+        color = imgui.get_color_u32(self.config.background_color)
+        x1, y1, x2, y2 = self.canvas_roi
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_rect_filled(p1, p2, color)
+
+    def draw_grid_x(self) -> None:
+        grid_x = self.config.grid_x
+        if not grid_x.visible:
+            return
+
+        color = imgui.get_color_u32(grid_x.color)
+        for line in self.vertical_grid_lines(grid_x.step):
+            p1 = line[0], line[1]
+            p2 = line[2], line[3]
+            self._draw_list.add_line(p1, p2, color, grid_x.thickness)
+
+    def draw_grid_y(self) -> None:
+        grid_y = self.config.grid_y
+        if not grid_y.visible:
+            return
+
+        color = imgui.get_color_u32(grid_y.color)
+        for line in self.horizontal_grid_lines(grid_y.step):
+            p1 = line[0], line[1]
+            p2 = line[2], line[3]
+            self._draw_list.add_line(p1, p2, color, grid_y.thickness)
+
+    def draw_axis_x(self) -> None:
+        axis_x = self.config.axis_x
+        if not axis_x.visible:
+            return
+
+        origin_y = self.local_origin_to_screen_coords()[1]
+        color = imgui.get_color_u32(axis_x.color)
+
+        x1 = self.cx
+        y1 = origin_y
+        x2 = self.cx + self.cw
+        y2 = origin_y
+
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_line(p1, p2, color, axis_x.thickness)
+
+    def draw_axis_y(self) -> None:
+        axis_y = self.config.axis_y
+        if not axis_y.visible:
+            return
+
+        origin_x = self.local_origin_to_screen_coords()[0]
+        color = imgui.get_color_u32(axis_y.color)
+
+        x1 = origin_x
+        y1 = self.cy
+        x2 = origin_x
+        y2 = self.cy + self.ch
+
+        p1 = x1, y1
+        p2 = x2, y2
+        self._draw_list.add_line(p1, p2, color, axis_y.thickness)
+
+    # ==================================================================================
+    # endregion: Draw Operations
     # ==================================================================================

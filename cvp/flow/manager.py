@@ -8,7 +8,7 @@ from uuid import uuid4
 
 from cvp.dtypes.dtype import Dtype
 from cvp.dtypes.registry.registry import DtypeRegistry
-from cvp.flow.graph import FlowGraph, GraphKey, GraphName
+from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.flow.node import FlowNode
 from cvp.flow.pin import FlowPin
 from cvp.flow.runner import FlowRunner
@@ -118,19 +118,18 @@ class FlowManager:
         self,
         name: Optional[str] = None,
         *,
-        key: Optional[GraphKey] = None,
+        uuid: Optional[str] = None,
         append=False,
         opened=False,
     ) -> FlowGraph:
-        graph_key = key if key else GraphKey(str(uuid4()))
-        graph_name = GraphName(name) if name else None
-        graph = FlowGraph(key=graph_key, name=graph_name, opened=opened)
+        graph_key = uuid if uuid else str(uuid4())
+        graph = FlowGraph(uuid=graph_key, name=name, opened=opened)
         assert is_uuid4(graph.key)
 
         if append:
             assert graph.key
             assert graph.key not in self._graphs
-            self._graphs.add(graph_key, graph)
+            self._graphs.add(GraphKey(graph_key), graph)
 
         return graph
 

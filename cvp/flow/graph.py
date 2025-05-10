@@ -30,14 +30,13 @@ from cvp.types.override import override
 from cvp.types.shapes import Point, Size
 
 GraphKey = NewType("GraphKey", str)
-GraphName = NewType("GraphName", str)
 
 
 class FlowGraph(Serializable):
 
     @unique
     class _Keys(StrEnum):
-        key = auto()
+        uuid = auto()
         name_ = "name"
         docs = auto()
         icon = auto()
@@ -53,8 +52,8 @@ class FlowGraph(Serializable):
 
     def __init__(
         self,
-        key: Optional[GraphKey] = None,
-        name: Optional[GraphName] = None,
+        uuid: Optional[str] = None,
+        name: Optional[str] = None,
         docs: Optional[str] = None,
         icon: Optional[IconCode] = None,
         lock=False,
@@ -69,8 +68,8 @@ class FlowGraph(Serializable):
         *,
         selection: Optional[FlowSelection] = None,
     ):
-        self.key = key if key else GraphKey(str(uuid4()))
-        self.name = name if name else GraphName(str())
+        self.uuid = uuid if uuid else str(uuid4())
+        self.name = name if name else str()
         self.docs = docs if docs else str()
         self.icon = icon if icon else IconCode(str())
         self.lock = lock
@@ -115,7 +114,7 @@ class FlowGraph(Serializable):
         if not isinstance(other, type(self)):
             return False
         return (
-            self.key == other.key
+            self.uuid == other.uuid
             and self.name == other.name
             and self.docs == other.docs
             and self.icon == other.icon
@@ -133,7 +132,7 @@ class FlowGraph(Serializable):
     def __copy__(self):
         cls = self.__class__
         result = cls.__new__(cls)
-        result.key = copy(self.key)
+        result.uuid = copy(self.uuid)
         result.name = copy(self.name)
         result.docs = copy(self.docs)
         result.icon = copy(self.icon)
@@ -155,7 +154,7 @@ class FlowGraph(Serializable):
             memo = dict()
         cls = self.__class__
         result = cls.__new__(cls)
-        result.key = deepcopy(self.key, memo)
+        result.uuid = deepcopy(self.uuid, memo)
         result.name = deepcopy(self.name, memo)
         result.docs = deepcopy(self.docs, memo)
         result.icon = deepcopy(self.icon, memo)
@@ -176,7 +175,7 @@ class FlowGraph(Serializable):
     @override
     def __serialize__(self) -> Any:
         return {
-            str(self._Keys.key): str(self.key),
+            str(self._Keys.uuid): str(self.uuid),
             str(self._Keys.name_): str(self.name),
             str(self._Keys.docs): str(self.docs),
             str(self._Keys.icon): str(self.icon),
@@ -196,8 +195,8 @@ class FlowGraph(Serializable):
         if not isinstance(data, dict):
             raise TypeError(f"Unexpected data type: {type(data).__name__}")
 
-        self.key = GraphKey(data.get(self._Keys.key, str()))
-        self.name = GraphName(data.get(self._Keys.name_, str()))
+        self.uuid = str(data.get(self._Keys.uuid, str()))
+        self.name = str(data.get(self._Keys.name_, str()))
         self.docs = str(data.get(self._Keys.docs, str()))
         self.icon = IconCode(data.get(self._Keys.icon, str()))
         self.lock = bool(data.get(self._Keys.lock, False))
@@ -244,6 +243,14 @@ class FlowGraph(Serializable):
         self._history.save_history("Deserialized graph", self)
 
     @property
+    def key(self):
+        return GraphKey(self.uuid)
+
+    @key.setter
+    def key(self, value: GraphKey) -> None:
+        self.uuid = str(value)
+
+    @property
     def selection(self):
         return self._selection
 
@@ -256,8 +263,8 @@ class FlowGraph(Serializable):
         return self._history
 
     def restore(self, other: "FlowGraph") -> None:
-        if self.key != other.key:
-            raise ValueError("The key of the graph to be restored does not match")
+        if self.uuid != other.uuid:
+            raise ValueError("The uuid of the graph to be restored does not match")
 
         self.name = other.name
         self.docs = other.docs

@@ -172,7 +172,7 @@ class MainMode(BaseMode):
     @property
     def focused_window(self):
         if focused_key := self._context.config.navigation.focused_key:
-            return self._mains.get(GraphKey(focused_key))
+            return self._mains.get(focused_key)
         else:
             return None
 
@@ -186,7 +186,7 @@ class MainMode(BaseMode):
             return
 
         for remove_key in graph_window_keys - flow_graph_keys:
-            self._mains.pop(GraphKey(remove_key))
+            self._mains.pop(remove_key)
 
         for create_key in flow_graph_keys - graph_window_keys:
             graph_windows = flow.GraphFlowWindow(self._context, GraphKey(create_key))
@@ -201,7 +201,7 @@ class MainMode(BaseMode):
             return
 
         for remove_key in canvas_window_keys - flow_canvas_keys:
-            self._mains.pop(CanvasKey(remove_key))
+            self._mains.pop(remove_key)
 
         for create_key in flow_canvas_keys - canvas_window_keys:
             canvas_windows = canvas.CanvasWindow(self._context, CanvasKey(create_key))

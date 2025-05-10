@@ -74,6 +74,10 @@ class BaseWindow(WindowInterface, BaseWindowInterface, WindowNameProtocol):
     def focused_key(self) -> str:
         return self._context.config.navigation.focused_key
 
+    @focused_key.setter
+    def focused_key(self, value: str) -> None:
+        self._context.config.navigation.focused_key = value
+
     @property
     def opened_window(self) -> bool:
         return bool(self.get_opened_window())

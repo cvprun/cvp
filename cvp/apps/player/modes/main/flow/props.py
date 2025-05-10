@@ -5,7 +5,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.canvas.axis import Axis
 from cvp.context.context import Context
-from cvp.flow.graph import FlowGraph, GraphKey, GraphName
+from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.flow.line_type import (
     LINE_TYPE_INDEX2NAME,
     LINE_TYPE_NAME2INDEX,
@@ -122,7 +122,7 @@ class PropsFlowWindow(BaseWindow):
         input_text_disabled("Type", "Graph")
         input_text_disabled("UUID", graph.key)
 
-        graph.name = GraphName(input_text_value("Name", graph.name))
+        graph.name = input_text_value("Name", graph.name)
         graph.docs = input_text_value("Docs", graph.docs)
 
         self.input_icon("Icon", graph.icon)
