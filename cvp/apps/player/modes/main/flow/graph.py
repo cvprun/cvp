@@ -335,7 +335,7 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
             self.focused_key = self._graph_key
 
         try:
-            if visible:
+            if self.graph.opened and visible:
                 if self._graph_key in self.context.flows.graphs:
                     self.do_canvas_process()
                     self.do_child_process()

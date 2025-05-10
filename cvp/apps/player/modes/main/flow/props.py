@@ -17,7 +17,6 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelection
 from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.flow.wire import FlowWire
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.color_edit4 import color_edit4
@@ -45,16 +44,15 @@ class PropsFlowWindow(BaseWindow):
         return self.context.flows.graphs.get(GraphKey(self.focused_key))
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
-                self.do_toolbar_process()
-            imgui.separator()
-            with begin_child_context("Properties"):
-                if graph := self.focused_graph:
-                    self.do_properties_process(graph)
-                else:
-                    text_centered("Please select a graph")
+    def do_main_process(self) -> None:
+        with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
+            self.do_toolbar_process()
+        imgui.separator()
+        with begin_child_context("Properties"):
+            if graph := self.focused_graph:
+                self.do_properties_process(graph)
+            else:
+                text_centered("Please select a graph")
 
     @staticmethod
     def do_toolbar_process() -> None:

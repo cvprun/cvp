@@ -5,7 +5,6 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.widgets.flows.selectable_graph import selectable_graph
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.push_item_width import align_right_side_context
 from cvp.types.override import override
@@ -19,11 +18,7 @@ class GraphsFlowWindow(BaseWindow):
         self._filter = str()
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            self.do_child_process()
-
-    def do_child_process(self) -> None:
+    def do_main_process(self) -> None:
         with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",

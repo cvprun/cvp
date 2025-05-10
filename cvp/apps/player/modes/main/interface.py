@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 from pygame import Event
 from pygame.key import ScancodeWrapper
@@ -12,6 +12,14 @@ from cvp.msgs.msg import Msg
 class WindowInterface(ABC):
     @abstractmethod
     def get_window_name(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_opened_window(self) -> Optional[bool]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def set_opened_window(self, value: bool) -> None:
         raise NotImplementedError
 
     @abstractmethod

@@ -8,7 +8,6 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
@@ -120,13 +119,12 @@ class LoggingFlowWindow(BaseWindow):
         self._records = new_lines
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
-                self.do_toolbar_process()
-            imgui.separator()
-            with begin_child_context("Logging"):
-                self.do_logging_process()
+    def do_main_process(self) -> None:
+        with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
+            self.do_toolbar_process()
+        imgui.separator()
+        with begin_child_context("Logging"):
+            self.do_logging_process()
 
     def do_toolbar_process(self) -> None:
         if self._records.maxlen != self.lines:

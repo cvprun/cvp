@@ -5,7 +5,6 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.widgets.flows.selectable_node import selectable_node
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.push_item_width import align_right_side_context
 from cvp.imgui.text_centered import text_centered
@@ -24,12 +23,11 @@ class NodeFlowWindow(BaseWindow):
         return self.context.flows.nodes
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            if dtype := self.nodes.get(self.selected_submenu):
-                self.do_node_process(dtype)
-            else:
-                text_centered("Please select a item")
+    def do_main_process(self) -> None:
+        if dtype := self.nodes.get(self.selected_submenu):
+            self.do_node_process(dtype)
+        else:
+            text_centered("Please select a item")
 
     @staticmethod
     def do_node_process(node: Node) -> None:
@@ -52,11 +50,7 @@ class NodesFlowWindow(BaseWindow):
         self._context.set_selected_submenu(NodeFlowWindow, value, suffix=suffix)
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            self.do_child_process()
-
-    def do_child_process(self) -> None:
+    def do_main_process(self) -> None:
         with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",

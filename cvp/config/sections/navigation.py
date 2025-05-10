@@ -19,6 +19,7 @@ class RecentItem(NamedTuple):
 class NavigationConfig:
     focused_key: str = field(default_factory=str)
 
+    opened_windows: Dict[CategoryKey, bool] = field(default_factory=dict)
     selected_submenus: Dict[CategoryKey, str] = field(default_factory=dict)
 
     recent_items: Dict[CategoryKey, List[RecentItem]] = field(default_factory=dict)
@@ -36,6 +37,14 @@ class NavigationConfig:
             return CategoryKey(prefix_text + separator + str(suffix))
         else:
             return CategoryKey(prefix_text)
+
+    def get_opened_window(self, cls: Type, *, suffix: Optional[Any] = None) -> bool:
+        category_key = self.generate_category_key(cls, suffix=suffix)
+        return self.opened_windows.get(category_key, False)
+
+    def set_opened_window(self, cls: Type, value: bool, *, suffix=None) -> None:
+        category_key = self.generate_category_key(cls, suffix=suffix)
+        self.opened_windows[category_key] = value
 
     def get_selected_submenu(self, cls: Type, *, suffix: Optional[Any] = None) -> str:
         category_key = self.generate_category_key(cls, suffix=suffix)

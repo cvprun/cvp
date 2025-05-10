@@ -7,7 +7,6 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags.child import AUTO_RESIZE_X, AUTO_RESIZE_Y, BORDERS
@@ -33,17 +32,16 @@ class IntroFlowWindow(BaseWindow):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            if imgui.button("Open workspace"):
-                # self.context.flows.create_new_workspace()
-                pass
+    def do_main_process(self) -> None:
+        if imgui.button("Open workspace"):
+            # self.context.flows.create_new_workspace()
+            pass
 
-            imgui.separator()
+        imgui.separator()
 
-            imgui.text("Recent workspace")
-            # for recent in self.context.get_flow_workspace_recent_items():
-            #     self.do_recent_process(recent, i)
+        imgui.text("Recent workspace")
+        # for recent in self.context.get_flow_workspace_recent_items():
+        #     self.do_recent_process(recent, i)
 
     def do_recent_process(self, recent: RecentItem, index: int) -> None:
         with begin_child_context(

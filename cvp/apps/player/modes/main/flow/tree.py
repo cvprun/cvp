@@ -9,7 +9,6 @@ from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
-from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.tree_node import (
     ARC_FLAGS,
     CATEGORY_FLAGS,
@@ -33,12 +32,11 @@ class TreeFlowWindow(BaseWindow):
         return self.context.flows.graphs.get(GraphKey(self.focused_key))
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            if graph := self.focused_graph:
-                self.do_child_process(graph)
-            else:
-                text_centered("Please select a graph")
+    def do_main_process(self) -> None:
+        if graph := self.focused_graph:
+            self.do_child_process(graph)
+        else:
+            text_centered("Please select a graph")
 
     def do_child_process(self, graph: FlowGraph) -> None:
         graph_label = f"{graph.name}###{graph.key}"

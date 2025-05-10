@@ -6,7 +6,6 @@ from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
-from cvp.imgui.begin import begin_context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
@@ -25,16 +24,15 @@ class DebugFlowWindow(BaseWindow):
         return self.context.flows.graphs.get(GraphKey(self.focused_key))
 
     @override
-    def do_process(self) -> None:
-        with begin_context(self.get_window_name()):
-            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
-                self.do_toolbar_process()
-            imgui.separator()
-            with begin_child_context("Logging"):
-                if graph := self.focused_graph:
-                    self.do_debug_process(graph)
-                else:
-                    text_centered("Please select a graph")
+    def do_main_process(self) -> None:
+        with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
+            self.do_toolbar_process()
+        imgui.separator()
+        with begin_child_context("Logging"):
+            if graph := self.focused_graph:
+                self.do_debug_process(graph)
+            else:
+                text_centered("Please select a graph")
 
     @staticmethod
     def do_toolbar_process() -> None:

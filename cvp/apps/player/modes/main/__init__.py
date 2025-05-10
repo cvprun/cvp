@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from types import ModuleType
 from typing import Final, Optional
 
 from imgui_bundle import imgui
@@ -7,6 +8,7 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.main import flow as flow_module
 from cvp.apps.player.modes.main.flow.debug import DebugFlowWindow
 from cvp.apps.player.modes.main.flow.dtypes import DtypeFlowWindow, DtypesFlowWindow
 from cvp.apps.player.modes.main.flow.graph import GraphFlowWindow
@@ -25,11 +27,13 @@ from cvp.imgui.dock_builder import (
     dock_window,
     enabled_docking_flag,
     finish,
+    get_node,
     remove_node,
     set_node_size,
     split_node,
 )
 from cvp.imgui.dockspace import dockspace_over_viewport_context
+from cvp.imgui.menu_item_ex import menu_item
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
@@ -52,6 +56,8 @@ class MainMode(BaseMode):
         self._context = context
         self._initialized_dock_layout = False
         self._main_dock_id = None
+
+        self._menus = (("Window", self.on_window_menu),)
 
         # ==============================================================================
         # region: Initialize Window Instances
@@ -113,17 +119,30 @@ class MainMode(BaseMode):
         dock_window(self.graphs.get_window_name(), dock_left_bottom)
         dock_window(self.dtypes.get_window_name(), dock_left_bottom)
         dock_window(self.nodes.get_window_name(), dock_left_bottom)
+        self.tree.opened_window = True
+        self.graphs.opened_window = True
+        self.dtypes.opened_window = True
+        self.nodes.opened_window = True
 
         dock_window(self.props.get_window_name(), dock_right_top)
         dock_window(self.history.get_window_name(), dock_right_bottom)
+        self.props.opened_window = True
+        self.history.opened_window = True
 
         dock_window(self.debug.get_window_name(), dock_center_bottom)
         dock_window(self.logging.get_window_name(), dock_center_bottom)
         dock_window(self.dtype.get_window_name(), dock_center_bottom)
         dock_window(self.node.get_window_name(), dock_center_bottom)
+        self.debug.opened_window = True
+        self.logging.opened_window = True
+        self.dtype.opened_window = True
+        self.node.opened_window = True
 
         dock_window(self.intro.get_window_name(), dock_center_top)
+        self.intro.opened_window = True
+
         for graph_window in self._graphs.values():
+            graph_window.opened_window = True
             dock_window(graph_window.get_window_name(), dock_center_top)
         self._main_dock_id = dock_center_top
 
@@ -136,6 +155,8 @@ class MainMode(BaseMode):
         self,
         dockspace_id: int,
         viewport: imgui.Viewport,
+        *,
+        overwrite=False,
     ) -> None:
         if not enabled_docking_flag():
             return
@@ -143,7 +164,13 @@ class MainMode(BaseMode):
         if self._initialized_dock_layout:
             return
 
-        remove_node(dockspace_id)
+        if overwrite:
+            remove_node(dockspace_id)
+
+        if not get_node(dockspace_id).is_empty():
+            self._initialized_dock_layout = True
+            return
+
         try:
             self._initialize_dock_layout(dockspace_id, viewport)
         finally:
@@ -202,6 +229,36 @@ class MainMode(BaseMode):
         if window := self.focused_window:
             window.on_main_menu()
 
+        for name, func in self._menus:
+            if imgui.begin_menu(name):
+                try:
+                    func()
+                finally:
+                    imgui.end_menu()
+
+    def set_opened_windows_with_module(self, module: ModuleType, opened: bool) -> None:
+        for tool in self._tools:
+            if not tool.__module__.startswith(module.__name__):
+                continue
+            tool.set_opened_window(opened)
+
+    def on_window_menu(self):
+        if imgui.begin_menu("Flows"):
+            try:
+                if menu_item("Show all"):
+                    self.set_opened_windows_with_module(flow_module, opened=True)
+                if menu_item("Hide all"):
+                    self.set_opened_windows_with_module(flow_module, opened=False)
+                imgui.separator()
+                for tool in self._tools:
+                    opened = tool.get_opened_window()
+                    if opened is None:
+                        continue
+                    if menu_item(tool.get_window_name(), selected=opened):
+                        tool.set_opened_window(not opened)
+            finally:
+                imgui.end_menu()
+
     @override
     def on_status_menu(self) -> None:
         if window := self.focused_window:
@@ -228,8 +285,9 @@ class MainMode(BaseMode):
 
     @override
     def do_process(self) -> None:
+        name = self.get_mode_name()
         viewport = imgui.get_main_viewport()
-        with dockspace_over_viewport_context(viewport=viewport) as dockspace_id:
+        with dockspace_over_viewport_context(name, viewport=viewport) as dockspace_id:
             assert isinstance(dockspace_id, int)
             assert 0 <= dockspace_id
             if not self._initialized_dock_layout:
