@@ -46,7 +46,7 @@ class MainMode(BaseMode):
     _RIGHT_UP_RATIO: Final[float] = 0.60
     _BOTTOM_RATIO: Final[float] = 0.25
 
-    _main_dock_id: Optional[int]
+    _central_dock_id: Optional[int]
     _prefix_menus: Sequence[Tuple[str, Callable[[], None]]]
     _suffix_menus: Sequence[Tuple[str, Callable[[], None]]]
 
@@ -58,7 +58,7 @@ class MainMode(BaseMode):
 
         self._context = context
         self._initialized_dock_layout = False
-        self._main_dock_id = None
+        self._central_dock_id = None
 
         self._prefix_menus = (("File", self.on_file_menu),)
         self._suffix_menus = (("Window", self.on_window_menu),)
@@ -89,30 +89,6 @@ class MainMode(BaseMode):
         self._mains.update(flow.GraphFlowWindow.create_opened_windows(context))
         self._mains.update(canvas.CanvasWindow.create_opened_windows(context))
 
-        self._new_canvas_popup = InputTextPopup(
-            title="New canvas",
-            label="Please enter a canvas name:",
-            ok="Create",
-            cancel="Cancel",
-            target=self.on_new_canvas,
-        )
-        self._import_canvas_popup = OpenFilePopup(
-            title="Import canvas",
-            target=self.on_import_canvas,
-        )
-        self._export_canvas_popup = OpenFilePopup(
-            title="Export canvas",
-            target=self.on_export_canvas,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
-        )
-        self._confirm_remove_canvas_popup = ConfirmPopup(
-            title="Remove canvas",
-            label="Are you sure you want to remove canvas?",
-            ok="Remove",
-            cancel="Cancel",
-            target=self.on_confirm_remove_canvas,
-        )
-
         self._new_graph_popup = InputTextPopup(
             title="New graph",
             label="Please enter a graph name:",
@@ -138,10 +114,6 @@ class MainMode(BaseMode):
         )
 
         self._popups = (
-            self._new_canvas_popup,
-            self._import_canvas_popup,
-            self._export_canvas_popup,
-            self._confirm_remove_canvas_popup,
             self._new_graph_popup,
             self._import_graph_popup,
             self._export_graph_popup,
@@ -178,7 +150,7 @@ class MainMode(BaseMode):
 
         split_result = split_node(dock_center, imgui.Dir.down, self._BOTTOM_RATIO)
         dock_center_bottom = split_result.id_at_dir
-        self._main_dock_id = dock_center_top = split_result.id_at_opposite_dir
+        self._central_dock_id = dock_center_top = split_result.id_at_opposite_dir
 
         dock_window(self.flow_tree.get_window_name(), dock_left_top)
         dock_window(self.flow_graphs.get_window_name(), dock_left_bottom)
@@ -223,7 +195,9 @@ class MainMode(BaseMode):
         if overwrite:
             remove_node(dockspace_id)
 
-        if not get_node(dockspace_id).is_empty():
+        dock_node = get_node(dockspace_id)
+        if not dock_node.is_empty():
+            self._central_dock_id = dock_node.central_node.id_
             self._initialized_dock_layout = True
             return
 
@@ -234,23 +208,19 @@ class MainMode(BaseMode):
             self._initialized_dock_layout = True
 
     @property
+    def focused_key(self) -> str:
+        return self._context.config.navigation.focused_key
+
+    @focused_key.setter
+    def focused_key(self, value: str) -> None:
+        self._context.config.navigation.focused_key = value
+
+    @property
     def focused_window(self):
-        if focused_key := self._context.config.navigation.focused_key:
+        if focused_key := self.focused_key:
             return self._mains.get(focused_key)
         else:
             return None
-
-    def on_new_canvas(self, name: str) -> None:
-        self.context.canvases.add_new(name=name, opened=True)
-
-    def on_import_canvas(self, file: str) -> None:
-        pass
-
-    def on_export_canvas(self, file: str) -> None:
-        pass
-
-    def on_confirm_remove_canvas(self, value: bool) -> None:
-        pass
 
     def on_new_graph(self, name: str) -> None:
         self.context.flows.create_graph(name=name, append=True, opened=True)
@@ -279,8 +249,8 @@ class MainMode(BaseMode):
         for create_key in flow_graph_keys - graph_window_keys:
             graph_windows = flow.GraphFlowWindow(self._context, GraphKey(create_key))
             self._mains[create_key] = graph_windows
-            if self._main_dock_id is not None:
-                dock_window(graph_windows.get_window_name(), self._main_dock_id)
+            if self._central_dock_id is not None:
+                dock_window(graph_windows.get_window_name(), self._central_dock_id)
 
     def sync_canvas_windows(self) -> None:
         flow_canvas_keys = set(self._context.canvases.keys())
@@ -294,8 +264,8 @@ class MainMode(BaseMode):
         for create_key in flow_canvas_keys - canvas_window_keys:
             canvas_windows = canvas.CanvasWindow(self._context, CanvasKey(create_key))
             self._mains[create_key] = canvas_windows
-            if self._main_dock_id is not None:
-                dock_window(canvas_windows.get_window_name(), self._main_dock_id)
+            if self._central_dock_id is not None:
+                dock_window(canvas_windows.get_window_name(), self._central_dock_id)
 
     @override
     def on_main_menu(self) -> None:
@@ -317,19 +287,31 @@ class MainMode(BaseMode):
                     imgui.end_menu()
 
     def on_file_menu(self) -> None:
-        if menu_item("New canvas"):
-            self._new_canvas_popup.show()
         if menu_item("New graph"):
             self._new_graph_popup.show()
 
         imgui.separator()
-        if menu_item("Import canvas"):
-            self._import_canvas_popup.show()
+        if imgui.begin_menu("Recent canvases"):
+            try:
+                for canvas_ in self.context.canvases.values():
+                    if menu_item(f"{canvas_.name}###{canvas_.uuid}"):
+                        self.focused_key = canvas_.uuid
+                        canvas_.opened = True
+            finally:
+                imgui.end_menu()
+        if imgui.begin_menu("Recent graphs"):
+            try:
+                for graph in self.context.flows.graphs.values():
+                    if menu_item(f"{graph.name}###{graph.uuid}"):
+                        self.focused_key = graph.uuid
+                        graph.opened = True
+            finally:
+                imgui.end_menu()
+
+        imgui.separator()
         if menu_item("Import graph"):
             self._import_graph_popup.show()
 
-        if menu_item("Export canvas", enabled=False):
-            self._export_canvas_popup.show()
         if menu_item("Export graph", enabled=False):
             self._export_graph_popup.show()
 
