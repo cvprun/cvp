@@ -33,7 +33,6 @@ def create_media_tabs(context: Context) -> OrderedDict[str, MediaTabInterface]:
 
 
 class MediasMode(BaseMode):
-    __cvp_mode_number__ = 4
     __cvp_mode_name__ = "Medias"
 
     def __init__(self, context: Context):

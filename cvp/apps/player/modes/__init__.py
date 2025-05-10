@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from typing import Sequence, Union
+from typing import Sequence
 
 from imgui_bundle import imgui
 
@@ -59,7 +59,6 @@ class ModeManager:
         # Retrieves and stores all ModeInterface instances assigned to `self`
         self._modes = retrieve_mode_instances(self)
         self._key2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
-        self._num2index = {m.get_mode_number(): i for i, m in enumerate(self._modes)}
         # endregion: Initialize Mode Instances
         # ==============================================================================
 
@@ -92,29 +91,14 @@ class ModeManager:
     def mode_key(self, value: str) -> None:
         self._context.config.appearance.mode = value
 
-    def get_mode_with_key(self, key: str) -> ModeInterface:
+    def get_mode(self, key: str) -> ModeInterface:
         index = self._key2index.get(key)
         if index is None:
             raise KeyError(f"Invalid mode key: {key}")
         assert 0 <= index < len(self._modes)
         return self._modes[index]
 
-    def get_mode_with_number(self, number: int) -> ModeInterface:
-        index = self._num2index.get(number)
-        if index is None:
-            raise KeyError(f"Invalid number key: {number}")
-        assert 0 <= index < len(self._modes)
-        return self._modes[index]
-
-    def get_mode(self, key: Union[str, int]) -> ModeInterface:
-        if isinstance(key, str):
-            return self.get_mode_with_key(key)
-        elif isinstance(key, int):
-            return self.get_mode_with_number(key)
-        else:
-            raise TypeError(f"Unsupported key type: {type(key).__name__}")
-
-    def set_mode_with_key(self, key: str) -> None:
+    def set_mode(self, key: str) -> None:
         index = self._key2index.get(key)
         if index is None:
             raise KeyError(f"Invalid mode key: {key}")
@@ -122,25 +106,10 @@ class ModeManager:
         assert self._modes[index].get_mode_name() == key
         self.mode_key = key
 
-    def set_mode_with_number(self, number: int) -> None:
-        index = self._num2index.get(number)
-        if index is None:
-            raise KeyError(f"Invalid number key: {number}")
-        assert 0 <= index < len(self._modes)
-        self.mode_key = self._modes[index].get_mode_name()
-
-    def set_mode(self, key: Union[str, int]) -> None:
-        if isinstance(key, str):
-            self.set_mode_with_key(key)
-        elif isinstance(key, int):
-            self.set_mode_with_number(key)
-        else:
-            raise TypeError(f"Unsupported key type: {type(key).__name__}")
-
     @property
     def current_mode(self) -> ModeInterface:
         try:
-            return self.get_mode_with_key(self.mode_key)
+            return self.get_mode(self.mode_key)
         except:  # noqa
             return self.main_mode
 
@@ -160,9 +129,9 @@ class ModeManager:
 
     def _mode_menu_item(self, mode: ModeInterface) -> None:
         name = mode.get_mode_name()
-        number = mode.get_mode_number()
+        number = -1  # mode.get_mode_number()
         selected = name == self.mode_key
-        shortcut = f"Alt+{number}" if 0 <= number <= 9 else str()
+        shortcut = f"Alt+{number}" if 0 <= number <= 9 else None
         enabled = not selected
         if menu_item(name, selected=selected, shortcut=shortcut, enabled=enabled):
             self.mode_key = name

@@ -37,7 +37,6 @@ from cvp.types.override import override
 
 
 class MainMode(BaseMode):
-    __cvp_mode_number__ = 1
     __cvp_mode_name__ = "Main"
 
     _LEFT_RATIO: Final[float] = 0.15

@@ -16,7 +16,6 @@ from cvp.types.override import override
 
 
 class PreferenceMode(BaseMode):
-    __cvp_mode_number__ = 0
     __cvp_mode_name__ = "Preference"
 
     _MENU_SPLIT_X: Final[int] = 150

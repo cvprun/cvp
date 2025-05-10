@@ -15,11 +15,6 @@ class ModeInterface(ABC):
     def get_mode_name(cls) -> str:
         raise NotImplementedError
 
-    @classmethod
-    @abstractmethod
-    def get_mode_number(cls) -> int:
-        raise NotImplementedError
-
     @abstractmethod
     def on_main_menu(self) -> None:
         raise NotImplementedError

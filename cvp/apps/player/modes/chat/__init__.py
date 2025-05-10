@@ -34,7 +34,6 @@ from cvp.variables import (
 
 
 class ChatMode(BaseMode):
-    __cvp_mode_number__ = 2
     __cvp_mode_name__ = "Chat"
 
     _MENU_SPLIT_X: Final[int] = 300
