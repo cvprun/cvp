@@ -4,7 +4,6 @@ from functools import lru_cache
 from types import MappingProxyType
 
 from cvp.assets.fonts import mdi
-from cvp.fonts.types import IconCode, IconMappingProxy
 
 
 def create_alphas():
@@ -81,5 +80,5 @@ def create_alphas():
 
 
 @lru_cache
-def alphas() -> IconMappingProxy:
-    return MappingProxyType({k: IconCode(v) for k, v in create_alphas().items()})
+def alphas() -> MappingProxyType[str, str]:
+    return MappingProxyType({k: v for k, v in create_alphas().items()})

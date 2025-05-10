@@ -4,7 +4,6 @@ from functools import lru_cache
 from types import MappingProxyType
 
 from cvp.assets.fonts import mdi
-from cvp.fonts.types import IconCode, IconMappingProxy
 
 
 def create_alpha_box_outlines():
@@ -81,6 +80,5 @@ def create_alpha_box_outlines():
 
 
 @lru_cache
-def alpha_box_outlines() -> IconMappingProxy:
-    data = create_alpha_box_outlines()
-    return MappingProxyType({k: IconCode(v) for k, v in data.items()})
+def alpha_box_outlines() -> MappingProxyType[str, str]:
+    return MappingProxyType({k: v for k, v in create_alpha_box_outlines().items()})

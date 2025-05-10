@@ -10,7 +10,6 @@ from type_serialize import Serializable, deserialize, serialize
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
-from cvp.fonts.types import IconCode
 from cvp.nodes.generator import generate_node
 from cvp.nodes.node import Node, NodeName
 from cvp.nodes.ntype import NodePath, Ntype
@@ -55,7 +54,7 @@ class FlowNode(Serializable):
         uuid: Optional[NodeKey] = None,
         name: Optional[NodeName] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
+        icon: Optional[str] = None,
         lock=False,
         breakpoint=False,
         hidden=False,
@@ -79,7 +78,7 @@ class FlowNode(Serializable):
         self.uuid = uuid if uuid else NodeKey(str(uuid4()))
         self.name = name if name else NodeName(str())
         self.docs = docs if docs else str()
-        self.icon = icon if icon else IconCode(str())
+        self.icon = icon if icon else str()
 
         self.lock = lock
         self.breakpoint = breakpoint
@@ -253,7 +252,7 @@ class FlowNode(Serializable):
         self.uuid = NodeKey(data.get(self._Keys.uuid, str()))
         self.name = NodeName(data.get(self._Keys.name_, str()))
         self.docs = data.get(self._Keys.docs, str())
-        self.icon = IconCode(data.get(self._Keys.icon, str()))
+        self.icon = data.get(self._Keys.icon, str())
         self.lock = data.get(self._Keys.lock, False)
         self.breakpoint = data.get(self._Keys.breakpoint, False)
         self.hidden = data.get(self._Keys.hidden, False)

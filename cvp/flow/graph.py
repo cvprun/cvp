@@ -23,7 +23,6 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.flow.wire import FlowWire
-from cvp.fonts.types import IconCode
 from cvp.logging.logging import flow_logger as logger
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
@@ -55,7 +54,7 @@ class FlowGraph(Serializable):
         uuid: Optional[str] = None,
         name: Optional[str] = None,
         docs: Optional[str] = None,
-        icon: Optional[IconCode] = None,
+        icon: Optional[str] = None,
         lock=False,
         opened=False,
         color: RGBA = WHITE_RGBA,
@@ -71,7 +70,7 @@ class FlowGraph(Serializable):
         self.uuid = uuid if uuid else str(uuid4())
         self.name = name if name else str()
         self.docs = docs if docs else str()
-        self.icon = icon if icon else IconCode(str())
+        self.icon = icon if icon else str()
         self.lock = lock
         self.opened = opened
         self.color = color
@@ -198,7 +197,7 @@ class FlowGraph(Serializable):
         self.uuid = str(data.get(self._Keys.uuid, str()))
         self.name = str(data.get(self._Keys.name_, str()))
         self.docs = str(data.get(self._Keys.docs, str()))
-        self.icon = IconCode(data.get(self._Keys.icon, str()))
+        self.icon = str(data.get(self._Keys.icon, str()))
         self.lock = bool(data.get(self._Keys.lock, False))
         self.opened = bool(data.get(self._Keys.opened, False))
         self.color = tuple(data.get(self._Keys.color, WHITE_RGBA))

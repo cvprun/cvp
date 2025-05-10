@@ -59,7 +59,7 @@ class GraphTestCase(TestCase):
         )
 
         graph1 = FlowGraph(
-            key="uuid",
+            uuid="uuid",
             name="name",
             docs="docs",
             icon="icon",
