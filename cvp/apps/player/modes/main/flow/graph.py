@@ -40,8 +40,8 @@ from cvp.types.override import override
 from cvp.types.shapes import Rect
 
 
-class FlowGraphWindow(ControllableCanvas, BaseWindow):
-    __cvp_window_name__ = "FlowGraphWindow"
+class GraphFlowWindow(ControllableCanvas, BaseWindow):
+    __cvp_window_name__ = "Graph"
 
     _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
     _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"

@@ -22,8 +22,6 @@ class ModeManager:
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
-        from cvp.apps.player.modes.flows.dtype import DtypeMode
-        from cvp.apps.player.modes.flows.node import NodeMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.main import MainMode
@@ -44,7 +42,6 @@ class ModeManager:
         self.chat_mode = ChatMode(context)
         self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
-        self.dtype_mode = DtypeMode(context)
         self.faker_mode = FakerMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.files_mode = FilesMode(context)
@@ -52,7 +49,6 @@ class ModeManager:
         self.hash_mode = HashMode(context)
         self.media_player_mode = MediaPlayerMode(context)
         self.medias_mode = MediasMode(context)
-        self.node_mode = NodeMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)

@@ -8,13 +8,13 @@ from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.main.flow.debug import DebugFlowWindow
-from cvp.apps.player.modes.main.flow.dtypes import DtypesFlowWindow
-from cvp.apps.player.modes.main.flow.graph import FlowGraphWindow
+from cvp.apps.player.modes.main.flow.dtypes import DtypeFlowWindow, DtypesFlowWindow
+from cvp.apps.player.modes.main.flow.graph import GraphFlowWindow
 from cvp.apps.player.modes.main.flow.graphs import GraphsFlowWindow
 from cvp.apps.player.modes.main.flow.history import HistoryFlowWindow
 from cvp.apps.player.modes.main.flow.intro import IntroFlowWindow
 from cvp.apps.player.modes.main.flow.logging import LoggingFlowWindow
-from cvp.apps.player.modes.main.flow.nodes import NodesFlowWindow
+from cvp.apps.player.modes.main.flow.nodes import NodeFlowWindow, NodesFlowWindow
 from cvp.apps.player.modes.main.flow.props import PropsFlowWindow
 from cvp.apps.player.modes.main.flow.tree import TreeFlowWindow
 from cvp.apps.player.modes.main.interface import retrieve_window_instances
@@ -57,12 +57,14 @@ class MainMode(BaseMode):
         # region: Initialize Window Instances
         # [IMPORTANT] Do not change the initialize order!
 
+        self.dtype = DtypeFlowWindow(context)
         self.dtypes = DtypesFlowWindow(context)
         self.debug = DebugFlowWindow(context)
         self.graphs = GraphsFlowWindow(context)
         self.history = HistoryFlowWindow(context)
         self.intro = IntroFlowWindow(context)
         self.logging = LoggingFlowWindow(context)
+        self.node = NodeFlowWindow(context)
         self.nodes = NodesFlowWindow(context)
         self.props = PropsFlowWindow(context)
         self.tree = TreeFlowWindow(context)
@@ -73,7 +75,7 @@ class MainMode(BaseMode):
         # endregion: Initialize Window Instances
         # ==============================================================================
 
-        self._graphs = FlowGraphWindow.create_opened_windows(context)
+        self._graphs = GraphFlowWindow.create_opened_windows(context)
 
     @property
     def initialized(self) -> bool:
@@ -117,6 +119,8 @@ class MainMode(BaseMode):
 
         dock_window(self.debug.get_window_name(), dock_center_bottom)
         dock_window(self.logging.get_window_name(), dock_center_bottom)
+        dock_window(self.dtype.get_window_name(), dock_center_bottom)
+        dock_window(self.node.get_window_name(), dock_center_bottom)
 
         dock_window(self.intro.get_window_name(), dock_center_top)
         for graph_window in self._graphs.values():
@@ -162,13 +166,13 @@ class MainMode(BaseMode):
         self._context.flows.read_all_graph_files()
         # -----------------------------------------
 
-        self._graphs = FlowGraphWindow.create_opened_windows(self._context)
+        self._graphs = GraphFlowWindow.create_opened_windows(self._context)
         for graph_key, graph_window in self._graphs.items():
             if self._main_dock_id is not None and graph_key not in prev_keys:
                 dock_window(graph_window.get_window_name(), self._main_dock_id)
 
     def create_graph_window(self, key: GraphKey):
-        graph_windows = FlowGraphWindow(self._context, key)
+        graph_windows = GraphFlowWindow(self._context, key)
         self._graphs[key] = graph_windows
         if self._main_dock_id is not None:
             dock_window(graph_windows.get_window_name(), self._main_dock_id)
