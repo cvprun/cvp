@@ -14,18 +14,14 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.types.override import override
 
 
-class IntroFlowWindow(BaseWindow):
-    __cvp_window_name__ = "Intro"
+class DashboardWindow(BaseWindow):
+    __cvp_window_name__ = "Dashboard"
 
     _RECENT_ITEM_SPLIT_X: Final[float] = FIT_WIDTH
     _RECENT_ITEM_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
-
-    @property
-    def config(self):
-        return self.context.config.flow
 
     @property
     def error_color(self):

@@ -20,7 +20,6 @@ class ModeManager:
         from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
-        from cvp.apps.player.modes.dashboard import DashboardMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
@@ -40,7 +39,6 @@ class ModeManager:
 
         self.binary_text_mode = BinaryTextMode(context)
         self.chat_mode = ChatMode(context)
-        self.dashboard_mode = DashboardMode(context)
         self.download_mode = DownloaderMode(context)
         self.faker_mode = FakerMode(context)
         self.datasets_mode = DatasetsMode(context)
@@ -66,7 +64,7 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.dashboard_mode, self.chat_mode, self.main_mode
+        self._menu_modes = self.chat_mode, self.main_mode
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
@@ -93,10 +91,6 @@ class ModeManager:
     @mode_key.setter
     def mode_key(self, value: str) -> None:
         self._context.config.appearance.mode = value
-
-    @property
-    def default_mode(self):
-        return self.dashboard_mode
 
     def get_mode_with_key(self, key: str) -> ModeInterface:
         index = self._key2index.get(key)
@@ -148,7 +142,7 @@ class ModeManager:
         try:
             return self.get_mode_with_key(self.mode_key)
         except:  # noqa
-            return self.default_mode
+            return self.main_mode
 
     @property
     def layout_preference_menu(self):

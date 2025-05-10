@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, List, Optional
+from typing import Callable, Final, List, Optional, Sequence, Tuple
 
 from imgui_bundle import imgui
 from pygame.key import ScancodeWrapper
 
-from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main._main import MainWindow
 from cvp.apps.player.widgets.flows.drag_target import accept_target
 from cvp.apps.player.widgets.flows.drag_types import DragTypes
 from cvp.assets.fonts import mdi
@@ -40,7 +40,7 @@ from cvp.types.override import override
 from cvp.types.shapes import Rect
 
 
-class GraphFlowWindow(ControllableCanvas, BaseWindow):
+class GraphFlowWindow(ControllableCanvas, MainWindow):
     __cvp_window_name__ = "Graph"
 
     _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
@@ -50,12 +50,11 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
     _connects: List[FlowNodePin]
     _roi: Optional[Rect]
     _selection_stash: Optional[FlowSelection]
+    _menus: Sequence[Tuple[str, Callable[[], None]]]
 
     def __init__(self, context: Context, graph_key: GraphKey):
         ControllableCanvas.__init__(self)
-        BaseWindow.__init__(self, context)
-
-        self._context = context
+        MainWindow.__init__(self, context)
         self._graph_key = graph_key
 
         graph = context.flows.graphs[graph_key]
@@ -229,10 +228,6 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
         if not name:
             raise ValueError("Variable name cannot be empty")
         self.graph.add_variable(name, self._drag_dtype)
-
-    @property
-    def context(self):
-        return self._context
 
     @property
     def graph_key(self):
