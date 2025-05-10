@@ -104,16 +104,8 @@ class CanvasWindow(ControllableCanvas, MainWindow):
         return self.context.canvases[self._canvas_key]
 
     @property
-    def focused_key(self):
-        return CanvasKey(self.context.config.navigation.focused_key)
-
-    @focused_key.setter
-    def focused_key(self, value: CanvasKey) -> None:
-        self.context.config.navigation.focused_key = str(value)
-
-    @property
-    def has_focused_key(self):
-        return self.context.config.navigation.focused_key == self._canvas_key
+    def is_focused_in_navigation(self):
+        return self.focused_key == self._canvas_key
 
     @property
     def config(self):
@@ -192,7 +184,7 @@ class CanvasWindow(ControllableCanvas, MainWindow):
             pass
 
         imgui.separator()
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_file_menu()
         else:
             self.do_disabled_file_menu()
@@ -200,17 +192,17 @@ class CanvasWindow(ControllableCanvas, MainWindow):
         imgui.separator()
         if menu_item("Import canvas"):
             pass
-        if menu_item("Export canvas", enabled=self.has_focused_key):
+        if menu_item("Export canvas", enabled=self.is_focused_in_navigation):
             pass
 
     def on_edit_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_layer_menu()
             imgui.separator()
             self.do_align_menu()

@@ -238,16 +238,8 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         return self.context.flows.graphs[self._graph_key]
 
     @property
-    def focused_key(self):
-        return GraphKey(self.context.config.navigation.focused_key)
-
-    @focused_key.setter
-    def focused_key(self, value: GraphKey) -> None:
-        self.context.config.navigation.focused_key = str(value)
-
-    @property
-    def has_focused_key(self):
-        return self.context.config.navigation.focused_key == self._graph_key
+    def is_focused_in_navigation(self):
+        return self.focused_key == self._graph_key
 
     @property
     def config(self):
@@ -475,7 +467,7 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         #         imgui.end_menu()
 
         imgui.separator()
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_file_menu()
         else:
             self.do_disabled_file_menu()
@@ -483,7 +475,7 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
         imgui.separator()
         if menu_item("Import graph"):
             self._import_graph_popup.show()
-        if menu_item("Export graph", enabled=self.has_focused_key):
+        if menu_item("Export graph", enabled=self.is_focused_in_navigation):
             self._export_graph_popup.show()
 
         imgui.separator()
@@ -491,13 +483,13 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
             self.context.flows.read_all_graph_files()
 
     def on_edit_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_layer_menu()
             imgui.separator()
             self.do_align_menu()
@@ -509,13 +501,13 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
             self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_run_menu()
         else:
             self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        if self.has_focused_key:
+        if self.is_focused_in_navigation:
             self.do_deploy_menu()
         else:
             self.do_disabled_deploy_menu()
