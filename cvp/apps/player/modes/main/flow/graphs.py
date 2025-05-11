@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.selectable_graph import selectable_graph
 from cvp.context.context import Context
 from cvp.imgui.push_item_width import align_right_side_context
@@ -11,6 +12,7 @@ from cvp.types.override import override
 
 class GraphsFlowWindow(BaseWindow):
     __cvp_window_name__ = "Graphs"
+    __cvp_window_position__ = DockPosition.left_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

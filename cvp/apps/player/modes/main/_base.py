@@ -7,6 +7,7 @@ from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.main.interface import WindowInterface
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.window import WindowFlags
@@ -17,6 +18,7 @@ from cvp.types.override import override
 @runtime_checkable
 class WindowNameProtocol(Protocol):
     __cvp_window_name__: str
+    __cvp_window_position__: DockPosition
 
 
 class BaseWindowInterface(ABC):
@@ -33,6 +35,10 @@ class BaseWindow(WindowInterface, BaseWindowInterface, WindowNameProtocol):
     def __init__(self, context: Context):
         assert isinstance(self, WindowNameProtocol)
         self._context = context
+
+    @override
+    def get_window_position(self) -> DockPosition:
+        return self.__cvp_window_position__
 
     @override
     def get_window_name(self) -> str:

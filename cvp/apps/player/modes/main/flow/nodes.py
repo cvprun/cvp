@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.selectable_node import selectable_node
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
@@ -14,6 +15,7 @@ from cvp.types.override import override
 
 class NodeFlowWindow(BaseWindow):
     __cvp_window_name__ = "Node"
+    __cvp_window_position__ = DockPosition.center_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -38,6 +40,7 @@ class NodeFlowWindow(BaseWindow):
 
 class NodesFlowWindow(BaseWindow):
     __cvp_window_name__ = "Nodes"
+    __cvp_window_position__ = DockPosition.left_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

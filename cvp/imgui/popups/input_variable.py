@@ -67,7 +67,7 @@ class InputVariablePopup(PopupBase[FlowVariable]):
         return FlowVariable(VariableKey(self._name), self._dtype)
 
     @override
-    def on_process(self) -> Optional[FlowVariable]:
+    def on_main_process(self) -> Optional[FlowVariable]:
         if self._label:
             imgui.text(self._label)
 

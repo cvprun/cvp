@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.selectable_variable import drag_variable_source
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
@@ -23,6 +24,7 @@ from cvp.types.override import override
 
 class TreeFlowWindow(BaseWindow):
     __cvp_window_name__ = "Tree"
+    __cvp_window_position__ = DockPosition.left_top
 
     def __init__(self, context: Context):
         super().__init__(context)

@@ -6,10 +6,15 @@ from typing import Any, Optional
 from pygame import Event
 from pygame.key import ScancodeWrapper
 
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.msgs.msg import Msg
 
 
 class WindowInterface(ABC):
+    @abstractmethod
+    def get_window_position(self) -> DockPosition:
+        raise NotImplementedError
+
     @abstractmethod
     def get_window_name(self) -> str:
         raise NotImplementedError
@@ -52,5 +57,14 @@ def retrieve_window_instances(o: Any):
     for key in dir(o):
         if value := getattr(o, key, None):
             if isinstance(value, WindowInterface):
+                result.append(value)
+    return result
+
+
+def retrieve_window_types(o: Any):
+    result = list()
+    for key in dir(o):
+        if value := getattr(o, key, None):
+            if isinstance(value, type) and issubclass(value, WindowInterface):
                 result.append(value)
     return result

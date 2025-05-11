@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
 from cvp.imgui.begin_child import begin_child_context
@@ -15,6 +16,7 @@ from cvp.types.override import override
 
 class HistoryFlowWindow(BaseWindow):
     __cvp_window_name__ = "History"
+    __cvp_window_position__ = DockPosition.right_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

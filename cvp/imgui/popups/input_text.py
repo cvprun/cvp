@@ -53,7 +53,7 @@ class InputTextPopup(PopupBase[str]):
         self.validate = validate
 
     @override
-    def on_process(self) -> Optional[str]:
+    def on_main_process(self) -> Optional[str]:
         if self.label:
             imgui.text(self.label)
 

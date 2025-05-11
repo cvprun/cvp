@@ -155,7 +155,7 @@ class OpenFilePopup(PopupBase[str]):
         return dirs + files
 
     @override
-    def on_process(self) -> Optional[str]:
+    def on_main_process(self) -> Optional[str]:
         try:
             return self.do_main_process()
         finally:

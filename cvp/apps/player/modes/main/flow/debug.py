@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
@@ -15,6 +16,7 @@ from cvp.types.override import override
 
 class DebugFlowWindow(BaseWindow):
     __cvp_window_name__ = "Debug"
+    __cvp_window_position__ = DockPosition.center_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

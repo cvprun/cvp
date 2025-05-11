@@ -5,7 +5,8 @@ from typing import Callable, Final, List, Optional, Sequence, Tuple
 from imgui_bundle import imgui
 from pygame.key import ScancodeWrapper
 
-from cvp.apps.player.modes.main._main import MainWindow
+from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.drag_target import accept_target
 from cvp.apps.player.widgets.flows.drag_types import DragTypes
 from cvp.assets.fonts import mdi
@@ -38,8 +39,9 @@ from cvp.types.override import override
 from cvp.types.shapes import Rect
 
 
-class GraphFlowWindow(ControllableCanvas, MainWindow):
+class GraphFlowWindow(ControllableCanvas, BaseWindow):
     __cvp_window_name__ = "Graph"
+    __cvp_window_position__ = DockPosition.center_top
 
     _ADD_VARIABLE_NODE_MENU: Final[str] = "Add variable node menu"
     _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
@@ -52,7 +54,7 @@ class GraphFlowWindow(ControllableCanvas, MainWindow):
 
     def __init__(self, context: Context, graph_key: GraphKey):
         ControllableCanvas.__init__(self)
-        MainWindow.__init__(self, context)
+        BaseWindow.__init__(self, context)
         self._graph_key = graph_key
 
         graph = context.flows.graphs[graph_key]

@@ -3,10 +3,8 @@
 from abc import ABC, abstractmethod
 from typing import (
     Callable,
-    Generic,
     Optional,
     Protocol,
-    TypeVar,
     Union,
     runtime_checkable,
 )
@@ -16,23 +14,14 @@ from imgui_bundle import imgui
 
 from cvp.imgui.flags.condition import APPEARING
 from cvp.imgui.flags.window import WindowFlags
+from cvp.imgui.popups.interface import PopupInterface, PopupResultT
 from cvp.imgui.set_window_min_size import set_window_min_size
 from cvp.types.override import override
 
-ResultT = TypeVar("ResultT")
 
-
-class PopupInterface(Generic[ResultT], ABC):
+class PopupBaseInterface(PopupInterface[PopupResultT], ABC):
     @abstractmethod
-    def get_min_width(self) -> int:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_min_height(self) -> int:
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_process(self) -> Optional[ResultT]:
+    def on_main_process(self) -> Optional[PopupResultT]:
         raise NotImplementedError
 
 
@@ -42,16 +31,16 @@ class PopupProtocol(Protocol):
     __cvp_popup_min_height__: int
 
 
-class PopupBase(PopupInterface[ResultT], PopupProtocol):
-    _target: Optional[Callable[[ResultT], None]]
-    _result: Optional[ResultT]
+class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
+    _target: Optional[Callable[[PopupResultT], None]]
+    _result: Optional[PopupResultT]
 
     def __init__(
         self,
         title: Optional[str] = None,
         flags: Union[WindowFlags, int] = 0,
         *,
-        target: Optional[Callable[[ResultT], None]] = None,
+        target: Optional[Callable[[PopupResultT], None]] = None,
         oneshot: Optional[bool] = None,
         identifier: Optional[str] = None,
         min_width: Optional[int] = None,
@@ -61,6 +50,7 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
         if isinstance(flags, WindowFlags):
             flags = int(flags)
         assert isinstance(flags, int)
+        assert isinstance(self, PopupProtocol)
 
         self._title = title if title else type(self).__name__
         self._visible = False
@@ -89,10 +79,6 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
         else:
             return self.__cvp_popup_min_height__
 
-    @override
-    def on_process(self) -> Optional[ResultT]:
-        raise NotImplementedError
-
     @property
     def title(self):
         return self._title
@@ -102,7 +88,7 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
         return self._target
 
     @target.setter
-    def target(self, value: Callable[[ResultT], None]) -> None:
+    def target(self, value: Callable[[PopupResultT], None]) -> None:
         self._target = value
 
     @property
@@ -110,7 +96,7 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
         return self._result
 
     @result.setter
-    def result(self, value: Optional[ResultT]) -> None:
+    def result(self, value: Optional[PopupResultT]) -> None:
         self._result = value
 
     @property
@@ -124,7 +110,7 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
     def show(
         self,
         title: Optional[str] = None,
-        target: Optional[Callable[[ResultT], None]] = None,
+        target: Optional[Callable[[PopupResultT], None]] = None,
         oneshot: Optional[bool] = None,
     ) -> None:
         self._visible = True
@@ -138,11 +124,12 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
     def show_oneshot(
         self,
         title: Optional[str] = None,
-        target: Optional[Callable[[ResultT], None]] = None,
+        target: Optional[Callable[[PopupResultT], None]] = None,
     ) -> None:
         self.show(title, target, oneshot=True)
 
-    def do_process(self) -> Optional[ResultT]:
+    @override
+    def do_process(self) -> Optional[PopupResultT]:
         if self._visible:
             imgui.open_popup(self.popup_label)
             self._visible = False
@@ -162,7 +149,7 @@ class PopupBase(PopupInterface[ResultT], PopupProtocol):
             set_window_min_size(self.get_min_width(), self.get_min_height())
 
         try:
-            self._result = self.on_process()
+            self._result = self.on_main_process()
             if self._target is not None and self._result is not None:
                 self._target(self._result)
                 if self._oneshot:

@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.canvas.axis import Axis
 from cvp.context.context import Context
 from cvp.flow.graph import FlowGraph, GraphKey
@@ -35,6 +36,7 @@ from cvp.types.override import override
 
 class PropsFlowWindow(BaseWindow):
     __cvp_window_name__ = "Props"
+    __cvp_window_position__ = DockPosition.right_top
 
     def __init__(self, context: Context):
         super().__init__(context)

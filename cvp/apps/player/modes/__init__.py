@@ -15,15 +15,17 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
+        from cvp.apps.player.modes.canvas import CanvasMode
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.cms.datasets import DatasetsMode
         from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
+        from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
-        from cvp.apps.player.modes.main import MainMode
+        from cvp.apps.player.modes.main.layout import MainLayout
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sock_map import SockMapMode
         from cvp.apps.player.modes.preference import PreferenceMode
@@ -33,17 +35,20 @@ class ModeManager:
         from cvp.apps.player.modes.vms.player import MediaPlayerMode
         from cvp.apps.player.modes.vms.wsdiscovery import WsDiscoveryMode
 
+        self._main_layout = MainLayout(context)
+
         # ==============================================================================
         # region: Initialize Mode Instances
         # [IMPORTANT] Do not change the initialize order!
 
         self.binary_text_mode = BinaryTextMode(context)
+        self.canvas_mode = CanvasMode(self._main_layout)
         self.chat_mode = ChatMode(context)
+        self.datasets_mode = DatasetsMode(context)
         self.download_mode = DownloaderMode(context)
         self.faker_mode = FakerMode(context)
-        self.datasets_mode = DatasetsMode(context)
         self.files_mode = FilesMode(context)
-        self.main_mode = MainMode(context)
+        self.flow_mode = FlowMode(self._main_layout)
         self.hash_mode = HashMode(context)
         self.media_player_mode = MediaPlayerMode(context)
         self.medias_mode = MediasMode(context)
@@ -63,7 +68,7 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.chat_mode, self.main_mode
+        self._menu_modes = self.flow_mode, self.canvas_mode, self.chat_mode
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
@@ -111,7 +116,7 @@ class ModeManager:
         try:
             return self.get_mode(self.mode_key)
         except:  # noqa
-            return self.main_mode
+            return self.flow_mode
 
     @property
     def layout_preference_menu(self):

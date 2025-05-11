@@ -7,6 +7,7 @@ from weakref import finalize
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
@@ -48,6 +49,7 @@ def _unregister_handler(handler: _LoggingHandler) -> None:
 
 class LoggingFlowWindow(BaseWindow):
     __cvp_window_name__ = "Logging"
+    __cvp_window_position__ = DockPosition.center_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

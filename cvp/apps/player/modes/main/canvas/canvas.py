@@ -4,7 +4,8 @@ from typing import Callable, Final, Sequence, Tuple
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.main._main import MainWindow
+from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.canvas.canvas import CanvasKey
 from cvp.context.context import Context
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
@@ -20,8 +21,9 @@ from cvp.logging.logging import canvas_logger as logger
 from cvp.types.override import override
 
 
-class CanvasWindow(ControllableCanvas, MainWindow):
+class CanvasWindow(ControllableCanvas, BaseWindow):
     __cvp_window_name__ = "Canvas"
+    __cvp_window_position__ = DockPosition.center_top
 
     _MOUSE_RIGHT_BUTTON_MENU: Final[str] = "Mouse right button menu"
 
@@ -29,7 +31,7 @@ class CanvasWindow(ControllableCanvas, MainWindow):
 
     def __init__(self, context: Context, canvas_key: CanvasKey):
         ControllableCanvas.__init__(self)
-        MainWindow.__init__(self, context)
+        BaseWindow.__init__(self, context)
         self._canvas_key = canvas_key
 
         canvas = context.canvases[canvas_key]

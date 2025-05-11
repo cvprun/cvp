@@ -3,6 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.selectable_dtype import selectable_dtype
 from cvp.context.context import Context
 from cvp.dtypes.dtype import Dtype
@@ -14,6 +15,7 @@ from cvp.types.override import override
 
 class DtypeFlowWindow(BaseWindow):
     __cvp_window_name__ = "Dtype"
+    __cvp_window_position__ = DockPosition.center_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -38,6 +40,7 @@ class DtypeFlowWindow(BaseWindow):
 
 class DtypesFlowWindow(BaseWindow):
     __cvp_window_name__ = "Dtypes"
+    __cvp_window_position__ = DockPosition.left_bottom
 
     def __init__(self, context: Context):
         super().__init__(context)

@@ -5,6 +5,7 @@ from typing import Final
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
+from cvp.apps.player.modes.main.position import DockPosition
 from cvp.config.sections.navigation import RecentItem
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
@@ -14,8 +15,9 @@ from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.types.override import override
 
 
-class DashboardWindow(BaseWindow):
-    __cvp_window_name__ = "Dashboard"
+class IntroFlowWindow(BaseWindow):
+    __cvp_window_name__ = "Intro"
+    __cvp_window_position__ = DockPosition.center_top
 
     _RECENT_ITEM_SPLIT_X: Final[float] = FIT_WIDTH
     _RECENT_ITEM_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y | BORDERS
