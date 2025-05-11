@@ -10,6 +10,7 @@ from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context.mixins import ContextMixins
+from cvp.context.mixins.protocol import ContextProtocol
 from cvp.download.manager import DownloadManager
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
 from cvp.flow.graph import FlowGraph
@@ -140,6 +141,8 @@ class Context(ContextMixins):
                 self.server_username,
                 self.server_password,
             )
+
+        assert isinstance(self, ContextProtocol)
 
     def shutdown(self) -> None:
         logger.info("Stop all flow runners")

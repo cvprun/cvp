@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass
 class CanvasConfig:
-    pass
+    selected_uuid: str = field(default_factory=str)

@@ -9,8 +9,6 @@ from cvp.resources.subdirs.canvases import CanvasesPath
 
 
 class CanvasManager(ResourceManager[CanvasKey, Canvas]):
-    _focused_key: Optional[CanvasKey]
-
     def __init__(self, path: CanvasesPath, *, reload=False, raise_errors=False):
         super().__init__(
             key_type=CanvasKey,
@@ -19,21 +17,6 @@ class CanvasManager(ResourceManager[CanvasKey, Canvas]):
             reload=reload,
             raise_errors=raise_errors,
         )
-        self._focused_key = None
-
-    @property
-    def focused_key(self):
-        return self._focused_key
-
-    @focused_key.setter
-    def focused_key(self, value: CanvasKey) -> None:
-        self._focused_key = value
-
-    @property
-    def focused_canvas(self) -> Optional[Canvas]:
-        if self._focused_key is None:
-            return None
-        return self.get(self._focused_key)
 
     def add_new(
         self,

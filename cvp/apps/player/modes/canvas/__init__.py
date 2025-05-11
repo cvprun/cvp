@@ -4,7 +4,7 @@ from typing import Set
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.main import canvas
+from cvp.apps.player.modes.main import canvas as canvas_module
 from cvp.apps.player.modes.main.base_main import BaseMainMode
 from cvp.apps.player.modes.main.canvas.canvas import CanvasWindow
 from cvp.apps.player.modes.main.interface import WindowInterface
@@ -55,7 +55,7 @@ class CanvasMode(BaseMainMode):
 
         super().__init__(
             layout=layout,
-            module=canvas,
+            module=canvas_module,
             main_window_type=CanvasWindow,
             menus=menus,
             popups=popups,
@@ -80,10 +80,10 @@ class CanvasMode(BaseMainMode):
         imgui.separator()
         if imgui.begin_menu("Recent canvases"):
             try:
-                for canvas_ in self.context.canvases.values():
-                    if menu_item(f"{canvas_.name}###{canvas_.uuid}"):
-                        self.focused_key = canvas_.uuid
-                        canvas_.opened = True
+                for canvas in self.context.canvases.values():
+                    if menu_item(f"{canvas.name}###{canvas.key}"):
+                        self.context.selected_canvas_key = canvas.key
+                        canvas.opened = True
             finally:
                 imgui.end_menu()
 
@@ -98,8 +98,12 @@ class CanvasMode(BaseMainMode):
             self.context.canvases.read_all_config_files()
 
     @override
+    def get_selected_main_key(self) -> str:
+        return self.context.selected_canvas_key
+
+    @override
     def get_main_key_set(self) -> Set[str]:
-        return set(self._context.canvases.keys())
+        return set(self.context.canvases.keys())
 
     @override
     def on_window_popped(self, window: WindowInterface) -> None:

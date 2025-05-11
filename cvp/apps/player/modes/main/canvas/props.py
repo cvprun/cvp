@@ -4,7 +4,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.modes.main.position import DockPosition
-from cvp.canvas.canvas import Canvas, CanvasKey
+from cvp.canvas.canvas import Canvas
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
@@ -19,17 +19,13 @@ class PropsCanvasWindow(BaseWindow):
     def __init__(self, context: Context):
         super().__init__(context)
 
-    @property
-    def focused_canvas(self):
-        return self.context.canvases.get(CanvasKey(self.focused_key))
-
     @override
     def on_main_process(self) -> None:
         with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
             self.do_toolbar_process()
         imgui.separator()
         with begin_child_context("History"):
-            if canvas := self.focused_canvas:
+            if canvas := self.context.selected_canvas:
                 self.do_history_process(canvas)
             else:
                 text_centered("Please select a canvas")

@@ -7,7 +7,7 @@ from unittest import TestCase, main
 from cvp.context.context import Context
 
 # noinspection PyProtectedMember
-from cvp.context.mixins._base import ContextProtocol
+from cvp.context.mixins.protocol import ContextProtocol
 from cvp.inspect.member import get_attribute_keys
 from cvp.logging.disable import disable_logging
 

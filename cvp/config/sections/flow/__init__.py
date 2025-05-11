@@ -20,6 +20,8 @@ from cvp.variables import (
 
 @dataclass
 class FlowConfig:
+    selected_uuid: str = field(default_factory=str)
+
     background_color: RGBA = FLOW_BACKGROUND_COLOR
     max_history: int = FLOW_MAX_HISTORY
     paste_margin: float = FLOW_PASTE_MARGIN

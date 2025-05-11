@@ -195,8 +195,8 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
         return self.context.flows.graphs[self._graph_key]
 
     @property
-    def is_focused_in_navigation(self):
-        return self.focused_key == self._graph_key
+    def is_selected_graph(self):
+        return self.context.selected_graph_key == self._graph_key
 
     @property
     def config(self):
@@ -276,7 +276,7 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
             self.graph.opened = opened
 
         if imgui.is_window_focused(ROOT_AND_CHILD_WINDOWS):
-            self.focused_key = self._graph_key
+            self.context.selected_graph_key = self._graph_key
 
         try:
             if self.graph.opened and visible:
@@ -408,13 +408,13 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
                     imgui.end_menu()
 
     def on_edit_menu(self) -> None:
-        if self.is_focused_in_navigation:
+        if self.is_selected_graph:
             self.do_edit_menu()
         else:
             self.do_disabled_edit_menu()
 
     def on_layer_menu(self) -> None:
-        if self.is_focused_in_navigation:
+        if self.is_selected_graph:
             self.do_layer_menu()
             imgui.separator()
             self.do_align_menu()
@@ -426,13 +426,13 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
             self.do_disabled_distribute_menu()
 
     def on_run_menu(self) -> None:
-        if self.is_focused_in_navigation:
+        if self.is_selected_graph:
             self.do_run_menu()
         else:
             self.do_disabled_run_menu()
 
     def on_deploy_menu(self) -> None:
-        if self.is_focused_in_navigation:
+        if self.is_selected_graph:
             self.do_deploy_menu()
         else:
             self.do_disabled_deploy_menu()

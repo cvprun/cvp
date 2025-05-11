@@ -19,6 +19,10 @@ from cvp.types.override import override
 
 class BaseMainModeInterface(ABC):
     @abstractmethod
+    def get_selected_main_key(self) -> str:
+        raise NotImplementedError
+
+    @abstractmethod
     def get_main_key_set(self) -> Set[str]:
         raise NotImplementedError
 
@@ -52,18 +56,6 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
     def initialized(self) -> bool:
         return self._layout.initialized
 
-    @property
-    def focused_key(self) -> str:
-        return self._layout.focused_key
-
-    @focused_key.setter
-    def focused_key(self, value: str) -> None:
-        self._layout.focused_key = value
-
-    @property
-    def focused_window(self):
-        return self._layout.focused_window
-
     def filter_window_key_set(self) -> Set[str]:
         return self._layout.filter_window_key_set(self._main_window_type)
 
@@ -84,6 +76,10 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
 
         assert self.get_main_key_set() == self.filter_window_key_set()
 
+    @property
+    def selected_main_window(self):
+        return self._layout.get_main_window(self.get_selected_main_key())
+
     @override
     def on_main_menu(self) -> None:
         for name, func in self._menus:
@@ -93,24 +89,34 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
                 finally:
                     imgui.end_menu()
 
-        self._layout.do_main_menu()
+        if window := self.selected_main_window:
+            window.on_main_menu()
+
         self._layout.do_window_menu("Window", self._module)
 
     @override
     def on_status_menu(self) -> None:
-        self._layout.do_status_menu()
+        if window := self.selected_main_window:
+            window.on_status_menu()
 
     @override
     def on_event(self, event: Event) -> bool:
-        return self._layout.do_event(event)
+        if window := self.selected_main_window:
+            return window.on_event(event)
+        else:
+            return False
 
     @override
     def on_msg(self, msg: Msg) -> bool:
-        return self._layout.do_msg(msg)
+        if window := self.selected_main_window:
+            return window.on_msg(msg)
+        else:
+            return False
 
     @override
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
-        self._layout.do_keyboard(keys)
+        if window := self.selected_main_window:
+            window.on_keyboard(keys)
 
     @override
     def on_process(self) -> None:

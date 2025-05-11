@@ -16,7 +16,6 @@ from cvp.types.colors import (
 @dataclass
 class AppearanceConfig:
     theme: str = field(default_factory=str)
-    mode: str = field(default_factory=str)
 
     clear_color: RGBA = BLACK_RGBA
     detail_color: RGBA = BLUE_RGBA

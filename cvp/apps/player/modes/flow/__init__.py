@@ -4,7 +4,7 @@ from typing import Set
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.main import flow
+from cvp.apps.player.modes.main import flow as flow_module
 from cvp.apps.player.modes.main.base_main import BaseMainMode
 from cvp.apps.player.modes.main.flow.graph import GraphFlowWindow
 from cvp.apps.player.modes.main.interface import WindowInterface
@@ -55,7 +55,7 @@ class FlowMode(BaseMainMode):
 
         super().__init__(
             layout=layout,
-            module=flow,
+            module=flow_module,
             main_window_type=GraphFlowWindow,
             menus=menus,
             popups=popups,
@@ -81,8 +81,8 @@ class FlowMode(BaseMainMode):
         if imgui.begin_menu("Recent graphs"):
             try:
                 for graph in self.context.flows.graphs.values():
-                    if menu_item(f"{graph.name}###{graph.uuid}"):
-                        self.focused_key = graph.uuid
+                    if menu_item(f"{graph.name}###{graph.key}"):
+                        self.context.selected_graph_key = graph.key
                         graph.opened = True
             finally:
                 imgui.end_menu()
@@ -99,6 +99,10 @@ class FlowMode(BaseMainMode):
             self.context.canvases.read_all_config_files()
         if menu_item("Refresh graphs"):
             self.context.flows.read_all_graph_files()
+
+    @override
+    def get_selected_main_key(self) -> str:
+        return self._context.selected_graph_key
 
     @override
     def get_main_key_set(self) -> Set[str]:

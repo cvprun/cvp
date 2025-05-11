@@ -34,10 +34,10 @@ class GraphsFlowWindow(BaseWindow):
 
             if selectable_graph(
                 graph=graph,
-                selected=graph.uuid == self.focused_key,
+                selected=graph.key == self.context.selected_graph_key,
                 use_drag_source=True,
                 use_double_clicked=True,
             ):
                 if not graph.opened:
                     graph.opened = True
-                    self.focused_key = graph.uuid
+                    self.context.selected_graph_key = graph.key

@@ -17,7 +17,7 @@ class RecentItem(NamedTuple):
 
 @dataclass
 class NavigationConfig:
-    focused_key: str = field(default_factory=str)
+    mode: str = field(default_factory=str)
 
     opened_windows: Dict[CategoryKey, bool] = field(default_factory=dict)
     selected_submenus: Dict[CategoryKey, str] = field(default_factory=dict)

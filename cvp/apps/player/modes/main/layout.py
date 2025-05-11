@@ -4,8 +4,6 @@ from types import ModuleType
 from typing import Dict, Final, List, NamedTuple, Optional, Type
 
 from imgui_bundle import imgui
-from pygame.event import Event
-from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.main.interface import WindowInterface
 from cvp.apps.player.modes.main.position import DockPosition
@@ -22,7 +20,6 @@ from cvp.imgui.dock_builder import (
 )
 from cvp.imgui.dockspace import dockspace_over_viewport_context
 from cvp.imgui.menu_item_ex import menu_item
-from cvp.msgs.msg import Msg
 
 
 class ModulesAndTools(NamedTuple):
@@ -86,6 +83,9 @@ class MainLayout:
         self._mains[key] = window
         if self._central_dock_id is not None:
             dock_window(window.get_window_name(), self._central_dock_id)
+
+    def get_main_window(self, key: str):
+        return self._mains.get(key)
 
     def _initialize_dock_layout(
         self,
@@ -173,21 +173,6 @@ class MainLayout:
             finish(dockspace_id)
             self._initialized_dock_layout = True
 
-    @property
-    def focused_key(self) -> str:
-        return self._context.config.navigation.focused_key
-
-    @focused_key.setter
-    def focused_key(self, value: str) -> None:
-        self._context.config.navigation.focused_key = value
-
-    @property
-    def focused_window(self):
-        if focused_key := self.focused_key:
-            return self._mains.get(focused_key)
-        else:
-            return None
-
     def filter_window_key_set(self, cls: Type[WindowInterface]):
         return set(key for key, win in self._mains.items() if isinstance(win, cls))
 
@@ -211,10 +196,6 @@ class MainLayout:
         assert module in self._modules
         return self.filter_windows_with_module(self._mains, module)
 
-    def do_main_menu(self) -> None:
-        if window := self.focused_window:
-            window.on_main_menu()
-
     def do_window_menu(self, label: str, module: ModuleType) -> None:
         assert module in self._modules
         if imgui.begin_menu(label):
@@ -237,26 +218,6 @@ class MainLayout:
                         tool.set_opened_window(False)
             finally:
                 imgui.end_menu()
-
-    def do_status_menu(self) -> None:
-        if window := self.focused_window:
-            window.on_status_menu()
-
-    def do_event(self, event: Event) -> bool:
-        if window := self.focused_window:
-            return window.on_event(event)
-        else:
-            return False
-
-    def do_msg(self, msg: Msg) -> bool:
-        if window := self.focused_window:
-            return window.on_msg(msg)
-        else:
-            return False
-
-    def do_keyboard(self, keys: ScancodeWrapper) -> None:
-        if window := self.focused_window:
-            window.on_keyboard(keys)
 
     def do_dockspace_process(self) -> None:
         viewport = imgui.get_main_viewport()

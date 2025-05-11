@@ -63,7 +63,7 @@ class ModeManager:
         # ------------------------------------------------------------------------------
         # Retrieves and stores all ModeInterface instances assigned to `self`
         self._modes = retrieve_mode_instances(self)
-        self._key2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
+        self._name2index = {m.get_mode_name(): i for i, m in enumerate(self._modes)}
         # endregion: Initialize Mode Instances
         # ==============================================================================
 
@@ -90,33 +90,49 @@ class ModeManager:
 
     @property
     def mode_key(self) -> str:
-        return self._context.config.appearance.mode
+        return self._context.config.navigation.mode
 
     @mode_key.setter
     def mode_key(self, value: str) -> None:
-        self._context.config.appearance.mode = value
+        self._context.config.navigation.mode = value
 
-    def get_mode(self, key: str) -> ModeInterface:
-        index = self._key2index.get(key)
+    def find_mode_index(self, key: str) -> int:
+        index = self._name2index.get(key)
         if index is None:
             raise KeyError(f"Invalid mode key: {key}")
         assert 0 <= index < len(self._modes)
-        return self._modes[index]
+        return index
 
-    def set_mode(self, key: str) -> None:
-        index = self._key2index.get(key)
-        if index is None:
-            raise KeyError(f"Invalid mode key: {key}")
-        assert 0 <= index < len(self._modes)
-        assert self._modes[index].get_mode_name() == key
-        self.mode_key = key
+    def find_mode(self, key: str) -> ModeInterface:
+        return self._modes[self.find_mode_index(key)]
 
     @property
     def current_mode(self) -> ModeInterface:
         try:
-            return self.get_mode(self.mode_key)
+            return self.find_mode(self.mode_key)
         except:  # noqa
             return self.flow_mode
+
+    def set_mode_with_index(self, index: int) -> None:
+        if not (0 <= index < len(self._modes)):
+            raise IndexError(f"Invalid mode index: {index}")
+        self.mode_key = self._modes[index].get_mode_name()
+
+    def prev_mode(self, *, raise_errors=False) -> None:
+        prev_index = self.find_mode_index(self.mode_key) - 1
+        try:
+            self.set_mode_with_index(prev_index)
+        except IndexError:
+            if raise_errors:
+                raise
+
+    def next_mode(self, *, raise_errors=False) -> None:
+        next_index = self.find_mode_index(self.mode_key) + 1
+        try:
+            self.set_mode_with_index(next_index)
+        except IndexError:
+            if raise_errors:
+                raise
 
     @property
     def layout_preference_menu(self):

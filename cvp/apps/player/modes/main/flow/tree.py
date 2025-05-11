@@ -6,7 +6,7 @@ from cvp.apps.player.modes.main._base import BaseWindow
 from cvp.apps.player.modes.main.position import DockPosition
 from cvp.apps.player.widgets.flows.selectable_variable import drag_variable_source
 from cvp.context.context import Context
-from cvp.flow.graph import FlowGraph, GraphKey
+from cvp.flow.graph import FlowGraph
 from cvp.flow.node import FlowNode
 from cvp.flow.variable import FlowVariable
 from cvp.flow.wire import FlowWire
@@ -29,13 +29,9 @@ class TreeFlowWindow(BaseWindow):
     def __init__(self, context: Context):
         super().__init__(context)
 
-    @property
-    def focused_graph(self):
-        return self.context.flows.graphs.get(GraphKey(self.focused_key))
-
     @override
     def on_main_process(self) -> None:
-        if graph := self.focused_graph:
+        if graph := self.context.selected_graph:
             self.do_child_process(graph)
         else:
             text_centered("Please select a graph")
