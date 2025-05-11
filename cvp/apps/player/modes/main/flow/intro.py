@@ -30,7 +30,7 @@ class IntroFlowWindow(BaseWindow):
         return self.context.config.appearance.error_color
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         if imgui.button("Open workspace"):
             # self.context.flows.create_new_workspace()
             pass

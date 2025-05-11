@@ -258,7 +258,7 @@ class TetrixMode(BaseMode):
             self._current_score += [0, 40, 100, 300, 1200][lines_cleared]
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         imgui.push_style_var(StyleVar.window_border_size, 0)
         try:
             set_next_window_as_viewport()

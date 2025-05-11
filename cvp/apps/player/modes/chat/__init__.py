@@ -48,7 +48,7 @@ class ChatMode(BaseMode):
         self._enter_label = "Enter"
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 

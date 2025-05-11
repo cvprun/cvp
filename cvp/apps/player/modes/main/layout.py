@@ -272,6 +272,6 @@ class MainLayout:
     def do_process(self, module: ModuleType) -> None:
         assert module in self._modules
         for tool in self.filter_tools_with_module(module).values():
-            tool.do_process()
+            tool.on_process()
         for main in self.filter_mains_with_module(module).values():
-            main.do_process()
+            main.on_process()

@@ -27,7 +27,7 @@ class BaseWindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         raise NotImplementedError
 
 
@@ -107,7 +107,7 @@ class BaseWindow(WindowInterface, BaseWindowInterface, WindowNameProtocol):
         self.set_selected_submenu(value)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         opened = self.opened_window
         if not opened:
             return
@@ -127,12 +127,12 @@ class BaseWindow(WindowInterface, BaseWindowInterface, WindowNameProtocol):
             if not result.opened:
                 return
 
-            self.do_main_process()
+            self.on_main_process()
 
     @override
     def get_window_flags(self) -> Union[WindowFlags, int]:
         return 0
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         pass

@@ -79,7 +79,7 @@ class OnvifMode(BaseMode):
         self.onvifs.remove_all()
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 
@@ -120,8 +120,8 @@ class OnvifMode(BaseMode):
             else:
                 text_centered("Please select a item")
 
-        self._confirm_remove.do_process()
-        self._confirm_clear.do_process()
+        self._confirm_remove.on_process()
+        self._confirm_clear.on_process()
 
     def do_onvif_tab_bar(self, onvif: OnvifConfig) -> None:
         if imgui.begin_tab_bar("Tabs"):
@@ -129,7 +129,7 @@ class OnvifMode(BaseMode):
                 for name, tab in self._tabs.items():
                     if imgui.begin_tab_item(name)[0]:
                         try:
-                            tab.do_process(onvif)
+                            tab.on_process(onvif)
                         finally:
                             imgui.end_tab_item()
             finally:

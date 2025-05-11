@@ -89,7 +89,7 @@ class OnvifApisTab(BaseOnvifTab):
         text_colored(text, self.warning_color)
 
     @override
-    def do_process(self, onvif: OnvifConfig) -> None:
+    def on_process(self, onvif: OnvifConfig) -> None:
         try:
             client = self.do_process_onvif_client(onvif)
             binding = self.do_process_binding_index(onvif, client.wsdls)

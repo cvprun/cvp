@@ -18,7 +18,7 @@ class OnvifAuthTab(BaseOnvifTab):
         self._show_password = False
 
     @override
-    def do_process(self, onvif: OnvifConfig) -> None:
+    def on_process(self, onvif: OnvifConfig) -> None:
         use_wsse = imgui.checkbox("Use WS-Security", onvif.use_wsse)
         if imgui.is_item_hovered():
             if imgui.begin_tooltip():

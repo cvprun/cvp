@@ -63,7 +63,7 @@ class OllamaPreference(BasePreference):
         self.set_selected_submenu(value, suffix=ollama.uuid)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with begin_child_context(
             label="Menu",
             size=(self._MENU_SPLIT_X, 0),

@@ -19,7 +19,7 @@ class GraphsFlowWindow(BaseWindow):
         self._filter = str()
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",

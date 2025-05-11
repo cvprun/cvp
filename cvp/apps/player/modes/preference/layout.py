@@ -136,7 +136,7 @@ class LayoutPreference(BasePreference):
         self._confirm_remove.show()
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with begin_child_context(
             label="Menu",
             size=(self._MENU_SPLIT_X, 0),
@@ -207,7 +207,7 @@ class LayoutPreference(BasePreference):
         text_colored(status_text, status_color)
 
     @override
-    def do_postprocess(self) -> None:
-        self._rename_input.do_process()
-        self._confirm_remove.do_process()
-        self._confirm_clear.do_process()
+    def on_postprocess(self) -> None:
+        self._rename_input.on_process()
+        self._confirm_remove.on_process()
+        self._confirm_clear.on_process()

@@ -34,7 +34,7 @@ class KeyringPreference(BasePreference):
             return NOT_FOUND_INDEX
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         backend_index = self.keyring_backend_index
         backend_result = imgui.combo("Backend", backend_index, self._keyring_names)
         backend_changed, backend_index = backend_result

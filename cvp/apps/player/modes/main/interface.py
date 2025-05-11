@@ -48,7 +48,7 @@ class WindowInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         raise NotImplementedError
 
 

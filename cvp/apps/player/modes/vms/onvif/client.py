@@ -36,7 +36,7 @@ class OnvifClientTab(BaseOnvifTab):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self, onvif: OnvifConfig) -> None:
+    def on_process(self, onvif: OnvifConfig) -> None:
         has_client = self.onvifs.has_client(onvif.key)
         update_client_running = self._update_client_runner.running
         has_error = bool(self._update_client_runner.error)

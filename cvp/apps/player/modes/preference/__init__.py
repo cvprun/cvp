@@ -42,16 +42,16 @@ class PreferenceMode(BaseMode):
         return menu
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         widget = self._menus.get(self.selected_submenu)
         if widget is not None:
-            widget.do_preprocess()
+            widget.on_preprocess()
         try:
             with self.begin_mode_context():
                 self.do_child_process(widget)
         finally:
             if widget is not None:
-                widget.do_postprocess()
+                widget.on_postprocess()
 
     def do_child_process(self, widget: Optional[BasePreference] = None) -> None:
         with begin_child_context(
@@ -73,6 +73,6 @@ class PreferenceMode(BaseMode):
             if widget is not None:
                 imgui.text(self.selected_submenu)
                 imgui.separator()
-                widget.do_process()
+                widget.on_process()
             else:
                 text_centered("Please select a item")

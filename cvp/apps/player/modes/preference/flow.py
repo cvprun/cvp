@@ -112,7 +112,7 @@ class FlowPreference(BasePreference):
                 imgui.tree_pop()
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         self.tree_logs("Logs", self.config.logs)
         self.tree_grid("Grid X", self.config.grid_x)
         self.tree_grid("Grid Y", self.config.grid_x)

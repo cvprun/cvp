@@ -20,7 +20,7 @@ class OnvifTabInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self, onvif: OnvifConfig) -> None:
+    def on_process(self, onvif: OnvifConfig) -> None:
         raise NotImplementedError
 
 

@@ -35,7 +35,7 @@ class AppearancePreference(BasePreference):
             return NOT_FOUND_INDEX
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         theme_result = imgui.combo("Theme", self.theme_index, self._theme_names)
         theme_changed, theme_index = theme_result
         assert isinstance(theme_changed, bool)

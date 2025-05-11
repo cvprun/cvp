@@ -40,11 +40,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
         pass
 
     @override
-    def do_event(self, event: Event) -> bool:
+    def on_event(self, event: Event) -> bool:
         return False
 
     @override
-    def do_msg(self, msg: Msg) -> bool:
+    def on_msg(self, msg: Msg) -> bool:
         return False
 
     @override
@@ -52,7 +52,7 @@ class BaseMode(ModeInterface, BaseModeProtocol):
         pass
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         pass
 
     def get_selected_submenu(self, *, suffix=None) -> str:

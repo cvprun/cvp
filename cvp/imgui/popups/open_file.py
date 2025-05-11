@@ -159,8 +159,8 @@ class OpenFilePopup(PopupBase[str]):
         try:
             return self.do_main_process()
         finally:
-            self._create_directory_popup.do_process()
-            self._remove_item_popup.do_process()
+            self._create_directory_popup.on_process()
+            self._remove_item_popup.on_process()
 
     def do_main_process(self) -> Optional[str]:
         if button(mdi.HOME):

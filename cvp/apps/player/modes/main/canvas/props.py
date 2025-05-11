@@ -14,5 +14,5 @@ class PropsCanvasWindow(BaseWindow):
         super().__init__(context)
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         pass

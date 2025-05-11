@@ -70,7 +70,7 @@ class MediasMode(BaseMode):
         self.medias.remove_all()
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 
@@ -115,8 +115,8 @@ class MediasMode(BaseMode):
             else:
                 text_centered("Please select a item")
 
-        self._confirm_remove.do_process()
-        self._confirm_clear.do_process()
+        self._confirm_remove.on_process()
+        self._confirm_clear.on_process()
 
     def do_media_tab_bar(self, media: MediaConfig) -> None:
         if imgui.begin_tab_bar("Tabs"):
@@ -124,7 +124,7 @@ class MediasMode(BaseMode):
                 for name, tab in self._tabs.items():
                     if imgui.begin_tab_item(name)[0]:
                         try:
-                            tab.do_process(media)
+                            tab.on_process(media)
                         finally:
                             imgui.end_tab_item()
             finally:

@@ -36,7 +36,7 @@ class HashMode(BaseMode):
         return self.context.config.appearance.error_color
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 

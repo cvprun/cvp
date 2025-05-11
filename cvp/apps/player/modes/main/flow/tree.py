@@ -34,7 +34,7 @@ class TreeFlowWindow(BaseWindow):
         return self.context.flows.graphs.get(GraphKey(self.focused_key))
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         if graph := self.focused_graph:
             self.do_child_process(graph)
         else:

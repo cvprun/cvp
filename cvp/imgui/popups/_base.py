@@ -129,7 +129,7 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
         self.show(title, target, oneshot=True)
 
     @override
-    def do_process(self) -> Optional[PopupResultT]:
+    def on_process(self) -> Optional[PopupResultT]:
         if self._visible:
             imgui.open_popup(self.popup_label)
             self._visible = False

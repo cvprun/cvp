@@ -17,7 +17,7 @@ class OnvifInfoTab(BaseOnvifTab):
         super().__init__(context)
 
     @override
-    def do_process(self, onvif: OnvifConfig) -> None:
+    def on_process(self, onvif: OnvifConfig) -> None:
         input_text_disabled("UUID", onvif.key)
         onvif.name = input_text_value("Name", onvif.name)
         onvif.address = input_text_value("Address", onvif.address)

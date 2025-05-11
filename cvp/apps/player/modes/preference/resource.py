@@ -12,5 +12,5 @@ class ResourcePreference(BasePreference):
         super().__init__(context)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         pass

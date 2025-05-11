@@ -327,7 +327,7 @@ class PlayerApplication:
         assert NOEVENT < event.type < NUMEVENTS
         event_logger.debug(f"<Event {event_name(event.type)}> {event.dict}")
 
-        consumed_event = self._modes.current_mode.do_event(event)
+        consumed_event = self._modes.current_mode.on_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -352,7 +352,7 @@ class PlayerApplication:
         args = msg.as_args()
         msg_logger.debug(f"<Msg {name} {uuid}> {args}")
 
-        consumed_msg = self._modes.current_mode.do_msg(msg)
+        consumed_msg = self._modes.current_mode.on_msg(msg)
         if not consumed_msg:
             consumed_msg = self._context.do_activity_msg(msg)
         if not consumed_msg:
@@ -378,7 +378,7 @@ class PlayerApplication:
             self.on_main_menu()
             self.on_status_bar()
             self.on_popups_process()
-            self._modes.current_mode.do_process()
+            self._modes.current_mode.on_process()
 
             if self.debug:
                 self.on_metrics_window()
@@ -484,7 +484,7 @@ class PlayerApplication:
     def on_popups_process(self) -> None:
         """Where to render the popup object."""
 
-        if self._confirm_quit.do_process():
+        if self._confirm_quit.on_process():
             self._context.quit()
 
     def on_metrics_window(self) -> None:

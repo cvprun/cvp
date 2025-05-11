@@ -25,7 +25,7 @@ class NodeFlowWindow(BaseWindow):
         return self.context.flows.nodes
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         if dtype := self.nodes.get(self.selected_submenu):
             self.do_node_process(dtype)
         else:
@@ -53,7 +53,7 @@ class NodesFlowWindow(BaseWindow):
         self._context.set_selected_submenu(NodeFlowWindow, value, suffix=suffix)
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",

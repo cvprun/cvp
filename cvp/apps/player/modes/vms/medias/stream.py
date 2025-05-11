@@ -19,7 +19,7 @@ class MediaStreamTab(BaseMediaTab):
         self._auto_scroll = True
 
     @override
-    def do_process(self, media: MediaConfig) -> None:
+    def on_process(self, media: MediaConfig) -> None:
         process = self.context.medias.get_process(media.key)
         if process is None:
             text_centered("Not found media process")

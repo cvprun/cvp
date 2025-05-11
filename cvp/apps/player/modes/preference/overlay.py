@@ -26,7 +26,7 @@ class OverlayPreference(BasePreference):
         return self.context.config.overlay
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if opened_result := checkbox("Opened", self.config.opened):
             self.config.opened = opened_result.state
 

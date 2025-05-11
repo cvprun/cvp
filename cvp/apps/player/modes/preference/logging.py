@@ -62,7 +62,7 @@ class LoggingPreference(BasePreference):
         self.logging_config_path = file
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         severity_result = imgui.combo(
             "Root Severity",
             self.severity_index,
@@ -101,5 +101,5 @@ class LoggingPreference(BasePreference):
             self._logging_browser.show()
 
     @override
-    def do_postprocess(self) -> None:
-        self._logging_browser.do_process()
+    def on_postprocess(self) -> None:
+        self._logging_browser.on_process()

@@ -75,7 +75,7 @@ class FFmpegPreference(BasePreference):
         imgui.text_colored(self.context.config.appearance.success_color, text)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if imgui.begin_tab_bar(type(self).__name__):
             try:
                 self.do_executable_tab(
@@ -90,8 +90,8 @@ class FFmpegPreference(BasePreference):
                 imgui.end_tab_bar()
 
     @override
-    def do_postprocess(self) -> None:
-        self._executable_browser.do_process()
+    def on_postprocess(self) -> None:
+        self._executable_browser.on_process()
 
     def do_executable_tab(self, filename: str, proxy: ValueProxy[str]) -> None:
         if imgui.begin_tab_item(filename)[0]:

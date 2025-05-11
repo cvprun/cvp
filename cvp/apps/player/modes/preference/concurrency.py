@@ -49,7 +49,7 @@ class ConcurrencyPreference(BasePreference):
         self.config.process_workers = value
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if prefix_result := input_text("Thread Name Prefix", self.thread_name_prefix):
             self.thread_name_prefix = prefix_result.value
             self._show_restart = True

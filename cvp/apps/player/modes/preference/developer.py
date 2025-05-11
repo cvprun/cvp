@@ -35,7 +35,7 @@ class DeveloperPreference(BasePreference):
         self.config.verbose = value
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if debug_result := checkbox("Enable Debug Mode", self.debug):
             self.debug = debug_result.state
             if debug_result.state:

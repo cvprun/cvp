@@ -13,7 +13,7 @@ class DatasetsMode(BaseMode):
         super().__init__(context)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             with begin_child_context("Main"):
                 pass

@@ -24,7 +24,7 @@ class ToastPreference(BasePreference):
         return self.context.config.toast
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         pivot_result = slider_float2(
             "Pivot",
             self.config.pivot_x,

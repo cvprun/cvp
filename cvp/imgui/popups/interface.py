@@ -16,5 +16,5 @@ class PopupInterface(Generic[PopupResultT], ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self) -> Optional[PopupResultT]:
+    def on_process(self) -> Optional[PopupResultT]:
         raise NotImplementedError

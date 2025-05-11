@@ -125,7 +125,7 @@ class CanvasWindow(ControllableCanvas, BaseWindow):
         return f"{canvas_name}###{window_name}/{self._canvas_key}"
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if not self.canvas.opened:
             return
 
@@ -150,7 +150,7 @@ class CanvasWindow(ControllableCanvas, BaseWindow):
             imgui.end()
 
         for popup in self._popups:
-            popup.do_process()
+            popup.on_process()
 
     def do_child_process(self) -> None:
         if imgui.begin_popup_context_window(self._MOUSE_RIGHT_BUTTON_MENU):

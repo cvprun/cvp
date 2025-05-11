@@ -71,7 +71,7 @@ class SupabasePreference(BasePreference):
         return int(flags)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         client_status = self.context.get_supabase_client_status()
         self.do_client_process(
             has_client=client_status.has_client,

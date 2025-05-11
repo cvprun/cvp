@@ -266,7 +266,7 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
         return f"{graph_name}###{window_name}/{self._graph_key}"
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         if not self.graph.opened:
             return
 
@@ -290,7 +290,7 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
         finally:
             imgui.end()
 
-        self._new_variable_popup.do_process()
+        self._new_variable_popup.on_process()
 
     def do_child_process(self) -> None:
         if payload := accept_target():

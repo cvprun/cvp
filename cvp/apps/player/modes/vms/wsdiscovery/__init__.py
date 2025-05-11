@@ -156,7 +156,7 @@ class WsDiscoveryMode(BaseMode):
         self.wsdiscovery.remove_all()
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 
@@ -208,8 +208,8 @@ class WsDiscoveryMode(BaseMode):
             else:
                 text_centered("Please select a item")
 
-        self._confirm_remove.do_process()
-        self._confirm_clear.do_process()
+        self._confirm_remove.on_process()
+        self._confirm_clear.on_process()
 
     def do_discovery_process(self, running: bool) -> None:
         imgui.text("Web Services Dynamic Discovery")

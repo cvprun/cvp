@@ -57,7 +57,7 @@ class MediaInfoTab(BaseMediaTab):
             self.context.toast(f"Inspection failed: '{e}'")
 
     @override
-    def do_process(self, media: MediaConfig) -> None:
+    def on_process(self, media: MediaConfig) -> None:
         input_text_disabled("UUID", media.key)
 
         media.name = input_text_value("Name", media.name)

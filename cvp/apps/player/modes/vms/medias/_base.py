@@ -20,7 +20,7 @@ class MediaTabInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self, media: MediaConfig) -> None:
+    def on_process(self, media: MediaConfig) -> None:
         raise NotImplementedError
 
 

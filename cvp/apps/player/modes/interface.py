@@ -24,11 +24,11 @@ class ModeInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_event(self, event: Event) -> bool:
+    def on_event(self, event: Event) -> bool:
         raise NotImplementedError
 
     @abstractmethod
-    def do_msg(self, msg: Msg) -> bool:
+    def on_msg(self, msg: Msg) -> bool:
         raise NotImplementedError
 
     @abstractmethod
@@ -36,7 +36,7 @@ class ModeInterface(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         raise NotImplementedError
 
 

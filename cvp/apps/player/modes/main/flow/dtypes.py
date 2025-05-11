@@ -25,7 +25,7 @@ class DtypeFlowWindow(BaseWindow):
         return self.context.flows.dtypes
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         if dtype := self.dtypes.get(self.selected_submenu):
             self.do_dtype_process(dtype)
         else:
@@ -53,7 +53,7 @@ class DtypesFlowWindow(BaseWindow):
         self._context.set_selected_submenu(DtypeFlowWindow, value, suffix=suffix)
 
     @override
-    def do_main_process(self) -> None:
+    def on_main_process(self) -> None:
         with align_right_side_context():
             filter_result = imgui.input_text_with_hint(
                 "###Filter",

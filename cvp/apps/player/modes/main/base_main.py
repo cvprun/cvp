@@ -101,11 +101,11 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
         self._layout.do_status_menu()
 
     @override
-    def do_event(self, event: Event) -> bool:
+    def on_event(self, event: Event) -> bool:
         return self._layout.do_event(event)
 
     @override
-    def do_msg(self, msg: Msg) -> bool:
+    def on_msg(self, msg: Msg) -> bool:
         return self._layout.do_msg(msg)
 
     @override
@@ -113,7 +113,7 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
         self._layout.do_keyboard(keys)
 
     @override
-    def do_process(self) -> None:
+    def on_process(self) -> None:
         self._layout.do_dockspace_process()
         self.do_sync_main_windows()
         self._layout.do_process(self._module)
