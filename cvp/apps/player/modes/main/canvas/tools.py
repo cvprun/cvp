@@ -12,9 +12,9 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-class PropsCanvasWindow(BaseWindow):
-    __cvp_window_name__ = "Props"
-    __cvp_window_position__ = DockPosition.right_top
+class ToolsCanvasWindow(BaseWindow):
+    __cvp_window_name__ = "Tools"
+    __cvp_window_position__ = DockPosition.left_top
 
     def __init__(self, context: Context):
         super().__init__(context)

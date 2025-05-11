@@ -123,7 +123,7 @@ class MainLayout:
                 case DockPosition.left_bottom:
                     return dock_left_bottom
                 case DockPosition.center_top:
-                    assert False, "Inaccessible section"
+                    return dock_center_top
                 case DockPosition.center_bottom:
                     return dock_center_bottom
                 case DockPosition.right_top:
