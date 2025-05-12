@@ -20,6 +20,7 @@ class ModeManager:
         from cvp.apps.player.modes.cms.datasets import DatasetsMode
         from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
+        from cvp.apps.player.modes.cv.image import ImageMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flow import FlowMode
@@ -43,6 +44,7 @@ class ModeManager:
 
         self.binary_text_mode = BinaryTextMode(context)
         self.canvas_mode = CanvasMode(self._main_layout)
+        self.channels_mode = ImageMode(context)
         self.chat_mode = ChatMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.download_mode = DownloaderMode(context)
@@ -72,7 +74,7 @@ class ModeManager:
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
-                "Computer Vision": (self.object_tracker_mode,),
+                "Computer Vision": (self.channels_mode, self.object_tracker_mode,),
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Games": (self.tetrix_mode,),
