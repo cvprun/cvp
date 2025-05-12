@@ -40,13 +40,13 @@ from cvp.variables import (
 )
 from cvp.wsdiscovery.wsd import WsDiscovery
 
-_MENU_SPLIT_X: Final[int] = 300
-_MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
-
 
 class WsDiscoveryMode(BaseMode):
     __cvp_mode_name__ = "WsDiscovery"
     __cvp_mode_icon__ = MOVIE_SEARCH
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -100,9 +100,9 @@ class WsDiscoveryMode(BaseMode):
 
     def on_discovery_main(
         self,
-        address: Optional[None] = None,
+        address: Optional[str] = None,
         port: Optional[int] = None,
-        timeout: Optional[int] = None,
+        timeout: Optional[float] = None,
         multicast_repeat=WSD_MULTICAST_UDP_REPEAT,
         unicast_repeat=WSD_UNICAST_UDP_REPEAT,
         relates_to=WSD_RELATES_TO,
@@ -162,16 +162,12 @@ class WsDiscoveryMode(BaseMode):
         with self.begin_mode_context():
             self.do_child_process()
 
-    def do_child_process(
-        self,
-        menu_split_x=_MENU_SPLIT_X,
-        menu_child_flags=_MENU_CHILD_FLAGS,
-    ) -> None:
+    def do_child_process(self) -> None:
         running = self._discovery_runner.running
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if running:
                 imgui.begin_disabled()

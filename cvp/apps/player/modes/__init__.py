@@ -27,7 +27,7 @@ class ModeManager:
         from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.main.layout import MainLayout
         from cvp.apps.player.modes.network.downloader import DownloaderMode
-        from cvp.apps.player.modes.network.sock_map import SockMapMode
+        from cvp.apps.player.modes.network.sockmap import SockmapMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.system.terminal import TerminalMode
         from cvp.apps.player.modes.vms.medias import MediasMode
@@ -55,7 +55,7 @@ class ModeManager:
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
-        self.sock_map = SockMapMode(context)
+        self.sock_map = SockmapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)

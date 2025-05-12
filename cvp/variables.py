@@ -107,6 +107,11 @@ WSD_UNICAST_UDP_REPEAT: Final[int] = 2
 WSD_MULTICAST_UDP_REPEAT: Final[int] = 4
 WSD_RELATES_TO: Final[bool] = True
 
+SOCKMAP_ADDRESS_BEGIN: Final[str] = "192.168.0.1"
+SOCKMAP_ADDRESS_END: Final[str] = "192.168.0.254"
+SOCKMAP_PORT_RANGE: Final[str] = "80,443"
+SOCKMAP_TIMEOUT: Final[float] = 3.0
+
 ONVIF_NONAME: Final[str] = "New Device"
 ONVIF_ADDRESS: Final[str] = "http://localhost/"
 
