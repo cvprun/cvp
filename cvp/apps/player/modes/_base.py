@@ -15,6 +15,7 @@ from cvp.types.override import override
 @runtime_checkable
 class BaseModeProtocol(Protocol):
     __cvp_mode_name__: str
+    __cvp_mode_icon__: str
 
 
 class BaseMode(ModeInterface, BaseModeProtocol):
@@ -30,6 +31,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @override
     def get_mode_name(cls) -> str:
         return cls.__cvp_mode_name__
+
+    @classmethod
+    @override
+    def get_mode_icon(cls) -> str:
+        return cls.__cvp_mode_icon__
 
     @override
     def on_main_menu(self) -> None:

@@ -9,6 +9,7 @@ from cvp.apps.player.modes.main.base_main import BaseMainMode
 from cvp.apps.player.modes.main.flow.graph import GraphFlowWindow
 from cvp.apps.player.modes.main.interface import WindowInterface
 from cvp.apps.player.modes.main.layout import MainLayout
+from cvp.assets.fonts.mdi import APPLICATION_VARIABLE_OUTLINE
 from cvp.flow.graph import GraphKey
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
@@ -19,6 +20,7 @@ from cvp.types.override import override
 
 class FlowMode(BaseMainMode):
     __cvp_mode_name__ = "Flow"
+    __cvp_mode_icon__ = APPLICATION_VARIABLE_OUTLINE
 
     def __init__(self, layout: MainLayout):
         self._new_graph_popup = InputTextPopup(

@@ -7,6 +7,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.preference._base import BasePreference, PreferenceInterface
 from cvp.apps.player.modes.preference._manager import create_preference_widgets
+from cvp.assets.fonts.mdi import COG
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
@@ -17,6 +18,7 @@ from cvp.types.override import override
 
 class PreferenceMode(BaseMode):
     __cvp_mode_name__ = "Preference"
+    __cvp_mode_icon__ = COG
 
     _MENU_SPLIT_X: Final[int] = 150
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

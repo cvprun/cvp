@@ -5,6 +5,7 @@ from typing import Final, List
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import CHAT
 from cvp.chat.cache import ChatCache
 from cvp.chat.ids import INVALID_CONVERSATION_ID
 from cvp.context.context import Context
@@ -35,6 +36,7 @@ from cvp.variables import (
 
 class ChatMode(BaseMode):
     __cvp_mode_name__ = "Chat"
+    __cvp_mode_icon__ = CHAT
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

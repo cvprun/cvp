@@ -5,6 +5,7 @@ from typing import Final, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import FILE_LOCK
 from cvp.context.context import Context
 from cvp.hashfunc.checksum import HashFunction, checksum
 from cvp.imgui.begin_child import begin_child_context
@@ -18,6 +19,7 @@ from cvp.types.override import override
 
 class HashMode(BaseMode):
     __cvp_mode_name__ = "Hash Functions"
+    __cvp_mode_icon__ = FILE_LOCK
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

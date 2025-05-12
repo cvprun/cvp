@@ -5,6 +5,7 @@ from typing import Final
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import CLOUD_DOWNLOAD
 from cvp.context.context import Context
 from cvp.download.item import DownloadItem
 from cvp.imgui.begin_child import begin_child_context
@@ -19,6 +20,7 @@ from cvp.types.override import override
 
 class DownloaderMode(BaseMode):
     __cvp_mode_name__ = "Downloader"
+    __cvp_mode_icon__ = CLOUD_DOWNLOAD
 
     _TOP_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y
 

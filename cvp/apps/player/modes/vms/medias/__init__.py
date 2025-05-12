@@ -8,6 +8,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.vms.medias._base import BaseMediaTab, MediaTabInterface
+from cvp.assets.fonts.mdi import FILMSTRIP
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -34,6 +35,7 @@ def create_media_tabs(context: Context) -> OrderedDict[str, MediaTabInterface]:
 
 class MediasMode(BaseMode):
     __cvp_mode_name__ = "Medias"
+    __cvp_mode_icon__ = FILMSTRIP
 
     def __init__(self, context: Context):
         super().__init__(context)

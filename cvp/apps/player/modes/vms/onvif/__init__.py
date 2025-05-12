@@ -8,6 +8,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.vms.onvif._base import BaseOnvifTab
+from cvp.assets.fonts.mdi import MOVIE_COG
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -36,6 +37,7 @@ def create_onvif_tabs(context: Context):
 
 class OnvifMode(BaseMode):
     __cvp_mode_name__ = "Onvif"
+    __cvp_mode_icon__ = MOVIE_COG
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

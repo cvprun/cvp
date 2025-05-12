@@ -7,6 +7,7 @@ import numpy as np
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import ALPHA_T_BOX_OUTLINE
 from cvp.config.sections.games.tetrix import (
     DEFAULT_BOARD_COLS,
     DEFAULT_BOARD_ROWS,
@@ -67,6 +68,7 @@ BLOCKS: Final[Sequence[BlockShapeType]] = (
 
 class TetrixMode(BaseMode):
     __cvp_mode_name__ = "TetriX"
+    __cvp_mode_icon__ = ALPHA_T_BOX_OUTLINE
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

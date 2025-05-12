@@ -8,6 +8,7 @@ from faker.providers import BaseProvider
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import FILE_QUESTION
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.combo import combo
@@ -68,6 +69,7 @@ def _get_language_locale_codes() -> List[str]:
 
 class FakerMode(BaseMode):
     __cvp_mode_name__ = "Faker"
+    __cvp_mode_icon__ = FILE_QUESTION
 
     _MENU_SPLIT_X: Final[int] = 250
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

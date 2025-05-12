@@ -9,6 +9,7 @@ from cvp.apps.player.modes.main.base_main import BaseMainMode
 from cvp.apps.player.modes.main.canvas.canvas import CanvasWindow
 from cvp.apps.player.modes.main.interface import WindowInterface
 from cvp.apps.player.modes.main.layout import MainLayout
+from cvp.assets.fonts.mdi import DRAWING
 from cvp.canvas.canvas import CanvasKey
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
@@ -19,6 +20,7 @@ from cvp.types.override import override
 
 class CanvasMode(BaseMainMode):
     __cvp_mode_name__ = "Canvas"
+    __cvp_mode_icon__ = DRAWING
 
     def __init__(self, layout: MainLayout):
         self._new_canvas_popup = InputTextPopup(

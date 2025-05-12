@@ -6,6 +6,7 @@ from typing import Final, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import HEXADECIMAL
 from cvp.context.context import Context
 from cvp.encoding.binary_text import (
     BinaryToText,
@@ -22,6 +23,7 @@ from cvp.types.override import override
 
 class BinaryTextMode(BaseMode):
     __cvp_mode_name__ = "Binary-to-Text"
+    __cvp_mode_icon__ = HEXADECIMAL
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS

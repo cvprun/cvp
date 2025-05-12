@@ -7,6 +7,7 @@ from imgui_bundle import imgui
 from wsdiscovery import WSDiscovery
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import MOVIE_SEARCH
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -45,6 +46,7 @@ _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
 class WsDiscoveryMode(BaseMode):
     __cvp_mode_name__ = "WsDiscovery"
+    __cvp_mode_icon__ = MOVIE_SEARCH
 
     def __init__(self, context: Context):
         super().__init__(context)

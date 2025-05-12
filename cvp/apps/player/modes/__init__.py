@@ -149,12 +149,14 @@ class ModeManager:
         self.preference_mode.layout_menu.load_layout(filename)
 
     def _mode_menu_item(self, mode: ModeInterface) -> None:
+        icon = mode.get_mode_icon()
         name = mode.get_mode_name()
+        label = f"{icon} {name}"
         number = -1  # mode.get_mode_number()
         selected = name == self.mode_key
         shortcut = f"Alt+{number}" if 0 <= number <= 9 else None
         enabled = not selected
-        if menu_item(name, selected=selected, shortcut=shortcut, enabled=enabled):
+        if menu_item(label, selected=selected, shortcut=shortcut, enabled=enabled):
             self.mode_key = name
 
     def do_menu_process(self) -> None:
