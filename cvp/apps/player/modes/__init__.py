@@ -74,7 +74,7 @@ class ModeManager:
         self._submenu_modes = OrderedDict(
             {
                 "CMS": (self.files_mode,),
-                "Computer Vision": (self.channels_mode, self.object_tracker_mode,),
+                "Computer Vision": (self.channels_mode, self.object_tracker_mode),
                 "Cryptography": (self.hash_mode,),
                 "Encoding": (self.binary_text_mode,),
                 "Games": (self.tetrix_mode,),

@@ -105,10 +105,10 @@ class Texture:
             pixels,
         )
 
-    def update_rgb_texture(self, pixels: Optional[bytes] = None) -> None:
+    def update_with_rgb_pixels(self, pixels: Optional[bytes] = None) -> None:
         self._update_texture(GL.GL_RGB, pixels)
 
-    def update_alpha_texture(self, pixels: Optional[bytes] = None) -> None:
+    def update_with_alpha_pixels(self, pixels: Optional[bytes] = None) -> None:
         self._update_texture(GL.GL_ALPHA, pixels)
 
     def _clear_texture_sub_image_2d(self) -> None:

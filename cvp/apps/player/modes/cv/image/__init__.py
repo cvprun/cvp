@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, Optional, Sequence, Tuple
-from weakref import finalize
+from typing import Callable, Final, Sequence, Tuple
 
-import cv2
-from imgui_bundle import imgui, immvision
-from numpy import uint8
-from numpy.typing import NDArray
+from imgui_bundle import imgui
 from pygame import DROPFILE
 from pygame.event import Event
 
@@ -19,6 +15,7 @@ from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.widgets.canvas.image import ImageCanvas
 from cvp.types.override import override
 
 
@@ -30,12 +27,9 @@ class ImageMode(BaseMode):
     _CANVAS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     _menus: Sequence[Tuple[str, Callable[[], None]]]
-    _image: Optional[NDArray[uint8]]
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._image = None
-        self._params = immvision.ImageParams()
         self._open_image_popup = OpenFilePopup(
             title="Load image",
             target=self.on_load_image,
@@ -43,6 +37,7 @@ class ImageMode(BaseMode):
 
         self._menus = (("File", self.on_file_menu),)
         self._popups = PopupList((self._open_image_popup,))
+        self._canvas = ImageCanvas()
 
     @override
     def on_main_menu(self) -> None:
@@ -60,13 +55,13 @@ class ImageMode(BaseMode):
     @override
     def on_event(self, event: Event) -> bool:
         if event.type == DROPFILE:
-            self._image = cv2.imread(event.file)
+            # event.file
             return True
 
         return False
 
     def on_load_image(self, file: str) -> None:
-        self._image = cv2.imread(file)
+        pass
 
     def on_file_menu(self) -> None:
         if menu_item("Open image"):
@@ -86,7 +81,7 @@ class ImageMode(BaseMode):
                 size=(self._CANVAS_SPLIT_X, 0),
                 child_flags=self._CANVAS_CHILD_FLAGS,
             ):
-                pass
+                self._canvas.do_process()
 
             imgui.same_line()
 
