@@ -10,6 +10,9 @@ class ImageCanvas(ControllableCanvas):
         self._texture = NumpyTexture()
 
     def do_process(self):
+        if not self._texture.opened:
+            return
+
         texture_id = self._texture.texture_id
         p1 = self.p1
         p2 = self.p2
