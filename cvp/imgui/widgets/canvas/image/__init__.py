@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Any, Optional
 
 from imgui_bundle import imgui
 from numpy import uint8
 from numpy.typing import NDArray
+from PIL.Image import Image
 
 from cvp.canvas.canvas import CanvasProps
 from cvp.gl.textures.numpy import FilePathLike, NumpyTexture
@@ -18,17 +19,39 @@ class ImageCanvas(ControllableCanvas):
         self._texture = NumpyTexture()
         self._props = props if props else CanvasProps()
 
+    @property
+    def opened(self) -> bool:
+        return self._texture.opened
+
     def open_with_empty(self, width: int, height: int, channels: int) -> None:
         if self._texture.opened:
             self._texture.close()
         assert not self._texture.opened
         self._texture.open_with_empty(width, height, channels)
 
+    def open_with_filled(
+        self,
+        width: int,
+        height: int,
+        channels: int,
+        color: Any,
+    ) -> None:
+        if self._texture.opened:
+            self._texture.close()
+        assert not self._texture.opened
+        self._texture.open_with_filled(width, height, channels, color)
+
     def open_with_file(self, file: FilePathLike) -> None:
         if self._texture.opened:
             self._texture.close()
         assert not self._texture.opened
         self._texture.open_with_file(file)
+
+    def open_with_pillow(self, image: Image) -> None:
+        if self._texture.opened:
+            self._texture.close()
+        assert not self._texture.opened
+        self._texture.open_with_pillow(image)
 
     def open_with_numpy(self, array: NDArray[uint8], *, use_deepcopy=False) -> None:
         if self._texture.opened:

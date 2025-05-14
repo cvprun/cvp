@@ -3,6 +3,8 @@
 from typing import Callable, Final, Sequence, Tuple
 
 from imgui_bundle import imgui
+from PIL.Image import Image
+from PIL.Image import open as pillow_open
 from pygame import DROPFILE
 from pygame.event import Event
 
@@ -11,6 +13,8 @@ from cvp.assets.fonts.mdi import IMAGE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.input_int2 import input_int2
+from cvp.imgui.input_text import input_text
 from cvp.imgui.menu_item_ex import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
@@ -38,16 +42,27 @@ class ImageMode(BaseMode):
 
         self._menus = (("File", self.on_file_menu),)
         self._popups = PopupList((self._open_image_popup,))
+
+        self._path = str()
         self._canvas = ImageCanvas()
+        self._image = Image()
 
     def open_image_file(self, file: str) -> None:
         try:
-            self._canvas.open_with_file(file)
+            self._path = file
+            self._image = pillow_open(file)
+            self._canvas.open_with_pillow(self._image)
             self.add_recent_item(file)
             logger.info(f"Image file opened: '{file}'")
         except BaseException as e:
             logger.error(f"Failed to open image file '{file}': {e}")
             raise
+
+    def close(self) -> None:
+        self._path = str()
+        self._image = Image()
+        self._canvas.close()
+        logger.info("Image file closed")
 
     @override
     def on_main_menu(self) -> None:
@@ -102,6 +117,16 @@ class ImageMode(BaseMode):
             imgui.same_line()
 
             with begin_child_context("Infos"):
-                text_centered("Please open the image")
+                if self._canvas.opened:
+                    self.on_image_controller()
+                else:
+                    text_centered("Please open the image")
 
         self._popups.do_process()
+
+    def on_image_controller(self) -> None:
+        input_text("File", self._path)
+
+        width = self._image.width
+        height = self._image.height
+        input_int2("Size", width, height)

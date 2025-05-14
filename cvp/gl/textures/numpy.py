@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
-from typing import IO, Literal, Optional, Tuple, Union
+from typing import IO, Any, Literal, Optional, Tuple, Union
 from weakref import finalize
 
 import numpy as np
-from numpy import ndarray, uint8, zeros
+from numpy import full, ndarray, uint8, zeros
 from numpy.typing import NDArray
-from PIL import Image
+from PIL.Image import Image
+from PIL.Image import fromarray as pillow_from_array
+from PIL.Image import open as pillow_open
 
 from cvp.gl.textures.data_type import TextureDataType
 from cvp.gl.textures.filter import TextureFilter
@@ -106,29 +108,27 @@ class NumpyTexture:
             border_width=border_width,
         )
 
-        # result = Texture()
-        # result.open(width, height)
-        # with result:
-        #     result.update_rgb_pixels(pixels)
-        # return result
-
     def open_with_empty(self, width: int, height: int, channels: int) -> None:
-        if self._array is not None:
-            raise ValueError("Image not closed")
+        self.open_with_numpy(zeros((height, width, channels), dtype=uint8))
 
-        assert self._texture is None
-        assert self._finalizer is None
-        self._array = zeros((height, width, channels), dtype=uint8)
-        self._texture = self._create_texture(self._array)
-        self._finalizer = finalize(self, _close_texture, self._texture)
+    def open_with_filled(
+        self,
+        width: int,
+        height: int,
+        channels: int,
+        color: Any,
+    ) -> None:
+        self.open_with_numpy(full((height, width, channels), color, dtype=uint8))
 
     def open_with_file(self, file: FilePathLike) -> None:
+        self.open_with_pillow(pillow_open(file))
+
+    def open_with_pillow(self, image: Image) -> None:
         if self._array is not None:
             raise ValueError("Image not closed")
 
         assert self._texture is None
         assert self._finalizer is None
-        image = Image.open(file)
         self._array = np.array(image)
         self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
@@ -186,7 +186,7 @@ class NumpyTexture:
         return self.width, self.height
 
     def as_pillow_image(self):
-        return Image.fromarray(self._array)
+        return pillow_from_array(self._array)
 
     def commit(self) -> None:
         with self.texture:

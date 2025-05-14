@@ -109,6 +109,9 @@ MANIFEST
 .tox/
 .coverage
 
+# isort
+.isorted
+
 #############
 ### C/C++ ###
 *.so
