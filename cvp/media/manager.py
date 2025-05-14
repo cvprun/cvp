@@ -253,7 +253,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
             raise KeyError(f"Texture is not exists: '{key}'")
 
         with texture:
-            texture.update_with_rgb_pixels(pixels)
+            texture.update_rgb_pixels(pixels)
 
         return texture.texture_id
 

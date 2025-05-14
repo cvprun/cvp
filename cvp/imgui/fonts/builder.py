@@ -79,7 +79,7 @@ class FontBuilder:
         texture = Texture()
         texture.open(width, height)
         with texture:
-            texture.update_with_alpha_pixels(pixels)
+            texture.update_alpha_pixels(pixels)
         return texture
 
     def _create_blocks(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[BlockRange]:
