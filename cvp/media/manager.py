@@ -255,7 +255,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
         with texture:
             texture.update_with_rgb_pixels(pixels)
 
-        return texture.texture
+        return texture.texture_id
 
     def get_latest_texture(self, key: MediaKey) -> Optional[int]:
         try:

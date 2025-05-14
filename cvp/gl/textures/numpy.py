@@ -107,7 +107,7 @@ class NumpyTexture:
 
     @property
     def texture_id(self) -> int:
-        return self._texture.texture if self._texture else 0
+        return self._texture.texture_id if self._texture else 0
 
     @property
     def height(self) -> int:
