@@ -5,7 +5,7 @@ from typing import Iterable, List
 from cvp.types.shapes import Point, Rect
 
 
-def rescale_points(
+def scale_points(
     src_points: Iterable[Point],
     src_roi: Rect,
     dest_roi: Rect,

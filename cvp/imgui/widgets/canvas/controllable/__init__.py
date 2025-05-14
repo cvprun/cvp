@@ -22,6 +22,11 @@ from cvp.imgui.slider_float import slider_float
 from cvp.imgui.widgets.canvas.controllable.props import ControllableProps
 from cvp.imgui.widgets.canvas.controllable.result import ControllableResult
 from cvp.types.shapes import Point, Rect
+from cvp.variables import (
+    CANVAS_ZOOM_FACTOR,
+    CANVAS_ZOOM_MAX_SCALE,
+    CANVAS_ZOOM_MIN_SCALE,
+)
 
 
 class ControllableCanvas(ControllableProps):
@@ -38,9 +43,9 @@ class ControllableCanvas(ControllableProps):
         self._pan_flags = 0
 
         self._zoom_label = "Zoom"
-        self._zoom_step = 0.02
-        self._zoom_min = 0.01
-        self._zoom_max = 10.0
+        self._zoom_factor = CANVAS_ZOOM_FACTOR
+        self._zoom_min = CANVAS_ZOOM_MAX_SCALE
+        self._zoom_max = CANVAS_ZOOM_MIN_SCALE
         self._zoom_fmt = "%.2f"
         self._zoom_flags = 0
 
@@ -284,9 +289,9 @@ class ControllableCanvas(ControllableProps):
 
             if self.hovering and io.mouse_wheel != 0:
                 if io.mouse_wheel > 0:
-                    zoom += self._zoom_step
+                    zoom *= self._zoom_factor ** abs(io.mouse_wheel)
                 elif io.mouse_wheel < 0:
-                    zoom -= self._zoom_step
+                    zoom /= self._zoom_factor ** abs(io.mouse_wheel)
 
             if zoom > self._zoom_max:
                 zoom = self._zoom_max
