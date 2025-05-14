@@ -16,6 +16,7 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.image import ImageCanvas
+from cvp.logging.logging import logger
 from cvp.types.override import override
 
 
@@ -39,6 +40,15 @@ class ImageMode(BaseMode):
         self._popups = PopupList((self._open_image_popup,))
         self._canvas = ImageCanvas()
 
+    def open_image_file(self, file: str) -> None:
+        try:
+            self._canvas.open_with_file(file)
+            self.add_recent_item(file)
+            logger.info(f"Image file opened: '{file}'")
+        except BaseException as e:
+            logger.error(f"Failed to open image file '{file}': {e}")
+            raise
+
     @override
     def on_main_menu(self) -> None:
         for name, func in self._menus:
@@ -55,13 +65,13 @@ class ImageMode(BaseMode):
     @override
     def on_event(self, event: Event) -> bool:
         if event.type == DROPFILE:
-            # event.file
+            self.open_image_file(event.file)
             return True
 
         return False
 
     def on_load_image(self, file: str) -> None:
-        pass
+        self.open_image_file(file)
 
     def on_file_menu(self) -> None:
         if menu_item("Open image"):
@@ -69,7 +79,13 @@ class ImageMode(BaseMode):
         imgui.separator()
         if imgui.begin_menu("Recent images"):
             try:
-                pass
+                for item in self.get_recent_items():
+                    if menu_item(item.value):
+                        self.open_image_file(item.value)
+                        self.add_recent_item(item.value)
+                imgui.separator()
+                if menu_item("Clear recent items"):
+                    self.clear_recent_items()
             finally:
                 imgui.end_menu()
 

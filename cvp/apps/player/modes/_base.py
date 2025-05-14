@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Protocol, runtime_checkable
+from datetime import datetime
+from typing import Optional, Protocol, runtime_checkable
 
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
@@ -74,6 +75,26 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @selected_submenu.setter
     def selected_submenu(self, value: str) -> None:
         self.set_selected_submenu(value)
+
+    def get_recent_items(self, *, suffix=None):
+        return self._context.get_recent_items(type(self), suffix=suffix)
+
+    def add_recent_item(
+        self,
+        value: str,
+        accessed_at: Optional[datetime] = None,
+        *,
+        suffix=None,
+    ) -> None:
+        self._context.add_recent_item(
+            type(self),
+            value,
+            accessed_at,
+            suffix=suffix,
+        )
+
+    def clear_recent_items(self, *, suffix=None) -> None:
+        self._context.clear_recent_items(type(self), suffix=suffix)
 
     def begin_mode_context(self):
         return begin_mode_context(type(self).__name__)

@@ -20,6 +20,27 @@ class TextureDataType(StrEnum):
     int = auto()
     float = auto()
 
+    @classmethod
+    def from_dtype(cls, dtype: DTypeLike):
+        if dtype == uint8:
+            return cls.unsigned_byte
+        elif dtype == int8:
+            return cls.byte
+        elif dtype == uint8:
+            return cls.bitmap
+        elif dtype == uint16:
+            return cls.unsigned_short
+        elif dtype == int16:
+            return cls.short
+        elif dtype == uint32:
+            return cls.unsigned_int
+        elif dtype == int32:
+            return cls.int
+        elif dtype == float32:
+            return cls.float
+        else:
+            raise ValueError(f"Unsupported numpy dtype: {dtype}")
+
 
 @lru_cache
 def texture_data_type_mapping() -> MappingProxyType[TextureDataType, GL.Constant]:

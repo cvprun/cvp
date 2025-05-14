@@ -451,6 +451,7 @@ class Texture:
         data_type: Optional[TextureDataType] = None,
         *,
         level_of_detail=BASE_IMAGE_LEVEL,
+        array=None,
     ) -> bytes:
         if not self._bound:
             raise ValueError("Texture is not bound")
@@ -469,6 +470,7 @@ class Texture:
             level_of_detail,
             gl_pix_format,
             gl_data_type,
+            array,
         )
 
         assert isinstance(result, bytes)

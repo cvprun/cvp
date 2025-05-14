@@ -73,6 +73,11 @@ class NavigationConfig:
     def set_recent_infinite(self, cls: Type, *, suffix=None) -> None:
         self.set_recent_max(cls, INFINITE, suffix=suffix)
 
+    def clear_recent_items(self, cls: Type, *, suffix=None) -> None:
+        category_key = self.generate_category_key(cls, suffix=suffix)
+        if category_key in self.recent_items:
+            del self.recent_items[category_key]
+
     def find_recent_index(self, cls: Type, value: str, *, suffix=None) -> int:
         category_key = self.generate_category_key(cls, suffix=suffix)
         items = self.recent_items.get(category_key)

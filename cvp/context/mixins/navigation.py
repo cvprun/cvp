@@ -43,3 +43,6 @@ class NavigationMixin(BaseContextMixin):
         suffix: Optional[Any] = None,
     ) -> None:
         self._config.navigation.add_recent_item(cls, value, accessed_at, suffix=suffix)
+
+    def clear_recent_items(self, cls: Type, *, suffix: Optional[Any] = None) -> None:
+        self._config.navigation.clear_recent_items(cls, suffix=suffix)

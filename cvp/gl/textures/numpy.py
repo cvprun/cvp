@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
-from typing import IO, Optional, Tuple, Union
+from typing import IO, Literal, Optional, Tuple, Union
 from weakref import finalize
 
 import numpy as np
@@ -9,7 +9,13 @@ from numpy import ndarray, uint8, zeros
 from numpy.typing import NDArray
 from PIL import Image
 
+from cvp.gl.textures.data_type import TextureDataType
+from cvp.gl.textures.filter import TextureFilter
+from cvp.gl.textures.format import TextureFormat
+from cvp.gl.textures.internal_format import TextureInternalFormat
 from cvp.gl.textures.texture import Texture
+from cvp.gl.textures.wrap import TextureWrap
+from cvp.types.colors import BLACK_RGBA
 
 FilePathLike = Union[str, bytes, PathLike[str], PathLike[bytes], IO[bytes]]
 
@@ -50,6 +56,62 @@ class NumpyTexture:
     def opened(self) -> bool:
         return self._array is not None
 
+    @classmethod
+    def _create_texture(
+        cls,
+        array: NDArray[uint8],
+        *,
+        internal_format=TextureInternalFormat.rgb8,
+        min_filter=TextureFilter.linear,
+        mag_filter=TextureFilter.linear,
+        wrap_s=TextureWrap.clamp_to_border,
+        wrap_t=TextureWrap.clamp_to_border,
+        use_mipmaps=False,
+        border_color=BLACK_RGBA,
+        level_of_detail=Texture.BASE_IMAGE_LEVEL,
+        border_width: Literal[0, 1] = 0,
+    ):
+        if len(array.shape) == 2:
+            pix_format = TextureFormat.luminance
+        elif len(array.shape) == 3:
+            channels = array.shape[2]
+            if channels == 3:
+                pix_format = TextureFormat.rgb
+            elif channels == 4:
+                pix_format = TextureFormat.rgba
+            else:
+                raise ValueError(f"Invalid number of channels: {channels}")
+        else:
+            raise ValueError(f"Invalid number of shape: {len(array.shape)}")
+
+        width = array.shape[1]
+        height = array.shape[0]
+        size = width, height
+        pixels = array.tobytes()
+        data_type = TextureDataType.from_dtype(array.dtype)
+
+        return Texture(
+            size=size,
+            pixels=pixels,
+            internal_format=internal_format,
+            pix_format=pix_format,
+            data_type=data_type,
+            min_filter=min_filter,
+            mag_filter=mag_filter,
+            wrap_s=wrap_s,
+            wrap_t=wrap_t,
+            use_mipmaps=use_mipmaps,
+            border_color=border_color,
+            level_of_detail=level_of_detail,
+            border_width=border_width,
+        )
+
+        # result = Texture()
+        # result.open(width, height)
+        # with result:
+        #     result.update_rgb_pixels(pixels)
+        # return result
+
     def open_with_empty(self, width: int, height: int, channels: int) -> None:
         if self._array is not None:
             raise ValueError("Image not closed")
@@ -57,8 +119,7 @@ class NumpyTexture:
         assert self._texture is None
         assert self._finalizer is None
         self._array = zeros((height, width, channels), dtype=uint8)
-        self._texture = Texture()
-        self._texture.open(width, height)
+        self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
 
     def open_with_file(self, file: FilePathLike) -> None:
@@ -69,20 +130,17 @@ class NumpyTexture:
         assert self._finalizer is None
         image = Image.open(file)
         self._array = np.array(image)
-        self._texture = Texture()
-        self._texture.open(image.width, image.height)
+        self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
 
     def open_with_numpy(self, array: NDArray[uint8], *, use_deepcopy=False) -> None:
         if self._array is not None:
             raise ValueError("Image not closed")
 
-        assert isinstance(array, ndarray)
         assert self._texture is None
         assert self._finalizer is None
         self._array = array.copy() if use_deepcopy else array
-        self._texture = Texture()
-        self._texture.open(self._array.shape[1], self._array.shape[0])
+        self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
 
     def close(self) -> None:
@@ -100,14 +158,20 @@ class NumpyTexture:
 
     @property
     def array(self):
-        if self._array is not None:
-            raise ValueError("Image not closed")
+        if self._array is None:
+            raise ValueError("Image not opened")
         assert isinstance(self._array, ndarray)
         return self._array
 
     @property
+    def texture(self) -> Texture:
+        if self._texture is None:
+            raise ValueError("Image not opened")
+        return self._texture
+
+    @property
     def texture_id(self) -> int:
-        return self._texture.texture_id if self._texture else 0
+        return self._texture.texture_id if self._texture is not None else 0
 
     @property
     def height(self) -> int:
@@ -123,3 +187,11 @@ class NumpyTexture:
 
     def as_pillow_image(self):
         return Image.fromarray(self._array)
+
+    def commit(self) -> None:
+        with self.texture:
+            self.texture.update_pixels(self.array.tobytes())
+
+    def fetch(self) -> None:
+        with self.texture:
+            self.texture.get_pixels(array=self.array)
