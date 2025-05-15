@@ -2,10 +2,10 @@
 
 from unittest import TestCase, main
 
-from cvp.maths.equation.linear.general import GeneralForm
+from cvp.maths.equation.linear.find_point import find_x_given_y_on_line
 
 
-class GeneralTestCase(TestCase):
+class FindPointTestCase(TestCase):
     def test_default(self):
         """
         6 |
@@ -20,9 +20,7 @@ class GeneralTestCase(TestCase):
         x1, y1 = 1, 1
         x2, y2 = 2, 3
         x3, y3 = 3, 5
-        form = GeneralForm.from_coords(x1, y1, x2, y2)
-        self.assertEqual(x3, form.calc_x(y3))
-        self.assertEqual(y3, form.calc_y(x3))
+        self.assertEqual(x3, find_x_given_y_on_line(x1, y1, x2, y2, y3))
 
 
 if __name__ == "__main__":
