@@ -6,6 +6,7 @@ from typing import Sequence
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.interface import ModeInterface, retrieve_mode_instances
+from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.imgui.menu_item_ex import menu_item
 
@@ -20,12 +21,12 @@ class ModeManager:
         from cvp.apps.player.modes.cms.datasets import DatasetsMode
         from cvp.apps.player.modes.cms.files import FilesMode
         from cvp.apps.player.modes.crypto.hash import HashMode
-        from cvp.apps.player.modes.cv.image import ImageMode
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
+        from cvp.apps.player.modes.image import ImageMode
         from cvp.apps.player.modes.main.layout import MainLayout
         from cvp.apps.player.modes.network.downloader import DownloaderMode
         from cvp.apps.player.modes.network.sockmap import SockmapMode
@@ -44,7 +45,7 @@ class ModeManager:
 
         self.binary_text_mode = BinaryTextMode(context)
         self.canvas_mode = CanvasMode(self._main_layout)
-        self.channels_mode = ImageMode(context)
+        self.image_mode = ImageMode(context)
         self.chat_mode = ChatMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.download_mode = DownloaderMode(context)
@@ -70,23 +71,27 @@ class ModeManager:
         # ==============================================================================
 
         self._context = context
-        self._menu_modes = self.flow_mode, self.canvas_mode, self.chat_mode
+        self._menu_modes = (
+            self.flow_mode,
+            self.canvas_mode,
+            self.chat_mode,
+            self.image_mode,
+            self.media_player_mode,
+            self.medias_mode,
+            self.onvif_mode,
+            self.wsdiscovery_mode,
+            self.terminal_mode,
+            self.download_mode,
+            self.sock_map,
+            self.faker_mode,
+            self.hash_mode,
+            self.binary_text_mode,
+            self.files_mode,
+        )
         self._submenu_modes = OrderedDict(
             {
-                "CMS": (self.files_mode,),
-                "Computer Vision": (self.channels_mode, self.object_tracker_mode),
-                "Cryptography": (self.hash_mode,),
-                "Encoding": (self.binary_text_mode,),
-                "Games": (self.tetrix_mode,),
-                "Generators": (self.faker_mode,),
-                "Network": (self.download_mode, self.sock_map),
-                "System": (self.terminal_mode,),
-                "VMS": (
-                    self.media_player_mode,
-                    self.medias_mode,
-                    self.onvif_mode,
-                    self.wsdiscovery_mode,
-                ),
+                f"{mdi.MONITOR_EYE} Computer Vision": (self.object_tracker_mode,),
+                f"{mdi.NINTENDO_GAME_BOY} Games": (self.tetrix_mode,),
             }
         )
 
