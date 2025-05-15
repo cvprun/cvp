@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
-from typing import Final, List, NamedTuple, Sequence, SupportsIndex, Union
+from typing import List, NamedTuple, Sequence, Union
 
-UNICODE_SINGLE_BLOCK_SIZE: Final[int] = 0x100
-COMMENT_PREFIX: Final[str] = "#"
-HEXADECIMAL: Final[SupportsIndex] = 16
+from cvp.variables import COMMENT_PREFIX, HEXADECIMAL, UNICODE_SINGLE_BLOCK_SIZE
 
 
 class BlockRange(NamedTuple):
@@ -19,6 +17,9 @@ class BlockRange(NamedTuple):
 class CodepointRange(NamedTuple):
     begin: int
     end: int
+
+    def as_label(self) -> str:
+        return f"{self.begin:06X}-{self.end:06X}"
 
     def size(self) -> int:
         return abs(self.end - self.begin) + 1

@@ -13,6 +13,8 @@ UNKNOWN_TOTAL_SIZE: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
+COMMENT_PREFIX: Final[str] = "#"
+HEXADECIMAL: Final[int] = 16
 
 CVP_TITLE: Final[str] = "CVP"
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
@@ -29,11 +31,13 @@ MODULE_PATH_SEPARATOR: Final[str] = "."
 CONFIG_VALUE_SEPARATOR: Final[str] = ","
 CHECKSUM_DELIMITER: Final[str] = ":"
 
+UNICODE_SINGLE_BLOCK_SIZE: Final[int] = 0x100
 CODEPOINT_RANGES_EXTENSION: Final[str] = ".ranges"
 CODEPOINT_GLYPHS_EXTENSION: Final[str] = ".glyphs"
 KEYRING_EXTENSION: Final[str] = ".cfg"
 
 FONT_SIZE: Final[int] = 14
+FONT_PREVIEW_SIZE: Final[int] = 48
 FONT_SCALE: Final[float] = 1.0
 FONT_NAME: Final[str] = "Default"
 

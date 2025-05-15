@@ -8,13 +8,8 @@ from typing import Dict, List, Optional, Union
 
 from fontTools.ttLib import TTFont
 
-from cvp.fonts.ranges import (
-    UNICODE_SINGLE_BLOCK_SIZE,
-    BlockRange,
-    CodepointRange,
-    read_ranges,
-)
-from cvp.variables import CODEPOINT_RANGES_EXTENSION
+from cvp.fonts.ranges import BlockRange, CodepointRange, read_ranges
+from cvp.variables import CODEPOINT_RANGES_EXTENSION, UNICODE_SINGLE_BLOCK_SIZE
 
 
 class TTF:

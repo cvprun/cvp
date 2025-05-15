@@ -11,7 +11,7 @@ from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FORMAT_FONT
 from cvp.context.context import Context
 from cvp.fonts.codepoint_info import CodepointInfo
-from cvp.fonts.ranges import UNICODE_SINGLE_BLOCK_SIZE, BlockRange
+from cvp.fonts.ranges import BlockRange
 from cvp.fonts.ttf import TTF
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
@@ -38,11 +38,14 @@ class TTFMode(BaseMode):
     __cvp_mode_name__ = "TTF Font"
     __cvp_mode_icon__ = FORMAT_FONT
 
+    _EMPTY_CODEPOINT_INFO = CodepointInfo(0)
+
     _PLANES_SPLIT_X: Final[int] = 150
     _PLANES_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
-    _CANVAS_SPLIT_X: Final[int] = -300
+    _CANVAS_SPLIT_X: Final[int] = -400
     _CANVAS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+    _INFOS_CHILD_FLAGS: Final[int] = BORDERS
 
     _ttf: Optional[TTF]
     _blocks: List[BlockRange]
@@ -57,8 +60,6 @@ class TTFMode(BaseMode):
 
         self._menus = MenuList(("File", self.on_file_menu))
         self._popups = PopupList(self._open_font_popup)
-        self._font_size = 32
-        self._block_size = UNICODE_SINGLE_BLOCK_SIZE
 
         self._ttf = None
         self._blocks = list()
@@ -91,10 +92,14 @@ class TTFMode(BaseMode):
     def opened(self) -> bool:
         return self._ttf is not None
 
+    @property
+    def path(self) -> str:
+        return str(self._ttf.path) if self._ttf is not None else str()
+
     def open_font_file(self, file: str) -> None:
         try:
             ttf = TTF.from_filepath(file)
-            blocks = ttf.get_block_ranges(self._block_size)
+            blocks = ttf.get_block_ranges(self.config.block_size)
 
             self._ttf = ttf
             self._blocks = blocks
@@ -124,6 +129,20 @@ class TTFMode(BaseMode):
             info = CodepointInfo(codepoint, self._ttf)
             self._codepoints[codepoint] = info
         return info
+
+    def get_current_codepoint_info(self) -> CodepointInfo:
+        if not (0 <= self._selected_block_index < len(self._blocks)):
+            return self._EMPTY_CODEPOINT_INFO
+
+        block = self._blocks[self._selected_block_index]
+        if not (block.begin <= self._selected_codepoint < block.end):
+            return self._EMPTY_CODEPOINT_INFO
+
+        codepoint = self._codepoints.get(self._selected_codepoint)
+        if codepoint is None:
+            return self._EMPTY_CODEPOINT_INFO
+
+        return codepoint
 
     @override
     def on_main_menu(self) -> None:
@@ -164,6 +183,8 @@ class TTFMode(BaseMode):
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
+            imgui.text(self.path)
+
             with begin_child_context(
                 label="Planes",
                 size=(self._PLANES_SPLIT_X, 0),
@@ -200,10 +221,11 @@ class TTFMode(BaseMode):
 
             imgui.same_line()
 
-            with begin_child_context("Infos"):
+            with begin_child_context("Infos", child_flags=self._INFOS_CHILD_FLAGS):
                 if self.opened:
                     # self._canvas.do_process()
-                    self.on_font_controller()
+                    codepoint = self.get_current_codepoint_info()
+                    self.on_codepoint_process(codepoint)
                 else:
                     text_centered("Please open the font")
 
@@ -220,13 +242,13 @@ class TTFMode(BaseMode):
         rounding = self.config.rounding
         rect_flags = self.config.rect_flags
         thickness = self.config.thickness
+        block_step = self.config.block_size
+        cell_size = self.config.preview_size
 
         cp = imgui.get_cursor_screen_pos()
         cx = cp.x
         cy = cp.y
         draw_list = get_window_draw_list()
-        cell_size = self._font_size
-        block_step = self._block_size
         line_count = isqrt(block_step)
 
         for i in range(block_step):
@@ -275,25 +297,12 @@ class TTFMode(BaseMode):
                     finally:
                         imgui.end_tooltip()
 
-    def on_font_controller(self) -> None:
-        if not (0 <= self._selected_block_index < len(self._blocks)):
-            return
-
-        block = self._blocks[self._selected_block_index]
-        if not (block.begin <= self._selected_codepoint < block.end):
-            return
-
-        codepoint = self._codepoints.get(self._selected_codepoint)
-        if codepoint is None:
-            return
-
+    @staticmethod
+    def on_codepoint_process(codepoint: CodepointInfo) -> None:
         input_text("Codepoint", str(codepoint.codepoint))
-        input_text("Character", codepoint.character)
         input_text("Category", codepoint.category)
         input_text("Combining", str(codepoint.combining))
         input_text("Bidirectional", codepoint.bidirectional)
         input_text("Name", codepoint.name)
         input_text("Exists", str(codepoint.exists))
-        input_text("Filepath", codepoint.filepath)
-        input_text("Filename", codepoint.filename)
         input_text("Glyph", codepoint.glyph)

@@ -6,12 +6,13 @@ from typing import List, Optional, Union
 from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
-from cvp.fonts.ranges import UNICODE_SINGLE_BLOCK_SIZE, BlockRange, CodepointRange
+from cvp.fonts.ranges import BlockRange, CodepointRange
 from cvp.fonts.ttf import TTF
 from cvp.gl.textures.texture import Texture
 from cvp.imgui.fonts.font import Font
 from cvp.imgui.fonts.get_fonts import get_tex_data_as_raw_rgba32
 from cvp.imgui.fonts.glyph_ranges import create_glyph_ranges
+from cvp.variables import UNICODE_SINGLE_BLOCK_SIZE
 
 
 class FontBuilder:
