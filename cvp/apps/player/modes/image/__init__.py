@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, Sequence, Tuple
+from typing import Final
 
 from imgui_bundle import imgui
 from PIL.Image import Image
@@ -15,7 +15,9 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text import input_text
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_container import MenuList
+from cvp.imgui.menu_item import menu_item
+from cvp.imgui.menu_recent_items import menu_recent_items
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
@@ -31,8 +33,6 @@ class ImageMode(BaseMode):
     _CANVAS_SPLIT_X: Final[int] = -300
     _CANVAS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
-    _menus: Sequence[Tuple[str, Callable[[], None]]]
-
     def __init__(self, context: Context):
         super().__init__(context)
         self._open_image_popup = OpenFilePopup(
@@ -40,12 +40,16 @@ class ImageMode(BaseMode):
             target=self.on_load_image,
         )
 
-        self._menus = (("File", self.on_file_menu),)
+        self._menus = MenuList(("File", self.on_file_menu))
         self._popups = PopupList((self._open_image_popup,))
 
         self._path = str()
         self._canvas = ImageCanvas()
         self._image = Image()
+
+    @property
+    def opened(self) -> bool:
+        return self._canvas.opened
 
     def open_image_file(self, file: str) -> None:
         try:
@@ -66,12 +70,7 @@ class ImageMode(BaseMode):
 
     @override
     def on_main_menu(self) -> None:
-        for name, func in self._menus:
-            if imgui.begin_menu(name):
-                try:
-                    func()
-                finally:
-                    imgui.end_menu()
+        self._menus.do_process()
 
     @override
     def on_status_menu(self) -> None:
@@ -91,18 +90,19 @@ class ImageMode(BaseMode):
     def on_file_menu(self) -> None:
         if menu_item("Open image"):
             self._open_image_popup.show()
+
+        if recent_item := menu_recent_items(
+            label="Recent images",
+            config=self.context.config.navigation,
+            cls=type(self),
+            append_clear_menu=True,
+            clear_menu_label="Clear recent images",
+        ):
+            self.open_image_file(recent_item.value)
+
         imgui.separator()
-        if imgui.begin_menu("Recent images"):
-            try:
-                for item in self.get_recent_items():
-                    if menu_item(item.value):
-                        self.open_image_file(item.value)
-                        self.add_recent_item(item.value)
-                imgui.separator()
-                if menu_item("Clear recent items"):
-                    self.clear_recent_items()
-            finally:
-                imgui.end_menu()
+        if menu_item("Close image", enabled=self.opened):
+            self.close()
 
     @override
     def on_process(self) -> None:

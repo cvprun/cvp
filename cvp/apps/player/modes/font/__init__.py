@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, Sequence, Tuple
+from typing import Final
 
 from imgui_bundle import imgui
 from pygame import DROPFILE
@@ -12,7 +12,9 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.input_text import input_text
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_container import MenuList
+from cvp.imgui.menu_item import menu_item
+from cvp.imgui.menu_recent_items import menu_recent_items
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
@@ -28,8 +30,6 @@ class FontMode(BaseMode):
     _CANVAS_SPLIT_X: Final[int] = -300
     _CANVAS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
-    _menus: Sequence[Tuple[str, Callable[[], None]]]
-
     def __init__(self, context: Context):
         super().__init__(context)
         self._open_font_popup = OpenFilePopup(
@@ -37,11 +37,15 @@ class FontMode(BaseMode):
             target=self.on_load_font,
         )
 
-        self._menus = (("File", self.on_file_menu),)
+        self._menus = MenuList(("File", self.on_file_menu))
         self._popups = PopupList((self._open_font_popup,))
 
         self._path = str()
         self._canvas = ImageCanvas()
+
+    @property
+    def opened(self) -> bool:
+        return self._canvas.opened
 
     def open_font_file(self, file: str) -> None:
         try:
@@ -60,12 +64,7 @@ class FontMode(BaseMode):
 
     @override
     def on_main_menu(self) -> None:
-        for name, func in self._menus:
-            if imgui.begin_menu(name):
-                try:
-                    func()
-                finally:
-                    imgui.end_menu()
+        self._menus.do_process()
 
     @override
     def on_status_menu(self) -> None:
@@ -85,18 +84,19 @@ class FontMode(BaseMode):
     def on_file_menu(self) -> None:
         if menu_item("Open font"):
             self._open_font_popup.show()
+
+        if recent_item := menu_recent_items(
+            label="Recent fonts",
+            config=self.context.config.navigation,
+            cls=type(self),
+            append_clear_menu=True,
+            clear_menu_label="Clear recent fonts",
+        ):
+            self.open_font_file(recent_item.value)
+
         imgui.separator()
-        if imgui.begin_menu("Recent fonts"):
-            try:
-                for item in self.get_recent_items():
-                    if menu_item(item.value):
-                        self.open_font_file(item.value)
-                        self.add_recent_item(item.value)
-                imgui.separator()
-                if menu_item("Clear recent items"):
-                    self.clear_recent_items()
-            finally:
-                imgui.end_menu()
+        if menu_item("Close font", enabled=self.opened):
+            self.close()
 
     @override
     def on_process(self) -> None:

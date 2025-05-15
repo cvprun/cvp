@@ -25,7 +25,7 @@ from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.draw_dotted_line import draw_dotted_line
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.key import KeyFlags
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale

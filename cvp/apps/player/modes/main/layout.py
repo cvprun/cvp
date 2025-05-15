@@ -19,7 +19,7 @@ from cvp.imgui.dock_builder import (
     split_node,
 )
 from cvp.imgui.dockspace import dockspace_over_viewport_context
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 
 
 class ModulesAndTools(NamedTuple):

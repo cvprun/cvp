@@ -9,7 +9,7 @@ from cvp.apps.player.modes.main.position import DockPosition
 from cvp.canvas.canvas import CanvasKey
 from cvp.context.context import Context
 from cvp.imgui.flags.focused import ROOT_AND_CHILD_WINDOWS
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.popups.open_file import OpenFilePopup

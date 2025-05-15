@@ -29,7 +29,7 @@ from cvp.context.context import Context
 from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.flags.window import VIEWPORT_SIDE_BAR_FLAGS
 from cvp.imgui.fonts.globals import GlobalFontMapper
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.push_style_var import style_frame_border_size_context
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name

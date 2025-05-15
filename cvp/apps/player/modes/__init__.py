@@ -8,7 +8,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.interface import ModeInterface, retrieve_mode_instances
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 
 
 class ModeManager:

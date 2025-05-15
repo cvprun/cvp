@@ -9,7 +9,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin import begin_context
 from cvp.imgui.flags.condition import ALWAYS
 from cvp.imgui.flags.window import WindowFlags, merge_window_flags
-from cvp.imgui.menu_item_ex import menu_item
+from cvp.imgui.menu_item import menu_item
 from cvp.imgui.text_colored import text_colored
 from cvp.system.usage import SystemUsage
 from cvp.types.colors import RGBA
