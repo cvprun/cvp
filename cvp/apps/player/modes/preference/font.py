@@ -11,8 +11,9 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.clipboard import put_clipboard_text
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.fit_size import FIT_SIZE
-from cvp.imgui.flags import button, focused, hovered
+from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.fonts.font import Font
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.input_text_disabled import input_text_disabled
@@ -173,7 +174,7 @@ class FontPreference(BasePreference):
             child_focused = imgui.is_window_focused(focused.ROOT_AND_CHILD_WINDOWS)
             child_hovered = imgui.is_window_hovered(hovered.ROOT_AND_CHILD_WINDOWS)
             if child_focused and imgui.is_mouse_hovering_rect(r_min, r_max):
-                if child_hovered and imgui.is_mouse_clicked(button.MOUSE_BUTTON_LEFT):
+                if child_hovered and imgui.is_mouse_clicked(MOUSE_LEFT):
                     put_clipboard_text(cp_detail.as_printable_unicode())
                     self.context.msgs.append_toast("Copied to clipboard")
 

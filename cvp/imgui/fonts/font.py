@@ -1,21 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import Dict, List, NamedTuple, Optional
+from typing import Dict, List, Optional
 
 from imgui_bundle import imgui
 
 from cvp.fonts.cached_ttf import CachedTTF
 from cvp.fonts.codepoint_info import CodepointInfo
+from cvp.fonts.ranges import BlockRange
 from cvp.gl.textures.texture import Texture
-
-
-class BlockRange(NamedTuple):
-    begin: int
-    end: int
-
-    def as_label(self) -> str:
-        return f"{self.begin:06X}-{self.end:06X}"
 
 
 @dataclass

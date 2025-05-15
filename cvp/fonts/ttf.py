@@ -8,7 +8,12 @@ from typing import Dict, List, Optional, Union
 
 from fontTools.ttLib import TTFont
 
-from cvp.fonts.ranges import CodepointRange, read_ranges
+from cvp.fonts.ranges import (
+    UNICODE_SINGLE_BLOCK_SIZE,
+    BlockRange,
+    CodepointRange,
+    read_ranges,
+)
 from cvp.variables import CODEPOINT_RANGES_EXTENSION
 
 
@@ -34,6 +39,9 @@ class TTF:
     @property
     def ttf(self):
         return self._ttf
+
+    def close(self) -> None:
+        self._ttf.close()
 
     def get_best_camp(self) -> Dict[int, str]:
         return self._ttf.getBestCmap()
@@ -76,6 +84,13 @@ class TTF:
             result.append(CodepointRange(begin, end))
 
         return result
+
+    def get_block_ranges(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[BlockRange]:
+        result = set()
+        for cp_range in self.get_glyph_ranges():
+            for block_range in cp_range.as_blocks(step):
+                result.add(block_range)
+        return list(sorted(result, key=lambda x: x[0]))
 
     def get_default_ranges_path(self) -> Path:
         return Path(os.path.splitext(self.path)[0] + CODEPOINT_RANGES_EXTENSION)

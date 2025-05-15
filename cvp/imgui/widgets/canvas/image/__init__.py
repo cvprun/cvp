@@ -86,21 +86,21 @@ class ImageCanvas(ControllableCanvas):
             self._props.control.zoom = result.zoom
 
         with window_font_scale(self.zoom):
-            self.fill()
-            self.draw_grid_x()
-            self.draw_grid_y()
-            self.draw_axis_x()
-            self.draw_axis_y()
-            self.draw_texture()
+            self.add_rect_filled()
+            self.add_grid_x()
+            self.add_grid_y()
+            self.add_axis_x()
+            self.add_axis_y()
+            self.add_image()
 
-    def fill(self) -> None:
+    def add_rect_filled(self) -> None:
         color = imgui.get_color_u32(self._props.background_color)
         x1, y1, x2, y2 = self.canvas_roi
         p1 = x1, y1
         p2 = x2, y2
         self._draw_list.add_rect_filled(p1, p2, color)
 
-    def draw_grid_x(self) -> None:
+    def add_grid_x(self) -> None:
         grid_x = self._props.grid_x
         if not grid_x.visible:
             return
@@ -111,7 +111,7 @@ class ImageCanvas(ControllableCanvas):
             p2 = line[2], line[3]
             self._draw_list.add_line(p1, p2, color, grid_x.thickness)
 
-    def draw_grid_y(self) -> None:
+    def add_grid_y(self) -> None:
         grid_y = self._props.grid_y
         if not grid_y.visible:
             return
@@ -122,7 +122,7 @@ class ImageCanvas(ControllableCanvas):
             p2 = line[2], line[3]
             self._draw_list.add_line(p1, p2, color, grid_y.thickness)
 
-    def draw_axis_x(self) -> None:
+    def add_axis_x(self) -> None:
         axis_x = self._props.axis_x
         if not axis_x.visible:
             return
@@ -139,7 +139,7 @@ class ImageCanvas(ControllableCanvas):
         p2 = x2, y2
         self._draw_list.add_line(p1, p2, color, axis_x.thickness)
 
-    def draw_axis_y(self) -> None:
+    def add_axis_y(self) -> None:
         axis_y = self._props.axis_y
         if not axis_y.visible:
             return
@@ -156,7 +156,7 @@ class ImageCanvas(ControllableCanvas):
         p2 = x2, y2
         self._draw_list.add_line(p1, p2, color, axis_y.thickness)
 
-    def draw_texture(self):
+    def add_image(self):
         if not self._texture.opened:
             return
 

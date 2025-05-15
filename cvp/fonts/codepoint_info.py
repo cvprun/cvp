@@ -30,7 +30,7 @@ class CodepointInfo:
         if ttf is not None:
             self.exists = True
             self.filepath = str(ttf.path)
-            self.filename = ttf.basename
+            self.filename = str(ttf.basename)
             self.glyph = ttf.get_best_camp().get(codepoint, str())
 
     def __bool__(self):

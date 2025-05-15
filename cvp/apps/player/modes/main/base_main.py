@@ -4,7 +4,6 @@ from abc import ABC, abstractmethod
 from types import ModuleType
 from typing import Any, Iterable, Optional, Set, Type
 
-from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
@@ -83,12 +82,7 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
 
     @override
     def on_main_menu(self) -> None:
-        for name, func in self._menus:
-            if imgui.begin_menu(name):
-                try:
-                    func()
-                finally:
-                    imgui.end_menu()
+        self._menus.do_process()
 
         if window := self.selected_main_window:
             window.on_main_menu()

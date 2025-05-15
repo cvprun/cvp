@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from os import PathLike
-from typing import Final, List, NamedTuple, Sequence, SupportsIndex, Tuple, Union
+from typing import Final, List, NamedTuple, Sequence, SupportsIndex, Union
 
 UNICODE_SINGLE_BLOCK_SIZE: Final[int] = 0x100
 COMMENT_PREFIX: Final[str] = "#"
 HEXADECIMAL: Final[SupportsIndex] = 16
+
+
+class BlockRange(NamedTuple):
+    begin: int
+    end: int
+
+    def as_label(self) -> str:
+        return f"{self.begin:06X}-{self.end:06X}"
 
 
 class CodepointRange(NamedTuple):
@@ -18,17 +26,17 @@ class CodepointRange(NamedTuple):
     def has_codepoint(self, codepoint: int) -> bool:
         return self.begin <= codepoint <= self.end
 
-    def as_blocks(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[Tuple[int, int]]:
+    def as_blocks(self, step=UNICODE_SINGLE_BLOCK_SIZE) -> List[BlockRange]:
         block_begin = (self.begin // step) * step
         block_end = block_begin + step - 1
 
         assert block_begin <= self.begin
-        result = [(block_begin, block_end)]
+        result = [BlockRange(block_begin, block_end)]
 
         while block_end < self.end:
             block_begin += step
             block_end += step
-            result.append((block_begin, block_end))
+            result.append(BlockRange(block_begin, block_end))
 
         return result
 
