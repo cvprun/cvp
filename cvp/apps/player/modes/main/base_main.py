@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from types import ModuleType
-from typing import Any, Callable, Iterable, Optional, Set, Tuple, Type
+from typing import Any, Iterable, Optional, Set, Type
 
 from imgui_bundle import imgui
 from pygame.event import Event
@@ -11,6 +11,7 @@ from pygame.key import ScancodeWrapper
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.main.interface import WindowInterface
 from cvp.apps.player.modes.main.layout import MainLayout
+from cvp.imgui.menu_container import MenuItemLike, MenuList
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.interface import PopupInterface
 from cvp.msgs.msg import Msg
@@ -42,15 +43,15 @@ class BaseMainMode(BaseMode, BaseMainModeInterface, ABC):
         module: ModuleType,
         main_window_type: Type[WindowInterface],
         *,
-        menus: Optional[Iterable[Tuple[str, Callable[[], None]]]] = None,
+        menus: Optional[Iterable[MenuItemLike]] = None,
         popups: Optional[Iterable[PopupInterface[Any]]] = None,
     ):
         super().__init__(layout.context)
         self._layout = layout
         self._module = module
         self._main_window_type = main_window_type
-        self._menus = list(menus or ())
-        self._popups = PopupList(popups or ())
+        self._menus = MenuList.from_iterable(menus or ())
+        self._popups = PopupList.from_iterable(popups or ())
 
     @property
     def initialized(self) -> bool:

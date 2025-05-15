@@ -41,7 +41,7 @@ class ImageMode(BaseMode):
         )
 
         self._menus = MenuList(("File", self.on_file_menu))
-        self._popups = PopupList((self._open_image_popup,))
+        self._popups = PopupList(self._open_image_popup)
 
         self._path = str()
         self._canvas = ImageCanvas()

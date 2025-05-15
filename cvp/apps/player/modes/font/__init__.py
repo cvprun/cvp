@@ -38,7 +38,7 @@ class FontMode(BaseMode):
         )
 
         self._menus = MenuList(("File", self.on_file_menu))
-        self._popups = PopupList((self._open_font_popup,))
+        self._popups = PopupList(self._open_font_popup)
 
         self._path = str()
         self._canvas = ImageCanvas()

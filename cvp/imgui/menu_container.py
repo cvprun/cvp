@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Final, List, NamedTuple, Optional, Tuple, Union
+from typing import Callable, Final, Iterable, List, NamedTuple, Optional, Tuple, Union
 
 from imgui_bundle import imgui
 
@@ -47,6 +47,15 @@ class MenuList(List[MenuItem]):
     def __init__(self, *items: MenuItemLike, separator_prefix=SEPARATOR_PREFIX):
         super().__init__(normalize_menu_items(*items))
         self._separator_prefix = separator_prefix
+
+    @classmethod
+    def from_iterable(
+        cls,
+        items: Iterable[MenuItemLike],
+        *,
+        separator_prefix=SEPARATOR_PREFIX,
+    ):
+        return cls(*items, separator_prefix=separator_prefix)
 
     def do_process(self) -> None:
         for menu in self:
