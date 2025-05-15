@@ -24,6 +24,7 @@ class ModeManager:
         from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
         from cvp.apps.player.modes.flow import FlowMode
+        from cvp.apps.player.modes.font import FontMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.generators.faker import FakerMode
         from cvp.apps.player.modes.image import ImageMode
@@ -62,6 +63,7 @@ class ModeManager:
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
+        self.font_mode = FontMode(context)
 
         # ------------------------------------------------------------------------------
         # Retrieves and stores all ModeInterface instances assigned to `self`
@@ -87,6 +89,7 @@ class ModeManager:
             self.hash_mode,
             self.binary_text_mode,
             self.files_mode,
+            self.font_mode,
         )
         self._submenu_modes = OrderedDict(
             {
