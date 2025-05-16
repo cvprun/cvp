@@ -229,6 +229,9 @@ class TTFMode(BaseMode):
 
             with begin_child_context("Infos", child_flags=self._INFOS_CHILD_FLAGS):
                 if self.opened:
+                    self.do_font_process()
+                    imgui.separator()
+
                     # self._canvas.do_process()
                     codepoint = self.get_current_codepoint_info()
                     self.do_codepoint_process(codepoint)
@@ -303,8 +306,13 @@ class TTFMode(BaseMode):
                     finally:
                         imgui.end_tooltip()
 
+    def do_font_process(self) -> None:
+        for tag in self.ttf.keys():
+            table = self.ttf[tag]
+            input_text(tag, str(table))
+
     def do_codepoint_process(self, codepoint: CodepointInfo) -> None:
-        input_text("Codepoint", str(codepoint.codepoint))
+        input_text("Codepoint", f"{codepoint.codepoint:06X}")
         input_text("Category", codepoint.category)
         input_text("Combining", str(codepoint.combining))
         input_text("Bidirectional", codepoint.bidirectional)
