@@ -101,6 +101,9 @@ class ImguiPen(BasePen):
         self.draw_list.path_line_to(self.first_point)
         self.draw_list.path_stroke(self.color, 0, self.thickness)
 
+        self.draw_list.path_clear()
+        self.first_point = None
+
     @override
     def _endPath(self):
         if self.first_point is None:

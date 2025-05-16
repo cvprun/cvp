@@ -12,11 +12,44 @@ from cvp.types.shapes import Point
 
 
 class AtlasItem(NamedTuple):
-    uv_min: Point
-    uv_max: Point
+    p1: Point
+    p2: Point
+    uv_p1: Point
+    uv_p2: Point
+    ascent: int = 0
+    descent: int = 0
+    name: str = str()
+
+    @property
+    def x1(self):
+        return self.p1[0]
+
+    @property
+    def y1(self):
+        return self.p1[1]
+
+    @property
+    def x2(self):
+        return self.p2[0]
+
+    @property
+    def y2(self):
+        return self.p2[1]
+
+    @property
+    def width(self):
+        return self.p2[0] - self.p1[0]
+
+    @property
+    def height(self):
+        return self.p2[1] - self.p1[1]
+
+    @property
+    def size(self):
+        return self.width, self.height
 
 
-class BaseAtlas(Dict[str, AtlasItem]):
+class BaseAtlas(Dict[int, AtlasItem]):
     def __init__(self):
         super().__init__()
         self._texture = NumpyTexture()
@@ -29,17 +62,39 @@ class BaseAtlas(Dict[str, AtlasItem]):
     def opened(self) -> bool:
         return self._texture.opened
 
-    def draw(
+    @property
+    def width(self):
+        return self.texture.width
+
+    @property
+    def height(self):
+        return self.texture.height
+
+    @property
+    def size(self):
+        return self.texture.size
+
+    def add_image_with_key(
         self,
-        key: str,
+        key: int,
         p1: Point,
         p2: Point,
         color: Union[int, RGBA] = 0xFFFFFFFF,
-        *,
+        draw_list: Optional[DrawList] = None,
+    ) -> None:
+        item = self.__getitem__(key)
+        self.add_image_with_item(item, p1, p2, color, draw_list)
+
+    def add_image_with_item(
+        self,
+        item: AtlasItem,
+        p1: Point,
+        p2: Point,
+        color: Union[int, RGBA] = 0xFFFFFFFF,
         draw_list: Optional[DrawList] = None,
     ) -> None:
         if not self._texture.opened:
-            raise ValueError("Atlas is not opened")
+            raise ValueError("Texture is not opened")
 
         if draw_list is None:
             draw_list = get_window_draw_list()
@@ -51,7 +106,4 @@ class BaseAtlas(Dict[str, AtlasItem]):
 
         texture_id = self._texture.texture_id
         draw_list = imgui.get_window_draw_list()
-        item = self.__getitem__(key)
-        uv_min = item.uv_min
-        uv_max = item.uv_max
-        draw_list.add_image(texture_id, p1, p2, uv_min, uv_max, color)
+        draw_list.add_image(texture_id, p1, p2, item.uv_p1, item.uv_p2, color)

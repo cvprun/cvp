@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from math import isqrt
-from typing import Dict, Final, List, Optional
+from typing import Final
 
 from imgui_bundle import imgui
-from PIL.ImageFont import FreeTypeFont
-from PIL.ImageFont import truetype as load_pillow_font
 from pygame import DROPFILE
 from pygame.event import Event
 
@@ -14,10 +12,9 @@ from cvp.assets.fonts.mdi import FORMAT_FONT
 from cvp.context.context import Context
 from cvp.fonts.codepoint_info import CodepointInfo
 from cvp.fonts.ranges import BlockRange
-from cvp.fonts.ttf import TTF
 from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.draw_list.atlas.font import FontAtlas
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
-from cvp.imgui.draw_list.ttf.renderer import draw_ttf_text
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
@@ -30,11 +27,9 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.selectable import selectable
 from cvp.imgui.text_centered import text_centered
-from cvp.imgui.widgets.canvas.image import ImageCanvas
 from cvp.logging.logging import logger
 from cvp.types.colors import RGBA
 from cvp.types.override import override
-from cvp.variables import NOT_FOUND_INDEX
 
 
 class TTFMode(BaseMode):
@@ -50,11 +45,6 @@ class TTFMode(BaseMode):
     _CANVAS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
     _INFOS_CHILD_FLAGS: Final[int] = BORDERS
 
-    _ttf: Optional[TTF]
-    _pillow_font: Optional[FreeTypeFont]
-    _blocks: List[BlockRange]
-    _codepoints: Dict[int, CodepointInfo]
-
     def __init__(self, context: Context):
         super().__init__(context)
         self._open_font_popup = OpenFilePopup(
@@ -65,13 +55,10 @@ class TTFMode(BaseMode):
         self._menus = MenuList(("File", self.on_file_menu))
         self._popups = PopupList(self._open_font_popup)
 
-        self._ttf = None
-        self._pillow_font = None
-        self._blocks = list()
-        self._codepoints = dict()
-        self._canvas = ImageCanvas()
-        self._selected_block_index = NOT_FOUND_INDEX
-        self._selected_codepoint = NOT_FOUND_INDEX
+        self._atlas = FontAtlas()
+
+        self._selected_block_index = 0
+        self._selected_codepoint = 0
 
     @property
     def config(self):
@@ -93,30 +80,9 @@ class TTFMode(BaseMode):
     def error_stroke_color(self) -> RGBA:
         return self.config.error_stroke_color
 
-    @property
-    def opened(self) -> bool:
-        return self._ttf is not None
-
-    @property
-    def path(self) -> str:
-        return str(self._ttf.path) if self._ttf is not None else str()
-
-    @property
-    def ttf(self):
-        assert self._ttf is not None
-        return self._ttf.ttf
-
     def open_font_file(self, file: str) -> None:
         try:
-            ttf = TTF.from_filepath(file)
-            blocks = ttf.get_block_ranges(self.config.block_size)
-
-            self._ttf = ttf
-            self._pillow_font = load_pillow_font(file, self.config.preview_size)
-            self._blocks = blocks
-            self._codepoints.clear()
-
-            # self._canvas.open_with_pillow(self._image)
+            self._atlas.open(file, size=self.config.preview_size)
             self.add_recent_item(file)
             logger.info(f"Font file opened: '{file}'")
         except BaseException as e:
@@ -124,33 +90,21 @@ class TTFMode(BaseMode):
             raise
 
     def close(self) -> None:
-        if self._ttf is None:
+        if not self._atlas.opened:
             raise ValueError("Font file not opened")
 
-        self._ttf.close()
-        self._ttf = None
-        self._pillow_font = None
-        self._blocks.clear()
-        self._codepoints.clear()
-        # self._canvas.close()
+        self._atlas.close()
         logger.info("Font file closed")
 
-    def get_codepoint_info(self, codepoint: int) -> CodepointInfo:
-        info = self._codepoints.get(codepoint)
-        if info is None:
-            info = CodepointInfo(codepoint, self._ttf)
-            self._codepoints[codepoint] = info
-        return info
-
     def get_current_codepoint_info(self) -> CodepointInfo:
-        if not (0 <= self._selected_block_index < len(self._blocks)):
+        if not (0 <= self._selected_block_index < len(self._atlas.blocks)):
             return self._EMPTY_CODEPOINT_INFO
 
-        block = self._blocks[self._selected_block_index]
+        block = self._atlas.blocks[self._selected_block_index]
         if not (block.begin <= self._selected_codepoint < block.end):
             return self._EMPTY_CODEPOINT_INFO
 
-        codepoint = self._codepoints.get(self._selected_codepoint)
+        codepoint = self._atlas.codepoints.get(self._selected_codepoint)
         if codepoint is None:
             return self._EMPTY_CODEPOINT_INFO
 
@@ -189,13 +143,13 @@ class TTFMode(BaseMode):
             self.open_font_file(recent_item.value)
 
         imgui.separator()
-        if menu_item("Close font", enabled=self.opened):
+        if menu_item("Close font", enabled=self._atlas.opened):
             self.close()
 
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
-            imgui.text(self.path)
+            imgui.text(self._atlas.path)
 
             with begin_child_context(
                 label="Planes",
@@ -204,8 +158,8 @@ class TTFMode(BaseMode):
             ):
                 if imgui.begin_list_box("##Planes", FIT_SIZE):
                     try:
-                        if self._blocks:
-                            for i, block in enumerate(self._blocks):
+                        if self._atlas.blocks:
+                            for i, block in enumerate(self._atlas.blocks):
                                 label = block.as_label()
                                 selected = i == self._selected_block_index
                                 if selectable(label, selected).selected:
@@ -222,9 +176,9 @@ class TTFMode(BaseMode):
                 size=(self._CANVAS_SPLIT_X, 0),
                 child_flags=self._CANVAS_CHILD_FLAGS,
             ):
-                if self.opened:
-                    if 0 <= self._selected_block_index < len(self._blocks):
-                        block = self._blocks[self._selected_block_index]
+                if self._atlas.opened:
+                    if 0 <= self._selected_block_index < len(self._atlas.blocks):
+                        block = self._atlas.blocks[self._selected_block_index]
                         self.do_codepoint_matrix(block)
                     else:
                         text_centered("Please select a block range")
@@ -234,11 +188,10 @@ class TTFMode(BaseMode):
             imgui.same_line()
 
             with begin_child_context("Infos", child_flags=self._INFOS_CHILD_FLAGS):
-                if self.opened:
+                if self._atlas.opened:
                     self.do_font_process()
                     imgui.separator()
 
-                    # self._canvas.do_process()
                     codepoint = self.get_current_codepoint_info()
                     self.do_codepoint_process(codepoint)
                 else:
@@ -279,8 +232,8 @@ class TTFMode(BaseMode):
             r_max = x2, y2
 
             codepoint = codepoint_begin + i
-            cp_detail = self.get_codepoint_info(codepoint)
-            stroke_color = normal_stroke_color if cp_detail else error_stroke_color
+            info = self._atlas.codepoints.get(codepoint)
+            stroke_color = normal_stroke_color if info else error_stroke_color
 
             if codepoint == self._selected_codepoint:
                 border_color = selected_stroke_color
@@ -296,8 +249,8 @@ class TTFMode(BaseMode):
                 thickness,
             )
 
-            if cp_detail:
-                draw_list.add_text(r_min, text_color, cp_detail.character)
+            if info:
+                draw_list.add_text(r_min, text_color, info.character)
 
             child_focused = imgui.is_window_focused(focused.ROOT_AND_CHILD_WINDOWS)
             child_hovered = imgui.is_window_hovered(hovered.ROOT_AND_CHILD_WINDOWS)
@@ -305,17 +258,18 @@ class TTFMode(BaseMode):
                 if child_hovered and imgui.is_mouse_clicked(MOUSE_LEFT):
                     self._selected_codepoint = codepoint
 
-                if imgui.begin_tooltip():
+                if info and imgui.begin_tooltip():
                     try:
-                        message = cp_detail.as_unformatted_text()
+                        message = info.as_unformatted_text()
                         imgui.text_unformatted(message.strip())
                     finally:
                         imgui.end_tooltip()
 
     def do_font_process(self) -> None:
-        for tag in self.ttf.keys():
-            table = self.ttf[tag]
-            input_text(tag, str(table))
+        # for tag in self.ttf.keys():
+        #     table = self.ttf[tag]
+        #     input_text(tag, str(table))
+        pass
 
     def do_codepoint_process(self, codepoint: CodepointInfo) -> None:
         input_text("Codepoint", f"{codepoint.codepoint:06X}")
@@ -342,7 +296,6 @@ class TTFMode(BaseMode):
 
         with begin_child_context("Glyph", size=(cell_size, cell_size)):
             draw_list = get_window_draw_list()
-            draw_list.add_image()
 
             draw_list.add_rect(
                 r_min,
@@ -353,11 +306,4 @@ class TTFMode(BaseMode):
                 thickness,
             )
 
-            draw_ttf_text(
-                self.ttf,
-                cell_size,
-                char,
-                r_min,
-                text_color,
-                draw_list,
-            )
+            self._atlas.add_text_atlas(char, r_min, text_color, draw_list)

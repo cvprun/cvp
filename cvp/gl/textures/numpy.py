@@ -63,7 +63,6 @@ class NumpyTexture:
         cls,
         array: NDArray[uint8],
         *,
-        internal_format=TextureInternalFormat.rgb8,
         min_filter=TextureFilter.linear,
         mag_filter=TextureFilter.linear,
         wrap_s=TextureWrap.clamp_to_border,
@@ -74,12 +73,15 @@ class NumpyTexture:
         border_width: Literal[0, 1] = 0,
     ):
         if len(array.shape) == 2:
+            internal_format = TextureInternalFormat.luminance8
             pix_format = TextureFormat.luminance
         elif len(array.shape) == 3:
             channels = array.shape[2]
             if channels == 3:
+                internal_format = TextureInternalFormat.rgb8
                 pix_format = TextureFormat.rgb
             elif channels == 4:
+                internal_format = TextureInternalFormat.rgba8
                 pix_format = TextureFormat.rgba
             else:
                 raise ValueError(f"Invalid number of channels: {channels}")

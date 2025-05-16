@@ -9,16 +9,16 @@ MenuCallable = Callable[[], None]
 
 class MenuItem(NamedTuple):
     name: str
-    callback: Optional[MenuCallable]
-    enabled: bool
+    callback: Optional[MenuCallable] = None
+    enabled: bool = True
 
 
 MenuItemLike = Union[
     MenuItem,
     str,
     Tuple[str],
-    Tuple[str, Optional[MenuCallable]],
-    Tuple[str, Optional[MenuCallable], bool],
+    Tuple[str, MenuCallable],
+    Tuple[str, MenuCallable, bool],
 ]
 
 
@@ -29,7 +29,7 @@ def normalize_menu_items(*items: MenuItemLike) -> List[MenuItem]:
         if isinstance(item, MenuItem):
             result.append(item)
         elif isinstance(item, str):
-            result.append(MenuItem(item, None, True))
+            result.append(MenuItem(item))
         elif isinstance(item, (tuple, list)):
             name = str(item[0]) if 1 <= len(item) else str()
             callback = item[1] if 2 <= len(item) else None

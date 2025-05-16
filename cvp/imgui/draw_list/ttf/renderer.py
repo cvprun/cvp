@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional
+from typing import Optional, Union
 
 from fontTools.ttLib import TTFont
 
@@ -10,15 +10,16 @@ from fontTools.ttLib.ttGlyphSet import _TTGlyphGlyf, _TTGlyphSetGlyf
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.draw_list.ttf.pen import ImguiPen
 from cvp.imgui.draw_list.types import DrawList
+from cvp.types.colors import RGBA
 from cvp.types.shapes import Point
 
 
-def draw_ttf_text(
+def add_text_stroke(
     ttf: TTFont,
     size: int,
     text: str,
     point: Point,
-    color=0xFFFFFFFF,
+    color: Union[int, RGBA] = 0xFFFFFFFF,
     draw_list: Optional[DrawList] = None,
 ) -> None:
     if draw_list is None:

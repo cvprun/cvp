@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+
+from dataclasses import dataclass
+from typing import Callable, Iterable, List, Optional, Tuple, Union
+
+from imgui_bundle import imgui
+
+from cvp.imgui.flags.tab_bar import TabBarFlags
+from cvp.imgui.flags.tab_item import TabItemFlags
+
+TabCallable = Callable[[], None]
+
+
+@dataclass
+class TabItem:
+    name: str
+    callback: Optional[TabCallable] = None
+    opened: Optional[bool] = None
+    flags: Union[TabItemFlags, int] = 0
+
+
+TabItemLike = Union[
+    TabItem,
+    str,
+    Tuple[str],
+    Tuple[str, TabCallable],
+    Tuple[str, TabCallable, bool],
+]
+
+
+def normalize_tab_items(*items: TabItemLike) -> List[TabItem]:
+    result = list()
+
+    for item in items:
+        if isinstance(item, TabItem):
+            result.append(item)
+        elif isinstance(item, str):
+            result.append(TabItem(item))
+        elif isinstance(item, (tuple, list)):
+            name = str(item[0]) if 1 <= len(item) else str()
+            callback = item[1] if 2 <= len(item) else None
+            opened = item[2] if 3 <= len(item) else None
+            result.append(TabItem(name, callback, opened))
+        else:
+            raise ValueError(f"Invalid tab item type: '{type(item).__name__}'")
+
+    return result
+
+
+class TabList(List[TabItem]):
+    def __init__(self, *items: TabItemLike):
+        super().__init__(normalize_tab_items(*items))
+
+    @classmethod
+    def from_iterable(cls, items: Iterable[TabItemLike]):
+        return cls(*items)
+
+    def do_process(self, label: str, flags: Union[TabBarFlags, int] = 0) -> None:
+        if isinstance(flags, TabBarFlags):
+            flags = int(flags)
+        assert isinstance(flags, int)
+
+        if imgui.begin_tab_bar(label, flags):
+            try:
+                for tab in self:
+                    item_flags = tab.flags
+                    if isinstance(item_flags, TabItemFlags):
+                        item_flags = int(item_flags)
+                    assert isinstance(item_flags, int)
+
+                    tab_result = imgui.begin_tab_item(tab.name, tab.opened, item_flags)
+                    try:
+                        result_opened = tab_result[0]
+                        result_value = tab_result[1]
+                        if (
+                            result_value is not None
+                            and tab.opened is not None
+                            and tab.opened != result_value
+                        ):
+                            tab.opened = result_value
+
+                        if result_value and result_opened and tab.callback is not None:
+                            tab.callback()
+                    finally:
+                        imgui.end_tab_item()
+            finally:
+                imgui.end_tab_bar()
