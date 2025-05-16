@@ -8,8 +8,8 @@ from fontTools.ttLib import TTFont
 from fontTools.ttLib.ttGlyphSet import _TTGlyphGlyf, _TTGlyphSetGlyf
 
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.draw_list.ttf.pen import ImguiPen
 from cvp.imgui.draw_list.types import DrawList
-from cvp.imgui.fonts.pen import ImguiPen
 from cvp.types.shapes import Point
 
 

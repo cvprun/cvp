@@ -17,11 +17,11 @@ from cvp.fonts.ranges import BlockRange
 from cvp.fonts.ttf import TTF
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.draw_list.ttf.renderer import draw_ttf_text
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
-from cvp.imgui.fonts.renderer import draw_ttf_text
 from cvp.imgui.input_text import input_text
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
