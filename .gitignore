@@ -110,7 +110,7 @@ MANIFEST
 .coverage
 
 # isort
-.isorted
+*.isorted
 
 #############
 ### C/C++ ###
