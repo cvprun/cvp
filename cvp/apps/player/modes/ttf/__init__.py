@@ -4,6 +4,8 @@ from math import isqrt
 from typing import Dict, Final, List, Optional
 
 from imgui_bundle import imgui
+from PIL.ImageFont import FreeTypeFont
+from PIL.ImageFont import truetype as load_pillow_font
 from pygame import DROPFILE
 from pygame.event import Event
 
@@ -49,6 +51,7 @@ class TTFMode(BaseMode):
     _INFOS_CHILD_FLAGS: Final[int] = BORDERS
 
     _ttf: Optional[TTF]
+    _pillow_font: Optional[FreeTypeFont]
     _blocks: List[BlockRange]
     _codepoints: Dict[int, CodepointInfo]
 
@@ -63,6 +66,7 @@ class TTFMode(BaseMode):
         self._popups = PopupList(self._open_font_popup)
 
         self._ttf = None
+        self._pillow_font = None
         self._blocks = list()
         self._codepoints = dict()
         self._canvas = ImageCanvas()
@@ -108,6 +112,7 @@ class TTFMode(BaseMode):
             blocks = ttf.get_block_ranges(self.config.block_size)
 
             self._ttf = ttf
+            self._pillow_font = load_pillow_font(file, self.config.preview_size)
             self._blocks = blocks
             self._codepoints.clear()
 
@@ -124,6 +129,7 @@ class TTFMode(BaseMode):
 
         self._ttf.close()
         self._ttf = None
+        self._pillow_font = None
         self._blocks.clear()
         self._codepoints.clear()
         # self._canvas.close()
