@@ -1,45 +1,51 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final
+from typing import Optional
 
 from fontTools.ttLib import TTFont
 
+# noinspection PyProtectedMember
+from fontTools.ttLib.ttGlyphSet import _TTGlyphGlyf, _TTGlyphSetGlyf
+
+from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.draw_list.types import DrawList
 from cvp.imgui.fonts.pen import ImguiPen
-
-SPACE_CHAR: Final[str] = chr(0x32)
-assert SPACE_CHAR == " "
+from cvp.types.shapes import Point
 
 
-class ImguiFontRenderer:
-    def __init__(self, font_path, size=12):
-        self.font = TTFont(font_path)
-        self.size = size
-        self.units_per_em = self.font["head"].unitsPerEm
-        self.scale = size / self.units_per_em
+def draw_ttf_text(
+    ttf: TTFont,
+    size: int,
+    text: str,
+    point: Point,
+    color=0xFFFFFFFF,
+    draw_list: Optional[DrawList] = None,
+) -> None:
+    if draw_list is None:
+        draw_list = get_window_draw_list()
+    assert draw_list is not None
 
-    def render_text(self, draw_list, text, x, y, color=0xFFFFFFFF):
-        glyph_set = self.font.getGlyphSet()
-        current_x = x
+    glyph_set = ttf.getGlyphSet()
+    assert isinstance(glyph_set, _TTGlyphSetGlyf)
 
-        for char in text:
-            if char == SPACE_CHAR:
-                current_x += self.size * 0.5
-                continue
+    units_per_em = ttf["head"].unitsPerEm
+    assert isinstance(units_per_em, int)
 
-            try:
-                glyph_name = self.font.getBestCmap().get(ord(char))
-                if glyph_name is None:
-                    current_x += self.size * 0.5
-                    continue
+    scale = size / units_per_em
 
-                glyph = glyph_set[glyph_name]
-                width = glyph.width * self.scale
+    x = point[0]
+    y = point[1] + size
 
-                pen = ImguiPen(glyph_set, draw_list, self.scale, current_x, y, color)
-                glyph.draw(pen)
+    for char in text:
+        glyph_name = ttf.getBestCmap().get(ord(char))
+        if glyph_name is None:
+            continue
 
-                current_x += width
+        glyph = glyph_set[glyph_name]
+        assert isinstance(glyph, _TTGlyphGlyf)
 
-            except Exception as e:
-                print(f"Error rendering character '{char}': {e}")
-                current_x += self.size * 0.5
+        width = glyph.width * scale
+
+        pen = ImguiPen(glyph_set, draw_list, scale, x, y, color)
+        glyph.draw(pen)
+        x += width

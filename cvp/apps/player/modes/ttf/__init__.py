@@ -19,6 +19,7 @@ from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
+from cvp.imgui.fonts.renderer import draw_ttf_text
 from cvp.imgui.input_text import input_text
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
@@ -95,6 +96,11 @@ class TTFMode(BaseMode):
     @property
     def path(self) -> str:
         return str(self._ttf.path) if self._ttf is not None else str()
+
+    @property
+    def ttf(self):
+        assert self._ttf is not None
+        return self._ttf.ttf
 
     def open_font_file(self, file: str) -> None:
         try:
@@ -225,7 +231,7 @@ class TTFMode(BaseMode):
                 if self.opened:
                     # self._canvas.do_process()
                     codepoint = self.get_current_codepoint_info()
-                    self.on_codepoint_process(codepoint)
+                    self.do_codepoint_process(codepoint)
                 else:
                     text_centered("Please open the font")
 
@@ -297,8 +303,7 @@ class TTFMode(BaseMode):
                     finally:
                         imgui.end_tooltip()
 
-    @staticmethod
-    def on_codepoint_process(codepoint: CodepointInfo) -> None:
+    def do_codepoint_process(self, codepoint: CodepointInfo) -> None:
         input_text("Codepoint", str(codepoint.codepoint))
         input_text("Category", codepoint.category)
         input_text("Combining", str(codepoint.combining))
@@ -306,3 +311,38 @@ class TTFMode(BaseMode):
         input_text("Name", codepoint.name)
         input_text("Exists", str(codepoint.exists))
         input_text("Glyph", codepoint.glyph)
+
+        if codepoint.exists:
+            self.do_glyph_process(codepoint.character)
+
+    def do_glyph_process(self, char: str) -> None:
+        text_color = imgui.get_color_u32(self.text_color)
+        cell_size = self.config.preview_size
+        rounding = self.config.rounding
+        rect_flags = self.config.rect_flags
+        thickness = self.config.thickness
+
+        cursor = imgui.get_cursor_screen_pos()
+        r_min = cursor.x, cursor.y
+        r_max = r_min[0] + cell_size, r_min[1] + cell_size
+
+        with begin_child_context("Glyph", size=(cell_size, cell_size)):
+            draw_list = get_window_draw_list()
+
+            draw_list.add_rect(
+                r_min,
+                r_max,
+                text_color,
+                rounding,
+                rect_flags,
+                thickness,
+            )
+
+            draw_ttf_text(
+                self.ttf,
+                cell_size,
+                char,
+                r_min,
+                text_color,
+                draw_list,
+            )
