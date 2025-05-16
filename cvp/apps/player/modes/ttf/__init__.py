@@ -342,6 +342,7 @@ class TTFMode(BaseMode):
 
         with begin_child_context("Glyph", size=(cell_size, cell_size)):
             draw_list = get_window_draw_list()
+            draw_list.add_image()
 
             draw_list.add_rect(
                 r_min,
