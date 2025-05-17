@@ -1,8 +1,16 @@
 # -*- coding: utf-8 -*-
 
+from enum import Enum, auto, unique
 from unittest import TestCase, main
 
-from cvp.inspect.member import get_attribute_keys
+from cvp.inspect.member import get_attribute_keys, get_public_instance_attributes
+
+
+@unique
+class _TestEnum(Enum):
+    value0 = auto()
+    value1 = auto()
+    value2 = auto()
 
 
 class TempAttrs:
@@ -39,6 +47,12 @@ class MemberTestCase(TestCase):
         self.assertIsNotNone(attrs.pop(f"_{TempAttrs.__name__}__value4"))
         self.assertIsNotNone(attrs.pop("value5__"))
         self.assertEqual(0, len(attrs))  # It's more intuitive than `assertFalse(attrs)`
+
+    def test_enum_attributes(self):
+        attrs = get_public_instance_attributes(type(_TestEnum.value0))
+        self.assertTupleEqual(("0", _TestEnum.value0), attrs[0])
+        self.assertTupleEqual(("1", _TestEnum.value1), attrs[1])
+        self.assertTupleEqual(("2", _TestEnum.value2), attrs[2])
 
 
 if __name__ == "__main__":

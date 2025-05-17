@@ -15,7 +15,7 @@ from cvp.variables import CODEPOINT_RANGES_EXTENSION, UNICODE_SINGLE_BLOCK_SIZE
 class TTF:
     def __init__(self, path: Path, ttf: TTFont):
         self._path = path
-        self._ttf = ttf
+        self._ttfont = ttf
 
     @classmethod
     def from_filepath(cls, path: Union[str, PathLike[str]]):
@@ -32,17 +32,17 @@ class TTF:
         return os.path.basename(self._path)
 
     @property
-    def ttf(self):
-        return self._ttf
+    def ttfont(self):
+        return self._ttfont
 
     def close(self) -> None:
-        self._ttf.close()
+        self._ttfont.close()
 
     def get_best_camp(self) -> Dict[int, str]:
-        return self._ttf.getBestCmap()
+        return self._ttfont.getBestCmap()
 
     def get_character_map(self) -> Dict[int, str]:
-        items = self._ttf["cmap"].getBestCmap().items()
+        items = self._ttfont["cmap"].getBestCmap().items()
         return {codepoint: glyph_name for codepoint, glyph_name in items}
 
     def get_codepoints(self, *, sorting=False, reverse=False) -> List[int]:

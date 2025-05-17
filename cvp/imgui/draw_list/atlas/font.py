@@ -167,7 +167,7 @@ class FontAtlas(BaseAtlas):
         assert self._ttf is not None
 
         add_text_stroke(
-            self._ttf.ttf,
+            self._ttf.ttfont,
             size,
             text,
             point,

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from math import isqrt
-from typing import Final
+from typing import Any, Final
 
+from fontTools.ttLib.ttFont import GlyphOrder
 from imgui_bundle import imgui
 from pygame import DROPFILE
 from pygame.event import Event
@@ -27,6 +28,7 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.selectable import selectable
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.widgets.table_any import table_any
 from cvp.logging.logging import logger
 from cvp.types.colors import RGBA
 from cvp.types.override import override
@@ -59,6 +61,7 @@ class TTFMode(BaseMode):
 
         self._selected_block_index = 0
         self._selected_codepoint = 0
+        self._selected_table_name = str()
 
     @property
     def config(self):
@@ -81,6 +84,10 @@ class TTFMode(BaseMode):
         return self.config.error_stroke_color
 
     def open_font_file(self, file: str) -> None:
+        if self._atlas.opened:
+            self._atlas.close()
+            logger.info("Font file closed")
+
         try:
             self._atlas.open(file, size=self.config.preview_size)
             self.add_recent_item(file)
@@ -149,55 +156,89 @@ class TTFMode(BaseMode):
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
-            imgui.text(self._atlas.path)
-
-            with begin_child_context(
-                label="Planes",
-                size=(self._PLANES_SPLIT_X, 0),
-                child_flags=self._PLANES_CHILD_FLAGS,
-            ):
-                if imgui.begin_list_box("##Planes", FIT_SIZE):
+            with begin_child_context("Main"):
+                if imgui.begin_tab_bar("Tabs"):
                     try:
-                        if self._atlas.blocks:
-                            for i, block in enumerate(self._atlas.blocks):
-                                label = block.as_label()
-                                selected = i == self._selected_block_index
-                                if selectable(label, selected).selected:
-                                    self._selected_block_index = i
-                        else:
-                            text_centered("Please open the font")
+                        if imgui.begin_tab_item("File")[0]:
+                            try:
+                                self.on_file_process()
+                            finally:
+                                imgui.end_tab_item()
+
+                        if imgui.begin_tab_item("Planes")[0]:
+                            try:
+                                self.on_planes_process()
+                            finally:
+                                imgui.end_tab_item()
+
+                        if self._atlas.ttf is not None:
+                            for tag in self._atlas.ttf.ttfont.keys():
+                                table = self._atlas.ttf.ttfont[tag]
+                                if isinstance(table, GlyphOrder):
+                                    continue
+
+                                if imgui.begin_tab_item(tag)[0]:
+                                    try:
+                                        imgui.text(f"Table: {tag}")
+                                        imgui.separator()
+                                        self.on_table_process(tag, table)
+                                    finally:
+                                        imgui.end_tab_item()
                     finally:
-                        imgui.end_list_box()
-
-            imgui.same_line()
-
-            with begin_child_context(
-                label="Canvas",
-                size=(self._CANVAS_SPLIT_X, 0),
-                child_flags=self._CANVAS_CHILD_FLAGS,
-            ):
-                if self._atlas.opened:
-                    if 0 <= self._selected_block_index < len(self._atlas.blocks):
-                        block = self._atlas.blocks[self._selected_block_index]
-                        self.do_codepoint_matrix(block)
-                    else:
-                        text_centered("Please select a block range")
-                else:
-                    text_centered("Please open the font")
-
-            imgui.same_line()
-
-            with begin_child_context("Infos", child_flags=self._INFOS_CHILD_FLAGS):
-                if self._atlas.opened:
-                    self.do_font_process()
-                    imgui.separator()
-
-                    codepoint = self.get_current_codepoint_info()
-                    self.do_codepoint_process(codepoint)
-                else:
-                    text_centered("Please open the font")
+                        imgui.end_tab_bar()
 
         self._popups.do_process()
+
+    @staticmethod
+    def on_table_process(tag: str, table: Any) -> None:
+        table_any(f"Table##{tag}", table)
+
+    def on_file_process(self) -> None:
+        pass
+
+    def on_planes_process(self) -> None:
+        with begin_child_context(
+            label="Planes",
+            size=(self._PLANES_SPLIT_X, 0),
+            child_flags=self._PLANES_CHILD_FLAGS,
+        ):
+            if imgui.begin_list_box("##Planes", FIT_SIZE):
+                try:
+                    if self._atlas.blocks:
+                        for i, block in enumerate(self._atlas.blocks):
+                            label = block.as_label()
+                            selected = i == self._selected_block_index
+                            if selectable(label, selected).selected:
+                                self._selected_block_index = i
+                    else:
+                        text_centered("Please open the font")
+                finally:
+                    imgui.end_list_box()
+
+        imgui.same_line()
+
+        with begin_child_context(
+            label="Canvas",
+            size=(self._CANVAS_SPLIT_X, 0),
+            child_flags=self._CANVAS_CHILD_FLAGS,
+        ):
+            if self._atlas.opened:
+                if 0 <= self._selected_block_index < len(self._atlas.blocks):
+                    block = self._atlas.blocks[self._selected_block_index]
+                    self.do_codepoint_matrix(block)
+                else:
+                    text_centered("Please select a block range")
+            else:
+                text_centered("Please open the font")
+
+        imgui.same_line()
+
+        with begin_child_context("Infos", child_flags=self._INFOS_CHILD_FLAGS):
+            if self._atlas.opened:
+                codepoint = self.get_current_codepoint_info()
+                self.do_codepoint_process(codepoint)
+            else:
+                text_centered("Please open the font")
 
     def do_codepoint_matrix(self, block: BlockRange) -> None:
         codepoint_begin = block.begin
@@ -264,12 +305,6 @@ class TTFMode(BaseMode):
                         imgui.text_unformatted(message.strip())
                     finally:
                         imgui.end_tooltip()
-
-    def do_font_process(self) -> None:
-        # for tag in self.ttf.keys():
-        #     table = self.ttf[tag]
-        #     input_text(tag, str(table))
-        pass
 
     def do_codepoint_process(self, codepoint: CodepointInfo) -> None:
         input_text("Codepoint", f"{codepoint.codepoint:06X}")

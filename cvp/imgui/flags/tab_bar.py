@@ -20,8 +20,6 @@ class TabBarFlags(IntFlag):
     draw_selected_overline = imgui.TabBarFlags_.draw_selected_overline.value
     fitting_policy_resize_down = imgui.TabBarFlags_.fitting_policy_resize_down.value
     fitting_policy_scroll = imgui.TabBarFlags_.fitting_policy_scroll.value
-    fitting_policy_mask_ = imgui.TabBarFlags_.fitting_policy_mask_.value
-    fitting_policy_default_ = imgui.TabBarFlags_.fitting_policy_default_.value
     # fmt: on
 
 
@@ -36,8 +34,6 @@ NO_TOOLTIP: Final[int] = int(TabBarFlags.no_tooltip)
 DRAW_SELECTED_OVERLINE: Final[int] = int(TabBarFlags.draw_selected_overline)
 FITTING_POLICY_RESIZE_DOWN: Final[int] = int(TabBarFlags.fitting_policy_resize_down)
 FITTING_POLICY_SCROLL: Final[int] = int(TabBarFlags.fitting_policy_scroll)
-FITTING_POLICY_MASK_: Final[int] = int(TabBarFlags.fitting_policy_mask_)
-FITTING_POLICY_DEFAULT_: Final[int] = int(TabBarFlags.fitting_policy_default_)
 # fmt: on
 
 
