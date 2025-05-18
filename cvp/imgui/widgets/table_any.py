@@ -365,7 +365,16 @@ class GlobalTableAnyOptions(Dict[int, TableAnyOptions]):
     pass
 
 
-def table_any(label: str, data: Any, options: Optional[TableAnyOptions] = None) -> None:
+def table_any(
+    label: str,
+    data: Any,
+    options: Optional[TableAnyOptions] = None,
+    *,
+    show_key: Optional[bool] = True,
+    show_type: Optional[bool] = False,
+    show_size: Optional[bool] = False,
+    show_value: Optional[bool] = True,
+) -> None:
     if options is None:
         global_options = GlobalTableAnyOptions()
         next_id = imgui.get_id(label)
@@ -373,6 +382,15 @@ def table_any(label: str, data: Any, options: Optional[TableAnyOptions] = None) 
         if options is None:
             options = TableAnyOptions()
             global_options.__setitem__(next_id, options)
+
+    if show_key is not None:
+        options.key_show = show_key
+    if show_type is not None:
+        options.type_show = show_type
+    if show_size is not None:
+        options.size_show = show_size
+    if show_value is not None:
+        options.value_show = show_value
 
     assert options is not None
     TableAny(label, options).do_process(data)

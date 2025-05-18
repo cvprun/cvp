@@ -264,7 +264,14 @@ class TTFMode(BaseMode):
                             try:
                                 imgui.text(f"Table: {tag}")
                                 imgui.separator()
-                                table_any(f"Table##{tag}", table)
+                                table_any(
+                                    f"Table##{tag}",
+                                    table,
+                                    show_key=True,
+                                    show_type=True,
+                                    show_size=True,
+                                    show_value=True,
+                                )
                             finally:
                                 imgui.end_tab_item()
             finally:
