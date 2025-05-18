@@ -22,6 +22,8 @@ from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
+from cvp.imgui.input_float2 import input_float2
+from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text import input_text
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
@@ -119,16 +121,16 @@ class TTFMode(BaseMode):
         return self.config.text_color
 
     @property
-    def selected_stroke_color(self) -> RGBA:
-        return self.config.selected_stroke_color
+    def selected_color(self) -> RGBA:
+        return self.config.selected_color
 
     @property
-    def normal_stroke_color(self) -> RGBA:
-        return self.config.normal_stroke_color
+    def normal_color(self) -> RGBA:
+        return self.config.normal_color
 
     @property
-    def error_stroke_color(self) -> RGBA:
-        return self.config.error_stroke_color
+    def accent_color(self) -> RGBA:
+        return self.config.accent_color
 
     @property
     def error_color(self) -> RGBA:
@@ -171,7 +173,7 @@ class TTFMode(BaseMode):
             imgui.text("Not opened")
             return
 
-        imgui.text(self._atlas.path)
+        imgui.text(str(self._atlas))
 
     @override
     def on_event(self, event: Event) -> bool:
@@ -248,6 +250,12 @@ class TTFMode(BaseMode):
                     finally:
                         imgui.end_tab_item()
 
+                if imgui.begin_tab_item("Texture")[0]:
+                    try:
+                        self.on_texture_process()
+                    finally:
+                        imgui.end_tab_item()
+
                 if imgui.begin_tab_item("Planes")[0]:
                     try:
                         self.on_planes_process()
@@ -284,9 +292,13 @@ class TTFMode(BaseMode):
         assert self._atlas.ttf is not None
 
         input_text("Font file path", f"{str(self._atlas.path)}")
-        input_text("Font size", f"{self._atlas.font_size}")
-        input_text("Font texture size", f"{self._atlas.size}")
-        input_text("Font block size", f"{self._atlas.block_size:06X}")
+        input_text("Font family name", f"{self._atlas.family}")
+        input_text("Font subfamily name", f"{self._atlas.subfamily}")
+        input_text("Font spacing type", f"{self._atlas.spacing_type}")
+        input_text("Font size", f"{self._atlas.font_size}px")
+
+        input_int2("Font texture size", self._atlas.width, self._atlas.height)
+        input_text("Font block size", f"0x{self._atlas.block_size:06X}")
         input_text("Font blocks count", f"{len(self._atlas.blocks)}")
         input_text("Font codepoints count", f"{len(self._atlas.codepoints)}")
 
@@ -362,6 +374,28 @@ class TTFMode(BaseMode):
             finally:
                 imgui.end_table()
 
+    def on_texture_process(self) -> None:
+        texture_id = self._atlas.texture.texture_id
+        texture_size = self._atlas.texture.size
+
+        screen_pos = imgui.get_cursor_screen_pos()
+        cx, cy = screen_pos.x, screen_pos.y
+        image_min = cx, cy
+        image_max = cx + texture_size[0], cy + texture_size[1]
+
+        accent_color = imgui.get_color_u32(self.accent_color)
+
+        with begin_child_context("Texture", texture_size):
+            draw_list = get_window_draw_list()
+            draw_list.add_image(texture_id, image_min, image_max)
+
+            for codepoint, item in self._atlas.items():
+                x1 = cx + item.x1
+                y1 = cy + item.y1
+                x2 = cx + item.x2
+                y2 = cy + item.y2
+                draw_list.add_rect((x1, y1), (x2, y2), accent_color)
+
     def on_planes_process(self) -> None:
         with begin_child_context(
             label="Planes",
@@ -409,9 +443,9 @@ class TTFMode(BaseMode):
     def do_codepoint_matrix(self, block: BlockRange) -> None:
         codepoint_begin = block.begin
 
-        selected_stroke_color = imgui.get_color_u32(self.selected_stroke_color)
-        normal_stroke_color = imgui.get_color_u32(self.normal_stroke_color)
-        error_stroke_color = imgui.get_color_u32(self.error_stroke_color)
+        selected_stroke_color = imgui.get_color_u32(self.selected_color)
+        normal_color = imgui.get_color_u32(self.normal_color)
+        accent_color = imgui.get_color_u32(self.accent_color)
         text_color = imgui.get_color_u32(self.text_color)
         padding = self.config.padding
         rounding = self.config.rounding
@@ -440,7 +474,7 @@ class TTFMode(BaseMode):
 
             codepoint = codepoint_begin + i
             info = self._atlas.codepoints.get(codepoint)
-            stroke_color = normal_stroke_color if info else error_stroke_color
+            stroke_color = normal_color if info else accent_color
 
             if codepoint == self._selected_codepoint:
                 border_color = selected_stroke_color
@@ -457,7 +491,12 @@ class TTFMode(BaseMode):
             )
 
             if info:
-                draw_list.add_text(r_min, text_color, info.character)
+                self._atlas.add_text_atlas(
+                    info.character,
+                    r_min,
+                    text_color,
+                    draw_list,
+                )
 
             child_focused = imgui.is_window_focused(focused.ROOT_AND_CHILD_WINDOWS)
             child_hovered = imgui.is_window_hovered(hovered.ROOT_AND_CHILD_WINDOWS)
@@ -481,6 +520,20 @@ class TTFMode(BaseMode):
         input_text("Exists", str(codepoint.exists))
         input_text("Glyph", codepoint.glyph)
 
+        atlas = self._atlas.get(codepoint.codepoint)
+        if atlas is None:
+            return
+
+        input_text("Atlas index", str(atlas.index_))
+        input_float2("Atlas point 1", atlas.p1[0], atlas.p1[1])
+        input_float2("Atlas point 2", atlas.p2[0], atlas.p2[1])
+        input_float2("Atlas offset", atlas.offset[0], atlas.offset[1])
+        input_float2("Atlas UV point 1", atlas.uv_p1[0], atlas.uv_p1[1])
+        input_float2("Atlas UV point 2", atlas.uv_p2[0], atlas.uv_p2[1])
+        input_text("Atlas ascent", str(atlas.ascent))
+        input_text("Atlas descent", str(atlas.descent))
+        input_text("Atlas name", atlas.name)
+
         if codepoint.exists:
             self.do_glyph_process(codepoint.character)
 
@@ -495,16 +548,13 @@ class TTFMode(BaseMode):
         r_min = cursor.x, cursor.y
         r_max = r_min[0] + cell_size, r_min[1] + cell_size
 
-        with begin_child_context("Glyph", size=(cell_size, cell_size)):
-            draw_list = get_window_draw_list()
-
-            draw_list.add_rect(
-                r_min,
-                r_max,
-                text_color,
-                rounding,
-                rect_flags,
-                thickness,
-            )
-
-            self._atlas.add_text_atlas(char, r_min, text_color, draw_list)
+        draw_list = get_window_draw_list()
+        draw_list.add_rect(
+            r_min,
+            r_max,
+            text_color,
+            rounding,
+            rect_flags,
+            thickness,
+        )
+        self._atlas.add_text_atlas(char, r_min, text_color, draw_list)

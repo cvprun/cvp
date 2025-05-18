@@ -12,8 +12,10 @@ from cvp.types.shapes import Point
 
 
 class AtlasItem(NamedTuple):
+    index_: int
     p1: Point
     p2: Point
+    offset: Point
     uv_p1: Point
     uv_p2: Point
     ascent: int = 0
@@ -38,15 +40,23 @@ class AtlasItem(NamedTuple):
 
     @property
     def width(self):
-        return self.p2[0] - self.p1[0]
+        return self.x2 - self.x1
 
     @property
     def height(self):
-        return self.p2[1] - self.p1[1]
+        return self.y2 - self.y1
 
     @property
     def size(self):
         return self.width, self.height
+
+    @property
+    def offset_x(self):
+        return self.offset[0]
+
+    @property
+    def offset_y(self):
+        return self.offset[1]
 
 
 class BaseAtlas(Dict[int, AtlasItem]):
@@ -106,4 +116,10 @@ class BaseAtlas(Dict[int, AtlasItem]):
 
         texture_id = self._texture.texture_id
         draw_list = imgui.get_window_draw_list()
+        x1 = p1[0] + item.offset_x
+        y1 = p1[1] + item.offset_y
+        x2 = p2[0] + item.offset_x
+        y2 = p2[1] + item.offset_y
+        p1 = x1, y1
+        p2 = x2, y2
         draw_list.add_image(texture_id, p1, p2, item.uv_p1, item.uv_p2, color)

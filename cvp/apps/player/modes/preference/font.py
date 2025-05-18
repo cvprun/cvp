@@ -64,11 +64,11 @@ class FontPreference(BasePreference):
 
     @property
     def normal_stroke_color(self) -> RGBA:
-        return self.config.normal_stroke_color
+        return self.config.normal_color
 
     @property
     def error_stroke_color(self) -> RGBA:
-        return self.config.error_stroke_color
+        return self.config.accent_color
 
     @override
     def on_process(self) -> None:

@@ -35,12 +35,14 @@ class FontAtlasLoader:
         path: str,
         size=FONT_SIZE,
         block_size=UNICODE_SINGLE_BLOCK_SIZE,
+        padding_size=1,
         *,
         callback: Optional[Callable[[int, int], None]] = None,
     ):
         self.font_size = size
         self.block_size = block_size
         self.line_count = isqrt(block_size)
+        self.padding_size = padding_size
 
         if self.line_count**2 != self.block_size:
             raise ValueError("Block size must be square")
@@ -51,6 +53,9 @@ class FontAtlasLoader:
         self.chars = self.ttf.get_character_map()
         self.codepoints = dict()
         self.atlas_items = dict()
+        self.family = self.ttf.font_family_name
+        self.subfamily = self.ttf.font_subfamily_name
+        self.is_monospace = self.ttf.is_monospace
 
         max_chars = len(self.chars)
         cols = self.line_count
@@ -68,30 +73,86 @@ class FontAtlasLoader:
             color=self.PILLOW_COLOR_TRANSPARENT,
         )
         draw = Draw(self.image)
+        ascent, descent = self.pillow_font.getmetrics()
+
+        next_x = 0
+        next_y = 0
+        line_max_height = 0.0
 
         for i, item in enumerate(self.chars.items()):
-            item_col = i % cols
-            item_row = i // cols
+            # =============================
+            # item_col = i % cols
+            # item_row = i // cols
+            # x1 = item_col * cell_width
+            # y1 = item_row * cell_height
+            # -----------------------------
+            x1 = next_x
+            y1 = next_y
+            # =============================
 
-            x = item_col * cell_width
-            y = item_row * cell_height
-            pivot = x, y
+            p1 = x1, y1
 
             codepoint, glyph_name = item
             text = chr(codepoint)
-            bbox = draw.textbbox(pivot, text, font=self.pillow_font)
-            draw.text(pivot, text, self.PILLOW_COLOR_WHITE, font=self.pillow_font)
-            ascent, descent = self.pillow_font.getmetrics()
 
-            p1 = bbox[0], bbox[1]
-            p2 = bbox[2], bbox[3]
+            bbox = draw.textbbox(p1, text, font=self.pillow_font)
+            bbox_width = bbox[2] - bbox[0]
+            bbox_height = bbox[3] - bbox[1]
+            assert y1 + bbox_height < canvas_height
 
-            uv_min = bbox[0] / canvas_width, bbox[1] / canvas_height
-            uv_max = bbox[2] / canvas_width, bbox[3] / canvas_height
+            if x1 + bbox_width < canvas_width:
+                line_max_height = max(line_max_height, bbox_height)
+                next_x += bbox_width + self.padding_size
+            else:
+                assert canvas_width <= x1 + bbox_width
+                # Too wide for canvas, draw on next line.
 
-            atlas = AtlasItem(p1, p2, uv_min, uv_max, ascent, descent, glyph_name)
+                next_x = bbox_width + self.padding_size
+                next_y += line_max_height + self.padding_size
+                line_max_height = bbox_height
+
+                x1 = 0
+                y1 = next_y
+                p1 = x1, y1
+
+                bbox = draw.textbbox(p1, text, font=self.pillow_font)
+                bbox_width = bbox[2] - bbox[0]
+                bbox_height = bbox[3] - bbox[1]
+
+                assert x1 + bbox_width < canvas_width
+                assert y1 + bbox_height < canvas_height
+
+            x2 = x1 + bbox_width
+            y2 = y1 + bbox_height
+            p2 = x2, y2
+
+            offset_x = bbox[0] - x1
+            offset_y = bbox[1] - y1
+            offset = offset_x, offset_y
+
+            draw_x = x1 - offset_x
+            draw_y = y1 - offset_y
+            draw_point = draw_x, draw_y
+            draw.text(draw_point, text, self.PILLOW_COLOR_WHITE, font=self.pillow_font)
+
+            uv_min = x1 / canvas_width, y1 / canvas_height
+            uv_max = x2 / canvas_width, y2 / canvas_height
+
+            atlas = AtlasItem(
+                index_=i,
+                p1=p1,
+                p2=p2,
+                offset=offset,
+                uv_p1=uv_min,
+                uv_p2=uv_max,
+                ascent=ascent,
+                descent=descent,
+                name=glyph_name,
+            )
+
             self.atlas_items[codepoint] = atlas
             self.codepoints[codepoint] = CodepointInfo(codepoint, self.ttf)
+
             if callback is not None:
                 callback(i, max_chars)
 
@@ -171,6 +232,34 @@ class FontAtlas(BaseAtlas):
     @property
     def line_count(self):
         return self._loader.line_count if self._loader else 0
+
+    @property
+    def family(self) -> str:
+        return self._loader.family if self._loader else str()
+
+    @property
+    def subfamily(self) -> str:
+        return self._loader.subfamily if self._loader else str()
+
+    @property
+    def is_monospace(self) -> str:
+        return self._loader.is_monospace if self._loader else str()
+
+    @property
+    def spacing_type(self) -> str:
+        return "Monospace" if self.is_monospace else "Proportional"
+
+    def __repr__(self):
+        return (
+            f"<{type(self).__name__}"
+            f" {self.family}"
+            f",{self.subfamily}"
+            f",{self.font_size}px"
+            ">"
+        )
+
+    def __str__(self):
+        return f"{self.family}, {self.subfamily}, {self.font_size}, {self.spacing_type}"
 
     def add_text_stroke(
         self,

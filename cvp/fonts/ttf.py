@@ -8,7 +8,12 @@ from typing import Dict, List, Optional, Union
 
 from fontTools.ttLib import TTFont
 
-from cvp.fonts.opentype.tables.name import NameRecord
+from cvp.fonts.opentype.tables.name import (
+    FONT_FAMILY_NAME_ID,
+    FONT_SUBFAMILY_NAME_ID,
+    WINDOWS_PLATFORM_ID,
+    NameRecord,
+)
 from cvp.fonts.ranges import BlockRange, CodepointRange, read_ranges
 from cvp.variables import CODEPOINT_RANGES_EXTENSION, UNICODE_SINGLE_BLOCK_SIZE
 
@@ -40,20 +45,44 @@ class TTF:
         return self._ttfont
 
     @property
+    def cmap(self):
+        """Character to Glyph Index Mapping Table"""
+        return self._ttfont["cmap"]
+
+    @property
     def head(self):
+        """Font Header Table"""
         return self._ttfont["head"]
 
     @property
     def hhea(self):
+        """Horizontal Header Table"""
         return self._ttfont["hhea"]
 
     @property
+    def hmtx(self):
+        """Horizontal Metrics Table"""
+        return self._ttfont["hmtx"]
+
+    @property
     def name(self):
+        """Naming Table"""
         return self._ttfont["name"]
 
     @property
     def os2(self):
+        """OS/2 and Windows Metrics Table"""
         return self._ttfont["OS/2"]
+
+    @property
+    def vhea(self):
+        """Vertical Header Table"""
+        return self._ttfont["vhea"]
+
+    @property
+    def vmtx(self):
+        """Vertical Metrics Table"""
+        return self._ttfont["vmtx"]
 
     @property
     def units_per_em(self):
@@ -114,11 +143,48 @@ class TTF:
             result.append(item)
         return result
 
+    @property
+    def font_family_name(self):
+        for record in self.name.names:
+            if record.platformID != WINDOWS_PLATFORM_ID:
+                continue
+            if record.nameID != FONT_FAMILY_NAME_ID:
+                continue
+            return record.toUnicode()
+        return str()
+
+    @property
+    def font_subfamily_name(self):
+        for record in self.name.names:
+            if record.platformID != WINDOWS_PLATFORM_ID:
+                continue
+            if record.nameID != FONT_SUBFAMILY_NAME_ID:
+                continue
+            return record.toUnicode()
+        return str()
+
+    @property
+    def is_monospace(self) -> bool:
+        return self.os2.panose.bProportion == 9
+
+    def get_glyph_order(self) -> List[str]:
+        return self.ttfont.getGlyphOrder()
+
     def get_best_camp(self) -> Dict[int, str]:
         return self._ttfont.getBestCmap()
 
+    def get_glyph_mtx(self) -> Dict[int, str]:
+        return self._ttfont.getBestCmap()
+
+    def validate_monospace(self):
+        widths = set(self.hmtx[name][0] for name in self.get_glyph_order())
+        if 0 == len(widths):
+            raise ValueError("Glyph does not exist")
+        if 1 < len(widths):
+            raise ValueError("Font is not monospace")
+
     def get_character_map(self) -> Dict[int, str]:
-        items = self._ttfont["cmap"].getBestCmap().items()
+        items = self.cmap.getBestCmap().items()
         return {codepoint: glyph_name for codepoint, glyph_name in items}
 
     def get_codepoints(self, *, sorting=False, reverse=False) -> List[int]:

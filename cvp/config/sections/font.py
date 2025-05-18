@@ -21,9 +21,9 @@ class FontConfig:
 
     selected_block: Tuple[int, int] = field(default_factory=lambda: (0, 0))
     text_color: RGBA = field(default_factory=lambda: (*WHITE, 1.0))
-    selected_stroke_color: RGBA = field(default_factory=lambda: (*GREEN, 0.4))
-    normal_stroke_color: RGBA = field(default_factory=lambda: (*WHITE, 0.3))
-    error_stroke_color: RGBA = field(default_factory=lambda: (*RED, 0.3))
+    selected_color: RGBA = field(default_factory=lambda: (*GREEN, 0.4))
+    normal_color: RGBA = field(default_factory=lambda: (*WHITE, 0.3))
+    accent_color: RGBA = field(default_factory=lambda: (*RED, 0.3))
     rounding: float = 0.0
     rect_flags: int = 0
     thickness: float = 1.0

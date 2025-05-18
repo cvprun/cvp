@@ -4,6 +4,9 @@
 from types import MappingProxyType
 from typing import Final, NamedTuple, Optional
 
+FONT_FAMILY_NAME_ID: Final[int] = 1
+FONT_SUBFAMILY_NAME_ID: Final[int] = 2
+
 NAME_IDS: Final[MappingProxyType[int, str]] = MappingProxyType(
     {
         0: "Copyright notice",
