@@ -11,7 +11,7 @@ from imgui_bundle import imgui
 from numpy import ndarray
 
 from cvp.imgui.fit_size import FIT_WIDTH
-from cvp.imgui.flags.table import TableFlags, merge_table_flags
+from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS, TableFlags
 from cvp.imgui.flags.table_column import WIDTH_FIXED, WIDTH_STRETCH, TableColumnFlags
 from cvp.inspect.member import get_public_instance_attributes, is_instance_public_member
 from cvp.patterns.singleton import singleton
@@ -27,15 +27,6 @@ DEFAULT_VALUE_LABEL: Final[str] = "Value"
 DEFAULT_MAX_DEPTH: Final[int] = 3
 DEFAULT_MAX_ROWS: Final[int] = 20
 DEFAULT_ROWS_PAGE: Final[int] = 10
-
-DEFAULT_TABLE_FLAGS: Final[int] = merge_table_flags(
-    TableFlags.sizing_fixed_fit,
-    TableFlags.row_bg,
-    TableFlags.borders,
-    TableFlags.resizable,
-    TableFlags.reorderable,
-    TableFlags.hideable,
-)
 
 
 @dataclass

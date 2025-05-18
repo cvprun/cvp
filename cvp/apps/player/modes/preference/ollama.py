@@ -13,7 +13,7 @@ from cvp.imgui.checkbox import checkbox
 from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
+from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
@@ -133,7 +133,7 @@ class OllamaPreference(BasePreference):
         if imgui.small_button("Add"):
             ollama.headers.append((str(), str()))
 
-        if imgui.begin_table("Headers", 3, ONVIF_TABLE_FLAGS):
+        if imgui.begin_table("Headers", 3, DEFAULT_TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Key", table_column.WIDTH_STRETCH)
                 imgui.table_setup_column("Value", table_column.WIDTH_STRETCH)

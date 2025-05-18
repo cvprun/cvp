@@ -28,6 +28,12 @@ class ThreadRunnable(Generic[_P, _T]):
         self._result = None
         self._error = None
 
+    def clear(self) -> None:
+        self._running = False
+        self._future = None
+        self._result = None
+        self._error = None
+
     @property
     def running(self):
         if not self._running:

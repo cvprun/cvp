@@ -8,7 +8,7 @@ from cvp.apps.player.modes.vms.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags import table_column
-from cvp.imgui.flags.table import ONVIF_TABLE_FLAGS
+from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.text_colored import text_colored
 from cvp.onvif.config import OnvifConfig
 from cvp.onvif.service import Service
@@ -65,7 +65,7 @@ class OnvifClientTab(BaseOnvifTab):
     @staticmethod
     def do_onvif_service_process(services: Iterable[Service]) -> None:
         imgui.text("Services:")
-        if imgui.begin_table("ServicesTable", 3, ONVIF_TABLE_FLAGS):
+        if imgui.begin_table("ServicesTable", 3, DEFAULT_TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Namespace", table_column.WIDTH_STRETCH)
                 imgui.table_setup_column("Version", table_column.WIDTH_FIXED)
@@ -89,7 +89,7 @@ class OnvifClientTab(BaseOnvifTab):
     @staticmethod
     def do_onvif_wsdl_process(wsdls: Iterable[WsdlClient]) -> None:
         imgui.text("ONVIF WSDL services:")
-        if imgui.begin_table("WsdlTable", 3, ONVIF_TABLE_FLAGS):
+        if imgui.begin_table("WsdlTable", 3, DEFAULT_TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Binding", table_column.WIDTH_FIXED)
                 imgui.table_setup_column("Address", table_column.WIDTH_STRETCH)

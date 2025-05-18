@@ -96,7 +96,7 @@ class WsDiscoveryMode(BaseMode):
             self._discovery_begin = datetime.now().astimezone()
         except BaseException as e:
             logger.exception(e)
-            self.context.toast(f"Discovery failed: '{e}'")
+            self.context.toast_error(f"Discovery failed: '{e}'")
 
     def on_discovery_main(
         self,

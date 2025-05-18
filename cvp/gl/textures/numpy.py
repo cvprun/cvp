@@ -131,9 +131,14 @@ class NumpyTexture:
 
         assert self._texture is None
         assert self._finalizer is None
+
         self._array = np.array(image)
         self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
+
+        assert self._array is not None
+        assert self._texture is not None
+        assert self._finalizer is not None
 
     def open_with_numpy(self, array: NDArray[uint8], *, use_deepcopy=False) -> None:
         if self._array is not None:
@@ -141,9 +146,14 @@ class NumpyTexture:
 
         assert self._texture is None
         assert self._finalizer is None
+
         self._array = array.copy() if use_deepcopy else array
         self._texture = self._create_texture(self._array)
         self._finalizer = finalize(self, _close_texture, self._texture)
+
+        assert self._array is not None
+        assert self._texture is not None
+        assert self._finalizer is not None
 
     def close(self) -> None:
         if self._array is None:
@@ -177,11 +187,19 @@ class NumpyTexture:
 
     @property
     def height(self) -> int:
-        return self.array.shape[0]
+        if self._array is None:
+            return 0
+        if len(self._array.shape) <= 0:
+            return 0
+        return self._array.shape[0]
 
     @property
     def width(self) -> int:
-        return self.array.shape[1]
+        if self._array is None:
+            return 0
+        if len(self._array.shape) <= 1:
+            return 0
+        return self._array.shape[1]
 
     @property
     def size(self) -> Tuple[int, int]:

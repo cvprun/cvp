@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from math import isqrt
-from typing import Any, Final
+from typing import Final
 
 from fontTools.ttLib.ttFont import GlyphOrder
 from imgui_bundle import imgui
@@ -10,16 +10,18 @@ from pygame.event import Event
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FORMAT_FONT
+from cvp.concurrency.threading.progress_value import ProgressValue
 from cvp.context.context import Context
 from cvp.fonts.codepoint_info import CodepointInfo
 from cvp.fonts.ranges import BlockRange
 from cvp.imgui.begin_child import begin_child_context
-from cvp.imgui.draw_list.atlas.font import FontAtlas
+from cvp.imgui.draw_list.atlas.font import FontAtlas, FontAtlasLoader
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
+from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.input_text import input_text
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
@@ -28,6 +30,7 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.selectable import selectable
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.table_any import table_any
 from cvp.logging.logging import logger
 from cvp.types.colors import RGBA
@@ -50,9 +53,11 @@ class TTFMode(BaseMode):
     def __init__(self, context: Context):
         super().__init__(context)
         self._open_font_popup = OpenFilePopup(
-            title="Load font",
-            target=self.on_load_font,
+            title="Open font",
+            target=self.on_open_font,
         )
+        self._open_runner = context.create_thread_runner(self.on_open_runner)
+        self._open_progress = ProgressValue()
 
         self._menus = MenuList(("File", self.on_file_menu))
         self._popups = PopupList(self._open_font_popup)
@@ -62,6 +67,48 @@ class TTFMode(BaseMode):
         self._selected_block_index = 0
         self._selected_codepoint = 0
         self._selected_table_name = str()
+
+    def on_open_font(self, file: str) -> None:
+        self.open_font_file(file)
+
+    @staticmethod
+    def on_open_runner(file: str, font_size: int, progress: ProgressValue):
+        try:
+            loader = FontAtlasLoader(
+                file,
+                font_size,
+                callback=lambda c, m: progress.set(c, limit=m),
+            )
+            logger.info(f"Font file loaded: '{file}'")
+            return loader
+        except BaseException as e:
+            logger.error(f"Failed to load font file '{file}': {e}")
+            raise
+
+    def open_font_file(self, file: str) -> None:
+        if self._open_runner.running:
+            raise ValueError("Open runner is already running")
+
+        if self._atlas.opened:
+            self._atlas.close()
+            logger.info("Font file closed")
+
+        try:
+            self._open_runner(file, self.config.preview_size, self._open_progress)
+            self.add_recent_item(file)
+        except BaseException as e:
+            logger.exception(e)
+            self.context.toast_error(f"Font open failed: '{e}'")
+
+    def close(self) -> None:
+        if self._open_runner.running:
+            raise ValueError("Open runner is already running")
+
+        if not self._atlas.opened:
+            raise ValueError("Font file not opened")
+
+        self._atlas.close()
+        logger.info("Font file closed")
 
     @property
     def config(self):
@@ -83,27 +130,14 @@ class TTFMode(BaseMode):
     def error_stroke_color(self) -> RGBA:
         return self.config.error_stroke_color
 
-    def open_font_file(self, file: str) -> None:
-        if self._atlas.opened:
-            self._atlas.close()
-            logger.info("Font file closed")
-
-        try:
-            self._atlas.open(file, size=self.config.preview_size)
-            self.add_recent_item(file)
-            logger.info(f"Font file opened: '{file}'")
-        except BaseException as e:
-            logger.error(f"Failed to open font file '{file}': {e}")
-            raise
-
-    def close(self) -> None:
-        if not self._atlas.opened:
-            raise ValueError("Font file not opened")
-
-        self._atlas.close()
-        logger.info("Font file closed")
+    @property
+    def error_color(self) -> RGBA:
+        return self.context.config.appearance.error_color
 
     def get_current_codepoint_info(self) -> CodepointInfo:
+        assert not self._open_runner.running
+        assert self._atlas.opened
+
         if not (0 <= self._selected_block_index < len(self._atlas.blocks)):
             return self._EMPTY_CODEPOINT_INFO
 
@@ -123,7 +157,21 @@ class TTFMode(BaseMode):
 
     @override
     def on_status_menu(self) -> None:
-        pass
+        if self._open_runner.running:
+            value, limit, _ = self._open_progress.get()
+            imgui.text(f"Opening {value}/{limit} ...")
+            return
+
+        if self._open_runner.error is not None:
+            error_message = str(self._open_runner.error)
+            imgui.text_colored(self.error_color, error_message)
+            return
+
+        if not self._atlas.opened:
+            imgui.text("Not opened")
+            return
+
+        imgui.text(self._atlas.path)
 
     @override
     def on_event(self, event: Event) -> bool:
@@ -132,9 +180,6 @@ class TTFMode(BaseMode):
             return True
 
         return False
-
-    def on_load_font(self, file: str) -> None:
-        self.open_font_file(file)
 
     def on_file_menu(self) -> None:
         if menu_item("Open font"):
@@ -157,44 +202,158 @@ class TTFMode(BaseMode):
     def on_process(self) -> None:
         with self.begin_mode_context():
             with begin_child_context("Main"):
-                if imgui.begin_tab_bar("Tabs"):
-                    try:
-                        if imgui.begin_tab_item("File")[0]:
-                            try:
-                                self.on_file_process()
-                            finally:
-                                imgui.end_tab_item()
-
-                        if imgui.begin_tab_item("Planes")[0]:
-                            try:
-                                self.on_planes_process()
-                            finally:
-                                imgui.end_tab_item()
-
-                        if self._atlas.ttf is not None:
-                            for tag in self._atlas.ttf.ttfont.keys():
-                                table = self._atlas.ttf.ttfont[tag]
-                                if isinstance(table, GlyphOrder):
-                                    continue
-
-                                if imgui.begin_tab_item(tag)[0]:
-                                    try:
-                                        imgui.text(f"Table: {tag}")
-                                        imgui.separator()
-                                        self.on_table_process(tag, table)
-                                    finally:
-                                        imgui.end_tab_item()
-                    finally:
-                        imgui.end_tab_bar()
-
+                self.on_main_process()
         self._popups.do_process()
 
-    @staticmethod
-    def on_table_process(tag: str, table: Any) -> None:
-        table_any(f"Table##{tag}", table)
+    def on_main_process(self) -> None:
+        with begin_child_context("Main"):
+            if self._open_runner.running:
+                value, limit, _ = self._open_progress.get()
+                overlay = f"Opening {value}/{limit} ..."
+                imgui.progress_bar(value / limit, None, overlay)
+                return
 
-    def on_file_process(self) -> None:
-        pass
+            if self._open_runner.error is not None:
+                error_message = str(self._open_runner.error)
+                imgui.text_colored(self.error_color, error_message)
+                return
+
+            if not self._atlas.opened:
+                if self._open_runner.result is None:
+                    text_centered("Please open the font")
+                    return
+
+                loader = self._open_runner.result
+                assert isinstance(loader, FontAtlasLoader)
+                self._atlas.open_with_loader(loader)
+                logger.info(f"Font file opened: '{self._atlas.path}'")
+                assert self._atlas.opened
+                assert self._atlas.ttf is not None
+                self._open_runner.clear()
+
+            assert self._atlas.ttf is not None
+            self.on_opened_main_process()
+
+    def on_opened_main_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+
+        if imgui.begin_tab_bar("Tabs"):
+            try:
+                if imgui.begin_tab_item("Basic")[0]:
+                    try:
+                        self.on_basic_process()
+                    finally:
+                        imgui.end_tab_item()
+
+                if imgui.begin_tab_item("Planes")[0]:
+                    try:
+                        self.on_planes_process()
+                    finally:
+                        imgui.end_tab_item()
+
+                if self._atlas.ttf is not None:
+                    for tag in self._atlas.ttf.ttfont.keys():
+                        table = self._atlas.ttf.ttfont[tag]
+                        if isinstance(table, GlyphOrder):
+                            continue
+
+                        if imgui.begin_tab_item(tag)[0]:
+                            try:
+                                imgui.text(f"Table: {tag}")
+                                imgui.separator()
+                                table_any(f"Table##{tag}", table)
+                            finally:
+                                imgui.end_tab_item()
+            finally:
+                imgui.end_tab_bar()
+
+    def on_basic_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+
+        input_text("Font file path", f"{str(self._atlas.path)}")
+        input_text("Font size", f"{self._atlas.font_size}")
+        input_text("Font texture size", f"{self._atlas.size}")
+        input_text("Font block size", f"{self._atlas.block_size:06X}")
+        input_text("Font blocks count", f"{len(self._atlas.blocks)}")
+        input_text("Font codepoints count", f"{len(self._atlas.codepoints)}")
+
+        ttf = self._atlas.ttf
+
+        input_text("Units per EM (head)", str(ttf.units_per_em))
+        hovered_tooltip_text(type(ttf).units_per_em.__doc__)
+
+        input_text("Ascent (hhea)", str(ttf.ascent))
+        hovered_tooltip_text(type(ttf).ascent.__doc__)
+
+        input_text("Descent (hhea)", str(ttf.descent))
+        hovered_tooltip_text(type(ttf).descent.__doc__)
+
+        input_text("Line Gap (hhea)", str(ttf.line_gap))
+        hovered_tooltip_text(type(ttf).line_gap.__doc__)
+
+        input_text("Typo ascender (OS/2)", str(ttf.typo_ascender))
+        hovered_tooltip_text(type(ttf).typo_ascender.__doc__)
+
+        input_text("Typo descender (OS/2)", str(ttf.typo_descender))
+        hovered_tooltip_text(type(ttf).typo_descender.__doc__)
+
+        input_text("Typo line gap (OS/2)", str(ttf.typo_line_gap))
+        hovered_tooltip_text(type(ttf).typo_line_gap.__doc__)
+
+        input_text("x-height (OS/2)", str(ttf.x_height))
+        hovered_tooltip_text(type(ttf).x_height.__doc__)
+
+        input_text("Cap height (OS/2)", str(ttf.cap_height))
+        hovered_tooltip_text(type(ttf).cap_height.__doc__)
+
+        if imgui.begin_table("Names", 8, DEFAULT_TABLE_FLAGS):
+            try:
+                imgui.table_setup_column("Platform ID")
+                imgui.table_setup_column("Platform")
+                imgui.table_setup_column("Encoding ID")
+                imgui.table_setup_column("Encoding")
+                imgui.table_setup_column("Language ID")
+                imgui.table_setup_column("Name ID")
+                imgui.table_setup_column("Description")
+                imgui.table_setup_column("Value")
+                imgui.table_headers_row()
+
+                for name in ttf.names:
+                    imgui.table_next_row()
+
+                    imgui.table_set_column_index(0)
+                    imgui.text(str(name.platform_id))
+
+                    if platform := name.platform:
+                        imgui.table_set_column_index(1)
+                        imgui.text(platform)
+
+                    imgui.table_set_column_index(2)
+                    imgui.text(str(name.encoding_id))
+
+                    if encoding := name.encoding:
+                        imgui.table_set_column_index(3)
+                        imgui.text(encoding)
+
+                    imgui.table_set_column_index(4)
+                    imgui.text(str(name.language_id))
+
+                    imgui.table_set_column_index(5)
+                    imgui.text(str(name.name_id))
+
+                    imgui.table_set_column_index(6)
+                    imgui.text(str(name.name_description))
+
+                    imgui.table_set_column_index(7)
+                    imgui.text(name.value)
+            finally:
+                imgui.end_table()
 
     def on_planes_process(self) -> None:
         with begin_child_context(

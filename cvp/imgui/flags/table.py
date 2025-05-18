@@ -96,7 +96,7 @@ def merge_table_flags(*flags: Union[TableFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))
 
 
-ONVIF_TABLE_FLAGS: Final[int] = merge_table_flags(
+DEFAULT_TABLE_FLAGS: Final[int] = merge_table_flags(
     TableFlags.sizing_fixed_fit,
     TableFlags.row_bg,
     TableFlags.borders,

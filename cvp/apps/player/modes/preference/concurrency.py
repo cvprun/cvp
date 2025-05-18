@@ -3,7 +3,7 @@
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.preference._base import BasePreference
-from cvp.concurrency.utils import valid_process_workers, valid_thread_workers
+from cvp.concurrency.query import valid_process_workers, valid_thread_workers
 from cvp.context.context import Context
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text

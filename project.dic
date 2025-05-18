@@ -86,6 +86,7 @@ ffrtmphttp
 filekeys
 fileno
 filtergraph
+findfont
 fluro
 fmpeg
 fprobe
@@ -100,8 +101,10 @@ glyphos
 greenblue
 greeny
 greyblue
+gurmukhi
 hdcp
 hexdigest
+hhea
 hideable
 hieuh
 hline
@@ -123,6 +126,7 @@ isoformat
 isync
 jamos
 jaraco
+johab
 jongseong
 jungseong
 kdci
@@ -295,6 +299,7 @@ vfpv
 vimspector
 violetred
 vline
+wansung
 warper
 wght
 whsxga
