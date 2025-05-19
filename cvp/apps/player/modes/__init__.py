@@ -24,6 +24,7 @@ class ModeManager:
         from cvp.apps.player.modes.faker import FakerMode
         from cvp.apps.player.modes.files import FilesMode
         from cvp.apps.player.modes.flow import FlowMode
+        from cvp.apps.player.modes.font import FontMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
@@ -35,7 +36,6 @@ class ModeManager:
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
-        from cvp.apps.player.modes.ttf import TTFMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         self._main_layout = MainLayout(context)
@@ -63,7 +63,7 @@ class ModeManager:
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
-        self.font_mode = TTFMode(context)
+        self.font_mode = FontMode(context)
 
         # ------------------------------------------------------------------------------
         # Retrieves and stores all ModeInterface instances assigned to `self`

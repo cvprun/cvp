@@ -41,8 +41,8 @@ from cvp.types.colors import RGBA
 from cvp.types.override import override
 
 
-class TTFMode(BaseMode):
-    __cvp_mode_name__ = "TTF Font"
+class FontMode(BaseMode):
+    __cvp_mode_name__ = "Font"
     __cvp_mode_icon__ = FORMAT_FONT
 
     _EMPTY_CODEPOINT_INFO = CodepointInfo(0)
