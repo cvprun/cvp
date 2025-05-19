@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from io import BytesIO
 from math import isqrt
-from typing import Final
+from os import PathLike
+from typing import BinaryIO, Final, Union
 
 from fontTools.ttLib.ttFont import GlyphOrder
 from imgui_bundle import imgui
@@ -80,25 +82,26 @@ class FontMode(BaseMode):
 
     @staticmethod
     def on_open_runner(
-        file: str,
+        file: Union[str, PathLike[str], BinaryIO],
         font_size: int,
         max_texture_size: int,
         progress: ProgressValue,
     ):
+        filepath = ":memory:" if hasattr(file, "read") else str(file)
         try:
             loader = FontAtlasLoader(
-                path=file,
+                file=file,
                 size=font_size,
                 max_texture_size=max_texture_size,
                 callback=lambda c, m: progress.set(c, limit=m),
             )
-            logger.info(f"Font file loaded: '{file}'")
+            logger.info(f"Font file loaded: '{filepath}'")
             return loader
         except BaseException as e:
-            logger.error(f"Failed to load font file '{file}': {e}")
+            logger.error(f"Failed to load font file '{filepath}': {e}")
             raise
 
-    def open_font_file(self, file: str) -> None:
+    def open_font_file(self, file: Union[str, PathLike[str], BinaryIO]) -> None:
         if self._open_runner.running:
             raise ValueError("Open runner is already running")
 
@@ -113,7 +116,9 @@ class FontMode(BaseMode):
                 get_max_texture_size(),
                 self._open_progress,
             )
-            self.add_recent_item(file)
+
+            if not hasattr(file, "read"):
+                self.add_recent_item(str(file))
         except BaseException as e:
             logger.exception(e)
             self.context.toast_error(f"Font open failed: '{e}'")
@@ -266,6 +271,20 @@ class FontMode(BaseMode):
                     finally:
                         imgui.end_tab_item()
 
+                if imgui.begin_tab_item("NameRecord")[0]:
+                    try:
+                        self.on_name_record_process()
+                    finally:
+                        imgui.end_tab_item()
+
+                if self._atlas.ttf.is_variable:
+                    if imgui.begin_tab_item("Variable")[0]:
+                        try:
+                            self.on_axis_process()
+                            self.on_instance_record_process()
+                        finally:
+                            imgui.end_tab_item()
+
                 if imgui.begin_tab_item("Texture")[0]:
                     try:
                         self.on_texture_process()
@@ -348,6 +367,12 @@ class FontMode(BaseMode):
         input_text("Cap height (OS/2)", str(ttf.cap_height))
         hovered_tooltip_text(type(ttf).cap_height.__doc__)
 
+    def on_name_record_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+
         if imgui.begin_table("Names", 8, DEFAULT_TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Platform ID")
@@ -360,7 +385,7 @@ class FontMode(BaseMode):
                 imgui.table_setup_column("Value")
                 imgui.table_headers_row()
 
-                for name in ttf.names:
+                for name in self._atlas.ttf.names:
                     imgui.table_next_row()
 
                     imgui.table_set_column_index(0)
@@ -388,6 +413,102 @@ class FontMode(BaseMode):
 
                     imgui.table_set_column_index(7)
                     imgui.text(name.value)
+            finally:
+                imgui.end_table()
+
+    def on_axis_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+        assert self._atlas.ttf.is_variable is not None
+
+        if imgui.begin_table("Axis", 7, DEFAULT_TABLE_FLAGS):
+            try:
+                imgui.table_setup_column("Axis Name ID")
+                imgui.table_setup_column("Axis Name")
+                imgui.table_setup_column("Axis Tag")
+                imgui.table_setup_column("Default Value")
+                imgui.table_setup_column("Flags")
+                imgui.table_setup_column("Max Value")
+                imgui.table_setup_column("Min Value")
+                imgui.table_headers_row()
+
+                id2value = {name.name_id: name.value for name in self._atlas.ttf.names}
+
+                for axes in self._atlas.ttf.axes:
+                    imgui.table_next_row()
+
+                    imgui.table_set_column_index(0)
+                    imgui.text(str(axes.axis_name_id))
+
+                    if axis_name := id2value.get(axes.axis_name_id):
+                        imgui.table_set_column_index(1)
+                        imgui.text(axis_name)
+
+                    imgui.table_set_column_index(2)
+                    imgui.text(str(axes.axis_tag))
+
+                    imgui.table_set_column_index(3)
+                    imgui.text(f"{axes.default_value:.01f}")
+
+                    imgui.table_set_column_index(4)
+                    imgui.text(str(axes.flags))
+
+                    imgui.table_set_column_index(5)
+                    imgui.text(f"{axes.min_value:.01f}")
+
+                    imgui.table_set_column_index(6)
+                    imgui.text(f"{axes.max_value:.01f}")
+            finally:
+                imgui.end_table()
+
+    def on_instance_record_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+        assert self._atlas.ttf.is_variable is not None
+
+        if imgui.begin_table("InstanceRecord", 6, DEFAULT_TABLE_FLAGS):
+            try:
+                imgui.table_setup_column("Subfamily Name ID")
+                imgui.table_setup_column("Subfamily Name")
+                imgui.table_setup_column("Flags")
+                imgui.table_setup_column("Coordinates")
+                imgui.table_setup_column("PostScript Name ID")
+                imgui.table_setup_column("Action")
+                imgui.table_headers_row()
+
+                id2value = {name.name_id: name.value for name in self._atlas.ttf.names}
+
+                for i, instance in enumerate(self._atlas.ttf.instances):
+                    imgui.table_next_row()
+
+                    imgui.table_set_column_index(0)
+                    imgui.text(str(instance.subfamily_name_id))
+
+                    if subfamily_name := id2value.get(instance.subfamily_name_id):
+                        imgui.table_set_column_index(1)
+                        imgui.text(subfamily_name)
+
+                    imgui.table_set_column_index(2)
+                    imgui.text(str(instance.flags))
+
+                    imgui.table_set_column_index(3)
+                    imgui.text(str(instance.coordinates))
+
+                    imgui.table_set_column_index(4)
+                    imgui.text(str(instance.post_script_name_id))
+
+                    imgui.table_set_column_index(5)
+                    imgui.push_id(f"UseFont{i}")
+                    try:
+                        if imgui.button("Use font"):
+                            font = self._atlas.ttf.instantiate_variable_font(instance)
+                            self.open_font_file(BytesIO(font.as_bytes()))
+                    finally:
+                        imgui.pop_id()
             finally:
                 imgui.end_table()
 

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import os
-from io import StringIO
+from io import BytesIO, StringIO
 from os import PathLike
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import BinaryIO, Dict, List, Optional, Union
 
 from fontTools.ttLib import TTFont
+from fontTools.varLib.instancer import OverlapMode, instantiateVariableFont
 
+from cvp.fonts.opentype.tables.fvar import Axis, InstanceRecord
 from cvp.fonts.opentype.tables.name import (
     FONT_FAMILY_NAME_ID,
     FONT_SUBFAMILY_NAME_ID,
@@ -28,6 +30,51 @@ class TTF:
         path = path if isinstance(path, Path) else Path(path)
         assert isinstance(path, Path)
         return cls(path, TTFont(path))
+
+    @classmethod
+    def from_fileobject(cls, file: BinaryIO):
+        return cls(Path(), TTFont(file))
+
+    @classmethod
+    def from_file(cls, file: Union[str, PathLike[str], BinaryIO]):
+        if hasattr(file, "read"):
+            return cls.from_fileobject(file)  # type: ignore[arg-type]
+        else:
+            return cls.from_filepath(file)
+
+    def instantiate_variable_font(
+        self,
+        axis_limits: Union[Dict[str, Union[int, float]], InstanceRecord],
+        inplace=False,
+        optimize=True,
+        overlap=OverlapMode.KEEP_AND_SET_FLAGS,
+        update_font_names=False,
+        *,
+        downgrade_cff2=False,
+    ):
+        if isinstance(axis_limits, InstanceRecord):
+            axis_limits = axis_limits.coordinates
+        assert isinstance(axis_limits, dict)
+
+        result = instantiateVariableFont(
+            varfont=self._ttfont,
+            axisLimits=axis_limits,
+            inplace=inplace,
+            optimize=optimize,
+            overlap=overlap,
+            updateFontNames=update_font_names,
+            downgradeCFF2=downgrade_cff2,
+        )
+        assert isinstance(result, TTFont)
+        return type(self)(self._path, result)
+
+    def save(self, file, reorder_tables=True):
+        return self._ttfont.save(file, reorder_tables)
+
+    def as_bytes(self, reorder_tables=True) -> bytes:
+        buffer = BytesIO()
+        self._ttfont.save(buffer, reorder_tables)
+        return buffer.getvalue()
 
     def close(self) -> None:
         self._ttfont.close()
@@ -162,7 +209,7 @@ class TTF:
             return None
 
     @property
-    def names(self):
+    def names(self) -> List[NameRecord]:
         result = list()
         for record in self.name.names:
             item = NameRecord(
@@ -202,6 +249,40 @@ class TTF:
     @property
     def is_variable(self) -> bool:
         return "fvar" in self._ttfont
+
+    @property
+    def axes(self) -> List[Axis]:
+        try:
+            result = list()
+            for axes in self.fvar.axes:
+                item = Axis(
+                    axes.axisNameID,
+                    axes.axisTag,
+                    axes.defaultValue,
+                    axes.flags,
+                    axes.maxValue,
+                    axes.minValue,
+                )
+                result.append(item)
+            return result
+        except AttributeError:
+            return list()
+
+    @property
+    def instances(self) -> List[InstanceRecord]:
+        try:
+            result = list()
+            for instance in self.fvar.instances:
+                item = InstanceRecord(
+                    instance.subfamilyNameID,
+                    instance.flags,
+                    instance.coordinates,
+                    instance.postscriptNameID,
+                )
+                result.append(item)
+            return result
+        except AttributeError:
+            return list()
 
     def get_glyph_order(self) -> List[str]:
         return self.ttfont.getGlyphOrder()

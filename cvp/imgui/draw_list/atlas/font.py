@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from io import BytesIO
 from math import ceil
-from typing import Callable, Final, Optional, Tuple, Union
+from os import PathLike
+from typing import BinaryIO, Callable, Final, Optional, Tuple, Union
 
 from imgui_bundle import imgui
 from PIL import Image
@@ -33,7 +35,7 @@ class FontAtlasLoader:
 
     def __init__(
         self,
-        path: str,
+        file: Union[str, PathLike[str], BinaryIO],
         size=FONT_SIZE,
         block_size=UNICODE_SINGLE_BLOCK_SIZE,
         max_texture_size=DEFAULT_MAX_TEXTURE_SIZE,
@@ -45,8 +47,8 @@ class FontAtlasLoader:
         self.block_per_items = block_size
         self.padding_pixels = padding_pixels
 
-        self.ttf = TTF.from_filepath(path)
-        self.pillow_font = truetype(path, self.font_size)
+        self.ttf = TTF.from_file(file)
+        self.pillow_font = truetype(BytesIO(self.ttf.as_bytes()), self.font_size)
         self.blocks = self.ttf.get_block_ranges(self.block_per_items)
         self.chars = self.ttf.get_character_map()
         self.codepoints = dict()
@@ -218,7 +220,7 @@ class FontAtlas(BaseAtlas):
 
     def open(
         self,
-        path: str,
+        file: Union[str, PathLike[str], BinaryIO],
         size=FONT_SIZE,
         block_size=UNICODE_SINGLE_BLOCK_SIZE,
         *,
@@ -227,7 +229,7 @@ class FontAtlas(BaseAtlas):
         if self._texture.opened:
             raise ValueError("Font file already opened")
 
-        loader = FontAtlasLoader(path, size, block_size, callback=callback)
+        loader = FontAtlasLoader(file, size, block_size, callback=callback)
         self.open_with_loader(loader)
 
     def open_with_loader(self, loader: FontAtlasLoader):
