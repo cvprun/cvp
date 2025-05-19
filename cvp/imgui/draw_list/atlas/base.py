@@ -110,7 +110,7 @@ class BaseAtlas(Dict[int, AtlasItem]):
             draw_list = get_window_draw_list()
         assert draw_list is not None
 
-        if not isinstance(color, (tuple, list)):
+        if isinstance(color, (tuple, list)):
             color = imgui.get_color_u32(color)
         assert isinstance(color, int)
 

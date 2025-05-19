@@ -20,7 +20,7 @@ from cvp.gl.query import get_max_texture_size
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.atlas.font import FontAtlas, FontAtlasLoader
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
-from cvp.imgui.fit_size import FIT_SIZE
+from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
@@ -76,6 +76,7 @@ class FontMode(BaseMode):
         self._selected_block_index = 0
         self._selected_codepoint = 0
         self._selected_table_name = str()
+        self._preview_text = "Hello, World!"
 
     def on_open_font(self, file: str) -> None:
         self.open_font_file(file)
@@ -271,6 +272,12 @@ class FontMode(BaseMode):
                     finally:
                         imgui.end_tab_item()
 
+                if imgui.begin_tab_item("Preview")[0]:
+                    try:
+                        self.on_preview_process()
+                    finally:
+                        imgui.end_tab_item()
+
                 if imgui.begin_tab_item("NameRecord")[0]:
                     try:
                         self.on_name_record_process()
@@ -366,6 +373,28 @@ class FontMode(BaseMode):
 
         input_text("Cap height (OS/2)", str(ttf.cap_height))
         hovered_tooltip_text(type(ttf).cap_height.__doc__)
+
+    def on_preview_process(self) -> None:
+        assert not self._open_runner.running
+        assert self._open_runner.error is None
+        assert self._atlas.opened
+        assert self._atlas.ttf is not None
+
+        imgui.text("Preview Text")
+        preview_result = imgui.input_text_multiline(
+            "##PreviewText",
+            self._preview_text,
+            (FIT_WIDTH, 0),
+        )
+        if preview_result[0]:
+            self._preview_text = preview_result[1]
+
+        imgui.separator()
+
+        normal_color = imgui.get_color_u32(self.normal_color)
+        self._atlas.text_colored(self._preview_text, normal_color)
+
+        imgui.separator()
 
     def on_name_record_process(self) -> None:
         assert not self._open_runner.running
@@ -590,7 +619,7 @@ class FontMode(BaseMode):
     def do_codepoint_matrix(self, block: BlockRange) -> None:
         codepoint_begin = block.begin
 
-        selected_stroke_color = imgui.get_color_u32(self.selected_color)
+        selected_color = imgui.get_color_u32(self.selected_color)
         normal_color = imgui.get_color_u32(self.normal_color)
         accent_color = imgui.get_color_u32(self.accent_color)
         text_color = imgui.get_color_u32(self.text_color)
@@ -624,7 +653,7 @@ class FontMode(BaseMode):
             stroke_color = normal_color if info else accent_color
 
             if codepoint == self._selected_codepoint:
-                border_color = selected_stroke_color
+                border_color = selected_color
             else:
                 border_color = stroke_color
 

@@ -12,6 +12,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
+from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags import color_var
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
@@ -143,7 +144,7 @@ class LoggingFlowWindow(BaseWindow):
             self.level_index = level_result.value
 
         imgui.same_line()
-        imgui.set_next_item_width(-1)
+        imgui.set_next_item_width(FIT_WIDTH)
         self.filter = imgui.input_text_with_hint("##Filter", "Filter", self.filter)[1]
 
     def do_logging_process(self) -> None:

@@ -18,7 +18,7 @@ from cvp.imgui.draw_list.ttf.renderer import add_text_stroke
 from cvp.imgui.draw_list.types import DrawList
 from cvp.pillow.crop_to_content import crop_bottom_to_content
 from cvp.types.colors import RGBA
-from cvp.types.shapes import Point
+from cvp.types.shapes import Point, Size
 from cvp.variables import DEFAULT_MAX_TEXTURE_SIZE, FONT_SIZE, UNICODE_SINGLE_BLOCK_SIZE
 
 
@@ -334,7 +334,7 @@ class FontAtlas(BaseAtlas):
         point: Point,
         color: Union[int, RGBA] = 0xFFFFFFFF,
         draw_list: Optional[DrawList] = None,
-    ) -> None:
+    ) -> Size:
         if not self.opened:
             raise ValueError("Font file not opened")
 
@@ -346,17 +346,46 @@ class FontAtlas(BaseAtlas):
             color = imgui.get_color_u32(color)
         assert isinstance(color, int)
 
-        x = point[0]
-        y = point[1]
+        ascent = self.ttf.ascent or 0
+        descent = self.ttf.descent or 0
+        line_gap = self.ttf.line_gap or 0
+        assert ascent is not None
+        assert descent is not None
+        assert line_gap is not None
+
+        line_height = abs(ascent) + abs(descent) + abs(line_gap)
+
+        x1 = point[0]
+        y1 = point[1]
+
+        cursor_x = x1
+        cursor_y = y1
 
         for c in text:
-            item = self.__getitem__(ord(c))
+            try:
+                item = self.__getitem__(ord(c))
+            except KeyError:
+                continue
 
             width = item.width
             height = item.height
 
-            p1 = x, y
-            p2 = x + width, y + height
+            p1 = cursor_x, cursor_y
+            p2 = cursor_x + width, cursor_y + height
 
             self.add_image_with_item(item, p1, p2, color, draw_list)
-            x += width
+            cursor_x += width
+
+        return cursor_x - point[0], cursor_y + line_height
+
+    def text_colored(self, text: str, color: Union[int, RGBA] = 0xFFFFFFFF) -> None:
+        if isinstance(color, (tuple, list)):
+            color = imgui.get_color_u32(color)
+        assert isinstance(color, int)
+
+        draw_list = get_window_draw_list()
+        screen_pos = imgui.get_cursor_screen_pos()
+        cx, cy = screen_pos.x, screen_pos.y
+
+        size = self.add_text_atlas(text, (cx, cy), color, draw_list)
+        imgui.dummy(size)

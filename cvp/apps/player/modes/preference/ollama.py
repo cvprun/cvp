@@ -10,7 +10,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
-from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE
+from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
@@ -148,13 +148,13 @@ class OllamaPreference(BasePreference):
                     imgui.table_next_row()
 
                     imgui.table_set_column_index(0)
-                    imgui.set_next_item_width(-1)
+                    imgui.set_next_item_width(FIT_WIDTH)
                     key_result = imgui.input_text(f"###HeaderKey{i}", key)
                     if key_result[0]:
                         ollama.headers[i] = key_result[1], value
 
                     imgui.table_set_column_index(1)
-                    imgui.set_next_item_width(-1)
+                    imgui.set_next_item_width(FIT_WIDTH)
                     val_result = imgui.input_text(f"###HeaderValue{i}", value)
                     if val_result[0]:
                         ollama.headers[i] = key, val_result[1]
