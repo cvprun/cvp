@@ -54,6 +54,7 @@ class FontAtlasLoader:
         self.family = self.ttf.font_family_name
         self.subfamily = self.ttf.font_subfamily_name
         self.is_monospace = self.ttf.is_monospace
+        self.is_variable = self.ttf.is_variable
 
         ascent, descent = self.pillow_font.getmetrics()
         assert 0 < ascent
@@ -282,12 +283,12 @@ class FontAtlas(BaseAtlas):
         return self._loader.subfamily if self._loader else str()
 
     @property
-    def is_monospace(self) -> str:
-        return self._loader.is_monospace if self._loader else str()
+    def is_variable(self) -> bool:
+        return self._loader.is_variable if self._loader else False
 
     @property
-    def spacing_type(self) -> str:
-        return "Monospace" if self.is_monospace else "Proportional"
+    def is_monospace(self) -> bool:
+        return self._loader.is_monospace if self._loader else False
 
     def __repr__(self):
         return (
@@ -299,7 +300,7 @@ class FontAtlas(BaseAtlas):
         )
 
     def __str__(self):
-        return f"{self.family}, {self.subfamily}, {self.font_size}, {self.spacing_type}"
+        return f"{self.family}, {self.subfamily}, {self.font_size}"
 
     def add_text_stroke(
         self,

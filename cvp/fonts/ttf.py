@@ -85,6 +85,11 @@ class TTF:
         return self._ttfont["vmtx"]
 
     @property
+    def fvar(self):
+        """Font Variations Table"""
+        return self._ttfont["fvar"]
+
+    @property
     def units_per_em(self) -> Optional[int]:
         """Units per em square (typically 1000 or 2048)"""
         try:
@@ -193,6 +198,10 @@ class TTF:
     @property
     def is_monospace(self) -> bool:
         return self.os2.panose.bProportion == 9
+
+    @property
+    def is_variable(self) -> bool:
+        return "fvar" in self._ttfont
 
     def get_glyph_order(self) -> List[str]:
         return self.ttfont.getGlyphOrder()

@@ -308,15 +308,16 @@ class TTFMode(BaseMode):
         assert self._atlas.ttf is not None
 
         input_text("Font file path", f"{str(self._atlas.path)}")
-        input_text("Font family name", f"{self._atlas.family}")
-        input_text("Font subfamily name", f"{self._atlas.subfamily}")
-        input_text("Font spacing type", f"{self._atlas.spacing_type}")
+        input_text("Font family name", self._atlas.family)
+        input_text("Font subfamily name", self._atlas.subfamily)
+        input_text("Font monospace", str(self._atlas.is_monospace))
+        input_text("Font variable", str(self._atlas.is_variable))
         input_text("Font size", f"{self._atlas.font_size}px")
 
         input_int2("Font texture size", self._atlas.width, self._atlas.height)
         input_text("Font block size", f"0x{self._atlas.block_size:06X}")
-        input_text("Font blocks count", f"{len(self._atlas.blocks)}")
-        input_text("Font codepoints count", f"{len(self._atlas.codepoints)}")
+        input_text("Font blocks count", str(len(self._atlas.blocks)))
+        input_text("Font codepoints count", str(len(self._atlas.codepoints)))
 
         ttf = self._atlas.ttf
 
