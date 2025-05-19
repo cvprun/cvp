@@ -96,6 +96,7 @@ pytest-cov==6.0.0
 pytest-mock==3.14.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
+python-mpv==1.0.8
 python-xlib==0.33
 pytz==2025.2
 PyYAML==6.0.2
