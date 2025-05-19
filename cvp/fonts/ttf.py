@@ -85,49 +85,76 @@ class TTF:
         return self._ttfont["vmtx"]
 
     @property
-    def units_per_em(self):
+    def units_per_em(self) -> Optional[int]:
         """Units per em square (typically 1000 or 2048)"""
-        return self.head.unitsPerEm
+        try:
+            return self.head.unitsPerEm
+        except AttributeError:
+            return None
 
     @property
-    def ascent(self):
+    def ascent(self) -> Optional[int]:
         """Vertical ascent value (usually for top baseline alignment)"""
-        return self.hhea.ascent
+        try:
+            return self.hhea.ascent
+        except AttributeError:
+            return None
 
     @property
-    def descent(self):
+    def descent(self) -> Optional[int]:
         """Vertical descent value (usually negative, for bottom alignment)"""
-        return self.hhea.descent
+        try:
+            return self.hhea.descent
+        except AttributeError:
+            return None
 
     @property
-    def line_gap(self):
+    def line_gap(self) -> Optional[int]:
         """Additional space between lines"""
-        return self.hhea.lineGap
+        try:
+            return self.hhea.lineGap
+        except AttributeError:
+            return None
 
     @property
-    def typo_ascender(self):
+    def typo_ascender(self) -> Optional[int]:
         """Typographic ascender height"""
-        return self.os2.sTypoAscender
+        try:
+            return self.os2.sTypoAscender
+        except AttributeError:
+            return None
 
     @property
-    def typo_descender(self):
+    def typo_descender(self) -> Optional[int]:
         """Typographic descender depth"""
-        return self.os2.sTypoDescender
+        try:
+            return self.os2.sTypoDescender
+        except AttributeError:
+            return None
 
     @property
-    def typo_line_gap(self):
+    def typo_line_gap(self) -> Optional[int]:
         """Typographic line gap"""
-        return self.os2.sTypoLineGap
+        try:
+            return self.os2.sTypoLineGap
+        except AttributeError:
+            return None
 
     @property
-    def x_height(self):
+    def x_height(self) -> Optional[int]:
         """Height of lowercase 'x'"""
-        return self.os2.sxHeight
+        try:
+            return self.os2.sxHeight
+        except AttributeError:
+            return None
 
     @property
-    def cap_height(self):
+    def cap_height(self) -> Optional[int]:
         """Height of capital 'H'"""
-        return self.os2.sCapHeight
+        try:
+            return self.os2.sCapHeight
+        except AttributeError:
+            return None
 
     @property
     def names(self):

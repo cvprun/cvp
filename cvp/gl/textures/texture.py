@@ -5,6 +5,7 @@ from typing import Final, Literal, Optional, Union
 
 from OpenGL import GL
 
+from cvp.gl.query import get_max_texture_size
 from cvp.gl.textures.data_type import (
     TextureDataType,
     texture_data_type_mapping,
@@ -175,6 +176,10 @@ class Texture:
 
         if width <= 0 or height <= 0:
             raise ValueError("Invalid texture size")
+
+        max_size = get_max_texture_size()
+        if 0 < max_size and (max_size < width or max_size < height):
+            raise ValueError(f"Texture {width}x{height} exceeds max size {max_size}")
 
         # The width of the texture image. Must be 2n + 2(border) for some integer n.
         # The height of the texture image. Must be 2^m + 2(border) for some integer m.

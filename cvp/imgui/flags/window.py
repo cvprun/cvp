@@ -78,6 +78,11 @@ def merge_window_flags(*flags: Union[WindowFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))
 
 
+ALWAYS_SCROLLBAR: Final[int] = merge_window_flags(
+    WindowFlags.always_vertical_scrollbar,
+    WindowFlags.always_horizontal_scrollbar,
+)
+
 BACKGROUND_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_move,
     WindowFlags.no_saved_settings,

@@ -14,6 +14,7 @@ from cvp.concurrency.threading.progress_value import ProgressValue
 from cvp.context.context import Context
 from cvp.fonts.codepoint_info import CodepointInfo
 from cvp.fonts.ranges import BlockRange
+from cvp.gl.query import get_max_texture_size
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.atlas.font import FontAtlas, FontAtlasLoader
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
@@ -22,6 +23,7 @@ from cvp.imgui.flags import focused, hovered
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
+from cvp.imgui.flags.window import ALWAYS_SCROLLBAR
 from cvp.imgui.input_float2 import input_float2
 from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text import input_text
@@ -44,6 +46,9 @@ class TTFMode(BaseMode):
     __cvp_mode_icon__ = FORMAT_FONT
 
     _EMPTY_CODEPOINT_INFO = CodepointInfo(0)
+
+    _TEXTURE_CHILD_FLAGS: Final[int] = BORDERS
+    _TEXTURE_FLAGS: Final[int] = ALWAYS_SCROLLBAR
 
     _PLANES_SPLIT_X: Final[int] = 150
     _PLANES_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
@@ -74,11 +79,17 @@ class TTFMode(BaseMode):
         self.open_font_file(file)
 
     @staticmethod
-    def on_open_runner(file: str, font_size: int, progress: ProgressValue):
+    def on_open_runner(
+        file: str,
+        font_size: int,
+        max_texture_size: int,
+        progress: ProgressValue,
+    ):
         try:
             loader = FontAtlasLoader(
-                file,
-                font_size,
+                path=file,
+                size=font_size,
+                max_texture_size=max_texture_size,
                 callback=lambda c, m: progress.set(c, limit=m),
             )
             logger.info(f"Font file loaded: '{file}'")
@@ -96,7 +107,12 @@ class TTFMode(BaseMode):
             logger.info("Font file closed")
 
         try:
-            self._open_runner(file, self.config.preview_size, self._open_progress)
+            self._open_runner(
+                file,
+                self.config.preview_size,
+                get_max_texture_size(),
+                self._open_progress,
+            )
             self.add_recent_item(file)
         except BaseException as e:
             logger.exception(e)
@@ -375,18 +391,25 @@ class TTFMode(BaseMode):
                 imgui.end_table()
 
     def on_texture_process(self) -> None:
-        texture_id = self._atlas.texture.texture_id
-        texture_size = self._atlas.texture.size
-
-        screen_pos = imgui.get_cursor_screen_pos()
-        cx, cy = screen_pos.x, screen_pos.y
-        image_min = cx, cy
-        image_max = cx + texture_size[0], cy + texture_size[1]
-
         accent_color = imgui.get_color_u32(self.accent_color)
+        texture_id = self._atlas.texture.texture_id
+        texture_width = self._atlas.texture.width
+        texture_height = self._atlas.texture.height
+        texture_size = texture_width, texture_height
 
-        with begin_child_context("Texture", texture_size):
+        with begin_child_context(
+            label="Texture",
+            size=FIT_SIZE,
+            child_flags=self._TEXTURE_CHILD_FLAGS,
+            window_flags=self._TEXTURE_FLAGS,
+        ):
             draw_list = get_window_draw_list()
+
+            screen_pos = imgui.get_cursor_screen_pos()
+            cx, cy = screen_pos.x, screen_pos.y
+
+            image_min = cx, cy
+            image_max = cx + texture_width, cy + texture_height
             draw_list.add_image(texture_id, image_min, image_max)
 
             for codepoint, item in self._atlas.items():
@@ -395,6 +418,8 @@ class TTFMode(BaseMode):
                 x2 = cx + item.x2
                 y2 = cy + item.y2
                 draw_list.add_rect((x1, y1), (x2, y2), accent_color)
+
+            imgui.dummy(texture_size)
 
     def on_planes_process(self) -> None:
         with begin_child_context(

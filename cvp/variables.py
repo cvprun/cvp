@@ -121,6 +121,8 @@ ONVIF_ADDRESS: Final[str] = "http://localhost/"
 
 ZEEP_ELEMENT_SEPARATOR: Final[str] = "."
 
+DEFAULT_MAX_TEXTURE_SIZE: Final[int] = 2048
+
 BEZIER_CURVE_TESSELLATION_TOLERANCE: Final[float] = 1.25
 """
 Tessellation tolerance when using BezierCurve without a specific number of segments.

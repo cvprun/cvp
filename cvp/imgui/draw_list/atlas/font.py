@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from math import ceil, isqrt
+from math import ceil
 from typing import Callable, Final, Optional, Tuple, Union
 
 from imgui_bundle import imgui
@@ -14,9 +14,10 @@ from cvp.imgui.draw_list.atlas.base import AtlasItem, BaseAtlas
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.draw_list.ttf.renderer import add_text_stroke
 from cvp.imgui.draw_list.types import DrawList
+from cvp.pillow.crop_to_content import crop_bottom_to_content
 from cvp.types.colors import RGBA
 from cvp.types.shapes import Point
-from cvp.variables import FONT_SIZE, UNICODE_SINGLE_BLOCK_SIZE
+from cvp.variables import DEFAULT_MAX_TEXTURE_SIZE, FONT_SIZE, UNICODE_SINGLE_BLOCK_SIZE
 
 
 class FontAtlasLoader:
@@ -35,21 +36,18 @@ class FontAtlasLoader:
         path: str,
         size=FONT_SIZE,
         block_size=UNICODE_SINGLE_BLOCK_SIZE,
-        padding_size=1,
+        max_texture_size=DEFAULT_MAX_TEXTURE_SIZE,
+        padding_pixels=1,
         *,
         callback: Optional[Callable[[int, int], None]] = None,
     ):
         self.font_size = size
-        self.block_size = block_size
-        self.line_count = isqrt(block_size)
-        self.padding_size = padding_size
-
-        if self.line_count**2 != self.block_size:
-            raise ValueError("Block size must be square")
+        self.block_per_items = block_size
+        self.padding_pixels = padding_pixels
 
         self.ttf = TTF.from_filepath(path)
         self.pillow_font = truetype(path, self.font_size)
-        self.blocks = self.ttf.get_block_ranges(self.block_size)
+        self.blocks = self.ttf.get_block_ranges(self.block_per_items)
         self.chars = self.ttf.get_character_map()
         self.codepoints = dict()
         self.atlas_items = dict()
@@ -57,14 +55,17 @@ class FontAtlasLoader:
         self.subfamily = self.ttf.font_subfamily_name
         self.is_monospace = self.ttf.is_monospace
 
-        max_chars = len(self.chars)
-        cols = self.line_count
-        rows = ceil(max_chars / self.line_count)
-
+        ascent, descent = self.pillow_font.getmetrics()
+        assert 0 < ascent
+        assert 0 < descent
+        cell_height = abs(ascent) + abs(descent)
         cell_width = self.font_size
-        cell_height = self.font_size
 
-        canvas_width = cell_width * cols
+        max_chars = len(self.chars)
+        cols = max_texture_size / cell_width
+        rows = ceil(max_chars / cols)
+
+        canvas_width = max_texture_size
         canvas_height = cell_height * rows
 
         self.image = Image.new(
@@ -73,22 +74,14 @@ class FontAtlasLoader:
             color=self.PILLOW_COLOR_TRANSPARENT,
         )
         draw = Draw(self.image)
-        ascent, descent = self.pillow_font.getmetrics()
 
-        next_x = 0
-        next_y = 0
+        next_x = 0.0
+        next_y = 0.0
         line_max_height = 0.0
 
         for i, item in enumerate(self.chars.items()):
-            # =============================
-            # item_col = i % cols
-            # item_row = i // cols
-            # x1 = item_col * cell_width
-            # y1 = item_row * cell_height
-            # -----------------------------
             x1 = next_x
             y1 = next_y
-            # =============================
 
             p1 = x1, y1
 
@@ -98,20 +91,31 @@ class FontAtlasLoader:
             bbox = draw.textbbox(p1, text, font=self.pillow_font)
             bbox_width = bbox[2] - bbox[0]
             bbox_height = bbox[3] - bbox[1]
-            assert y1 + bbox_height < canvas_height
+
+            if canvas_height <= y1 + bbox_height:
+                extra_h = ceil(max(1.0, (max_chars - i) / cols) * cell_height * 2)
+                canvas_height += extra_h
+                new_image = Image.new(
+                    mode=self.PILLOW_IMAGE_MODE,
+                    size=(canvas_width, canvas_height),
+                    color=self.PILLOW_COLOR_TRANSPARENT,
+                )
+                draw = Draw(new_image)
+                new_image.paste(self.image, (0, 0))
+                self.image = new_image
 
             if x1 + bbox_width < canvas_width:
                 line_max_height = max(line_max_height, bbox_height)
-                next_x += bbox_width + self.padding_size
+                next_x += bbox_width + self.padding_pixels
             else:
                 assert canvas_width <= x1 + bbox_width
                 # Too wide for canvas, draw on next line.
 
-                next_x = bbox_width + self.padding_size
-                next_y += line_max_height + self.padding_size
+                next_x = bbox_width + self.padding_pixels
+                next_y += line_max_height + self.padding_pixels
                 line_max_height = bbox_height
 
-                x1 = 0
+                x1 = 0.0
                 y1 = next_y
                 p1 = x1, y1
 
@@ -120,7 +124,18 @@ class FontAtlasLoader:
                 bbox_height = bbox[3] - bbox[1]
 
                 assert x1 + bbox_width < canvas_width
-                assert y1 + bbox_height < canvas_height
+
+                if canvas_height <= y1 + bbox_height:
+                    extra_h = ceil(max(1.0, (max_chars - i) / cols) * cell_height * 2)
+                    canvas_height += extra_h
+                    new_image = Image.new(
+                        mode=self.PILLOW_IMAGE_MODE,
+                        size=(canvas_width, canvas_height),
+                        color=self.PILLOW_COLOR_TRANSPARENT,
+                    )
+                    draw = Draw(new_image)
+                    new_image.paste(self.image, (0, 0))
+                    self.image = new_image
 
             x2 = x1 + bbox_width
             y2 = y1 + bbox_height
@@ -135,16 +150,21 @@ class FontAtlasLoader:
             draw_point = draw_x, draw_y
             draw.text(draw_point, text, self.PILLOW_COLOR_WHITE, font=self.pillow_font)
 
-            uv_min = x1 / canvas_width, y1 / canvas_height
-            uv_max = x2 / canvas_width, y2 / canvas_height
+            # [IMPORTANT]
+            # Since the UV coordinates change when the canvas size changes,
+            # we calculate them all at once at the end.
+            # uv_p1 = x1 / canvas_width, y1 / canvas_height
+            # uv_p2 = x2 / canvas_width, y2 / canvas_height
+            uv_p1 = 0.0, 0.0
+            uv_p2 = 0.0, 0.0
 
             atlas = AtlasItem(
                 index_=i,
                 p1=p1,
                 p2=p2,
                 offset=offset,
-                uv_p1=uv_min,
-                uv_p2=uv_max,
+                uv_p1=uv_p1,
+                uv_p2=uv_p2,
                 ascent=ascent,
                 descent=descent,
                 name=glyph_name,
@@ -155,6 +175,30 @@ class FontAtlasLoader:
 
             if callback is not None:
                 callback(i, max_chars)
+
+        self.image = crop_bottom_to_content(self.image)
+
+        # Recalculate the UV coordinates based on the most recently updated canvas size.
+        canvas_width = self.image.width
+        canvas_height = self.image.height
+        for codepoint in self.atlas_items.keys():
+            old_atlas = self.atlas_items[codepoint]
+            x1, y1 = old_atlas.p1
+            x2, y2 = old_atlas.p2
+            uv_p1 = x1 / canvas_width, y1 / canvas_height
+            uv_p2 = x2 / canvas_width, y2 / canvas_height
+            new_atlas = AtlasItem(
+                index_=old_atlas.index_,
+                p1=old_atlas.p1,
+                p2=old_atlas.p2,
+                offset=old_atlas.offset,
+                uv_p1=uv_p1,
+                uv_p2=uv_p2,
+                ascent=old_atlas.ascent,
+                descent=old_atlas.descent,
+                name=old_atlas.name,
+            )
+            self.atlas_items[codepoint] = new_atlas
 
     def close(self) -> None:
         self.atlas_items.clear()
@@ -227,11 +271,7 @@ class FontAtlas(BaseAtlas):
 
     @property
     def block_size(self):
-        return self._loader.block_size if self._loader else 0
-
-    @property
-    def line_count(self):
-        return self._loader.line_count if self._loader else 0
+        return self._loader.block_per_items if self._loader else 0
 
     @property
     def family(self) -> str:
