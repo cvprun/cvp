@@ -4,17 +4,17 @@ from unittest import TestCase, main
 
 from OpenGL import GL
 
-from cvp.gl.textures.filter import TextureFilter, texture_filter_mapping
+from cvp.gl.textures.filter import TextureMinFilter, texture_min_filter_mapping
 
 
 class FilterTestCase(TestCase):
     def test_keys(self):
-        mapping_keys = set(texture_filter_mapping().keys())
-        filters = set(TextureFilter)
+        mapping_keys = set(texture_min_filter_mapping().keys())
+        filters = set(TextureMinFilter)
         self.assertSetEqual(filters, mapping_keys)
 
     def test_values(self):
-        mapping_values = set(texture_filter_mapping().values())
+        mapping_values = set(texture_min_filter_mapping().values())
         values = {
             GL.GL_NEAREST,
             GL.GL_LINEAR,
@@ -26,7 +26,7 @@ class FilterTestCase(TestCase):
         self.assertSetEqual(values, mapping_values)
 
     def test_integers(self):
-        mapping_values = set(texture_filter_mapping().values())
+        mapping_values = set(texture_min_filter_mapping().values())
         numbers = set(map(lambda x: int(x), mapping_values))
         self.assertSetEqual(mapping_values, numbers)
 

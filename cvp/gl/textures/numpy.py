@@ -12,7 +12,7 @@ from PIL.Image import fromarray as pillow_from_array
 from PIL.Image import open as pillow_open
 
 from cvp.gl.textures.data_type import TextureDataType
-from cvp.gl.textures.filter import TextureFilter
+from cvp.gl.textures.filter import TextureMagFilter, TextureMinFilter
 from cvp.gl.textures.format import TextureFormat
 from cvp.gl.textures.internal_format import TextureInternalFormat
 from cvp.gl.textures.texture import Texture
@@ -63,11 +63,11 @@ class NumpyTexture:
         cls,
         array: NDArray[uint8],
         *,
-        min_filter=TextureFilter.linear,
-        mag_filter=TextureFilter.linear,
+        min_filter=TextureMinFilter.nearest_mipmap_nearest,
+        mag_filter=TextureMagFilter.nearest,
         wrap_s=TextureWrap.clamp_to_border,
         wrap_t=TextureWrap.clamp_to_border,
-        use_mipmaps=False,
+        use_mipmaps=True,
         border_color=BLACK_RGBA,
         level_of_detail=Texture.BASE_IMAGE_LEVEL,
         border_width: Literal[0, 1] = 0,

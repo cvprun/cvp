@@ -11,7 +11,12 @@ from cvp.gl.textures.data_type import (
     texture_data_type_mapping,
     texture_numpy_dtype_mapping,
 )
-from cvp.gl.textures.filter import TextureFilter, texture_filter_mapping
+from cvp.gl.textures.filter import (
+    TextureMagFilter,
+    TextureMinFilter,
+    texture_mag_filter_mapping,
+    texture_min_filter_mapping,
+)
 from cvp.gl.textures.format import (
     TextureFormat,
     texture_format_channels_mapping,
@@ -34,7 +39,8 @@ class Texture:
     FORMAT_CHANNELS_MAPPING = texture_format_channels_mapping()
     DATA_TYPE_MAPPING = texture_data_type_mapping()
     NUMPY_DTYPE_MAPPING = texture_numpy_dtype_mapping()
-    FILTER_MAPPING = texture_filter_mapping()
+    MIN_FILTER_MAPPING = texture_min_filter_mapping()
+    MAG_FILTER_MAPPING = texture_mag_filter_mapping()
     WRAP_MAPPING = texture_wrap_mapping()
 
     _id: Union[int, GL.Constant]
@@ -47,8 +53,8 @@ class Texture:
         internal_format=TextureInternalFormat.rgba8,
         pix_format=TextureFormat.rgba,
         data_type=TextureDataType.unsigned_byte,
-        min_filter=TextureFilter.linear,
-        mag_filter=TextureFilter.linear,
+        min_filter=TextureMinFilter.linear,
+        mag_filter=TextureMagFilter.linear,
         wrap_s=TextureWrap.repeat,
         wrap_t=TextureWrap.repeat,
         use_mipmaps=False,
@@ -162,8 +168,8 @@ class Texture:
         internal_format=TextureInternalFormat.rgba8,
         pix_format=TextureFormat.rgba,
         data_type=TextureDataType.unsigned_byte,
-        min_filter=TextureFilter.linear,
-        mag_filter=TextureFilter.linear,
+        min_filter=TextureMinFilter.linear,
+        mag_filter=TextureMagFilter.linear,
         wrap_s=TextureWrap.repeat,
         wrap_t=TextureWrap.repeat,
         use_mipmaps=False,
@@ -191,8 +197,8 @@ class Texture:
         gl_format = self.FORMAT_MAPPING[pix_format]
         gl_type = self.DATA_TYPE_MAPPING[data_type]
 
-        gl_min_f = self.FILTER_MAPPING[min_filter]
-        gl_mag_f = self.FILTER_MAPPING[mag_filter]
+        gl_min_f = self.MIN_FILTER_MAPPING[min_filter]
+        gl_mag_f = self.MAG_FILTER_MAPPING[mag_filter]
         gl_wrap_s = self.WRAP_MAPPING[wrap_s]
         gl_wrap_t = self.WRAP_MAPPING[wrap_t]
 
@@ -275,25 +281,25 @@ class Texture:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
 
-    def set_min_filter(self, min_filter: TextureFilter) -> None:
+    def set_min_filter(self, min_filter: TextureMinFilter) -> None:
         if not self._bound:
             raise ValueError("Texture is not bound")
 
         if min_filter == self._min_filter:
             return
 
-        gl_min_f = self.FILTER_MAPPING[min_filter]
+        gl_min_f = self.MIN_FILTER_MAPPING[min_filter]
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, gl_min_f)
         self._min_filter = min_filter
 
-    def set_mag_filter(self, mag_filter: TextureFilter) -> None:
+    def set_mag_filter(self, mag_filter: TextureMagFilter) -> None:
         if not self._bound:
             raise ValueError("Texture is not bound")
 
         if mag_filter == self._mag_filter:
             return
 
-        gl_mag_f = self.FILTER_MAPPING[mag_filter]
+        gl_mag_f = self.MAG_FILTER_MAPPING[mag_filter]
         GL.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, gl_mag_f)
         self._mag_filter = mag_filter
 
