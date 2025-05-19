@@ -4,7 +4,7 @@ from typing import Iterable
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.vms.onvif._base import BaseOnvifTab
+from cvp.apps.player.modes.onvif._base import BaseOnvifTab
 from cvp.context.context import Context
 from cvp.imgui.button import button
 from cvp.imgui.flags import table_column

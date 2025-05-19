@@ -4,7 +4,7 @@ from datetime import datetime
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.vms.medias._base import BaseMediaTab
+from cvp.apps.player.modes.medias._base import BaseMediaTab
 from cvp.context.context import Context
 from cvp.ffmpeg.ffprobe.inspect import inspect_video_frame_size
 from cvp.imgui.begin_child import begin_child_context

@@ -16,27 +16,27 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
+        from cvp.apps.player.modes.binary_text import BinaryTextMode
         from cvp.apps.player.modes.canvas import CanvasMode
         from cvp.apps.player.modes.chat import ChatMode
-        from cvp.apps.player.modes.cms.datasets import DatasetsMode
-        from cvp.apps.player.modes.cms.files import FilesMode
-        from cvp.apps.player.modes.crypto.hash import HashMode
-        from cvp.apps.player.modes.cv.tracker import ObjectTrackerMode
-        from cvp.apps.player.modes.encoding.binary_text import BinaryTextMode
+        from cvp.apps.player.modes.datasets import DatasetsMode
+        from cvp.apps.player.modes.downloader import DownloaderMode
+        from cvp.apps.player.modes.faker import FakerMode
+        from cvp.apps.player.modes.files import FilesMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
-        from cvp.apps.player.modes.generators.faker import FakerMode
+        from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
         from cvp.apps.player.modes.main.layout import MainLayout
-        from cvp.apps.player.modes.network.downloader import DownloaderMode
-        from cvp.apps.player.modes.network.sockmap import SockmapMode
+        from cvp.apps.player.modes.medias import MediasMode
+        from cvp.apps.player.modes.onvif import OnvifMode
+        from cvp.apps.player.modes.player import MediaPlayerMode
         from cvp.apps.player.modes.preference import PreferenceMode
-        from cvp.apps.player.modes.system.terminal import TerminalMode
+        from cvp.apps.player.modes.sockmap import SockmapMode
+        from cvp.apps.player.modes.terminal import TerminalMode
+        from cvp.apps.player.modes.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.ttf import TTFMode
-        from cvp.apps.player.modes.vms.medias import MediasMode
-        from cvp.apps.player.modes.vms.onvif import OnvifMode
-        from cvp.apps.player.modes.vms.player import MediaPlayerMode
-        from cvp.apps.player.modes.vms.wsdiscovery import WsDiscoveryMode
+        from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         self._main_layout = MainLayout(context)
 

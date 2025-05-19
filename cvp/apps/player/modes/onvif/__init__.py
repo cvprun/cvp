@@ -2,13 +2,13 @@
 
 from collections import OrderedDict
 from functools import lru_cache
-from typing import Sequence, Type
+from typing import Final, Sequence, Type
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.vms.medias._base import BaseMediaTab, MediaTabInterface
-from cvp.assets.fonts.mdi import FILMSTRIP
+from cvp.apps.player.modes.onvif._base import BaseOnvifTab
+from cvp.assets.fonts.mdi import MOVIE_COG
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -16,93 +16,98 @@ from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.text_centered import text_centered
-from cvp.media.config import MediaConfig
+from cvp.onvif.config import OnvifConfig
 from cvp.types.override import override
 
 
 @lru_cache
-def create_media_tab_types() -> Sequence[Type[BaseMediaTab]]:
-    from cvp.apps.player.modes.vms.medias.info import MediaInfoTab
-    from cvp.apps.player.modes.vms.medias.stream import MediaStreamTab
+def create_onvif_tab_types() -> Sequence[Type[BaseOnvifTab]]:
+    from cvp.apps.player.modes.onvif.apis import OnvifApisTab
+    from cvp.apps.player.modes.onvif.auth import OnvifAuthTab
+    from cvp.apps.player.modes.onvif.client import OnvifClientTab
+    from cvp.apps.player.modes.onvif.info import OnvifInfoTab
 
-    return MediaInfoTab, MediaStreamTab
+    return OnvifInfoTab, OnvifAuthTab, OnvifClientTab, OnvifApisTab
 
 
-def create_media_tabs(context: Context) -> OrderedDict[str, MediaTabInterface]:
-    tab_types = create_media_tab_types()
+def create_onvif_tabs(context: Context):
+    tab_types = create_onvif_tab_types()
     return OrderedDict({tt.get_tab_name(): tt(context) for tt in tab_types})
 
 
-class MediasMode(BaseMode):
-    __cvp_mode_name__ = "Medias"
-    __cvp_mode_icon__ = FILMSTRIP
+class OnvifMode(BaseMode):
+    __cvp_mode_name__ = "Onvif"
+    __cvp_mode_icon__ = MOVIE_COG
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._tabs = create_media_tabs(context)
+        self._tabs = create_onvif_tabs(context)
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
             title="Remove",
-            label="Are you sure you want to remove media?",
+            label="Are you sure you want to remove device?",
             ok="Remove",
             cancel="No",
             target=self.on_confirm_remove,
         )
         self._confirm_clear = ConfirmPopup(
             title="Clear",
-            label="Are you sure you want to remove all medias?",
+            label="Are you sure you want to remove all devices?",
             ok="Clear",
             cancel="No",
             target=self.on_confirm_clear,
         )
 
     @property
-    def medias(self):
-        return self.context.medias
+    def onvifs(self):
+        return self.context.onvifs
+
+    @property
+    def config(self):
+        return self.context.config.onvif
 
     def on_confirm_remove(self, value: bool) -> None:
         if not value:
             return
-        assert self._remove_candidate in self.medias
-        self.medias.remove(self._remove_candidate)
+        assert self._remove_candidate in self.onvifs
+        self.onvifs.remove(self._remove_candidate)
 
     def on_confirm_clear(self, value: bool) -> None:
         if not value:
             return
-        self.medias.remove_all()
+        self.onvifs.remove_all()
 
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
             self.do_child_process()
 
-    def do_child_process(
-        self,
-        menu_split_x=300,
-        menu_child_flags=RESIZE_X | BORDERS,
-    ) -> None:
+    def do_child_process(self) -> None:
         with begin_child_context(
             label="Menu",
-            size=(menu_split_x, 0),
-            child_flags=menu_child_flags,
+            size=(self._MENU_SPLIT_X, 0),
+            child_flags=self._MENU_CHILD_FLAGS,
         ):
             if button("Reload"):
-                self.medias.read_all_config_files()
+                self.onvifs.read_all_config_files()
             imgui.same_line()
             if imgui.button("Add"):
-                self.selected_submenu = self.medias.add_media()[0]
+                self.selected_submenu = self.onvifs.add_onvif()[0]
             imgui.same_line()
-            if button("Del", disabled=self.selected_submenu not in self.medias):
+            if button("Del", disabled=self.selected_submenu not in self.onvifs):
                 self._remove_candidate = self.selected_submenu
                 self._confirm_remove.show()
             imgui.same_line()
-            if button("Clear", disabled=not self.medias):
+            if button("Clear", disabled=not self.onvifs):
                 self._confirm_clear.show()
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
-                    for key, media in self.medias.items():
-                        label = f"{media.name}###{key}"
+                    for key, onvif in self.onvifs.items():
+                        label = f"{onvif.name}###{key}"
                         selected = key == self.selected_submenu
                         if imgui.selectable(label, selected)[1]:
                             self.selected_submenu = key
@@ -112,21 +117,21 @@ class MediasMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if selected_media := self.medias.get(self.selected_submenu):
-                self.do_media_tab_bar(selected_media)
+            if selected_onvif := self.onvifs.get(self.selected_submenu):
+                self.do_onvif_tab_bar(selected_onvif)
             else:
                 text_centered("Please select a item")
 
         self._confirm_remove.on_process()
         self._confirm_clear.on_process()
 
-    def do_media_tab_bar(self, media: MediaConfig) -> None:
+    def do_onvif_tab_bar(self, onvif: OnvifConfig) -> None:
         if imgui.begin_tab_bar("Tabs"):
             try:
                 for name, tab in self._tabs.items():
                     if imgui.begin_tab_item(name)[0]:
                         try:
-                            tab.on_process(media)
+                            tab.on_process(onvif)
                         finally:
                             imgui.end_tab_item()
             finally:
