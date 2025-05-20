@@ -31,11 +31,11 @@ class ModeManager:
         from cvp.apps.player.modes.main.layout import MainLayout
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
-        from cvp.apps.player.modes.player import MediaPlayerMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
+        from cvp.apps.player.modes.video_player import VideoPlayerMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         self._main_layout = MainLayout(context)
@@ -54,7 +54,7 @@ class ModeManager:
         self.files_mode = FilesMode(context)
         self.flow_mode = FlowMode(self._main_layout)
         self.hash_mode = HashMode(context)
-        self.media_player_mode = MediaPlayerMode(context)
+        self.media_player_mode = VideoPlayerMode(context)
         self.medias_mode = MediasMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
