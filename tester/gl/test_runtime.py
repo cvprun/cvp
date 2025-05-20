@@ -5,7 +5,7 @@ from unittest import TestCase, main
 
 from OpenGL import GL, platform
 
-from cvp.gl.runtime import get_opengl_dll, get_process_address
+from cvp.gl.runtime import get_opengl_dll, get_opengl_process_address
 
 
 class RuntimeTestCase(TestCase):
@@ -16,8 +16,8 @@ class RuntimeTestCase(TestCase):
     def test_get_opengl_dll(self):
         self.assertIsInstance(get_opengl_dll(), CDLL)
 
-    def test_get_process_address(self):
-        self.assertNotEqual(0, get_process_address("glGetString"))
+    def test_get_opengl_process_address(self):
+        self.assertNotEqual(0, get_opengl_process_address("glGetString"))
 
 
 if __name__ == "__main__":

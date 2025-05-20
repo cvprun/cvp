@@ -159,6 +159,34 @@ class Texture:
     def __bool__(self) -> bool:
         return self.opened
 
+    @property
+    def gl_internal_format(self):
+        return self.INTERNAL_FORMAT_MAPPING[self._internal_format]
+
+    @property
+    def gl_format(self):
+        return self.FORMAT_MAPPING[self._pix_format]
+
+    @property
+    def gl_type(self):
+        return self.DATA_TYPE_MAPPING[self._data_type]
+
+    @property
+    def gl_min_f(self):
+        return self.MIN_FILTER_MAPPING[self._min_filter]
+
+    @property
+    def gl_mag_f(self):
+        return self.MAG_FILTER_MAPPING[self._mag_filter]
+
+    @property
+    def gl_wrap_s(self):
+        return self.WRAP_MAPPING[self._wrap_s]
+
+    @property
+    def gl_wrap_t(self):
+        return self.WRAP_MAPPING[self._wrap_t]
+
     def open(
         self,
         width: int,
@@ -280,6 +308,32 @@ class Texture:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.release()
+
+    def resize(
+        self,
+        width: int,
+        height: int,
+        *,
+        level_of_detail=BASE_IMAGE_LEVEL,
+        border_width: Literal[0, 1] = 0,
+    ) -> None:
+        if not self._bound:
+            raise ValueError("Texture is not bound")
+
+        GL.glTexImage2D(
+            GL.GL_TEXTURE_2D,
+            level_of_detail,
+            self.gl_internal_format,
+            width,
+            height,
+            border_width,
+            self.gl_format,
+            self.gl_type,
+            c_void_p(0),
+        )
+
+        if self._use_mipmaps:
+            GL.glGenerateMipmap(GL.GL_TEXTURE_2D)
 
     def set_min_filter(self, min_filter: TextureMinFilter) -> None:
         if not self._bound:

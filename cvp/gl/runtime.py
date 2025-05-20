@@ -13,7 +13,7 @@ def get_opengl_dll() -> CDLL:
     return platform.PLATFORM.OpenGL
 
 
-def get_process_address(name: str) -> Optional[int]:
+def get_opengl_process_address(name: str) -> Optional[int]:
     func = getattr(get_opengl_dll(), name, None)
     if func is not None:
         return cast(func, c_void_p).value
