@@ -2,24 +2,8 @@
 
 from typing import Any, Dict, Final, Literal, Sequence, get_args
 
+from cvp.logging import names
 from cvp.system.environ_keys import CVP_HOME
-
-CVP_LOGGER_NAME: Final[str] = "cvp"  # Project root logger
-
-CVP_CANVAS_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.canvas"
-CVP_CHAT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.chat"
-CVP_DOWNLOAD_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.download"
-CVP_EVENT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.event"
-CVP_FLOW_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.flow"
-CVP_IMGUI_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.imgui"
-CVP_MPV_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.mpv"
-CVP_MSG_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.msg"
-CVP_ONVIF_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.onvif"
-CVP_PROFILE_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.profile"
-CVP_RENDERER_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.renderer"
-CVP_WIDGETS_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.widgets"
-CVP_WORKER_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.worker"
-CVP_WSDL_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.wsdl"
 
 TimedRotatingWhenLiteral = Literal[
     "S", "M", "H", "D", "W0", "W1", "W2", "W3", "W4", "W5", "W6", "midnight"
@@ -151,25 +135,25 @@ def default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> Dict[str, Any]
             "httpcore": {"level": "DEBUG"},
             "httpx": {"level": "DEBUG"},
             "zeep": {"level": "DEBUG"},
-            CVP_LOGGER_NAME: {
+            names.CVP_LOGGER_NAME: {
                 "handlers": ["stdout_colored", "cvp_file"],
                 "level": "DEBUG",
                 "propagate": 0,
             },
-            CVP_CHAT_LOGGER_NAME: {"level": "DEBUG"},
-            CVP_DOWNLOAD_LOGGER_NAME: {"level": "DEBUG"},
-            CVP_EVENT_LOGGER_NAME: {"level": "INFO"},
-            CVP_FLOW_LOGGER_NAME: {"level": "INFO"},
-            CVP_MSG_LOGGER_NAME: {"level": "DEBUG"},
-            CVP_ONVIF_LOGGER_NAME: {"level": "INFO"},
-            CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
-            CVP_RENDERER_LOGGER_NAME: {"level": "WARNING"},
-            CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
-            CVP_WORKER_LOGGER_NAME: {
+            names.CVP_CHAT_LOGGER_NAME: {"level": "DEBUG"},
+            names.CVP_DOWNLOAD_LOGGER_NAME: {"level": "DEBUG"},
+            names.CVP_EVENT_LOGGER_NAME: {"level": "INFO"},
+            names.CVP_FLOW_LOGGER_NAME: {"level": "INFO"},
+            names.CVP_MSG_LOGGER_NAME: {"level": "DEBUG"},
+            names.CVP_ONVIF_LOGGER_NAME: {"level": "INFO"},
+            names.CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
+            names.CVP_RENDERER_LOGGER_NAME: {"level": "WARNING"},
+            names.CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
+            names.CVP_WORKER_LOGGER_NAME: {
                 "handlers": ["stdout_colored", "cvp_worker_file"],
                 "level": "DEBUG",
                 "propagate": 0,
             },
-            CVP_WSDL_LOGGER_NAME: {"level": "INFO"},
+            names.CVP_WSDL_LOGGER_NAME: {"level": "INFO"},
         },
     }

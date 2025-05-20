@@ -14,7 +14,7 @@ from cvp.flow.memory import FlowMemory
 from cvp.flow.node import FlowNode
 from cvp.flow.node_pin import FlowNodePin
 from cvp.flow.pin import FlowPin
-from cvp.logging.logging import flow_logger
+from cvp.logging.loggers import flow_logger
 from cvp.nodes.record import NodeRecord
 from cvp.pins.special import EntrypointPin
 

@@ -17,12 +17,12 @@ from cvp.imgui.flags import color_var
 from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.text_colored import text_colored
+from cvp.logging.loggers import flow_logger as logger
 from cvp.logging.logging import (
     LEVEL_NAMES,
     SEVERITY_NAME_CRITICAL,
     convert_level_number,
 )
-from cvp.logging.logging import flow_logger as logger
 from cvp.patterns.delta import Delta
 from cvp.types.colors import RGBA
 from cvp.types.override import override

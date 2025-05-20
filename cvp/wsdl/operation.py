@@ -7,7 +7,7 @@ from zeep.wsdl.definitions import Operation
 from zeep.xsd import Element
 
 from cvp.inspect.argument import Argument, ArgumentMapper
-from cvp.logging.logging import wsdl_logger as logger
+from cvp.logging.loggers import wsdl_logger as logger
 from cvp.resources.formats.json import JsonFormatPath
 from cvp.types.override import override
 from cvp.wsdl.annotation import ElementAnnotation

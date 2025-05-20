@@ -11,7 +11,7 @@ from keyring.backend import KeyringBackend, get_all_keyring
 from keyring.credentials import Credential
 from keyrings.alt.file_base import FileBacked
 
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 
 KEYRING_CHAINER: Final[str] = "keyring.backends.chainer.ChainerBackend"
 KEYRING_ENCRYPTED: Final[str] = "keyrings.alt.file.EncryptedKeyring"

@@ -17,7 +17,7 @@ from cvp.imgui.push_style_var import style_window_padding_context
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
-from cvp.logging.logging import canvas_logger as logger
+from cvp.logging.loggers import canvas_logger as logger
 from cvp.types.override import override
 
 

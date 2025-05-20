@@ -5,7 +5,7 @@ from typing import Dict, List, Type, TypeVar
 
 from type_serialize import deserialize, serialize
 
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.resources.formats.base import BaseFormatPath
 
 KeyT = TypeVar("KeyT")

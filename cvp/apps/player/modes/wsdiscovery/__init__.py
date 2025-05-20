@@ -24,7 +24,7 @@ from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.net.address_family import is_ip_address
 from cvp.types.override import override
 from cvp.variables import (

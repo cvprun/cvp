@@ -9,11 +9,11 @@ from cvp.context.context import Context
 from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text import input_text
 from cvp.imgui.popups.open_file import OpenFilePopup
+from cvp.logging.loggers import logger
 from cvp.logging.logging import (
     SEVERITIES,
     convert_level_number,
     loads_logging_config,
-    logger,
     set_root_level,
 )
 from cvp.types.override import override

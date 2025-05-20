@@ -32,7 +32,7 @@ from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.imgui.widgets.shortcut import Shortcut
-from cvp.logging.logging import flow_logger as logger
+from cvp.logging.loggers import flow_logger as logger
 from cvp.maths.geometry.rectangle import is_rectangle_collision
 from cvp.types.colors import RGBA
 from cvp.types.override import override

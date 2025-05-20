@@ -3,7 +3,7 @@
 from os import PathLike
 from typing import Union
 
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.resources.subdirs.bin import BinPath
 from cvp.resources.subdirs.cache import CachePath
 from cvp.resources.subdirs.canvases import CanvasesPath

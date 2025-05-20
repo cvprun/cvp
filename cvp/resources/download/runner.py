@@ -9,7 +9,7 @@ from threading import Lock
 from time import time
 from typing import NamedTuple, Optional, Union
 
-from cvp.logging.logging import download_logger as logger
+from cvp.logging.loggers import download_logger as logger
 from cvp.resources.download.archive import DownloadArchive
 
 

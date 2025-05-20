@@ -9,7 +9,7 @@ from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.text_colored import text_colored
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 

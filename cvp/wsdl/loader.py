@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from cvp.logging.logging import wsdl_logger as logger
+from cvp.logging.loggers import wsdl_logger as logger
 from cvp.wsdl.declaration import WsdlDeclaration
 
 

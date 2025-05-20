@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
+from logging import INFO
 from time import time
 from typing import Deque, Optional, Union
 
@@ -12,7 +13,7 @@ from cvp.imgui.calc_text_size import calc_text_size
 from cvp.imgui.draw_list.get_draw_list import get_foreground_draw_list
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT
 from cvp.imgui.measure_window_roi import get_window_roi
-from cvp.logging.logging import INFO, convert_level_number
+from cvp.logging.logging import convert_level_number
 from cvp.transitions.fade import measure_fade_ratio
 
 

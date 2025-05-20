@@ -9,7 +9,7 @@ from cvp.apps.player import player_main
 from cvp.apps.worker import worker_main
 from cvp.arguments import CMD_PLAYER, CMD_WORKER
 from cvp.context.autofixer import AutoFixerError
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 
 
 @lru_cache

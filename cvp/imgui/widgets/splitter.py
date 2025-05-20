@@ -17,7 +17,7 @@ from cvp.imgui.splitter import (
     SplitterResult,
     splitter,
 )
-from cvp.logging.logging import widgets_logger as logger
+from cvp.logging.loggers import widgets_logger as logger
 from cvp.patterns.proxy import ValueProxy
 
 

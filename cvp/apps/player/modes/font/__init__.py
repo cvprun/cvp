@@ -38,7 +38,7 @@ from cvp.imgui.selectable import selectable
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.table_any import table_any
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 

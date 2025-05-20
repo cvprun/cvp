@@ -1,43 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from json import dumps, loads
-from logging import (
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    FATAL,
-    INFO,
-    NOTSET,
-    WARN,
-    WARNING,
-    Formatter,
-    StreamHandler,
-)
-from logging import config as logging_config
-from logging import (
-    getLogger,
-)
+from logging.config import dictConfig
 from logging.handlers import TimedRotatingFileHandler
 from os import PathLike
 from sys import stdout
 from typing import Final, Optional, Sequence, Union
 
 from cvp.logging.variables import (
-    CVP_CANVAS_LOGGER_NAME,
-    CVP_CHAT_LOGGER_NAME,
-    CVP_DOWNLOAD_LOGGER_NAME,
-    CVP_EVENT_LOGGER_NAME,
-    CVP_FLOW_LOGGER_NAME,
-    CVP_IMGUI_LOGGER_NAME,
-    CVP_LOGGER_NAME,
-    CVP_MPV_LOGGER_NAME,
-    CVP_MSG_LOGGER_NAME,
-    CVP_ONVIF_LOGGER_NAME,
-    CVP_PROFILE_LOGGER_NAME,
-    CVP_RENDERER_LOGGER_NAME,
-    CVP_WIDGETS_LOGGER_NAME,
-    CVP_WORKER_LOGGER_NAME,
-    CVP_WSDL_LOGGER_NAME,
     DEFAULT_DATEFMT,
     DEFAULT_FORMAT,
     DEFAULT_SIMPLE_LOGGING_FORMAT,
@@ -50,24 +21,7 @@ from cvp.logging.variables import (
 )
 from cvp.system.environ_keys import CVP_HOME
 
-logger = getLogger(CVP_LOGGER_NAME)
-
-canvas_logger = getLogger(CVP_CANVAS_LOGGER_NAME)
-chat_logger = getLogger(CVP_CHAT_LOGGER_NAME)
-download_logger = getLogger(CVP_DOWNLOAD_LOGGER_NAME)
-event_logger = getLogger(CVP_EVENT_LOGGER_NAME)
-flow_logger = getLogger(CVP_FLOW_LOGGER_NAME)
-imgui_logger = getLogger(CVP_IMGUI_LOGGER_NAME)
-mpv_logger = getLogger(CVP_MPV_LOGGER_NAME)
-msg_logger = getLogger(CVP_MSG_LOGGER_NAME)
-onvif_logger = getLogger(CVP_ONVIF_LOGGER_NAME)
-profile_logger = getLogger(CVP_PROFILE_LOGGER_NAME)
-renderer_logger = getLogger(CVP_RENDERER_LOGGER_NAME)
-widgets_logger = getLogger(CVP_WIDGETS_LOGGER_NAME)
-worker_logger = getLogger(CVP_WORKER_LOGGER_NAME)
-wsdl_logger = getLogger(CVP_WSDL_LOGGER_NAME)
-
-OFF: Final[int] = CRITICAL + 100
+OFF: Final[int] = logging.CRITICAL + 100
 
 SEVERITY_NAME_CRITICAL: Final[str] = "critical"
 SEVERITY_NAME_FATAL: Final[str] = "fatal"
@@ -104,26 +58,26 @@ LEVEL_NAMES: Final[Sequence[str]] = [
 
 def convert_level_number(level: Optional[Union[str, int]] = None) -> int:
     if level is None:
-        return DEBUG
+        return logging.DEBUG
 
     if isinstance(level, str):
         ll = level.lower()
         if ll == SEVERITY_NAME_CRITICAL:
-            return CRITICAL
+            return logging.CRITICAL
         elif ll == SEVERITY_NAME_FATAL:
-            return FATAL
+            return logging.FATAL
         elif ll == SEVERITY_NAME_ERROR:
-            return ERROR
+            return logging.ERROR
         elif ll == SEVERITY_NAME_WARNING:
-            return WARNING
+            return logging.WARNING
         elif ll == SEVERITY_NAME_WARN:
-            return WARN
+            return logging.WARN
         elif ll == SEVERITY_NAME_INFO:
-            return INFO
+            return logging.INFO
         elif ll == SEVERITY_NAME_DEBUG:
-            return DEBUG
+            return logging.DEBUG
         elif ll == SEVERITY_NAME_NOTSET:
-            return NOTSET
+            return logging.NOTSET
         elif ll == SEVERITY_NAME_OFF:
             return OFF
         else:
@@ -143,43 +97,43 @@ def convert_printable_level(level: Union[str, int]) -> str:
     if isinstance(level, int):
         if level >= OFF:
             return "Off"
-        if level > CRITICAL:
+        if level > logging.CRITICAL:
             return "OverCritical"
-        if level == CRITICAL:
+        if level == logging.CRITICAL:
             return "Critical"
-        if level > ERROR:
+        if level > logging.ERROR:
             return "OverError"
-        if level == ERROR:
+        if level == logging.ERROR:
             return "Error"
-        if level > WARNING:
+        if level > logging.WARNING:
             return "OverWarning"
-        if level == WARNING:
+        if level == logging.WARNING:
             return "Warning"
-        if level > INFO:
+        if level > logging.INFO:
             return "OverInfo"
-        if level == INFO:
+        if level == logging.INFO:
             return "Info"
-        if level > DEBUG:
+        if level > logging.DEBUG:
             return "OverDebug"
-        if level == DEBUG:
+        if level == logging.DEBUG:
             return "Debug"
-        if level > NOTSET:
+        if level > logging.NOTSET:
             return "OverNotSet"
-        if level == NOTSET:
+        if level == logging.NOTSET:
             return "NotSet"
     return str(level)
 
 
 def set_root_level(level: Union[str, int]) -> None:
-    getLogger().setLevel(convert_level_number(level))
+    logging.getLogger().setLevel(convert_level_number(level))
 
 
 def set_asyncio_level(level: Union[str, int]) -> None:
-    getLogger("asyncio").setLevel(convert_level_number(level))
+    logging.getLogger("asyncio").setLevel(convert_level_number(level))
 
 
 def set_default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> None:
-    logging_config.dictConfig(default_logging_config(logs_dirname))
+    dictConfig(default_logging_config(logs_dirname))
 
 
 def dumps_default_logging_config(
@@ -192,16 +146,16 @@ def dumps_default_logging_config(
 
 def loads_logging_config(path: str) -> None:
     with open(path, "rt") as f:
-        logging_config.dictConfig(loads(f.read()))
+        dictConfig(loads(f.read()))
 
 
 def add_default_rotate_file_logging(
     prefix: str,
     when: Union[str, TimedRotatingWhenLiteral] = DEFAULT_TIMED_ROTATING_WHEN,
     name: Optional[str] = None,
-    level=DEBUG,
+    level=logging.DEBUG,
 ) -> None:
-    formatter = Formatter(
+    formatter = logging.Formatter(
         fmt=DEFAULT_FORMAT,
         datefmt=DEFAULT_DATEFMT,
         style=DEFAULT_STYLE,
@@ -212,10 +166,13 @@ def add_default_rotate_file_logging(
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    getLogger(name).addHandler(handler)
+    logging.getLogger(name).addHandler(handler)
 
 
-def add_default_colored_logging(name: Optional[str] = None, level=DEBUG) -> None:
+def add_default_colored_logging(
+    name: Optional[str] = None,
+    level=logging.DEBUG,
+) -> None:
     from cvp.logging.formatters.colored import ColoredFormatter
 
     formatter = ColoredFormatter(
@@ -224,35 +181,35 @@ def add_default_colored_logging(name: Optional[str] = None, level=DEBUG) -> None
         style=DEFAULT_STYLE,
     )
 
-    handler = StreamHandler(stdout)
+    handler = logging.StreamHandler(stdout)
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    getLogger(name).addHandler(handler)
+    logging.getLogger(name).addHandler(handler)
 
 
-def add_default_logging(name: Optional[str] = None, level=DEBUG) -> None:
-    formatter = Formatter(
+def add_default_logging(name: Optional[str] = None, level=logging.DEBUG) -> None:
+    formatter = logging.Formatter(
         fmt=DEFAULT_FORMAT,
         datefmt=DEFAULT_DATEFMT,
         style=DEFAULT_STYLE,
     )
 
-    handler = StreamHandler(stdout)
+    handler = logging.StreamHandler(stdout)
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    getLogger(name).addHandler(handler)
+    logging.getLogger(name).addHandler(handler)
 
 
-def add_simple_logging(name: Optional[str] = None, level=DEBUG) -> None:
-    formatter = Formatter(
+def add_simple_logging(name: Optional[str] = None, level=logging.DEBUG) -> None:
+    formatter = logging.Formatter(
         fmt=DEFAULT_SIMPLE_LOGGING_FORMAT,
         style=DEFAULT_SIMPLE_LOGGING_STYLE,
     )
 
-    handler = StreamHandler(stdout)
+    handler = logging.StreamHandler(stdout)
     handler.setFormatter(formatter)
     handler.setLevel(level)
 
-    getLogger(name).addHandler(handler)
+    logging.getLogger(name).addHandler(handler)

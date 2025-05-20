@@ -4,7 +4,7 @@ from concurrent.futures import Future, ThreadPoolExecutor
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar
 from weakref import ref
 
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 
 _P = ParamSpec("_P")
 _T = TypeVar("_T")

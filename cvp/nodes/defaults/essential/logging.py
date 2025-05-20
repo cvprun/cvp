@@ -3,7 +3,7 @@
 from logging import DEBUG, getLogger
 
 from cvp.dtypes.dtype import Dtype
-from cvp.logging.variables import CVP_FLOW_LOGGER_NAME
+from cvp.logging.names import CVP_FLOW_LOGGER_NAME
 from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin

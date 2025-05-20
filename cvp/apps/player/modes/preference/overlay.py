@@ -8,7 +8,7 @@ from cvp.imgui.color_edit4 import color_edit4
 from cvp.imgui.combo import combo
 from cvp.imgui.input_float import input_float
 from cvp.imgui.slider_float import slider_float
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 

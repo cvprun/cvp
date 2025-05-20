@@ -22,7 +22,7 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.image import ImageCanvas
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 

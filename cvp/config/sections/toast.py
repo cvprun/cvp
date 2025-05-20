@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from logging import DEBUG, ERROR, INFO, NOTSET, WARNING
 from typing import Tuple
 
-from cvp.logging.logging import DEBUG, ERROR, INFO, NOTSET, WARNING
 from cvp.palette.basic import LIME, RED, WHITE, YELLOW
 from cvp.types.colors import RGB
 

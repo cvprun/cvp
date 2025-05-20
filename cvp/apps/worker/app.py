@@ -5,7 +5,7 @@ from multiprocessing.queues import Queue
 from typing import Optional
 
 from cvp.aio.run import aio_run
-from cvp.logging.logging import worker_logger as logger
+from cvp.logging.loggers import worker_logger as logger
 from cvp.variables import LOGGING_STEP, SLOW_CALLBACK_DURATION
 
 

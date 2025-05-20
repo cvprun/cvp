@@ -19,11 +19,11 @@ from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
 from cvp.ime.manager import ImeManager
 from cvp.keyring.root import RootKeyring
+from cvp.logging.loggers import logger
 from cvp.logging.logging import (
     convert_level_number,
     dumps_default_logging_config,
     loads_logging_config,
-    logger,
     set_root_level,
 )
 from cvp.media.manager import MediaManager

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from logging import Logger
+from logging import DEBUG, ERROR, INFO, WARNING, Logger
 from typing import Deque, Optional, Union
 
-from cvp.logging.logging import DEBUG, ERROR, INFO, WARNING, convert_level_number
+from cvp.logging.logging import convert_level_number
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType, MsgTypeLike
 

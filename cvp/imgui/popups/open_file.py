@@ -24,7 +24,7 @@ from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.push_item_width import item_width_context
 from cvp.imgui.tooltip import hovered_tooltip_text
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 

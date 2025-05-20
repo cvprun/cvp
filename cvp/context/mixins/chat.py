@@ -6,7 +6,7 @@ from ollama import Image, Message, ResponseError
 
 from cvp.chat.ids import ChatConversationID, ChatMessageID
 from cvp.context.mixins._base import BaseContextMixin
-from cvp.logging.logging import chat_logger as logger
+from cvp.logging.loggers import chat_logger as logger
 from cvp.ollama.ollama import Ollama, OllamaKey
 from cvp.variables import NOT_FOUND_INDEX, UNKNOWN_ERROR_CODE
 

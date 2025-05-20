@@ -2,7 +2,7 @@
 
 from typing import Dict, Optional, TypeVar
 
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.process.process import Process
 from cvp.process.status import ProcessStatusEx
 

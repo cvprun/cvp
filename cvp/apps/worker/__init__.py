@@ -2,6 +2,7 @@
 
 from argparse import Namespace
 
+from cvp.logging.loggers import worker_logger
 from cvp.logging.logging import (
     SEVERITY_NAME_DEBUG,
     SEVERITY_NAME_WARNING,
@@ -9,7 +10,6 @@ from cvp.logging.logging import (
     add_simple_logging,
     convert_level_number,
     set_asyncio_level,
-    worker_logger,
 )
 from cvp.variables import SLOW_CALLBACK_DURATION
 

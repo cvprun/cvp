@@ -8,7 +8,7 @@ from pygame.event import Event
 from pygame.time import get_ticks
 
 from cvp.ime.manager import ImeManager
-from cvp.logging.logging import renderer_logger as logger
+from cvp.logging.loggers import renderer_logger as logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
 from cvp.unicode.planes import BMP

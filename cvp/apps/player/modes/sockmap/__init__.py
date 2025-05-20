@@ -23,7 +23,7 @@ from cvp.imgui.input_float import input_float
 from cvp.imgui.input_text import input_text
 from cvp.imgui.spinner import spinner
 from cvp.imgui.tooltip import hovered_tooltip_text
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.net.address_family import get_ip_address_family, is_ip_address
 from cvp.types.override import override
 

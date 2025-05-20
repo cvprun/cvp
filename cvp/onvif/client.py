@@ -7,7 +7,7 @@ from requests import Session
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from zeep import Transport
 
-from cvp.logging.logging import onvif_logger as logger
+from cvp.logging.loggers import onvif_logger as logger
 from cvp.onvif.config import OnvifConfig
 from cvp.onvif.declarations import (
     ONVIF_ANALYTICS,

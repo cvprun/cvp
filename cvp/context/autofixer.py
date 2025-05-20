@@ -3,7 +3,7 @@
 from typing import Generic, TypeVar
 
 from cvp.context.context import Context
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.patterns.proxy import ValueProxy, ValueT
 
 ErrorT = TypeVar("ErrorT", bound=BaseException)

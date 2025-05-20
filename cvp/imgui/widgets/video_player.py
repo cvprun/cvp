@@ -13,8 +13,8 @@ from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.flags.child import ChildFlags
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.slider_float import slider_float
-from cvp.logging.logging import mpv_logger as logger
-from cvp.logging.mpv_level import MpvLogLevel
+from cvp.logging.loggers import mpv_logger as logger
+from cvp.logging.mpv import MpvLogLevel
 from cvp.types.shapes_i import SizeI
 
 

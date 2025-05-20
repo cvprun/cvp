@@ -23,7 +23,7 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.selection import FlowSelectableAny, FlowSelection
 from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.flow.wire import FlowWire
-from cvp.logging.logging import flow_logger as logger
+from cvp.logging.loggers import flow_logger as logger
 from cvp.types.colors import RGBA, WHITE_RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Point, Size

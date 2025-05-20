@@ -16,7 +16,7 @@ from cvp.imgui.input_int2 import input_int2
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.spinner import spinner
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.media.config import MediaConfig
 from cvp.types.override import override
 

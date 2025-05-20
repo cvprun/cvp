@@ -7,7 +7,7 @@ from weakref import ReferenceType, ref
 
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.gl.textures.texture import Texture
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.media.config import MediaConfig, MediaKey
 from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process

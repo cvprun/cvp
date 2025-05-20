@@ -4,7 +4,7 @@ from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.input_int import input_int
-from cvp.logging.logging import logger
+from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 

@@ -34,7 +34,7 @@ from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.push_style_var import style_frame_border_size_context
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.widgets.shortcut import Shortcut
-from cvp.logging.logging import event_logger, logger, msg_logger, profile_logger
+from cvp.logging.loggers import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType
