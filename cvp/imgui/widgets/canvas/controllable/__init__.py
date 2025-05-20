@@ -44,8 +44,8 @@ class ControllableCanvas(ControllableProps):
 
         self._zoom_label = "Zoom"
         self._zoom_factor = CANVAS_ZOOM_FACTOR
-        self._zoom_min = CANVAS_ZOOM_MAX_SCALE
-        self._zoom_max = CANVAS_ZOOM_MIN_SCALE
+        self._zoom_min = CANVAS_ZOOM_MIN_SCALE
+        self._zoom_max = CANVAS_ZOOM_MAX_SCALE
         self._zoom_fmt = "%.2f"
         self._zoom_flags = 0
 

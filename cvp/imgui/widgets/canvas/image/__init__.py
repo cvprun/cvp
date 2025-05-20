@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from math import floor
 from typing import Any, Optional
 
 from imgui_bundle import imgui
@@ -11,6 +12,7 @@ from cvp.canvas.canvas import CanvasProps
 from cvp.gl.textures.numpy import FilePathLike, NumpyTexture
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
+from cvp.imgui.draw_list.draw_centered_text import draw_centered_text
 
 
 class ImageCanvas(ControllableCanvas):
@@ -92,6 +94,9 @@ class ImageCanvas(ControllableCanvas):
             self.add_axis_x()
             self.add_axis_y()
             self.add_image()
+            self.add_grid_pixels()
+
+        self.add_pixel_infos()
 
     def add_rect_filled(self) -> None:
         color = imgui.get_color_u32(self._props.background_color)
@@ -175,3 +180,72 @@ class ImageCanvas(ControllableCanvas):
             uv_min=(0, 0),
             uv_max=(1, 1),
         )
+
+    def add_grid_pixels(self) -> None:
+        pixel = self._props.pixel
+        if not pixel.visible:
+            return
+
+        if self.zoom < pixel.zoom_threshold:
+            return
+
+        color = imgui.get_color_u32(pixel.color)
+
+        h_lines = self.horizontal_grid_lines(1.0)
+        v_lines = self.vertical_grid_lines(1.0)
+
+        for line in h_lines + v_lines:
+            p1 = line[0], line[1]
+            p2 = line[2], line[3]
+            self._draw_list.add_line(p1, p2, color, pixel.thickness)
+
+    def add_pixel_infos(self) -> None:
+        if not self._texture.opened:
+            return
+
+        pixel = self._props.pixel
+        if not pixel.visible:
+            return
+
+        if self.zoom < pixel.zoom_threshold:
+            return
+
+        color = imgui.get_color_u32(pixel.color)
+        red = imgui.get_color_u32(pixel.red_color)
+        green = imgui.get_color_u32(pixel.green_color)
+        blue = imgui.get_color_u32(pixel.blue_color)
+
+        h_lines = self.horizontal_grid_lines(1.0)
+        v_lines = self.vertical_grid_lines(1.0)
+
+        for yi in range(1, len(h_lines)):
+            y1 = h_lines[yi - 1][1]
+            y2 = h_lines[yi - 0][1]
+
+            for vi in range(1, len(v_lines)):
+                x1 = v_lines[vi - 1][0]
+                x2 = v_lines[vi - 0][0]
+
+                image_point = self.screen_to_canvas_coords((x1, y1))
+                image_x = floor(image_point[0])
+                image_y = floor(image_point[1])
+
+                if not (0 <= image_x < self._texture.width):
+                    continue
+                if not (0 <= image_y < self._texture.height):
+                    continue
+
+                r, g, b, a = self._texture.array[image_y, image_x]
+                color_text = f"{r:02X}{g:02X}{b:02X}{a:02X}"
+
+                r_text = str(int(r))
+                g_text = str(int(g))
+                b_text = str(int(b))
+                a_text = str(int(a))
+
+                r_size = imgui.calc_text_size(r_text)
+                g_size = imgui.calc_text_size(g_text)
+                b_size = imgui.calc_text_size(b_text)
+                a_size = imgui.calc_text_size(a_text)
+
+                draw_centered_text(self._draw_list, x1, y1, x2, y2, color, color_text)

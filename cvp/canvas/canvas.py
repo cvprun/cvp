@@ -7,6 +7,7 @@ from uuid import uuid4
 from cvp.canvas.axis import Axis
 from cvp.canvas.control import ViewControl
 from cvp.canvas.grid import Grid
+from cvp.canvas.pixel import Pixel
 from cvp.canvas.options import DrawingOptions
 from cvp.types.colors import BLACK_RGBA, RGBA
 
@@ -15,6 +16,8 @@ CanvasKey = NewType("CanvasKey", str)
 
 @dataclass
 class CanvasProps:
+    pixel: Pixel = field(default_factory=Pixel)
+
     grid_x: Grid = field(default_factory=Grid)
     grid_y: Grid = field(default_factory=Grid)
 

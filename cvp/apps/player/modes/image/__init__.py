@@ -47,6 +47,8 @@ class ImageMode(BaseMode):
         self._canvas = ImageCanvas()
         self._image = Image()
 
+        self._max_text_width = 0.0, 0.0
+
     @property
     def opened(self) -> bool:
         return self._canvas.opened
@@ -107,6 +109,11 @@ class ImageMode(BaseMode):
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
+
+            if imgui.is_window_appearing():
+                max_text_width = imgui.calc_text_size("255")
+                self._max_text_width = max_text_width.x, max_text_width.y
+
             with begin_child_context(
                 label="Canvas",
                 size=(self._CANVAS_SPLIT_X, 0),
@@ -117,6 +124,9 @@ class ImageMode(BaseMode):
             imgui.same_line()
 
             with begin_child_context("Infos"):
+                self._canvas.do_process_controllers(self.context.debug)
+                imgui.separator()
+
                 if self._canvas.opened:
                     self.on_image_controller()
                 else:
