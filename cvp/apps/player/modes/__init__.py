@@ -36,6 +36,7 @@ class ModeManager:
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.video_player import VideoPlayerMode
+        from cvp.apps.player.modes.watchdog import WatchdogMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
         self._main_layout = MainLayout(context)
@@ -46,14 +47,15 @@ class ModeManager:
 
         self.binary_text_mode = BinaryTextMode(context)
         self.canvas_mode = CanvasMode(self._main_layout)
-        self.image_mode = ImageMode(context)
         self.chat_mode = ChatMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.download_mode = DownloaderMode(context)
         self.faker_mode = FakerMode(context)
         self.files_mode = FilesMode(context)
         self.flow_mode = FlowMode(self._main_layout)
+        self.font_mode = FontMode(context)
         self.hash_mode = HashMode(context)
+        self.image_mode = ImageMode(context)
         self.media_player_mode = VideoPlayerMode(context)
         self.medias_mode = MediasMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
@@ -62,8 +64,8 @@ class ModeManager:
         self.sock_map = SockmapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
+        self.watchdog_mode = WatchdogMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
-        self.font_mode = FontMode(context)
 
         # ------------------------------------------------------------------------------
         # Retrieves and stores all ModeInterface instances assigned to `self`
@@ -82,6 +84,7 @@ class ModeManager:
             self.medias_mode,
             self.onvif_mode,
             self.wsdiscovery_mode,
+            self.watchdog_mode,
             self.terminal_mode,
             self.download_mode,
             self.sock_map,
@@ -90,10 +93,10 @@ class ModeManager:
             self.binary_text_mode,
             self.files_mode,
             self.font_mode,
+            self.object_tracker_mode,
         )
         self._submenu_modes = OrderedDict(
             {
-                f"{mdi.MONITOR_EYE} Computer Vision": (self.object_tracker_mode,),
                 f"{mdi.NINTENDO_GAME_BOY} Games": (self.tetrix_mode,),
             }
         )
