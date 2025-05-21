@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from math import floor
-from typing import Any, Optional
+from typing import Any, Optional, Sequence
 
 from imgui_bundle import imgui
 from numpy import uint8
@@ -12,7 +11,6 @@ from cvp.canvas.canvas import CanvasProps
 from cvp.gl.textures.numpy import FilePathLike, NumpyTexture
 from cvp.imgui.set_window_font_scale import window_font_scale
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
-from cvp.imgui.draw_list.draw_centered_text import draw_centered_text
 
 
 class ImageCanvas(ControllableCanvas):
@@ -199,6 +197,33 @@ class ImageCanvas(ControllableCanvas):
             p2 = line[2], line[3]
             self._draw_list.add_line(p1, p2, color, pixel.thickness)
 
+    def get_pixel_info(self, x: int, y: int) -> Sequence[str]:
+        if not (0 <= x < self._texture.width):
+            return ()
+        if not (0 <= y < self._texture.height):
+            return ()
+
+        pixel = self._texture.array[y, x]
+        match self._texture.channels:
+            case 1:
+                r = str()
+                g = str()
+                b = str()
+                a = f"{int(pixel):03}"
+            case 3:
+                r = f"{int(pixel[0]):03}"
+                g = f"{int(pixel[1]):03}"
+                b = f"{int(pixel[2]):03}"
+                a = str()
+            case 4:
+                r = f"{int(pixel[0]):03}"
+                g = f"{int(pixel[1]):03}"
+                b = f"{int(pixel[2]):03}"
+                a = f"{int(pixel[3]):03}"
+            case c:
+                raise ValueError(f"Unsupported channels: {c}")
+        return r, g, b, a
+
     def add_pixel_infos(self) -> None:
         if not self._texture.opened:
             return
@@ -210,42 +235,53 @@ class ImageCanvas(ControllableCanvas):
         if self.zoom < pixel.zoom_threshold:
             return
 
-        color = imgui.get_color_u32(pixel.color)
-        red = imgui.get_color_u32(pixel.red_color)
-        green = imgui.get_color_u32(pixel.green_color)
-        blue = imgui.get_color_u32(pixel.blue_color)
+        cell_size = self.zoom  # size per pixel
+        line_height = imgui.get_font_size()
+        line_count = 1 + self._texture.channels
+        text_box_height = line_height * line_count
+        if cell_size < text_box_height:
+            return
 
-        h_lines = self.horizontal_grid_lines(1.0)
-        v_lines = self.vertical_grid_lines(1.0)
+        padding_h = cell_size - text_box_height
+        assert 0.0 <= padding_h
 
-        for yi in range(1, len(h_lines)):
-            y1 = h_lines[yi - 1][1]
-            y2 = h_lines[yi - 0][1]
+        bg_color = imgui.get_color_u32(pixel.background_color)
+        xy_color = imgui.get_color_u32(pixel.offset_color)
 
-            for vi in range(1, len(v_lines)):
-                x1 = v_lines[vi - 1][0]
-                x2 = v_lines[vi - 0][0]
+        red_color = imgui.get_color_u32(pixel.red_color)
+        green_color = imgui.get_color_u32(pixel.green_color)
+        blue_color = imgui.get_color_u32(pixel.blue_color)
+        alpha_color = imgui.get_color_u32(pixel.alpha_color)
+        colors = red_color, green_color, blue_color, alpha_color
 
-                image_point = self.screen_to_canvas_coords((x1, y1))
-                image_x = floor(image_point[0])
-                image_y = floor(image_point[1])
+        x = self.cx + self.grid_begin_x(1.0)
+        y = self.cy + self.grid_begin_y(1.0)
+        left = x
 
-                if not (0 <= image_x < self._texture.width):
-                    continue
-                if not (0 <= image_y < self._texture.height):
-                    continue
+        while y < self.ch:
+            while x < self.cw:
+                image_xy = self.screen_to_canvas_coords((x, y))
+                image_x = round(image_xy[0])
+                image_y = round(image_xy[1])
 
-                r, g, b, a = self._texture.array[image_y, image_x]
-                color_text = f"{r:02X}{g:02X}{b:02X}{a:02X}"
+                xy_text = f"{image_x},{image_y}"
+                xy_size = imgui.calc_text_size(xy_text)
+                xy_p1 = x + pixel.thickness, y + pixel.thickness
+                xy_p2 = xy_p1[0] + xy_size.x, xy_p1[1] + xy_size.y
+                self._draw_list.add_rect_filled(xy_p1, xy_p2, bg_color)
+                self._draw_list.add_text(xy_p1, xy_color, xy_text)
 
-                r_text = str(int(r))
-                g_text = str(int(g))
-                b_text = str(int(b))
-                a_text = str(int(a))
-
-                r_size = imgui.calc_text_size(r_text)
-                g_size = imgui.calc_text_size(g_text)
-                b_size = imgui.calc_text_size(b_text)
-                a_size = imgui.calc_text_size(a_text)
-
-                draw_centered_text(self._draw_list, x1, y1, x2, y2, color, color_text)
+                if texts := self.get_pixel_info(image_x, image_y):
+                    sizes = [imgui.calc_text_size(t) for t in texts]
+                    cursor_y = xy_p2[1]
+                    for text, size, color in zip(texts, sizes, colors):
+                        if not text:
+                            continue
+                        p1 = xy_p1[0], cursor_y
+                        p2 = p1[0] + size.x, p1[1] + size.y
+                        self._draw_list.add_rect_filled(p1, p2, bg_color)
+                        self._draw_list.add_text(p1, color, text)
+                        cursor_y += line_height
+                x += cell_size
+            y += cell_size
+            x = left

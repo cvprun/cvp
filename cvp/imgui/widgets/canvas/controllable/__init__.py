@@ -194,6 +194,12 @@ class ControllableCanvas(ControllableProps):
         assert self._mouse_dragging_threshold != 0.0
         return imgui.is_mouse_dragging(button, self._mouse_dragging_threshold)
 
+    def grid_begin_x(self, step: float) -> float:
+        return fmod(self.pan_x * self.zoom, step * self.zoom)
+
+    def grid_begin_y(self, step: float) -> float:
+        return fmod(self.pan_y * self.zoom, step * self.zoom)
+
     def vertical_grid_lines(self, step: float):
         if step <= 0:
             raise ValueError("The 'step' value must be greater than 0")
@@ -201,7 +207,7 @@ class ControllableCanvas(ControllableProps):
             raise ValueError("The 'zoom' value must be greater than 0")
 
         retval = list()
-        x = fmod(self.pan_x * self.zoom, step * self.zoom)
+        x = self.grid_begin_x(step)
         while x < self.cw:
             x1 = self.cx + x
             y1 = self.cy
@@ -218,7 +224,7 @@ class ControllableCanvas(ControllableProps):
             raise ValueError("The 'zoom' value must be greater than 0")
 
         retval = list()
-        y = fmod(self.pan_y * self.zoom, step * self.zoom)
+        y = self.grid_begin_y(step)
         while y < self.ch:
             x1 = self.cx
             y1 = self.cy + y

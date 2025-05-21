@@ -189,17 +189,33 @@ class NumpyTexture:
     def height(self) -> int:
         if self._array is None:
             return 0
-        if len(self._array.shape) <= 0:
-            return 0
-        return self._array.shape[0]
+
+        if len(self._array.shape) in (2, 3):
+            return self._array.shape[0]
+        else:
+            raise ValueError(f"Invalid number of shape: {len(self._array.shape)}")
 
     @property
     def width(self) -> int:
         if self._array is None:
             return 0
-        if len(self._array.shape) <= 1:
+
+        if len(self._array.shape) in (2, 3):
+            return self._array.shape[1]
+        else:
+            raise ValueError(f"Invalid number of shape: {len(self._array.shape)}")
+
+    @property
+    def channels(self) -> int:
+        if self._array is None:
             return 0
-        return self._array.shape[1]
+
+        if len(self._array.shape) == 2:
+            return 1
+        elif len(self._array.shape) == 3:
+            return self._array.shape[2]
+        else:
+            raise ValueError(f"Invalid number of shape: {len(self._array.shape)}")
 
     @property
     def size(self) -> Tuple[int, int]:

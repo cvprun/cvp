@@ -7,8 +7,8 @@ from uuid import uuid4
 from cvp.canvas.axis import Axis
 from cvp.canvas.control import ViewControl
 from cvp.canvas.grid import Grid
-from cvp.canvas.pixel import Pixel
 from cvp.canvas.options import DrawingOptions
+from cvp.canvas.pixel import Pixel
 from cvp.types.colors import BLACK_RGBA, RGBA
 
 CanvasKey = NewType("CanvasKey", str)
