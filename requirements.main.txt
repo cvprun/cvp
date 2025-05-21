@@ -15,6 +15,7 @@ openai==1.72.0
 opencv-python-headless==4.10.0.84
 orjson==3.10.15
 pillow==11.1.0
+platformdirs==4.3.8
 plumbum==1.9.0
 psutil==7.0.0
 pygame-ce==2.5.3
