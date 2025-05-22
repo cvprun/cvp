@@ -13,6 +13,7 @@ from cvp.config.sections.chat import ChatConfig
 from cvp.config.sections.concurrency import ConcurrencyConfig
 from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
+from cvp.config.sections.directory import DirectoryConfig
 from cvp.config.sections.display import DisplayConfig
 from cvp.config.sections.faker import FakerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
@@ -43,6 +44,7 @@ class Config:
     concurrency: ConcurrencyConfig = field(default_factory=ConcurrencyConfig)
     context: ContextConfig = field(default_factory=ContextConfig)
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
+    directory: DirectoryConfig = field(default_factory=DirectoryConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
     faker: FakerConfig = field(default_factory=FakerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)

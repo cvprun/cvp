@@ -45,20 +45,29 @@ class DownloaderMode(BaseMode):
             self._temp_url = url_result.value
 
             imgui.same_line()
+
             download_clicked = button("Download", disabled=not self._temp_url)
             if self._temp_url and (url_result or download_clicked):
                 self.context.downloader.add_download(self._temp_url)
                 self._temp_url = str()
+
+            if imgui.collapsing_header("Advanced Options"):
+                # dest: str = field(default_factory=str)
+                # timeout: Optional[float] = None
+                # checksum: Optional[float] = None
+                # follow_redirects: bool = False
+                # verify_ssl: bool = True
+                pass
 
         imgui.separator()
 
         with begin_child_context("Table"):
             if imgui.begin_table("Download", self._TABLE_COLUMNS, self._TABLE_FLAGS):
                 try:
-                    imgui.table_setup_column("URL")
-                    imgui.table_setup_column("Size")
-                    imgui.table_setup_column("Downloaded")
                     imgui.table_setup_column("State")
+                    imgui.table_setup_column("URL")
+                    imgui.table_setup_column("Content-Length")
+                    imgui.table_setup_column("Download")
                     imgui.table_setup_column("Progress")
                     imgui.table_setup_column("Speed")
                     imgui.table_setup_column("Elapsed")
@@ -72,52 +81,30 @@ class DownloaderMode(BaseMode):
                     imgui.end_table()
 
     @staticmethod
-    def table_download_row(
-        url: str,
-        total_bytes: int,
-        downloaded_bytes: int,
-        state: str,
-        progress: float,
-        speed_bps: int,
-        elapsed_seconds: float,
-        eta_seconds: float,
-    ) -> None:
+    def table_download_item_row(item: DownloadItem) -> None:
         imgui.table_set_column_index(0)
-        imgui.text(url)
+        imgui.text(item.state)
 
         imgui.table_set_column_index(1)
-        imgui.text(str(total_bytes))
+        imgui.text(item.url)
 
         imgui.table_set_column_index(2)
-        imgui.text(str(downloaded_bytes))
+        imgui.text(str(item.content_length))
 
         imgui.table_set_column_index(3)
-        imgui.text(state)
+        imgui.text(str(item.download_length))
 
         imgui.table_set_column_index(4)
-        imgui.text(str(progress))
+        imgui.text(f"{item.progress:%}")
 
         imgui.table_set_column_index(5)
-        imgui.text(str(speed_bps))
+        imgui.text(f"{item.speed_bps:.03f}")
 
         imgui.table_set_column_index(6)
-        imgui.text(str(elapsed_seconds))
+        imgui.text(f"{item.elapsed:.03f}s")
 
         imgui.table_set_column_index(7)
-        imgui.text(str(eta_seconds))
-
-    @staticmethod
-    def table_download_item_row(item: DownloadItem) -> None:
-        DownloaderMode.table_download_row(
-            url=item.url,
-            total_bytes=item.total,
-            downloaded_bytes=item.downloaded,
-            state=str(item.state),
-            progress=item.progress,
-            speed_bps=item.speed,
-            elapsed_seconds=item.elapsed,
-            eta_seconds=item.eta,
-        )
+        imgui.text(f"{item.eta:.03f}s")
 
     @staticmethod
     def table_empty_row() -> None:
