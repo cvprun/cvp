@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from shutil import which
-from typing import Mapping, Optional
 
 from imgui_bundle import imgui
 
@@ -11,8 +10,6 @@ from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_colored import text_colored
 from cvp.patterns.proxy import ValueProxy
-from cvp.resources.download.links.tuples import LinkInfo
-from cvp.resources.download.runner import DownloadRunner
 from cvp.system.platform import SysMach, get_system_machine
 
 
@@ -22,14 +19,11 @@ class ExecutableDownloader:
         context: Context,
         filename: str,
         proxy: ValueProxy,
-        links: Mapping[SysMach, LinkInfo],
-        *,
-        runner: Optional[DownloadRunner] = None,
     ):
         self._context = context
         self._filename = filename
         self._proxy = proxy
-        self._downs = {sm: context.make_downloader(link) for sm, link in links.items()}
+        self._downs = {}
 
         self._sms = list(str(sm) for sm in SysMach)
         self._current_sm = get_system_machine()
@@ -40,7 +34,7 @@ class ExecutableDownloader:
             f"Select {self._filename} executable",
             target=self._on_browser,
         )
-        self._runner = runner
+        self._runner = None
 
     @property
     def filename(self):
@@ -118,8 +112,8 @@ class ExecutableDownloader:
         imgui.text("URL:")
         imgui.text_unformatted(down.url)
 
-        if button("Download Archive", disabled=self._runner is not None):
-            self._runner = self._context.start_download_thread(down, 30.0, True)
+        # if button("Download Archive", disabled=self._runner is not None):
+        #     self._runner = self._context.start_download_thread(down, 30.0, True)
 
         if self._runner is not None:
             imgui.text(str(self._runner.state))
