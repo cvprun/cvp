@@ -8,9 +8,10 @@ from urllib.parse import ParseResult, urlparse, urlunparse
 
 import httpx
 
+from cvp.hashfunc.checksum import Checksum
 from cvp.hashfunc.mapping import HashFunction
 from cvp.hashfunc.mapping import compute_hash as calc_checksum
-from cvp.resources.download.links.tuples import Checksum, ExtractPair
+from cvp.resources.download.links.tuples import ExtractPair
 
 
 class DownloadArchive:
