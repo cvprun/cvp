@@ -11,6 +11,7 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.text_centered import text_centered
+from cvp.process.service import Service
 from cvp.types.override import override
 
 
@@ -43,8 +44,8 @@ class ProcessManagerMode(BaseMode):
         return self.context.config.process
 
     @property
-    def processes(self):
-        return self.context.processes
+    def supervisor(self):
+        return self.context.supervisor
 
     def on_confirm_remove(self, value: bool) -> None:
         if not value:
@@ -70,8 +71,8 @@ class ProcessManagerMode(BaseMode):
         imgui.same_line()
 
         with begin_child_context("Main"):
-            if selected_process := self.processes.get(self.selected_submenu):
-                self.do_main_process(selected_process)
+            if selected_service := self.supervisor.get(self.selected_submenu):
+                self.do_main_process(selected_service)
             else:
                 text_centered("Please select a item")
 
@@ -79,6 +80,6 @@ class ProcessManagerMode(BaseMode):
         # Table
         pass
 
-    def do_main_process(self, process) -> None:
+    def do_main_process(self, service: Service) -> None:
         # Tab
         pass
