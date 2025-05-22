@@ -32,10 +32,11 @@ class ModeManager:
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
+        from cvp.apps.player.modes.process import ProcessManagerMode
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
-        from cvp.apps.player.modes.video_player import VideoPlayerMode
+        from cvp.apps.player.modes.video import VideoPlayerMode
         from cvp.apps.player.modes.watchdog import WatchdogMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
@@ -61,6 +62,7 @@ class ModeManager:
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
+        self.process_mode = ProcessManagerMode(context)
         self.sock_map = SockmapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
@@ -76,24 +78,25 @@ class ModeManager:
 
         self._context = context
         self._menu_modes = (
-            self.flow_mode,
+            self.binary_text_mode,
             self.canvas_mode,
             self.chat_mode,
+            self.download_mode,
+            self.faker_mode,
+            self.files_mode,
+            self.flow_mode,
+            self.font_mode,
+            self.hash_mode,
             self.image_mode,
             self.media_player_mode,
             self.medias_mode,
-            self.onvif_mode,
-            self.wsdiscovery_mode,
-            self.watchdog_mode,
-            self.terminal_mode,
-            self.download_mode,
-            self.sock_map,
-            self.faker_mode,
-            self.hash_mode,
-            self.binary_text_mode,
-            self.files_mode,
-            self.font_mode,
             self.object_tracker_mode,
+            self.onvif_mode,
+            self.process_mode,
+            self.sock_map,
+            self.terminal_mode,
+            self.watchdog_mode,
+            self.wsdiscovery_mode,
         )
         self._submenu_modes = OrderedDict(
             {
