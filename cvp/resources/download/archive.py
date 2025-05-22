@@ -2,9 +2,7 @@
 
 import os
 from os import PathLike
-from shutil import move, unpack_archive
 from ssl import SSLContext
-from tempfile import TemporaryDirectory
 from typing import List, Optional, Sequence, Tuple, Union
 from urllib.parse import ParseResult, urlparse, urlunparse
 
@@ -12,7 +10,7 @@ import httpx
 
 from cvp.hashfunc.checksum import HashFunction
 from cvp.hashfunc.checksum import checksum as calc_checksum
-from cvp.resources.download.links.tuples import Checksum, ExtractPair, LinkInfo
+from cvp.resources.download.links.tuples import Checksum, ExtractPair
 
 
 class DownloadArchive:
@@ -27,7 +25,6 @@ class DownloadArchive:
         paths: Sequence[Union[Tuple[str, str], ExtractPair]],
         extract_root: Union[str, PathLike[str]],
         cache_dir: Union[str, PathLike[str]],
-        temp_dir: Optional[Union[str, PathLike[str]]] = None,
         checksum: Optional[Union[str, Tuple[str, str], Checksum]] = None,
     ):
         if not paths:
@@ -54,7 +51,6 @@ class DownloadArchive:
 
         self._extract_root = extract_root
         self._cache_dir = cache_dir
-        self._temp_dir = temp_dir
 
         if checksum:
             if isinstance(checksum, Checksum):
@@ -69,23 +65,6 @@ class DownloadArchive:
                 self._checksum = Checksum.parse(checksum.strip())
         else:
             self._checksum = None
-
-    @classmethod
-    def from_link(
-        cls,
-        link: LinkInfo,
-        extract_root: Union[str, PathLike[str]],
-        cache_dir: Union[str, PathLike[str]],
-        temp_dir: Optional[Union[str, PathLike[str]]] = None,
-    ):
-        return cls(
-            url=link.url,
-            paths=link.paths,
-            extract_root=extract_root,
-            cache_dir=cache_dir,
-            temp_dir=temp_dir,
-            checksum=link.checksum,
-        )
 
     def __repr__(self):
         return f"<{type(self).__name__} {self._url}>"
@@ -174,12 +153,3 @@ class DownloadArchive:
             method = self._checksum.hash_method
             value = self._checksum.hash_value
             return calc_checksum(method, f.read()) == value
-
-    def extract(self) -> None:
-        with TemporaryDirectory(dir=self._temp_dir) as tmpdir:
-            unpack_archive(self.cache_path, tmpdir)
-
-            for path in self._paths:
-                src = os.path.join(tmpdir, path.archive_path)
-                dest = os.path.join(self._extract_root, path.extract_path)
-                move(src, dest)

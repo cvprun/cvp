@@ -166,16 +166,3 @@ class DownloadRunner:
 
         if self._verify_checksum and not self._downloader.verify_checksum():
             raise ValueError("Invalid checksum")
-
-        with self._lock:
-            self._step = DownloadStep.extract
-
-        logger.debug(f"{type(self).__name__} extract ...")
-
-        self._downloader.extract()
-
-        logger.debug(f"{type(self).__name__} extract_files check ...")
-
-        for path in self._downloader.extract_files:
-            if not os.path.isfile(path):
-                raise FileNotFoundError(f"'{path}' is not a file")
