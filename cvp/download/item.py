@@ -2,29 +2,13 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from enum import StrEnum, auto, unique
 from typing import NewType, Optional, Union
 from uuid import uuid4
 
+from cvp.download.state import DownloadState
 from cvp.variables import UNKNOWN_TOTAL_SIZE
 
 DownloadKey = NewType("DownloadKey", str)
-
-
-@unique
-class DownloadType(StrEnum):
-    default = auto()
-    curl = auto()
-
-
-@unique
-class DownloadState(StrEnum):
-    uninitialized = auto()
-    pending = auto()
-    request_content_length = auto()
-    download_streaming = auto()
-    verifying = auto()
-    complete = auto()
 
 
 @dataclass
