@@ -5,7 +5,7 @@ from datetime import timedelta
 
 import platformdirs
 
-from cvp.hashfunc.checksum import HashFunction
+from cvp.hashfunc.mapping import HashFunction
 
 
 @dataclass

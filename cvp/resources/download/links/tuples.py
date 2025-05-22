@@ -3,7 +3,7 @@
 from typing import NamedTuple, Optional, Sequence, Tuple, Union
 from urllib.parse import ParseResult
 
-from cvp.hashfunc.checksum import HashFunction
+from cvp.hashfunc.mapping import HashFunction
 from cvp.variables import CHECKSUM_DELIMITER
 
 

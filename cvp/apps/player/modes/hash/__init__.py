@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FILE_LOCK
 from cvp.context.context import Context
-from cvp.hashfunc.checksum import HashFunction, checksum
+from cvp.hashfunc.mapping import HashFunction, compute_hash
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
@@ -66,7 +66,7 @@ class HashMode(BaseMode):
 
         try:
             data = self._input.encode(encoding=self._encoding, errors=self._errors)
-            self._output = checksum(method, data)
+            self._output = compute_hash(method, data)
             print(f"Output: {method} {data!r} -> {self._output}")
             self._error = None
         except BaseException as e:
