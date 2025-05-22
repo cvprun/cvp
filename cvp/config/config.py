@@ -15,6 +15,7 @@ from cvp.config.sections.context import ContextConfig
 from cvp.config.sections.developer import DeveloperConfig
 from cvp.config.sections.directory import DirectoryConfig
 from cvp.config.sections.display import DisplayConfig
+from cvp.config.sections.downloader import DownloaderConfig
 from cvp.config.sections.faker import FakerConfig
 from cvp.config.sections.ffmpeg import FFmpegConfig
 from cvp.config.sections.flow import FlowConfig
@@ -46,6 +47,7 @@ class Config:
     developer: DeveloperConfig = field(default_factory=DeveloperConfig)
     directory: DirectoryConfig = field(default_factory=DirectoryConfig)
     display: DisplayConfig = field(default_factory=DisplayConfig)
+    downloader: DownloaderConfig = field(default_factory=DownloaderConfig)
     faker: FakerConfig = field(default_factory=FakerConfig)
     ffmpeg: FFmpegConfig = field(default_factory=FFmpegConfig)
     flow: FlowConfig = field(default_factory=FlowConfig)

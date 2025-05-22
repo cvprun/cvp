@@ -29,8 +29,12 @@ class DownloaderMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._temp_url = str()
-        self._download_button_label = "Download"
+        self._download_label = "Download"
+        self._input_url = str()
+
+    @property
+    def config(self):
+        return self.context.config.downloader
 
     @override
     def on_process(self) -> None:
@@ -39,25 +43,7 @@ class DownloaderMode(BaseMode):
 
     def do_child_process(self) -> None:
         with begin_child_context("Top", child_flags=self._TOP_CHILD_FLAGS):
-            input_text_width = calc_input_text_width(self._download_button_label)
-            imgui.set_next_item_width(input_text_width)
-            url_result = input_text("##URL", self._temp_url, ENTER_RETURNS_TRUE)
-            self._temp_url = url_result.value
-
-            imgui.same_line()
-
-            download_clicked = button("Download", disabled=not self._temp_url)
-            if self._temp_url and (url_result or download_clicked):
-                self.context.downloader.add_download(self._temp_url)
-                self._temp_url = str()
-
-            if imgui.collapsing_header("Advanced Options"):
-                # dest: str = field(default_factory=str)
-                # timeout: Optional[float] = None
-                # checksum: Optional[float] = None
-                # follow_redirects: bool = False
-                # verify_ssl: bool = True
-                pass
+            self.do_top_process()
 
         imgui.separator()
 
@@ -79,6 +65,22 @@ class DownloaderMode(BaseMode):
                         self.table_download_item_row(item)
                 finally:
                     imgui.end_table()
+
+    def do_top_process(self) -> None:
+        input_text_width = calc_input_text_width(self._download_label)
+        imgui.set_next_item_width(input_text_width)
+        url_result = input_text("##URL", self._input_url, ENTER_RETURNS_TRUE)
+        self._input_url = url_result.value
+
+        imgui.same_line()
+
+        download_clicked = button(self._download_label, disabled=not self._input_url)
+        if self._input_url and (url_result or download_clicked):
+            self.context.downloader.add_download(self._input_url)
+            self._input_url = str()
+
+        if imgui.collapsing_header("Advanced options"):
+            pass
 
     @staticmethod
     def table_download_item_row(item: DownloadItem) -> None:
@@ -105,9 +107,3 @@ class DownloaderMode(BaseMode):
 
         imgui.table_set_column_index(7)
         imgui.text(f"{item.eta:.03f}s")
-
-    @staticmethod
-    def table_empty_row() -> None:
-        for i in range(DownloaderMode._TABLE_COLUMNS):
-            imgui.table_set_column_index(i)
-            imgui.text(str())

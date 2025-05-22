@@ -9,7 +9,7 @@ from cvp.keyring.keys import SupabaseKey
 class SupabaseSessionMixin(BaseContextMixin):
     @property
     def _supabase_session_runner(self):
-        return self.get_thread_runner(self.__on_supabase_session_main)
+        return self.get_process_runner(self.__on_supabase_session_main)
 
     def __on_supabase_session_main(self, username: str, password: str) -> None:
         self._supabase.sign_in_with_password(username, password)

@@ -9,7 +9,7 @@ from cvp.keyring.keys import SupabaseKey
 class SupabaseClientMixin(BaseContextMixin):
     @property
     def _create_supabase_client_runner(self):
-        return self.get_thread_runner(self.__on_supabase_client_main)
+        return self.get_process_runner(self.__on_supabase_client_main)
 
     def __on_supabase_client_main(
         self,

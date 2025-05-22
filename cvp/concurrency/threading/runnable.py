@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import Executor, Future
 from typing import Callable, Generic, Optional, ParamSpec, TypeVar
 from weakref import ref
 
@@ -10,14 +10,14 @@ _P = ParamSpec("_P")
 _T = TypeVar("_T")
 
 
-class ThreadRunnable(Generic[_P, _T]):
+class ConcurrencyRunnable(Generic[_P, _T]):
     _future: Optional[Future[_T]]
     _result: Optional[_T]
     _error: Optional[BaseException]
 
     def __init__(
         self,
-        executor: ThreadPoolExecutor,
+        executor: Executor,
         callback: Callable[_P, _T],
     ):
         self._executor = ref(executor)
@@ -56,6 +56,26 @@ class ThreadRunnable(Generic[_P, _T]):
     def __bool__(self):
         return self.running
 
+    @property
+    def is_thread_pool_runner(self) -> bool:
+        from concurrent.futures import ThreadPoolExecutor
+
+        executor = self._executor()
+        if executor is None:
+            raise ReferenceError("The executor object has expired")
+
+        return isinstance(executor, ThreadPoolExecutor)
+
+    @property
+    def is_process_pool_runner(self) -> bool:
+        from concurrent.futures import ProcessPoolExecutor
+
+        executor = self._executor()
+        if executor is None:
+            raise ReferenceError("The executor object has expired")
+
+        return isinstance(executor, ProcessPoolExecutor)
+
     def cancel(self) -> bool:
         if not self._running:
             raise ValueError("Not running")
@@ -84,7 +104,7 @@ class ThreadRunnable(Generic[_P, _T]):
         if executor is None:
             raise ReferenceError("The executor object has expired")
 
-        assert isinstance(executor, ThreadPoolExecutor)
+        assert isinstance(executor, Executor)
 
         self._running = True
         self._result = None

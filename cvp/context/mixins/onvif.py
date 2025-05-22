@@ -12,7 +12,7 @@ from cvp.wsdl.loader import load_wsdl_declarations
 class OnvifMixin(BaseContextMixin):
     @property
     def _preload_onvif_declarations_runner(self):
-        return self.get_thread_runner(self.__on_preload_onvif_declarations)
+        return self.get_process_runner(self.__on_preload_onvif_declarations)
 
     @staticmethod
     def __on_preload_onvif_declarations() -> int:
@@ -34,7 +34,7 @@ class OnvifMixin(BaseContextMixin):
 
     @property
     def preload_onvif_declarations(self):
-        return self.get_thread_runner(self.__on_preload_onvif_declarations)
+        return self.get_process_runner(self.__on_preload_onvif_declarations)
 
     @property
     def is_onvif_declaration_ready(self) -> bool:

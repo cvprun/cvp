@@ -14,7 +14,7 @@ from cvp.variables import NOT_FOUND_INDEX, UNKNOWN_ERROR_CODE
 class ChatMixin(BaseContextMixin):
     @property
     def _ollama_chat_runner(self):
-        return self.get_thread_runner(self.__on_ollama_chat_main)
+        return self.get_process_runner(self.__on_ollama_chat_main)
 
     def __on_ollama_chat_main(
         self,
