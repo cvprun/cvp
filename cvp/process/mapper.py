@@ -10,7 +10,7 @@ ProcessT = TypeVar("ProcessT", bound=Process)
 KeyT = TypeVar("KeyT")
 
 
-class ProcessManager(Dict[KeyT, ProcessT]):
+class ProcessMapper(Dict[KeyT, ProcessT]):
     def spawnable(self, key: KeyT) -> bool:
         return not self.__contains__(key)
 

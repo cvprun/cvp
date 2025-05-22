@@ -12,7 +12,7 @@ from cvp.media.config import MediaConfig, MediaKey
 from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process
 from cvp.net.uri.parser import is_file_scheme
-from cvp.process.manager import ProcessManager
+from cvp.process.mapper import ProcessMapper
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.medias import MediasPath
 from cvp.resources.subdirs.processes import ProcessesPath
@@ -25,7 +25,7 @@ from cvp.variables import (
 
 class MediaManager(ResourceManager[MediaKey, MediaConfig]):
     _config: ReferenceType[FFmpegConfig]
-    _processes: ProcessManager[MediaKey, FrameReaderProcess]
+    _processes: ProcessMapper[MediaKey, FrameReaderProcess]
     _textures: Dict[MediaKey, Texture]
 
     def __init__(
@@ -46,7 +46,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
         )
         self._processes_path = processes_path
         self._config = ref(config)
-        self._processes = ProcessManager()
+        self._processes = ProcessMapper()
         self._textures = dict()
 
     @property
