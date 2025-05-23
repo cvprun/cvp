@@ -16,7 +16,7 @@ from cvp.encoding.binary_text import (
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.input_text_multilingual import input_text_multiline
+from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 

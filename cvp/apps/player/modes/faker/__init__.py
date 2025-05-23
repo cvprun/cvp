@@ -17,7 +17,7 @@ from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.input_text import READ_ONLY
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
-from cvp.imgui.input_text_multilingual import input_text_multiline
+from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from functools import reduce
 from typing import Final
 
 from imgui_bundle import imgui
@@ -15,9 +16,13 @@ from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
+from cvp.imgui.input_text_multiline import (
+    calc_input_text_multiline_with_line_count,
+    input_text_multiline,
+)
 from cvp.imgui.popups.confirm import ConfirmPopup
-from cvp.imgui.table_mutable_sequence import table_mutable_sequence
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.service.item import ServiceItem
 from cvp.types.dataclass.field_default import get_field_default
 from cvp.types.dataclass.field_name import get_field_name
@@ -133,14 +138,13 @@ class ServiceManagerMode(BaseMode):
         if name := input_text("Name", service.name):
             service.name = name.value
 
-        imgui.text("Arguments")
-        table_mutable_sequence(
-            "Arguments",
-            service.args,
-            swappable=True,
-            removable=True,
-            insertable_callback=lambda i: str(),
-        )
+        cmds_height = calc_input_text_multiline_with_line_count(5)
+        if cmds := input_text_multiline("Arguments", service.cmds, (0, cmds_height)):
+            service.cmds = cmds.value
+
+        if arguments := service.arguments:
+            multiline_cmds = reduce(lambda x, y: f"{x}\n{y}", arguments)
+            hovered_tooltip_text_wrapped(multiline_cmds)
 
         if buffer_size := input_int("Buffer Size", service.buffer_size):
             service.buffer_size = buffer_size.value

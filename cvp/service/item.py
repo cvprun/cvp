@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import io
+import shlex
 from dataclasses import dataclass, field
 from enum import StrEnum, auto, unique
 from subprocess import DEVNULL, PIPE, STDOUT
@@ -14,7 +15,7 @@ ServiceKey = NewType("ServiceKey", str)
 
 
 @unique
-class RestartCondition(StrEnum):
+class RestartPolicy(StrEnum):
     none = auto()
     on_failure = auto()
     always = auto()
@@ -66,7 +67,9 @@ class StreamInfo:
 @dataclass
 class ServiceItem:
     uuid: str = field(default_factory=lambda: str(uuid4()))
-    args: List[str] = field(default_factory=list)
+    name: str = field(default_factory=str)
+
+    cmds: str = field(default_factory=str)
     buffer_size: int = io.DEFAULT_BUFFER_SIZE
     stdin: StreamInfo = field(default_factory=StreamInfo)
     stdout: StreamInfo = field(default_factory=StreamInfo)
@@ -74,12 +77,11 @@ class ServiceItem:
     cwd: str = field(default_factory=str)
     env: Dict[str, str] = field(default_factory=dict)
     creation_flags: int = field(default_factory=default_creation_flags)
-    name: str = field(default_factory=str)
 
     user: str = field(default_factory=str)
     group: str = field(default_factory=str)
 
-    restart_policy: str = field(default_factory=str)
+    restart: str = field(default_factory=str)
     restart_delay: float = 1.0
     restart_max_attempts: int = 1
 
@@ -87,12 +89,6 @@ class ServiceItem:
 
     base_class: str = field(default_factory=str)
     base_class_kwargs: Dict[str, str] = field(default_factory=dict)
-
-    exec_start_pre: List[str] = field(default_factory=list)
-    exec_start_post: List[str] = field(default_factory=list)
-    exec_reload: List[str] = field(default_factory=list)
-    exec_stop: List[str] = field(default_factory=list)
-    exec_stop_post: List[str] = field(default_factory=list)
 
     pid_file: str = field(default_factory=str)
 
@@ -105,15 +101,26 @@ class ServiceItem:
         self.uuid = str(value)
 
     @property
-    def restart_condition(self):
+    def arguments(self) -> List[str]:
         try:
-            return RestartCondition(self.restart_policy)
-        except:  # noqa
-            return RestartCondition.none
+            return shlex.split(self.cmds)
+        except ValueError:
+            return list()  # "No closing quotation"
 
-    @restart_condition.setter
-    def restart_condition(self, value: RestartCondition) -> None:
+    @arguments.setter
+    def arguments(self, value: List[str]) -> None:
+        self.cmds = shlex.join(value)
+
+    @property
+    def restart_policy(self):
         try:
-            self.restart_policy = str(value)
+            return RestartPolicy(self.restart)
         except:  # noqa
-            self.restart_policy = str(RestartCondition.none)
+            return RestartPolicy.none
+
+    @restart_policy.setter
+    def restart_policy(self, value: RestartPolicy) -> None:
+        try:
+            self.restart = str(value)
+        except:  # noqa
+            self.restart = str(RestartPolicy.none)

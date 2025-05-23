@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Iterable, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import uuid4
 
 from cvp.resources.manager.manager import ResourceManager
@@ -26,7 +26,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
     def add_service(
         self,
-        args: Optional[Iterable[str]] = None,
+        name: Optional[str] = None,
         *,
         uuid: Optional[str] = None,
     ) -> Tuple[ServiceKey, ServiceItem]:
@@ -34,7 +34,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             uuid = str(uuid4())
         assert isinstance(uuid, str)
 
-        item = ServiceItem(uuid=uuid, args=list(args or ()))
+        item = ServiceItem(uuid=uuid, name=name or str())
         assert uuid == str(item.key)
 
         self.add(item.key, item)

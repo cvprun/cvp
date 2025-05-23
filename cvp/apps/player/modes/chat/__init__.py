@@ -20,7 +20,7 @@ from cvp.imgui.flags.input_text import (
     ENTER_RETURNS_TRUE,
     READ_ONLY,
 )
-from cvp.imgui.input_text_multilingual import input_text_multiline
+from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.spinner import spinner
 from cvp.imgui.text_centered import text_centered

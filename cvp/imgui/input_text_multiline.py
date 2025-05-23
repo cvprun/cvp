@@ -26,11 +26,15 @@ class InputTextMultilineResult(NamedTuple):
         return self.changed
 
 
-def calc_input_text_multiline_height(value: str) -> float:
+def calc_input_text_multiline_with_line_count(line_count: int) -> float:
     frame_padding = imgui.get_style().frame_padding
-    line_count = value.count("\n") + 1
     text_height = imgui.get_font_size() * line_count
     return text_height + (frame_padding.y * 2)
+
+
+def calc_input_text_multiline_height(value: str) -> float:
+    line_count = value.count("\n") + 1
+    return calc_input_text_multiline_with_line_count(line_count)
 
 
 def input_text_multiline(
