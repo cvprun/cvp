@@ -16,6 +16,10 @@ NODOC: Final[str] = ""
 COMMENT_PREFIX: Final[str] = "#"
 HEXADECIMAL: Final[int] = 16
 
+STDIN_FILE_HANDLE: Final[int] = 0
+STDOUT_FILE_HANDLE: Final[int] = 1
+STDERR_FILE_HANDLE: Final[int] = 2
+
 CVP_TITLE: Final[str] = "CVP"
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
 CVP_YML_FILENAME: Final[str] = "cvp.yml"

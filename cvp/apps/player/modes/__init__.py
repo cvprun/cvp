@@ -33,6 +33,7 @@ class ModeManager:
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.process import ProcessManagerMode
+        from cvp.apps.player.modes.service import ServiceManagerMode
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
@@ -63,6 +64,7 @@ class ModeManager:
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
         self.process_mode = ProcessManagerMode(context)
+        self.services_mode = ServiceManagerMode(context)
         self.sock_map = SockmapMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
@@ -93,6 +95,7 @@ class ModeManager:
             self.object_tracker_mode,
             self.onvif_mode,
             self.process_mode,
+            self.services_mode,
             self.sock_map,
             self.terminal_mode,
             self.watchdog_mode,

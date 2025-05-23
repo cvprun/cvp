@@ -62,6 +62,7 @@ class Process:
         assert isinstance(buffer_size, int)
         assert isinstance(creation_flags, int)
 
+        # https://docs.python.org/3.13/library/subprocess.html
         self._popen = Popen(
             args,
             bufsize=buffer_size,

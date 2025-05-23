@@ -30,8 +30,8 @@ from cvp.media.manager import MediaManager
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
-from cvp.process.supervisor import Supervisor
 from cvp.resources.home import HomeDir
+from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
 from cvp.wsdiscovery.manager import WsDiscoveryManager
@@ -108,13 +108,13 @@ class Context(ContextMixins):
             logger.info(f"Default keyring directory: {str(self._home.keyrings)}")
             self._keyring.update_default_filepath(self._home.keyrings)
 
+        self._msgs = MsgQueue()
         self._imes = ImeManager.from_default()
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
-        self._msgs = MsgQueue()
-        self._supervisor = Supervisor()
+        self._services = ServiceManager(self._home.services, reload=True)
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
         self._downloader = DownloadManager(
             self._home.downloads,
@@ -201,10 +201,6 @@ class Context(ContextMixins):
         return self._msgs
 
     @property
-    def supervisor(self):
-        return self._supervisor
-
-    @property
     def imes(self):
         return self._imes
 
@@ -223,6 +219,10 @@ class Context(ContextMixins):
     @property
     def flows(self):
         return self._flows
+
+    @property
+    def services(self):
+        return self._services
 
     @property
     def keyring(self):

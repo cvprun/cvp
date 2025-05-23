@@ -17,6 +17,7 @@ from cvp.resources.subdirs.medias import MediasPath
 from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.resources.subdirs.processes import ProcessesPath
+from cvp.resources.subdirs.services import ServicesPath
 from cvp.resources.subdirs.temp import TempPath
 from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.resources.subdirs.wsdl import WsdlPath
@@ -45,6 +46,7 @@ class HomeDir(PathFlavour):
         self.medias = MediasPath.classname_subdir(self)
         self.onvifs = OnvifsPath.classname_subdir(self)
         self.processes = ProcessesPath.classname_subdir(self)
+        self.services = ServicesPath.classname_subdir(self)
         self.temp = TempPath.classname_subdir(self)
         self.wsdiscovery = WsDiscoveryPath.classname_subdir(self)
         self.wsdl = WsdlPath.classname_subdir(self)
@@ -63,6 +65,7 @@ class HomeDir(PathFlavour):
             self.medias,
             self.onvifs,
             self.processes,
+            self.services,
             self.temp,
             self.wsdiscovery,
             self.wsdl,

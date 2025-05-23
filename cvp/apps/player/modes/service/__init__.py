@@ -1,0 +1,105 @@
+# -*- coding: utf-8 -*-
+
+from typing import Final
+
+from imgui_bundle import imgui
+
+from cvp.apps.player.modes._base import BaseMode
+from cvp.assets.fonts.mdi import APPLICATION_COG
+from cvp.context.context import Context
+from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.button import button
+from cvp.imgui.fit_size import FIT_SIZE
+from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.text_centered import text_centered
+from cvp.service.item import ServiceItem
+from cvp.types.override import override
+
+
+class ServiceManagerMode(BaseMode):
+    __cvp_mode_name__ = "Service Manager"
+    __cvp_mode_icon__ = APPLICATION_COG
+
+    _MENU_SPLIT_X: Final[int] = 300
+    _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+
+    def __init__(self, context: Context):
+        super().__init__(context)
+        self._remove_candidate = str()
+        self._confirm_remove = ConfirmPopup(
+            title="Remove",
+            label="Are you sure you want to remove service?",
+            ok="Remove",
+            cancel="No",
+            target=self.on_confirm_remove,
+        )
+        self._confirm_clear = ConfirmPopup(
+            title="Clear",
+            label="Are you sure you want to remove all service?",
+            ok="Clear",
+            cancel="No",
+            target=self.on_confirm_clear,
+        )
+
+    @property
+    def services(self):
+        return self.context.services
+
+    def on_confirm_remove(self, value: bool) -> None:
+        if not value:
+            return
+        assert self._remove_candidate in self.services
+        self.services.remove(self._remove_candidate)
+
+    def on_confirm_clear(self, value: bool) -> None:
+        if not value:
+            return
+        self.services.remove_all()
+
+    @override
+    def on_process(self) -> None:
+        with self.begin_mode_context():
+            with begin_child_context(
+                label="Menu",
+                size=(self._MENU_SPLIT_X, 0),
+                child_flags=self._MENU_CHILD_FLAGS,
+            ):
+                if button("Reload"):
+                    self.services.read_all_config_files()
+                imgui.same_line()
+                if button("Add"):
+                    self.services.add_service()
+                imgui.same_line()
+                if button("Del", disabled=self.selected_submenu not in self.services):
+                    self._remove_candidate = self.selected_submenu
+                    self._confirm_remove.show()
+                imgui.same_line()
+                if button("Clear", disabled=not self.services):
+                    self._confirm_clear.show()
+
+                if imgui.begin_list_box("##List", FIT_SIZE):
+                    try:
+                        for key, service in self.services.items():
+                            label = f"{service.name}###{key}" if service.name else key
+                            selected = key == self.selected_submenu
+                            if imgui.selectable(label, selected)[1]:
+                                self.selected_submenu = key
+                    finally:
+                        imgui.end_list_box()
+
+            imgui.same_line()
+
+            with begin_child_context("Main"):
+                if selected_service := self.services.get(self.selected_submenu):
+                    self.do_main_process(selected_service)
+                else:
+                    text_centered("Please select a item")
+
+        self._confirm_remove.on_process()
+        self._confirm_clear.on_process()
+
+    @staticmethod
+    def do_main_process(service: ServiceItem) -> None:
+        imgui.text("Service Manager")
+        imgui.separator()
