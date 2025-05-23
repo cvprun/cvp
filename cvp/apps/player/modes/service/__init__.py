@@ -8,12 +8,19 @@ from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import APPLICATION_COG
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.begin_tab_item import begin_tab_item, end_tab_item
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.input_int import input_int
+from cvp.imgui.input_text import input_text
+from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.popups.confirm import ConfirmPopup
+from cvp.imgui.table_mutable_sequence import table_mutable_sequence
 from cvp.imgui.text_centered import text_centered
 from cvp.service.item import ServiceItem
+from cvp.types.dataclass.field_default import get_field_default
+from cvp.types.dataclass.field_name import get_field_name
 from cvp.types.override import override
 
 
@@ -99,7 +106,54 @@ class ServiceManagerMode(BaseMode):
         self._confirm_remove.on_process()
         self._confirm_clear.on_process()
 
+    def do_main_process(self, service: ServiceItem) -> None:
+        if imgui.begin_tab_bar("Service Tabs"):
+            try:
+                if begin_tab_item("Config"):
+                    try:
+                        self.do_config_process(service)
+                    finally:
+                        end_tab_item()
+
+                if begin_tab_item("Status"):
+                    try:
+                        self.do_status_process(service)
+                    finally:
+                        end_tab_item()
+            finally:
+                imgui.end_tab_bar()
+
     @staticmethod
-    def do_main_process(service: ServiceItem) -> None:
-        imgui.text("Service Manager")
+    def do_config_process(service: ServiceItem) -> None:
+        imgui.text("Service Config")
         imgui.separator()
+
+        input_text_disabled("UUID", service.uuid)
+
+        if name := input_text("Name", service.name):
+            service.name = name.value
+
+        imgui.text("Arguments")
+        table_mutable_sequence(
+            "Arguments",
+            service.args,
+            swappable=True,
+            removable=True,
+            insertable_callback=lambda i: str(),
+        )
+
+        if buffer_size := input_int("Buffer Size", service.buffer_size):
+            service.buffer_size = buffer_size.value
+
+        if button("Default Buffer Size"):
+            buffer_size_key = get_field_name(service).buffer_size
+            buffer_size_default = get_field_default(service, buffer_size_key)
+            service.buffer_size = buffer_size_default
+
+    @staticmethod
+    def do_status_process(service: ServiceItem) -> None:
+        imgui.text("Service Status")
+        imgui.separator()
+
+        input_text_disabled("UUID", service.uuid)
+        input_text_disabled("Name", service.name)
