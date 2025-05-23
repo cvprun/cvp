@@ -29,8 +29,8 @@ from cvp.types.dataclass.field_name import get_field_name
 from cvp.types.override import override
 
 
-class ServiceManagerMode(BaseMode):
-    __cvp_mode_name__ = "Service Manager"
+class ServicesMode(BaseMode):
+    __cvp_mode_name__ = "Services"
     __cvp_mode_icon__ = APPLICATION_COG
 
     _MENU_SPLIT_X: Final[int] = 300

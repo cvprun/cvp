@@ -7,8 +7,8 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.types.override import override
 
 
-class ProcessManagerMode(BaseMode):
-    __cvp_mode_name__ = "Process Manager"
+class ProcessesMode(BaseMode):
+    __cvp_mode_name__ = "Processes"
     __cvp_mode_icon__ = MONITOR_EYE
 
     def __init__(self, context: Context):

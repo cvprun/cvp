@@ -74,7 +74,7 @@ class SockResult:
 
 
 class SockmapMode(BaseMode):
-    __cvp_mode_name__ = "Socket Mapping"
+    __cvp_mode_name__ = "Sockmap"
     __cvp_mode_icon__ = CLOUD_SEARCH
 
     _LIST_SPLIT_X: Final[int] = 150
