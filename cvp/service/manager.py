@@ -6,6 +6,7 @@ from uuid import uuid4
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.services import ServicesPath
 from cvp.service.item import ServiceItem, ServiceKey
+from cvp.variables import SERVICE_NONAME
 
 
 class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
@@ -26,7 +27,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
     def add_service(
         self,
-        name: Optional[str] = None,
+        name=SERVICE_NONAME,
         *,
         uuid: Optional[str] = None,
     ) -> Tuple[ServiceKey, ServiceItem]:
@@ -34,7 +35,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             uuid = str(uuid4())
         assert isinstance(uuid, str)
 
-        item = ServiceItem(uuid=uuid, name=name or str())
+        item = ServiceItem(uuid=uuid, name=name)
         assert uuid == str(item.key)
 
         self.add(item.key, item)
