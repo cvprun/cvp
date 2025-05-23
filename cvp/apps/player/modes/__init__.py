@@ -29,6 +29,7 @@ class ModeManager:
         from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
         from cvp.apps.player.modes.main.layout import MainLayout
+        from cvp.apps.player.modes.mediamtx import MediaMTXMode
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
@@ -59,6 +60,7 @@ class ModeManager:
         self.hash_mode = HashMode(context)
         self.image_mode = ImageMode(context)
         self.media_player_mode = VideoPlayerMode(context)
+        self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
@@ -91,6 +93,7 @@ class ModeManager:
             self.hash_mode,
             self.image_mode,
             self.media_player_mode,
+            self.mediamtx_mode,
             self.medias_mode,
             self.object_tracker_mode,
             self.onvif_mode,
