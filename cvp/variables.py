@@ -22,6 +22,10 @@ STDIN_FILE_HANDLE: Final[int] = 0
 STDOUT_FILE_HANDLE: Final[int] = 1
 STDERR_FILE_HANDLE: Final[int] = 2
 
+STDIN_FILE_NAME: Final[str] = "stdin"
+STDOUT_FILE_NAME: Final[str] = "stdout"
+STDERR_FILE_NAME: Final[str] = "stderr"
+
 CVP_TITLE: Final[str] = "CVP"
 CVP_HOME_DIRNAME: Final[str] = ".cvp"
 CVP_YML_FILENAME: Final[str] = "cvp.yml"

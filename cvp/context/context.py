@@ -157,13 +157,6 @@ class Context(ContextMixins):
         logger.info("Shutting down process pool...")
         self._process_pool.shutdown(wait=True)
 
-    def save_all(self) -> None:
-        self.save_config()
-        self.save_all_flow_graphs()
-        self.save_all_ollamas()
-        self.save_all_wsdiscovery()
-        self.save_all_medias()
-
     def save_config(self) -> None:
         self._config.write_yaml(self._home.cvp_yml)
         logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
@@ -180,6 +173,10 @@ class Context(ContextMixins):
         self._ollamas.write_all_config_files()
         logger.info("Save all ollama files")
 
+    def save_all_services(self) -> None:
+        self._services.write_all_config_files()
+        logger.info("Save all service files")
+
     def save_all_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
         logger.info("Save all WS-Discovery files")
@@ -187,6 +184,14 @@ class Context(ContextMixins):
     def save_all_medias(self) -> None:
         self._medias.write_all_config_files()
         logger.info("Save all media files")
+
+    def save_all(self) -> None:
+        self.save_config()
+        self.save_all_flow_graphs()
+        self.save_all_ollamas()
+        self.save_all_services()
+        self.save_all_wsdiscovery()
+        self.save_all_medias()
 
     @property
     def home(self):

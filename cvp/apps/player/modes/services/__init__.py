@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 from pathlib import Path
-from typing import Final, Union
+from typing import Final, Optional, Union
 
 from imgui_bundle import imgui
 
@@ -29,7 +30,7 @@ from cvp.imgui.tab_container import TabList
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.imgui.widgets.table_mutable_mapping import table_mutable_mapping
-from cvp.service.item import ServiceKey
+from cvp.service.item import ServiceKey, StreamInfo
 from cvp.types.dataclass.field_default import get_field_default
 from cvp.types.dataclass.field_name import get_field_name
 from cvp.types.override import override
@@ -54,6 +55,8 @@ class ServicesMode(BaseMode):
         )
 
         self._remove_candidate = str()
+        self._stream_candidate: Optional[StreamInfo] = None
+
         self._confirm_remove = ConfirmPopup(
             title="Remove",
             label="Are you sure you want to remove service?",
@@ -83,10 +86,18 @@ class ServicesMode(BaseMode):
             target=self.on_pid_selected,
             open_mode=OpenFilePopup.OpenMode.input_filename,
         )
+        self._stdio_file_browser = OpenFilePopup(
+            "Select stdio file",
+            target=self.on_stdio_selected,
+            open_mode=OpenFilePopup.OpenMode.input_filename,
+        )
+
         self._popups = PopupList(
             self._confirm_remove,
             self._confirm_clear,
             self._executable_browser,
+            self._pid_file_browser,
+            self._stdio_file_browser,
         )
 
     @property
@@ -177,6 +188,13 @@ class ServicesMode(BaseMode):
         assert selected_service is not None
         selected_service.pid_file = file
 
+    def on_stdio_selected(self, file: str) -> None:
+        if not file:
+            return
+
+        assert self._stream_candidate is not None
+        self._stream_candidate.set_file(file)
+
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
@@ -236,6 +254,10 @@ class ServicesMode(BaseMode):
         if service.executable:
             self.hovered_tooltip(service.normalize_executable())
 
+        if button("Python Executable"):
+            service.executable = sys.executable
+
+        imgui.same_line()
         if button("Browse Executable"):
             self._executable_browser.set_location(service.normalize_executable())
             self._executable_browser.show()
@@ -243,14 +265,16 @@ class ServicesMode(BaseMode):
         imgui.same_line()
         if not service.executable:
             self.text_error("No executable path provided")
-        elif not os.path.exists(service.executable):
-            self.text_error("Executable does not exist")
-        elif not os.path.isfile(service.executable):
-            self.text_error("Executable is not a file")
-        elif not os.access(service.executable, os.X_OK):
-            self.text_error("Executable is not executable")
         else:
-            self.text_success("Executable is valid and ready")
+            normalize_executable = service.normalize_executable()
+            if not os.path.exists(normalize_executable):
+                self.text_error("Executable does not exist")
+            elif not os.path.isfile(normalize_executable):
+                self.text_error("Executable is not a file")
+            elif not os.access(normalize_executable, os.X_OK):
+                self.text_error("Executable is not executable")
+            else:
+                self.text_success("Executable is valid and ready")
 
         cmds_height = calc_input_text_multiline_with_line_count(self._ARGS_LINE_COUNT)
         if cmds := input_text_multiline("Arguments", service.args, (0, cmds_height)):
@@ -282,6 +306,10 @@ class ServicesMode(BaseMode):
         if button("Obtain Default Buffer Size"):
             service.set_default_buffer_size()
 
+        self.do_stream_process("Standard input", service.stdin)
+        self.do_stream_process("Standard output", service.stdout)
+        self.do_stream_process("Standard error", service.stderr)
+
         if cwd := input_text("Working Directory", service.cwd):
             service.cwd = cwd.value
 
@@ -301,18 +329,24 @@ class ServicesMode(BaseMode):
                 imgui.text_colored(self.error_color, "Not a directory")
 
         with begin_child_context(
-            label="EnvTable",
+            label="EnvChild",
             size=(imgui.calc_item_width(), 0),
-            child_flags=AUTO_RESIZE_Y,
+            child_flags=AUTO_RESIZE_Y | BORDERS,
         ):
             table_mutable_mapping(
-                label="Environment variables",
+                label="EnvTable",
                 container=service.env,
                 addable_factory=lambda k, v: (k, v),
             )
+        imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
+        imgui.text("Environment variables")
 
-        if creation_flags := input_int("Creation flags", service.creation_flags):
-            service.creation_flags = creation_flags.value
+        imgui.begin_disabled()
+        try:
+            if creation_flags := input_int("Creation flags", service.creation_flags):
+                service.creation_flags = creation_flags.value
+        finally:
+            imgui.end_disabled()
 
         if user := input_text("User", service.user):
             service.user = user.value
@@ -360,6 +394,59 @@ class ServicesMode(BaseMode):
         if button("Browse PID File"):
             self._pid_file_browser.set_location(service.pid_file)
             self._pid_file_browser.show()
+
+        imgui.separator()
+
+    def do_stream_process(self, label: str, stream: StreamInfo) -> None:
+        stream.validate()
+
+        with begin_child_context(
+            label=f"##StdioChild.{stream.type}",
+            size=(imgui.calc_item_width(), 0),
+            child_flags=AUTO_RESIZE_Y,
+        ):
+            if imgui.radio_button(f"Handle##RadioH.{stream.type}", stream.is_handle):
+                stream.set_default()
+            imgui.same_line()
+            if imgui.radio_button(f"File##RadioF.{stream.type}", stream.is_file):
+                stream.set_empty_file()
+
+            imgui.same_line()
+            if stream.is_handle:
+                assert stream.handle is not None
+                if handle := input_int(f"##InputHandle.{stream.type}", stream.handle):
+                    stream.handle = handle.value
+            else:
+                assert stream.file is not None
+                if file := input_text(f"##InputFile.{stream.type}", stream.file):
+                    stream.file = file.value
+
+            imgui.same_line()
+            if button("Default"):
+                stream.set_default()
+
+            imgui.same_line()
+            if button("DEVNULL"):
+                stream.set_devnull()
+
+            imgui.same_line()
+            if button("PIPE"):
+                stream.set_pipe()
+
+            imgui.same_line()
+            if button("Browse file"):
+                self._stream_candidate = stream
+                if stream.file:
+                    self._stdio_file_browser.set_location(stream.file)
+                self._stdio_file_browser.show()
+
+            if stream.is_stderr:
+                imgui.same_line()
+                if button("Same Standard Output"):
+                    stream.set_same_standard_output()
+
+        imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
+        imgui.text(label)
 
     def do_status_process(self) -> None:
         service = self.selected_service
