@@ -5,7 +5,7 @@ from shutil import copytree
 from typing import Union
 
 from cvp.assets.wsdl import get_wsdl_dir
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 
 
 class WsdlPath(PathFlavour):

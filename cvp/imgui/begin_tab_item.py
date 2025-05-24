@@ -8,21 +8,21 @@ from cvp.imgui.flags.tab_item import TabItemFlags
 
 
 class BeginTabItemResult(NamedTuple):
-    opened: bool
-    value: Optional[bool]
+    selected: bool
+    opened_state: Optional[bool]
 
     @classmethod
     def from_raw(cls, result):
         assert isinstance(result, tuple)
         assert len(result) == 2
-        changed = result[0]
-        value = result[1]
-        assert isinstance(changed, bool)
-        assert isinstance(value, (type(None), bool))
-        return cls(changed, value)
+        selected = result[0]
+        opened_state = result[1]
+        assert isinstance(selected, bool)
+        assert isinstance(opened_state, (type(None), bool))
+        return cls(selected, opened_state)
 
     def __bool__(self):
-        return self.opened
+        return self.selected
 
 
 def begin_tab_item(

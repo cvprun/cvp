@@ -3,7 +3,7 @@
 from os import PathLike
 from typing import Union
 
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 
 
 class KeyringsPath(PathFlavour):

@@ -5,6 +5,7 @@ from typing import Callable, Iterable, List, Optional, Tuple, Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.begin_tab_item import begin_tab_item, end_tab_item
 from cvp.imgui.flags.tab_bar import TabBarFlags
 from cvp.imgui.flags.tab_item import TabItemFlags
 
@@ -68,20 +69,22 @@ class TabList(List[TabItem]):
                         item_flags = int(item_flags)
                     assert isinstance(item_flags, int)
 
-                    tab_result = imgui.begin_tab_item(tab.name, tab.opened, item_flags)
-                    try:
-                        result_opened = tab_result[0]
-                        result_value = tab_result[1]
-                        if (
-                            result_value is not None
-                            and tab.opened is not None
-                            and tab.opened != result_value
-                        ):
-                            tab.opened = result_value
+                    tab_result = begin_tab_item(tab.name, tab.opened, item_flags)
+                    selected = tab_result.selected
+                    opened = tab_result.opened_state
 
-                        if result_value and result_opened and tab.callback is not None:
-                            tab.callback()
-                    finally:
-                        imgui.end_tab_item()
+                    if (
+                        opened is not None
+                        and tab.opened is not None
+                        and tab.opened != opened
+                    ):
+                        tab.opened = opened
+
+                    if selected:
+                        try:
+                            if tab.callback is not None:
+                                tab.callback()
+                        finally:
+                            end_tab_item()
             finally:
                 imgui.end_tab_bar()

@@ -5,7 +5,7 @@ from os import PathLike
 from typing import Optional, Union
 
 from cvp.chrono.filename import short_datetime_name
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 
 
 class ProcessesPath(PathFlavour):

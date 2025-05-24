@@ -5,7 +5,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 
 
 class _TestPath(PathFlavour):

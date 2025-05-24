@@ -15,6 +15,8 @@ BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
 COMMENT_PREFIX: Final[str] = "#"
 HEXADECIMAL: Final[int] = 16
+NEWLINE: Final[str] = "\n"
+COMMA: Final[str] = ","
 
 STDIN_FILE_HANDLE: Final[int] = 0
 STDOUT_FILE_HANDLE: Final[int] = 1

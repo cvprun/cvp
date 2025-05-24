@@ -4,11 +4,17 @@ from typing import Optional, Union
 
 from imgui_bundle import imgui
 
+from cvp.imgui.flags.color_var import TEXT
 from cvp.imgui.flags.hovered import HoveredFlags
+from cvp.types.colors import RGBA
 from cvp.variables import HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH
 
 
-def hovered_tooltip_text(text: str, flags: Union[HoveredFlags, int] = 0) -> bool:
+def hovered_tooltip_text(
+    text: str,
+    color: Optional[RGBA] = None,
+    flags: Union[HoveredFlags, int] = 0,
+) -> bool:
     if isinstance(flags, HoveredFlags):
         flags = int(flags)
     assert isinstance(flags, int)
@@ -16,7 +22,10 @@ def hovered_tooltip_text(text: str, flags: Union[HoveredFlags, int] = 0) -> bool
     if imgui.is_item_hovered(flags):
         if imgui.begin_tooltip():
             try:
-                imgui.text(text)
+                if color is not None:
+                    imgui.text_colored(color, text)
+                else:
+                    imgui.text(text)
             finally:
                 imgui.end_tooltip()
         return True
@@ -26,6 +35,7 @@ def hovered_tooltip_text(text: str, flags: Union[HoveredFlags, int] = 0) -> bool
 
 def hovered_tooltip_text_wrapped(
     text: str,
+    color: Optional[RGBA] = None,
     flags: Union[HoveredFlags, int] = 0,
     *,
     width: Optional[int] = HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH,
@@ -41,7 +51,15 @@ def hovered_tooltip_text_wrapped(
                 if use_text_wrap_pos:
                     assert isinstance(width, int)
                     imgui.push_text_wrap_pos(imgui.get_cursor_pos_x() + width)
+
+                if color is not None:
+                    imgui.push_style_color(TEXT, color)
+
                 imgui.text_wrapped(text)
+
+                if color is not None:
+                    imgui.pop_style_color()
+
                 if use_text_wrap_pos:
                     imgui.pop_text_wrap_pos()
             finally:

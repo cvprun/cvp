@@ -6,7 +6,7 @@ from pathlib import Path
 from pickle import dumps, loads
 from typing import Any, Final, Union
 
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 
 PICKLE_PROTOCOL_VERSION: Final[int] = 5
 PICKLE_ENCODING: Final[str] = "ASCII"

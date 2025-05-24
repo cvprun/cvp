@@ -4,6 +4,7 @@ from os import PathLike
 from typing import Union
 
 from cvp.logging.loggers import logger
+from cvp.paths.flavour import PathFlavour
 from cvp.resources.subdirs.bin import BinPath
 from cvp.resources.subdirs.cache import CachePath
 from cvp.resources.subdirs.canvases import CanvasesPath
@@ -21,7 +22,6 @@ from cvp.resources.subdirs.services import ServicesPath
 from cvp.resources.subdirs.temp import TempPath
 from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.resources.subdirs.wsdl import WsdlPath
-from cvp.system.path import PathFlavour
 from cvp.variables import CVP_YML_FILENAME, GUI_INI_FILENAME, LOGGING_JSON_FILENAME
 
 

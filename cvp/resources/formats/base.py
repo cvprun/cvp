@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from os import PathLike
 from typing import Any, Final, Union
 
-from cvp.system.path import PathFlavour
+from cvp.paths.flavour import PathFlavour
 from cvp.types.override import override
 
 BASE_EXTENSION: Final[str] = ".bin"
