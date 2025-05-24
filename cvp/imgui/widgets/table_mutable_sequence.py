@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, MutableSequence, Optional, Tuple, Union
+from typing import Any, Callable, MutableSequence, Optional, Tuple, TypeVar, Union
 
 from imgui_bundle import imgui
 
@@ -18,8 +18,14 @@ from cvp.imgui.input_text import input_text
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.variables import NOT_FOUND_INDEX
 
+_KT = TypeVar("_KT")
 
-def default_table_item_input(index: int, item: Any, container: MutableSequence) -> None:
+
+def default_table_item_input(
+    index: int,
+    item: Any,
+    container: MutableSequence[_KT],
+) -> None:
     imgui.set_next_item_width(FIT_WIDTH)
 
     if isinstance(item, str):
@@ -39,7 +45,7 @@ def default_table_item_input(index: int, item: Any, container: MutableSequence) 
 
 def table_mutable_sequence(
     label: str,
-    container: MutableSequence,
+    container: MutableSequence[_KT],
     flags: Union[TableFlags, int] = DEFAULT_TABLE_FLAGS,
     outer_size: Optional[imgui.ImVec2Like] = None,
     inner_width: float = 0.0,

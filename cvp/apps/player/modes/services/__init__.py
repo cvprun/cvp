@@ -13,7 +13,7 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.combo_enum import combo_enum
 from cvp.imgui.fit_size import FIT_SIZE
-from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS, RESIZE_X
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
@@ -28,6 +28,7 @@ from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.tab_container import TabList
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
+from cvp.imgui.widgets.table_mutable_mapping import table_mutable_mapping
 from cvp.service.item import ServiceKey
 from cvp.types.dataclass.field_default import get_field_default
 from cvp.types.dataclass.field_name import get_field_name
@@ -283,6 +284,7 @@ class ServicesMode(BaseMode):
 
         if cwd := input_text("Working Directory", service.cwd):
             service.cwd = cwd.value
+
         if button("Browse Directory"):
             self._cwd_browser.set_location(service.cwd)
             self._cwd_browser.show()
@@ -297,6 +299,17 @@ class ServicesMode(BaseMode):
             elif not os.path.isdir(service.cwd):
                 imgui.same_line()
                 imgui.text_colored(self.error_color, "Not a directory")
+
+        with begin_child_context(
+            label="EnvTable",
+            size=(imgui.calc_item_width(), 0),
+            child_flags=AUTO_RESIZE_Y,
+        ):
+            table_mutable_mapping(
+                label="Environment variables",
+                container=service.env,
+                addable_factory=lambda k, v: (k, v),
+            )
 
         if creation_flags := input_int("Creation flags", service.creation_flags):
             service.creation_flags = creation_flags.value
