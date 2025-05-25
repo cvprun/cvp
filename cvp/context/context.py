@@ -114,7 +114,11 @@ class Context(ContextMixins):
         self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
-        self._services = ServiceManager(self._home.services, reload=True)
+        self._services = ServiceManager(
+            self._home.services,
+            self._home.processes,
+            reload=True,
+        )
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)
         self._downloader = DownloadManager(
             self._home.downloads,

@@ -34,6 +34,12 @@ from cvp.types.override import override
 _KT = TypeVar("_KT")
 _VT = TypeVar("_VT")
 
+FilterCallable = Callable[[_KT, _VT], bool]
+AddableFactoryCallable = Callable[
+    [str, str],
+    Optional[Tuple[_KT, _VT]],
+]
+
 DEFAULT_KEY_LABEL: Final[str] = "Key"
 DEFAULT_VALUE_LABEL: Final[str] = "Value"
 DEFAULT_ACTIONS_LABEL: Final[str] = "Actions"
@@ -191,11 +197,13 @@ class TableMutableMapping(TableMutableMappingInterface[_KT, _VT]):
         label: str,
         container: MutableMapping[_KT, _VT],
         options: Optional[TableMutableMappingOptions] = None,
-        addable_factory: Optional[Callable[[str, str], Tuple[_KT, _VT]]] = None,
+        addable_factory: Optional[AddableFactoryCallable] = None,
+        filter_callback: Optional[FilterCallable] = None,
     ):
         self._label = label
         self._container = container
         self._addable_factory = addable_factory
+        self._filter = filter_callback
         self._options = options if options else TableMutableMappingOptions()
 
     @property
@@ -239,6 +247,9 @@ class TableMutableMapping(TableMutableMappingInterface[_KT, _VT]):
                 remove_key: Optional[_KT] = None
 
                 for key, value in self._container.items():
+                    if self._filter is not None and not self._filter(key, value):
+                        continue
+
                     imgui.table_next_row()
 
                     imgui.table_set_column_index(0)
@@ -277,12 +288,14 @@ class TableMutableMapping(TableMutableMappingInterface[_KT, _VT]):
                     imgui.push_style_var_x(ITEM_SPACING, action_button_spacing)
                     try:
                         if button(f"{CHECK}###TempOk", disabled=has_temp_key):
-                            key, value = self._addable_factory(
+                            new_item = self._addable_factory(
                                 self._options.temp_key,
                                 self._options.temp_val,
                             )
-                            assert key not in self._container
-                            self._container[key] = value
+                            if new_item is not None:
+                                new_key, new_value = new_item
+                                assert new_key not in self._container
+                                self._container[new_key] = new_value
                             self._options.temp_key = str()
                             self._options.temp_val = str()
                             self._options.adding = False
@@ -324,7 +337,8 @@ def table_mutable_mapping(
     container: MutableMapping[_KT, _VT],
     options: Optional[TableMutableMappingOptions] = None,
     *,
-    addable_factory: Optional[Callable[[str, str], Tuple[_KT, _VT]]] = None,
+    addable_factory: Optional[AddableFactoryCallable] = None,
+    filter_callback: Optional[FilterCallable] = None,
     removable: Optional[bool] = True,
     show_key: Optional[bool] = True,
     show_value: Optional[bool] = True,
@@ -344,5 +358,11 @@ def table_mutable_mapping(
     if show_value is not None:
         options.value_show = show_value
 
-    table = TableMutableMapping(label, container, options, addable_factory)
+    table = TableMutableMapping(
+        label,
+        container,
+        options,
+        addable_factory,
+        filter_callback,
+    )
     return table.do_process()

@@ -1,18 +1,25 @@
 # -*- coding: utf-8 -*-
 
+import os
 from typing import Optional, Tuple
 from uuid import uuid4
 
+from cvp.process.mapper import ProcessMapper
+from cvp.process.process import Process
 from cvp.resources.manager.manager import ResourceManager
+from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.services import ServicesPath
 from cvp.service.item import ServiceItem, ServiceKey
 from cvp.variables import SERVICE_NONAME
 
 
 class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
+    _processes: ProcessMapper[ServiceKey, Process]
+
     def __init__(
         self,
         path: ServicesPath,
+        processes_path: ProcessesPath,
         *,
         reload=False,
         raise_errors=False,
@@ -24,6 +31,8 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             reload=reload,
             raise_errors=raise_errors,
         )
+        self._processes_path = processes_path
+        self._processes = ProcessMapper()
 
     def add_service(
         self,
@@ -40,3 +49,56 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
         self.add(item.key, item)
         return item.key, item
+
+    @property
+    def processes(self):
+        return self._processes
+
+    def spawnable(self, key: ServiceKey) -> bool:
+        return self._processes.spawnable(key)
+
+    def stoppable(self, key: ServiceKey) -> bool:
+        return self._processes.stoppable(key)
+
+    def removable(self, key: ServiceKey) -> bool:
+        return self._processes.removable(key)
+
+    def status(self, key: ServiceKey):
+        return self._processes.status(key)
+
+    def interrupt(self, key: ServiceKey) -> None:
+        return self._processes.interrupt(key)
+
+    def removable_pop(self, key: ServiceKey):
+        return self._processes.removable_pop(key)
+
+    def teardown_all(self, timeout: Optional[float] = None):
+        self._processes.shutdown(timeout)
+
+    def spawn(self, key: ServiceKey):
+        self._processes[key] = self.create_process(self.__getitem__(key))
+
+    @staticmethod
+    def create_process(item: ServiceItem):
+        args = item.normalize_commands
+        if not args:
+            raise ValueError()
+
+        executable = args[0]
+        if not os.path.isfile(executable):
+            raise FileNotFoundError()
+
+        if item.cwd and not os.path.isdir(item.cwd):
+            raise NotADirectoryError()
+
+        return Process(
+            args=args,
+            buffer_size=item.buffer_size,
+            stdin=None,
+            stdout=None,
+            stderr=None,
+            cwd=item.cwd or None,
+            env=item.env or None,
+            creation_flags=item.creation_flags,
+            name=item.name or None,
+        )
