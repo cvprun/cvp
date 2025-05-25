@@ -34,13 +34,20 @@ Simply usage:
 """
 
 CMD_WORKER: Final[str] = "worker"
-CMD_WORKER_HELP: Final[str] = "Background Worker"
+CMD_WORKER_HELP: Final[str] = "The flow graph for worker"
 CMD_WORKER_EPILOG = f"""
 Simply usage:
   {PROG} {CMD_WORKER}
 """
 
-CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER
+CMD_AGENT: Final[str] = "agent"
+CMD_AGENT_HELP: Final[str] = "Background agent"
+CMD_AGENT_EPILOG = f"""
+Simply usage:
+  {PROG} {CMD_AGENT}
+"""
+
+CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT
 DEFAULT_CMD: Final[str] = CMD_PLAYER
 
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
@@ -158,6 +165,17 @@ def add_worker_parser(subparsers) -> None:
     )
 
 
+def add_agent_parser(subparsers) -> None:
+    # noinspection SpellCheckingInspection
+    parser = subparsers.add_parser(
+        name=CMD_AGENT,
+        help=CMD_AGENT_HELP,
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=CMD_AGENT_EPILOG,
+    )
+    assert isinstance(parser, ArgumentParser)
+
+
 def default_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog=PROG,
@@ -185,6 +203,7 @@ def default_argument_parser() -> ArgumentParser:
     subparsers = parser.add_subparsers(dest="cmd")
     add_player_parser(subparsers)
     add_worker_parser(subparsers)
+    add_agent_parser(subparsers)
 
     return parser
 

@@ -2,7 +2,10 @@
 
 import platform
 
+from imgui_bundle import imgui
+
 from cvp.apps.player.modes._base import BaseMode
+from cvp.arguments import version
 from cvp.assets.fonts.mdi import INFORMATION_VARIANT_CIRCLE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
@@ -21,7 +24,16 @@ class SysinfoMode(BaseMode):
     def on_process(self) -> None:
         with self.begin_mode_context():
             with begin_child_context("Main"):
+                imgui.text("System Information")
+                imgui.separator()
+
+                self.on_cvp_process()
                 self.on_platform_process()
+
+    @staticmethod
+    def on_cvp_process() -> None:
+        input_text_disabled("CVP Version", version())
+        input_text_disabled("Python Version", platform.python_version())
 
     @staticmethod
     def on_platform_process() -> None:
