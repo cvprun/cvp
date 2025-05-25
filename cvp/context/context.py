@@ -34,6 +34,7 @@ from cvp.resources.home import HomeDir
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
+from cvp.watchdog.manager import WatchdogManager
 from cvp.wsdiscovery.manager import WsDiscoveryManager
 
 
@@ -109,6 +110,7 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._msgs = MsgQueue()
+        self._watchdog = WatchdogManager(self._msgs)
         self._imes = ImeManager.from_default()
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._canvases = CanvasManager(self._home.canvases, reload=True)
