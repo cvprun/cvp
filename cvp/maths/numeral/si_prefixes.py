@@ -2,11 +2,10 @@
 # https://en.wikipedia.org/wiki/International_System_of_Units#Prefixes
 
 from functools import lru_cache
-from math import floor, log10
 from types import MappingProxyType
-from typing import Final, Tuple
+from typing import Final
 
-from cvp.maths.numeral.metric_prefix import MetricPrefix
+from cvp.maths.numeral.metric_prefix import MetricPrefix, calc_exponent_index
 
 
 def _create_si_prefixes():
@@ -45,18 +44,56 @@ def _si_prefixes() -> MappingProxyType[int, MetricPrefix]:
 
 
 SI_PREFIXES: Final[MappingProxyType[int, MetricPrefix]] = _si_prefixes()
-
+SI_PREFIXES_BASE: Final[int] = 10
+SI_PREFIXES_EXPONENT_STEP: Final[int] = 3
+SI_PREFIXES_FORMAT_PRECISION: Final[int] = 3
+SI_PREFIXES_FORMAT_SUFFIX: Final[str] = ""
 MAX_SI_PREFIX_EXPONENT: Final[int] = max(SI_PREFIXES.keys())
 MIN_SI_PREFIX_EXPONENT: Final[int] = min(SI_PREFIXES.keys())
 
+QUETTA: Final[int] = SI_PREFIXES[30].factor
+RONNA: Final[int] = SI_PREFIXES[27].factor
+YOTTA: Final[int] = SI_PREFIXES[24].factor
+ZETTA: Final[int] = SI_PREFIXES[21].factor
+EXA: Final[int] = SI_PREFIXES[18].factor
+PETA: Final[int] = SI_PREFIXES[15].factor
+TERA: Final[int] = SI_PREFIXES[12].factor
+GIGA: Final[int] = SI_PREFIXES[9].factor
+MEGA: Final[int] = SI_PREFIXES[6].factor
+KILO: Final[int] = SI_PREFIXES[3].factor
+HECTO: Final[int] = SI_PREFIXES[2].factor
+DECA: Final[int] = SI_PREFIXES[1].factor
 
-def si_prefix_with_integer(value: int) -> Tuple[int, MetricPrefix]:
-    if value == 0:
-        return 0, SI_PREFIXES[0]
+DECI: Final[int] = SI_PREFIXES[-1].factor
+CENTI: Final[int] = SI_PREFIXES[-2].factor
+MILLI: Final[int] = SI_PREFIXES[-3].factor
+MICRO: Final[int] = SI_PREFIXES[-6].factor
+NANO: Final[int] = SI_PREFIXES[-9].factor
+PICO: Final[int] = SI_PREFIXES[-12].factor
+FEMTO: Final[int] = SI_PREFIXES[-15].factor
+ATTO: Final[int] = SI_PREFIXES[-18].factor
+ZEPTO: Final[int] = SI_PREFIXES[-21].factor
+YOCTO: Final[int] = SI_PREFIXES[-24].factor
+RONTO: Final[int] = SI_PREFIXES[-27].factor
+QUECTO: Final[int] = SI_PREFIXES[-30].factor
 
-    exponent = int(floor(log10(abs(value)) // 3 * 3))
-    exponent = max(min(exponent, MAX_SI_PREFIX_EXPONENT), 0)
 
-    scaled = int(floor(value / (10**exponent)))
-    prefix = SI_PREFIXES[exponent]
-    return scaled, prefix
+def parse_si_prefix(value: int) -> MetricPrefix:
+    index = calc_exponent_index(
+        value=value,
+        base=SI_PREFIXES_BASE,
+        step_exponent=SI_PREFIXES_EXPONENT_STEP,
+        min_exponent=MIN_SI_PREFIX_EXPONENT,
+        max_exponent=MAX_SI_PREFIX_EXPONENT,
+    )
+    return SI_PREFIXES[index]
+
+
+def format_si_prefix(
+    value: int,
+    *,
+    precision=SI_PREFIXES_FORMAT_PRECISION,
+    suffix=SI_PREFIXES_FORMAT_SUFFIX,
+) -> str:
+    prefix = parse_si_prefix(value)
+    return prefix.format_scale(value, precision=precision, suffix=suffix)
