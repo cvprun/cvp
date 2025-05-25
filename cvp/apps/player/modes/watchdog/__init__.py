@@ -14,6 +14,10 @@ class WatchdogMode(BaseMode):
     def __init__(self, context: Context):
         super().__init__(context)
 
+    @property
+    def config(self):
+        return self.context.config.watchdog
+
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():

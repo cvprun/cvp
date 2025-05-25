@@ -38,6 +38,7 @@ class ModeManager:
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.sysinfo import SysinfoMode
         from cvp.apps.player.modes.terminal import TerminalMode
+        from cvp.apps.player.modes.threading import ThreadingMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.video import VideoPlayerMode
         from cvp.apps.player.modes.watchdog import WatchdogMode
@@ -71,6 +72,7 @@ class ModeManager:
         self.sockmap_mode = SockmapMode(context)
         self.sysinfo_map = SysinfoMode(context)
         self.terminal_mode = TerminalMode(context)
+        self.threading_mode = ThreadingMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.watchdog_mode = WatchdogMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
@@ -104,6 +106,7 @@ class ModeManager:
             self.sockmap_mode,
             self.sysinfo_map,
             self.terminal_mode,
+            self.threading_mode,
             self.watchdog_mode,
             self.wsdiscovery_mode,
         )

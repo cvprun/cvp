@@ -14,6 +14,10 @@ class TerminalMode(BaseMode):
     def __init__(self, context: Context):
         super().__init__(context)
 
+    @property
+    def config(self):
+        return self.context.config.terminal
+
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():

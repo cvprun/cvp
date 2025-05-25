@@ -31,7 +31,9 @@ from cvp.config.sections.process import ProcessConfig
 from cvp.config.sections.sockmap import SockmapConfig
 from cvp.config.sections.stitching import StitchingConfig
 from cvp.config.sections.supabase import SupabaseConfig
+from cvp.config.sections.terminal import TerminalConfig
 from cvp.config.sections.toast import ToastConfig
+from cvp.config.sections.watchdog import WatchdogConfig
 from cvp.config.sections.wsdiscovery import WsDiscoveryConfig
 from cvp.inspect.member import get_public_instance_attributes
 from cvp.yaml.dumpers import DefaultDumper
@@ -61,9 +63,11 @@ class Config:
     process: ProcessConfig = field(default_factory=ProcessConfig)
     sockmap: SockmapConfig = field(default_factory=SockmapConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
+    terminal: TerminalConfig = field(default_factory=TerminalConfig)
     stitching: StitchingConfig = field(default_factory=StitchingConfig)
     tetrix: TetrixConfig = field(default_factory=TetrixConfig)
     toast: ToastConfig = field(default_factory=ToastConfig)
+    watchdog: WatchdogConfig = field(default_factory=WatchdogConfig)
     wsdiscovery: WsDiscoveryConfig = field(default_factory=WsDiscoveryConfig)
 
     @property
