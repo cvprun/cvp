@@ -316,7 +316,7 @@ class PlayerApplication:
             with self._profiler:
                 for event in pygame.event.get():
                     self.on_event(event)
-                for msg in self._context.msgs.get():
+                for msg in self._context.msgs.pull_nowait():
                     self.on_msg(msg)
 
                 self.on_keyboard(get_pressed())

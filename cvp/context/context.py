@@ -150,6 +150,12 @@ class Context(ContextMixins):
         assert isinstance(self, ContextProtocol)
 
     def shutdown(self) -> None:
+        logger.info("Close message queue ...")
+        self._msgs.close()
+
+        logger.info("Join message queue ...")
+        self._msgs.join_thread()
+
         logger.info("Stop all flow runners")
         self._flows.stop_all_runners()
 

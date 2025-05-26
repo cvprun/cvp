@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from logging import DEBUG, ERROR, INFO, WARNING, Logger
-from typing import Deque, Optional, Union
+from multiprocessing import get_context
+from multiprocessing.queues import Queue
+from typing import List, Optional, Union
 
 from cvp.debugging.markers import (
     __MSG_ADD_A_NEW_TODO__,
@@ -11,15 +13,32 @@ from cvp.debugging.markers import (
 from cvp.logging.logging import convert_level_number
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType, MsgTypeLike
+from cvp.process.context import MultiprocessingContextMethod
 
 
-class MsgQueue(Deque[Msg]):
-    def get(self):
+class MsgQueue(Queue[Msg]):
+    def __init__(
+        self,
+        maxsize=0,
+        method: Optional[MultiprocessingContextMethod] = None,
+    ):
+        super().__init__(maxsize, ctx=get_context(method))
+
+    def pull(self, block=True, timeout: Optional[float] = None) -> List[Msg]:
         result = list()
         while True:
             try:
-                result.append(self.popleft())
-            except IndexError:
+                result.append(self.get(block, timeout))
+            except:  # noqa
+                break
+        return result
+
+    def pull_nowait(self) -> List[Msg]:
+        result = list()
+        while True:
+            try:
+                result.append(self.get_nowait())
+            except:  # noqa
                 break
         return result
 
@@ -31,7 +50,7 @@ class MsgQueue(Deque[Msg]):
         msg = self.make_msg(mtype, **kwargs)
         assert isinstance(msg.uuid, str)
         assert 1 <= len(msg.uuid)
-        self.append(msg)
+        self.put(msg, block=True, timeout=None)
         return msg
 
     assert __TOAST_FS_EVENTS_PAIR__, "Toast methods BEGIN"
