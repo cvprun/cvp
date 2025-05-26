@@ -1,91 +1,53 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict, Union
-from weakref import ReferenceType, ref
+from typing import Dict
 
-from cvp.msgs.msg_queue import MsgQueue
-from cvp.types.override import override
-from watchdog.events import (
-    DirCreatedEvent,
-    DirDeletedEvent,
-    DirModifiedEvent,
-    DirMovedEvent,
-    FileClosedEvent,
-    FileClosedNoWriteEvent,
-    FileCreatedEvent,
-    FileDeletedEvent,
-    FileModifiedEvent,
-    FileMovedEvent,
-    FileOpenedEvent,
-    FileSystemEvent,
-    FileSystemEventHandler,
-)
+from cvp.watchdog.file import FileEventDispatcher
 from watchdog.observers import Observer
-from watchdog.observers.api import ObservedWatch
 
 
-class WatchdogManager(FileSystemEventHandler):
-    _msgs: ReferenceType[MsgQueue]
-    _watchers: Dict[str, ObservedWatch]
-
-    def __init__(self, msgs: MsgQueue):
-        self._msgs = ref(msgs)
-        self._watchers = dict()
+class WatchdogManager(Dict[str, FileEventDispatcher]):
+    def __init__(self):
+        super().__init__()
         self._observer = Observer()
 
-    @property
-    def watchers(self):
-        return self._watchers
+    def schedule_file_event(self, event: FileEventDispatcher) -> None:
+        if event.watcher is not None:
+            raise ValueError("Event already has a watcher")
 
-    @property
-    def msgs(self) -> MsgQueue:
-        result = self._msgs()
-        if result is None:
-            raise ReferenceError(f"Expired {type(self._msgs).__name__} object")
-        return result
+        if self.__contains__(event.file):
+            raise KeyError(f"File already watched: '{event.file}'")
 
-    def add_file(self, file: str, *, recursive=False) -> ObservedWatch:
-        if file in self._watchers:
-            raise KeyError(f"File already watched: '{file}'")
-        watch = self._observer.schedule(self, file, recursive=recursive)
-        self._watchers[file] = watch
-        return watch
+        event.watcher = self._observer.schedule(
+            event_handler=self,
+            path=event.file,
+            recursive=event.recursive,
+            event_filter=event.filters,
+        )
+        self.__setitem__(event.file, event)
 
-    def pop_file(self, file: str) -> ObservedWatch:
-        if file not in self._watchers:
+    def unschedule_file_event(
+        self,
+        file: str,
+        *,
+        no_clear_watcher=False,
+    ) -> FileEventDispatcher:
+        if not self.__contains__(file):
             raise KeyError(f"File not watched: '{file}'")
-        watch = self._watchers.pop(file)
-        self._observer.unschedule(watch)
-        return watch
 
-    @override
-    def on_any_event(self, event: FileSystemEvent) -> None:
-        pass
+        event = self.pop(file)
+        assert event.watcher is not None
 
-    @override
-    def on_moved(self, event: Union[DirMovedEvent, FileMovedEvent]) -> None:
-        pass
+        try:
+            self._observer.unschedule(event.watcher)
+        finally:
+            if not no_clear_watcher:
+                event.watcher = None
 
-    @override
-    def on_created(self, event: Union[DirCreatedEvent, FileCreatedEvent]) -> None:
-        pass
+        return event
 
-    @override
-    def on_deleted(self, event: Union[DirDeletedEvent, FileDeletedEvent]) -> None:
-        pass
-
-    @override
-    def on_modified(self, event: Union[DirModifiedEvent, FileModifiedEvent]) -> None:
-        pass
-
-    @override
-    def on_closed(self, event: FileClosedEvent) -> None:
-        pass
-
-    @override
-    def on_closed_no_write(self, event: FileClosedNoWriteEvent) -> None:
-        pass
-
-    @override
-    def on_opened(self, event: FileOpenedEvent) -> None:
-        pass
+    def unschedule_all_file_events(self, *, no_clear_watcher=True) -> None:
+        files = list(self.keys())
+        for file in files:
+            self.unschedule_file_event(file, no_clear_watcher=no_clear_watcher)
+        assert 0 == self.__len__()

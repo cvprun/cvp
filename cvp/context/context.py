@@ -110,7 +110,7 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._msgs = MsgQueue()
-        self._watchdog = WatchdogManager(self._msgs)
+        self._watchdog = WatchdogManager()
         self._imes = ImeManager.from_default()
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._canvases = CanvasManager(self._home.canvases, reload=True)

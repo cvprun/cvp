@@ -3,6 +3,11 @@
 from logging import DEBUG, ERROR, INFO, WARNING, Logger
 from typing import Deque, Optional, Union
 
+from cvp.debugging.markers import (
+    __MSG_ADD_A_NEW_TODO__,
+    __TOAST_FS_EVENTS_PAIR__,
+    __WATCHDOG_FS_EVENTS_PAIR__,
+)
 from cvp.logging.logging import convert_level_number
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_type import MsgType, MsgTypeLike
@@ -29,6 +34,8 @@ class MsgQueue(Deque[Msg]):
         self.append(msg)
         return msg
 
+    assert __TOAST_FS_EVENTS_PAIR__, "Toast methods BEGIN"
+
     def append_toast(self, message: str, level: Optional[Union[int, str]] = None):
         return self.append_msg(MsgType.toast, message=message, level=level)
 
@@ -53,3 +60,30 @@ class MsgQueue(Deque[Msg]):
 
     def toast_debug(self, message: str, logger: Optional[Logger] = None):
         return self.toast(message, DEBUG, logger=logger)
+
+    assert __TOAST_FS_EVENTS_PAIR__, "Toast methods END"
+    assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events BEGIN"
+
+    def file_moved(self, file: str):
+        return self.append_msg(MsgType.file_moved, file=file)
+
+    def file_created(self, file: str):
+        return self.append_msg(MsgType.file_created, file=file)
+
+    def file_deleted(self, file: str):
+        return self.append_msg(MsgType.file_deleted, file=file)
+
+    def file_modified(self, file: str):
+        return self.append_msg(MsgType.file_modified, file=file)
+
+    def file_closed(self, file: str):
+        return self.append_msg(MsgType.file_closed, file=file)
+
+    def file_closed_no_write(self, file: str):
+        return self.append_msg(MsgType.file_closed_no_write, file=file)
+
+    def file_opened(self, file: str):
+        return self.append_msg(MsgType.file_opened, file=file)
+
+    assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events END"
+    assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."

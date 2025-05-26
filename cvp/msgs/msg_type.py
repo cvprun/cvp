@@ -3,6 +3,7 @@
 from enum import IntEnum, auto, unique
 from typing import Final, Union
 
+from cvp.debugging.markers import __MSG_ADD_A_NEW_TODO__
 from cvp.types.enum.normalize.number import (
     FrozenNameToNumber,
     FrozenNumberToName,
@@ -16,11 +17,25 @@ from cvp.types.enum.normalize.number import (
 @unique
 class MsgType(IntEnum):
     none = 0
+
+    # Toast message events
     toast = auto()
+
+    # Watchdog's filesystem events
+    file_moved = auto()
+    file_created = auto()
+    file_deleted = auto()
+    file_modified = auto()
+    file_closed = auto()
+    file_closed_no_write = auto()
+    file_opened = auto()
+
+    assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' name here"
 
 
 MSG_TYPE_NAME_TO_NUMBER: Final[FrozenNameToNumber] = name2number(MsgType)
 MSG_TYPE_NUMBER_TO_NAME: Final[FrozenNumberToName] = number2name(MsgType)
+
 MsgTypeLike = Union[MsgType, IntEnum, str, int]
 
 
