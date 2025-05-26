@@ -1,15 +1,42 @@
 # -*- coding: utf-8 -*-
 
-from typing import Dict
+from typing import Dict, Optional
 
 from cvp.watchdog.file import FileEventDispatcher
 from watchdog.observers import Observer
 
 
 class WatchdogManager(Dict[str, FileEventDispatcher]):
-    def __init__(self):
+    def __init__(self, *, no_start=False, thread_name: Optional[str] = None):
         super().__init__()
         self._observer = Observer()
+        self._observer.name = thread_name if thread_name else type(self).__name__
+        if not no_start:
+            self._observer.start()
+
+    def start(self) -> None:
+        self._observer.start()
+
+    def stop(self) -> None:
+        self._observer.stop()
+
+    def join(self, timeout: Optional[float] = None) -> None:
+        self._observer.join(timeout)
+
+    def is_alive(self) -> bool:
+        return self._observer.is_alive()
+
+    @property
+    def daemon(self) -> bool:
+        return self._observer.daemon
+
+    @property
+    def ident(self) -> Optional[int]:
+        return self._observer.ident
+
+    @property
+    def name(self) -> str:
+        return self._observer.name
 
     def schedule_file_event(self, event: FileEventDispatcher) -> None:
         if event.watcher is not None:
@@ -19,7 +46,7 @@ class WatchdogManager(Dict[str, FileEventDispatcher]):
             raise KeyError(f"File already watched: '{event.file}'")
 
         event.watcher = self._observer.schedule(
-            event_handler=self,
+            event_handler=event,
             path=event.file,
             recursive=event.recursive,
             event_filter=event.filters,

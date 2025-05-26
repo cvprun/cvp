@@ -99,7 +99,7 @@ FAKER_SEED_LENGTH: Final[int] = 16
 FAKER_REPEAT: Final[int] = 10
 FAKER_SEPARATOR: Final[str] = "\\n"
 
-PROCESS_TEARDOWN_TIMEOUT: Final[float] = 2.0
+PROCESS_TEARDOWN_TIMEOUT: Final[float] = 24.0
 
 FFMPEG_EXECUTABLE_FILENAME: Final[str] = "ffmpeg"
 FFPROBE_EXECUTABLE_FILENAME: Final[str] = "ffprobe"

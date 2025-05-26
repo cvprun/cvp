@@ -72,7 +72,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
     def removable_pop(self, key: ServiceKey):
         return self._processes.removable_pop(key)
 
-    def teardown_all(self, timeout: Optional[float] = None):
+    def shutdown(self, timeout: Optional[float] = None):
         self._processes.shutdown(timeout)
 
     def spawn(self, key: ServiceKey):

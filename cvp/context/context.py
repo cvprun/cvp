@@ -4,7 +4,7 @@ import os
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from os import PathLike
 from threading import Event
-from typing import Union
+from typing import Optional, Union
 
 from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
@@ -149,7 +149,21 @@ class Context(ContextMixins):
 
         assert isinstance(self, ContextProtocol)
 
-    def shutdown(self) -> None:
+    def shutdown(self, timeout: Optional[float] = None) -> None:
+        if timeout is None:
+            timeout = self._config.process.teardown_timeout
+        assert timeout is not None
+
+        logger.info("Unschedule watchdog events ...")
+        self._watchdog.unschedule_all_file_events()
+
+        if self._watchdog.is_alive():
+            logger.info("Stop watchdog thread ...")
+            self._watchdog.stop()
+
+        logger.info(f"Stop watchdog thread ... ({timeout:.02f}s)")
+        self._watchdog.join(timeout)
+
         logger.info("Close message queue ...")
         self._msgs.close()
 
@@ -159,14 +173,13 @@ class Context(ContextMixins):
         logger.info("Stop all flow runners")
         self._flows.stop_all_runners()
 
-        timeout = self._config.process.teardown_timeout
-        logger.info(f"Stop all media processes... ({timeout:.02f}s)")
-        self._medias.teardown_all(self._config.process.teardown_timeout)
+        logger.info(f"Stop all media processes ... ({timeout:.02f}s)")
+        self._medias.teardown_all(timeout)
 
-        logger.info("Shutting down thread pool...")
+        logger.info("Shutting down thread pool ...")
         self._thread_pool.shutdown(wait=True)
 
-        logger.info("Shutting down process pool...")
+        logger.info("Shutting down process pool ...")
         self._process_pool.shutdown(wait=True)
 
     def save_config(self) -> None:
