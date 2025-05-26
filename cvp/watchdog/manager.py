@@ -74,7 +74,6 @@ class WatchdogManager(Dict[str, FileEventDispatcher]):
         return event
 
     def unschedule_all_file_events(self, *, no_clear_watcher=True) -> None:
-        files = list(self.keys())
-        for file in files:
+        for file in list(self.keys()):
             self.unschedule_file_event(file, no_clear_watcher=no_clear_watcher)
         assert 0 == self.__len__()

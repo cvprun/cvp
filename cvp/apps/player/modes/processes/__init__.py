@@ -44,7 +44,7 @@ class ProcessesMode(BaseMode):
                 imgui.table_setup_column("Threads")
                 imgui.table_headers_row()
 
-                for proc in process_iter():
+                for proc in process_iter(("pid", "name", "status", "num_threads")):
                     try:
                         imgui.table_next_row()
 
