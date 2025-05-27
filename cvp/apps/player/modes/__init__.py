@@ -36,6 +36,7 @@ class ModeManager:
         from cvp.apps.player.modes.processes import ProcessesMode
         from cvp.apps.player.modes.services import ServicesMode
         from cvp.apps.player.modes.sockmap import SockmapMode
+        from cvp.apps.player.modes.swagger import SwaggerMode
         from cvp.apps.player.modes.sysinfo import SysinfoMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.threading import ThreadingMode
@@ -70,6 +71,7 @@ class ModeManager:
         self.process_mode = ProcessesMode(context)
         self.services_mode = ServicesMode(context)
         self.sockmap_mode = SockmapMode(context)
+        self.swagger_mode = SwaggerMode(context)
         self.sysinfo_map = SysinfoMode(context)
         self.terminal_mode = TerminalMode(context)
         self.threading_mode = ThreadingMode(context)
@@ -104,6 +106,7 @@ class ModeManager:
             self.process_mode,
             self.services_mode,
             self.sockmap_mode,
+            self.swagger_mode,
             self.sysinfo_map,
             self.terminal_mode,
             self.threading_mode,
