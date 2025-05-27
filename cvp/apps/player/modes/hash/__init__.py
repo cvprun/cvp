@@ -67,7 +67,6 @@ class HashMode(BaseMode):
         try:
             data = self._input.encode(encoding=self._encoding, errors=self._errors)
             self._output = compute_hash(method, data)
-            print(f"Output: {method} {data!r} -> {self._output}")
             self._error = None
         except BaseException as e:
             self._output = str()
