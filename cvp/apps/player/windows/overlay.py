@@ -11,7 +11,7 @@ from cvp.imgui.flags.condition import ALWAYS
 from cvp.imgui.flags.window import WindowFlags, merge_window_flags
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.text_colored import text_colored
-from cvp.system.usage import SystemUsage
+from cvp.psutil.usage import SystemUsage
 from cvp.types.colors import RGBA
 
 _OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
