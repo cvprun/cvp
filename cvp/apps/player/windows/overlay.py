@@ -99,7 +99,7 @@ class OverlayWindow:
 
             imgui.separator()
 
-            usage = self._usage.update_interval()
+            usage = self._usage.get()
             imgui.text(f"CPU: {usage.cpu:3.1f}%")
             imgui.text(f"VMEM: {usage.vmem:3.1f}%")
 
