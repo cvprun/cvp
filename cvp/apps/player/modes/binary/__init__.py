@@ -21,7 +21,7 @@ from cvp.imgui.text_centered import text_centered
 from cvp.types.override import override
 
 
-class BinaryTextMode(BaseMode):
+class BinaryMode(BaseMode):
     __cvp_mode_name__ = "Binary-to-Text"
     __cvp_mode_icon__ = HEXADECIMAL
 

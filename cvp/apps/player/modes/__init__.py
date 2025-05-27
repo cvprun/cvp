@@ -16,8 +16,10 @@ class ModeManager:
     _submenu_modes: OrderedDict[str, Sequence[ModeInterface]]
 
     def __init__(self, context: Context):
-        from cvp.apps.player.modes.binary_text import BinaryTextMode
+        from cvp.apps.player.modes.binary import BinaryMode
+        from cvp.apps.player.modes.calibration import CalibrationMode
         from cvp.apps.player.modes.canvas import CanvasMode
+        from cvp.apps.player.modes.case import CaseMode
         from cvp.apps.player.modes.chat import ChatMode
         from cvp.apps.player.modes.datasets import DatasetsMode
         from cvp.apps.player.modes.downloader import DownloaderMode
@@ -51,8 +53,10 @@ class ModeManager:
         # region: Initialize Mode Instances
         # [IMPORTANT] Do not change the initialize order!
 
-        self.binary_text_mode = BinaryTextMode(context)
+        self.binary_text_mode = BinaryMode(context)
+        self.calibration_mode = CalibrationMode(context)
         self.canvas_mode = CanvasMode(self._main_layout)
+        self.case_mode = CaseMode(context)
         self.chat_mode = ChatMode(context)
         self.datasets_mode = DatasetsMode(context)
         self.download_mode = DownloaderMode(context)
@@ -74,8 +78,8 @@ class ModeManager:
         self.swagger_mode = SwaggerMode(context)
         self.sysinfo_map = SysinfoMode(context)
         self.terminal_mode = TerminalMode(context)
-        self.threading_mode = ThreadingMode(context)
         self.tetrix_mode = TetrixMode(context)
+        self.threading_mode = ThreadingMode(context)
         self.watchdog_mode = WatchdogMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
@@ -89,7 +93,9 @@ class ModeManager:
         self._context = context
         self._menu_modes = (
             self.binary_text_mode,
+            self.calibration_mode,
             self.canvas_mode,
+            self.case_mode,
             self.chat_mode,
             self.download_mode,
             self.faker_mode,
