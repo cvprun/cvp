@@ -83,26 +83,31 @@ class MsgQueue(Queue[Msg]):
     assert __TOAST_FS_EVENTS_PAIR__, "Toast methods END"
     assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events BEGIN"
 
-    def file_moved(self, file: str):
-        return self.append_msg(MsgType.file_moved, file=file)
+    def file_moved(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_moved, src=src, dest=dest, isdir=isdir)
 
-    def file_created(self, file: str):
-        return self.append_msg(MsgType.file_created, file=file)
+    def file_created(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_created, src=src, dest=dest, isdir=isdir)
 
-    def file_deleted(self, file: str):
-        return self.append_msg(MsgType.file_deleted, file=file)
+    def file_deleted(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_deleted, src=src, dest=dest, isdir=isdir)
 
-    def file_modified(self, file: str):
-        return self.append_msg(MsgType.file_modified, file=file)
+    def file_modified(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_modified, src=src, dest=dest, isdir=isdir)
 
-    def file_closed(self, file: str):
-        return self.append_msg(MsgType.file_closed, file=file)
+    def file_closed(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_closed, src=src, dest=dest, isdir=isdir)
 
-    def file_closed_no_write(self, file: str):
-        return self.append_msg(MsgType.file_closed_no_write, file=file)
+    def file_closed_no_write(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(
+            MsgType.file_closed_no_write,
+            src=src,
+            dest=dest,
+            isdir=isdir,
+        )
 
-    def file_opened(self, file: str):
-        return self.append_msg(MsgType.file_opened, file=file)
+    def file_opened(self, src: str, dest: str, isdir: bool):
+        return self.append_msg(MsgType.file_opened, src=src, dest=dest, isdir=isdir)
 
     assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events END"
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."

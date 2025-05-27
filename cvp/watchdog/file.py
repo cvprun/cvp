@@ -1,31 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional, Type, Union
-from weakref import ReferenceType, ref
+from typing import List, Optional, Type
+
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
+from watchdog.observers.api import ObservedWatch
 
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.types.override import override
-from watchdog.events import (
-    DirCreatedEvent,
-    DirDeletedEvent,
-    DirModifiedEvent,
-    DirMovedEvent,
-    FileClosedEvent,
-    FileClosedNoWriteEvent,
-    FileCreatedEvent,
-    FileDeletedEvent,
-    FileModifiedEvent,
-    FileMovedEvent,
-    FileOpenedEvent,
-    FileSystemEvent,
-    FileSystemEventHandler,
-)
-from watchdog.observers.api import ObservedWatch
+from cvp.watchdog.dispatcher import WatchdogEventDispatcher
 
 
 class FileEventDispatcher(FileSystemEventHandler):
-    _msgs: ReferenceType[MsgQueue]
-
     def __init__(
         self,
         msgs: MsgQueue,
@@ -35,7 +20,7 @@ class FileEventDispatcher(FileSystemEventHandler):
         filters: Optional[List[Type[FileSystemEvent]]] = None,
         watcher: Optional[ObservedWatch] = None,
     ):
-        self._msgs = ref(msgs)
+        self._dispatcher = WatchdogEventDispatcher(msgs)
         self._file = file
         self._recursive = recursive
         self._filters = filters
@@ -64,41 +49,6 @@ class FileEventDispatcher(FileSystemEventHandler):
     def __str__(self):
         return self._file
 
-    @property
-    def msgs(self) -> MsgQueue:
-        result = self._msgs()
-        if result is None:
-            raise ReferenceError(f"Expired {type(self._msgs).__name__} object")
-        return result
-
     @override
     def on_any_event(self, event: FileSystemEvent) -> None:
-        pass
-
-    @override
-    def on_moved(self, event: Union[DirMovedEvent, FileMovedEvent]) -> None:
-        self.msgs.file_moved(self._file)
-
-    @override
-    def on_created(self, event: Union[DirCreatedEvent, FileCreatedEvent]) -> None:
-        self.msgs.file_created(self._file)
-
-    @override
-    def on_deleted(self, event: Union[DirDeletedEvent, FileDeletedEvent]) -> None:
-        self.msgs.file_deleted(self._file)
-
-    @override
-    def on_modified(self, event: Union[DirModifiedEvent, FileModifiedEvent]) -> None:
-        self.msgs.file_modified(self._file)
-
-    @override
-    def on_closed(self, event: FileClosedEvent) -> None:
-        self.msgs.file_closed(self._file)
-
-    @override
-    def on_closed_no_write(self, event: FileClosedNoWriteEvent) -> None:
-        self.msgs.file_closed_no_write(self._file)
-
-    @override
-    def on_opened(self, event: FileOpenedEvent) -> None:
-        self.msgs.file_opened(self._file)
+        self._dispatcher.send_event(event)

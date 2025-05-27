@@ -2,8 +2,9 @@
 
 from typing import Dict, Optional
 
-from cvp.watchdog.file import FileEventDispatcher
 from watchdog.observers import Observer
+
+from cvp.watchdog.file import FileEventDispatcher
 
 
 class WatchdogManager(Dict[str, FileEventDispatcher]):
