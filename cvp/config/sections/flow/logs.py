@@ -35,7 +35,7 @@ class Logs:
     level_index: int = DEFAULT_LEVEL_INDEX
 
     autoscroll: bool = False
-    filter: str = str()
+    filter: str = field(default_factory=str)
     lines: int = 100
     dropdown_width: float = 20.0
 
