@@ -110,7 +110,12 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._msgs = MsgQueue()
-        self._watchdog = WatchdogManager()
+        self._watchdog = WatchdogManager(
+            self._msgs,
+            self._home.watchdog,
+            reload=True,
+            autostart=True,
+        )
         self._imes = ImeManager.from_default()
         self._ollamas = OllamaManager(self._home.ollamas, reload=True)
         self._canvases = CanvasManager(self._home.canvases, reload=True)
@@ -155,7 +160,7 @@ class Context(ContextMixins):
         assert timeout is not None
 
         logger.info("Unschedule watchdog events ...")
-        self._watchdog.unschedule_all_file_events()
+        self._watchdog.unschedule_all()
 
         if self._watchdog.is_alive():
             logger.info("Stop watchdog thread ...")

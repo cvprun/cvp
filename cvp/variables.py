@@ -87,6 +87,8 @@ MEDIA_INSPECT_TIMEOUT: Final[float] = 3.0
 
 SERVICE_NONAME: Final[str] = "[New Service]"
 
+WATCHDOG_NONAME: Final[str] = "[New Watchdog]"
+
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 
 HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH: Final[int] = 400

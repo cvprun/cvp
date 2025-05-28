@@ -20,6 +20,7 @@ from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.services import ServicesPath
 from cvp.resources.subdirs.temp import TempPath
+from cvp.resources.subdirs.watchdog import WatchdogPath
 from cvp.resources.subdirs.wsdiscovery import WsDiscoveryPath
 from cvp.resources.subdirs.wsdl import WsdlPath
 from cvp.variables import CVP_YML_FILENAME, GUI_INI_FILENAME, LOGGING_JSON_FILENAME
@@ -48,6 +49,7 @@ class HomeDir(PathFlavour):
         self.processes = ProcessesPath.classname_subdir(self)
         self.services = ServicesPath.classname_subdir(self)
         self.temp = TempPath.classname_subdir(self)
+        self.watchdog = WatchdogPath.classname_subdir(self)
         self.wsdiscovery = WsDiscoveryPath.classname_subdir(self)
         self.wsdl = WsdlPath.classname_subdir(self)
 
@@ -67,6 +69,7 @@ class HomeDir(PathFlavour):
             self.processes,
             self.services,
             self.temp,
+            self.watchdog,
             self.wsdiscovery,
             self.wsdl,
         ]

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, Dict, Tuple, Union
+from typing import Any, Callable, Dict, NamedTuple, Union
 from weakref import ReferenceType, ref
 
 from watchdog.events import (
@@ -54,10 +54,12 @@ class WatchdogEventDispatcher:
             raise ReferenceError("Expired msgs instance")
         return result
 
-    def normalize_file_system_event(
-        self,
-        event: FileSystemEvent,
-    ) -> Tuple[str, str, bool]:
+    class _MsgArgs(NamedTuple):
+        srd: str
+        dest: str
+        isdir: bool
+
+    def normalize_file_system_event(self, event: FileSystemEvent) -> _MsgArgs:
         if isinstance(event.src_path, bytes):
             src = event.src_path.decode(encoding=self._encoding, errors=self._strict)
         else:
@@ -70,7 +72,7 @@ class WatchdogEventDispatcher:
             dest = event.dest_path
         assert isinstance(dest, str)
 
-        return src, dest, event.is_directory
+        return self._MsgArgs(src, dest, event.is_directory)
 
     def send_event(self, event: FileSystemEvent) -> Msg:
         return self._mapping[event.event_type](event)
