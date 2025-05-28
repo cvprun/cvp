@@ -110,7 +110,7 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._msgs = MsgQueue()
-        self._watchdog = WatchdogManager(
+        self._watchdogs = WatchdogManager(
             self._msgs,
             self._home.watchdog,
             reload=True,
@@ -160,14 +160,14 @@ class Context(ContextMixins):
         assert timeout is not None
 
         logger.info("Unschedule watchdog events ...")
-        self._watchdog.unschedule_all()
+        self._watchdogs.unschedule_all()
 
-        if self._watchdog.is_alive():
+        if self._watchdogs.is_alive():
             logger.info("Stop watchdog thread ...")
-            self._watchdog.stop()
+            self._watchdogs.stop()
 
         logger.info(f"Stop watchdog thread ... ({timeout:.02f}s)")
-        self._watchdog.join(timeout)
+        self._watchdogs.join(timeout)
 
         logger.info("Close message queue ...")
         self._msgs.close()
@@ -234,6 +234,10 @@ class Context(ContextMixins):
     @property
     def msgs(self):
         return self._msgs
+
+    @property
+    def watchdogs(self):
+        return self._watchdogs
 
     @property
     def imes(self):

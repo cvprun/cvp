@@ -34,7 +34,7 @@ class ContextProtocol(Protocol):
     _keyring: RootKeyring
 
     _msgs: MsgQueue
-    _watchdog: WatchdogManager
+    _watchdogs: WatchdogManager
     _imes: ImeManager
     _ollamas: OllamaManager
     _canvases: CanvasManager
