@@ -172,7 +172,7 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
                 event_handler=item.dispatcher,
                 path=item.file,
                 recursive=item.recursive,
-                event_filter=item.filters or None,
+                event_filter=list(item.filters or ()),
             )
         except:  # noqa
             item.dispatcher = None
@@ -195,8 +195,11 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
 
     def schedule_all(self, *, raise_errors=False) -> None:
         for key, item in self.items():
+            if not item.enabled:
+                continue
             if item.has_watcher:
                 continue
+
             try:
                 self.schedule(key)
             except BaseException as e:

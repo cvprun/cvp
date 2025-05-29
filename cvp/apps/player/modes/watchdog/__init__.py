@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
 from logging import Handler, LogRecord
 from typing import Callable, Deque, Final, NamedTuple
 from weakref import finalize
@@ -13,16 +12,18 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
-from cvp.imgui.fit_size import FIT_SIZE
+from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS, RESIZE_X, RESIZE_Y
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
+from cvp.imgui.flags.table_column import WIDTH_STRETCH
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.loggers import watchdog_logger as logger
 from cvp.msgs.callbacks import MsgCallbacks
 from cvp.msgs.msg import Msg
@@ -83,20 +84,14 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             target=self.on_confirm_clear,
         )
         self._file_browser = OpenFilePopup(
-            "Select regular file",
+            "Select file or directory",
             target=self.on_file_selected,
             open_mode=OpenFilePopup.OpenMode.select_file,
-        )
-        self._dir_browser = OpenFilePopup(
-            "Select directory",
-            target=self.on_dir_selected,
-            open_mode=OpenFilePopup.OpenMode.select_directory,
         )
         self._popups = PopupList(
             self._confirm_remove,
             self._confirm_clear,
             self._file_browser,
-            self._dir_browser,
         )
 
         self.autoscroll = False
@@ -157,30 +152,6 @@ class WatchdogMode(BaseMode, MsgCallbacks):
 
     def on_file_selected(self, file: str) -> None:
         if not file:
-            return
-
-        if not os.path.exists(file):
-            self.context.toast_error(f"'{file}' does not exist")
-            return
-
-        if not os.path.isfile(file):
-            self.context.toast_error(f"'{file}' is not a file")
-            return
-
-        selected_watchdog = self.selected_watchdog
-        assert selected_watchdog is not None
-        selected_watchdog.file = file
-
-    def on_dir_selected(self, file: str) -> None:
-        if not file:
-            return
-
-        if not os.path.exists(file):
-            self.context.toast_error(f"'{file}' does not exist")
-            return
-
-        if not os.path.isdir(file):
-            self.context.toast_error(f"'{file}' is not a directory")
             return
 
         selected_watchdog = self.selected_watchdog
@@ -285,21 +256,54 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         input_text_disabled("UUID", item.uuid)
         has_watcher = item.has_watcher
 
-        imgui.begin_disabled(has_watcher)
+        if item.managed:
+            self.text_warning("This event is system-managed and cannot be modified")
+
+        imgui.begin_disabled(has_watcher or item.managed)
         try:
             if name := input_text("Name", item.name):
                 item.name = name.value
+
             if file := input_text("File", item.file):
                 item.file = file.value
-            if button("Browse File"):
+            if button("Browse"):
                 self._file_browser.set_location(item.file)
                 self._file_browser.show()
-            imgui.same_line()
-            if button("Browse Directory"):
-                self._dir_browser.set_location(item.file)
-                self._dir_browser.show()
+
             if recursive := checkbox("Recursive", item.recursive):
                 item.recursive = recursive.state
+            hovered_tooltip_text("Recursively monitor paths")
+
+            if enabled := checkbox("Enabled", item.enabled):
+                item.enabled = enabled.state
+            hovered_tooltip_text("Automatically starts when the program launches")
+
+            imgui.text("Event Filters")
+
+            with begin_child_context(
+                label="##EventFiltersChild",
+                size=(imgui.calc_item_width(), 0),
+                child_flags=AUTO_RESIZE_Y | BORDERS,
+            ):
+                imgui.begin_table("EventFiltersTable", 3, outer_size=(FIT_WIDTH, 0))
+                try:
+                    imgui.table_setup_column("##Column1", WIDTH_STRETCH)
+                    imgui.table_setup_column("##Column2", WIDTH_STRETCH)
+                    imgui.table_setup_column("##Column3", WIDTH_STRETCH)
+
+                    for event_filter in WatchdogItem.EVENT_FILTERS:
+                        imgui.table_next_column()
+
+                        filter_name = event_filter.__name__
+                        has_filter = item.has_event_filter(event_filter)
+
+                        if check_filter := checkbox(filter_name, has_filter):
+                            if check_filter.state:
+                                item.add_event_filter(event_filter)
+                            else:
+                                item.remove_event_filter(event_filter)
+                finally:
+                    imgui.end_table()
         finally:
             imgui.end_disabled()
 

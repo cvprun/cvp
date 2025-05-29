@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from enum import StrEnum, auto, unique
+from enum import IntFlag, auto, unique
 from os import PathLike
 from pathlib import Path
 from shutil import rmtree
@@ -33,7 +33,7 @@ class OpenFilePopup(PopupBase[str]):
     __cvp_popup_min_height__ = 420
 
     @unique
-    class OpenMode(StrEnum):
+    class OpenMode(IntFlag):
         select_file = auto()
         select_directory = auto()
         input_filename = auto()

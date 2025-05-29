@@ -2,11 +2,25 @@
 
 from copy import copy, deepcopy
 from enum import StrEnum, auto, unique
-from typing import Any, Dict, List, NewType, Optional, Type
+from typing import Any, Dict, Final, List, NewType, Optional, Sequence, Type
 from uuid import uuid4
 
 from type_serialize import Serializable
-from watchdog.events import FileSystemEvent
+from watchdog.events import (
+    DirCreatedEvent,
+    DirDeletedEvent,
+    DirModifiedEvent,
+    DirMovedEvent,
+    FileClosedEvent,
+    FileClosedNoWriteEvent,
+    FileCreatedEvent,
+    FileDeletedEvent,
+    FileModifiedEvent,
+    FileMovedEvent,
+    FileOpenedEvent,
+    FileSystemEvent,
+    FileSystemMovedEvent,
+)
 from watchdog.observers.api import ObservedWatch
 
 from cvp.types.override import override
@@ -16,6 +30,21 @@ WatchdogKey = NewType("WatchdogKey", str)
 
 
 class WatchdogItem(Serializable):
+    EVENT_FILTERS: Final[Sequence[Type[FileSystemEvent]]] = (
+        FileSystemMovedEvent,
+        FileDeletedEvent,
+        FileModifiedEvent,
+        FileCreatedEvent,
+        FileMovedEvent,
+        FileClosedEvent,
+        FileClosedNoWriteEvent,
+        FileOpenedEvent,
+        DirDeletedEvent,
+        DirModifiedEvent,
+        DirCreatedEvent,
+        DirMovedEvent,
+    )
+
     _dispatcher: Optional[WatchdogEventDispatcher]
     _watcher: Optional[ObservedWatch]
 
@@ -26,6 +55,8 @@ class WatchdogItem(Serializable):
         file = auto()
         recursive = auto()
         filters = auto()
+        enabled = auto()
+        managed = auto()
 
     def __init__(
         self,
@@ -34,12 +65,16 @@ class WatchdogItem(Serializable):
         file: Optional[str] = None,
         recursive=False,
         filters: Optional[List[Type[FileSystemEvent]]] = None,
+        enabled=False,
+        managed=False,
     ):
         self.uuid = uuid if uuid else str(uuid4())
         self.name = name if name else str()
         self.file = file if file else str()
         self.recursive = recursive
-        self.filters = filters if filters else list()
+        self.filters = set(filters or ())
+        self.enabled = enabled
+        self.managed = managed
         self._dispatcher = None
         self._watcher = None
 
@@ -77,6 +112,8 @@ class WatchdogItem(Serializable):
             and self.file == other.file
             and self.recursive == other.recursive
             and self.filters == other.filters
+            and self.enabled == other.enabled
+            and self.managed == other.managed
         )
 
     def __copy__(self):
@@ -87,6 +124,8 @@ class WatchdogItem(Serializable):
         result.file = copy(self.file)
         result.recursive = copy(self.recursive)
         result.filters = copy(self.filters)
+        result.enabled = copy(self.enabled)
+        result.managed = copy(self.managed)
         result._dispatcher = None  # dispatcher cannot be copied.
         result._watcher = None  # watcher cannot be copied.
         return result
@@ -101,6 +140,8 @@ class WatchdogItem(Serializable):
         result.file = deepcopy(self.file, memo)
         result.recursive = deepcopy(self.recursive, memo)
         result.filters = deepcopy(self.filters, memo)
+        result.enabled = deepcopy(self.enabled, memo)
+        result.managed = deepcopy(self.managed, memo)
         result._dispatcher = None  # dispatcher cannot be copied.
         result._watcher = None  # watcher cannot be copied.
         memo[id(self)] = result
@@ -114,6 +155,8 @@ class WatchdogItem(Serializable):
             str(self._Keys.file): self.file,
             str(self._Keys.recursive): self.recursive,
             str(self._Keys.filters): self.filter_names,
+            str(self._Keys.enabled): self.enabled,
+            str(self._Keys.managed): self.managed,
         }
 
     @override
@@ -127,7 +170,10 @@ class WatchdogItem(Serializable):
         self.recursive = bool(data.get(self._Keys.recursive, False))
 
         filter_names = data.get(self._Keys.filters, list())
-        self.filters = self.filter_names_to_types(filter_names)
+        self.filters = set(self.filter_names_to_types(filter_names))
+
+        self.enabled = bool(data.get(self._Keys.enabled, False))
+        self.managed = bool(data.get(self._Keys.managed, False))
 
         self._dispatcher = None
         self._watcher = None
@@ -162,4 +208,16 @@ class WatchdogItem(Serializable):
 
     @filter_names.setter
     def filter_names(self, value: List[str]) -> None:
-        self.filters = self.filter_names_to_types(value)
+        self.filters = set(self.filter_names_to_types(value))
+
+    def has_event_filter(self, event_type: Type[FileSystemEvent]) -> bool:
+        assert event_type in self.EVENT_FILTERS
+        return event_type in self.filters
+
+    def add_event_filter(self, event_type: Type[FileSystemEvent]) -> None:
+        assert event_type in self.EVENT_FILTERS
+        self.filters.add(event_type)
+
+    def remove_event_filter(self, event_type: Type[FileSystemEvent]) -> None:
+        assert event_type in self.EVENT_FILTERS
+        self.filters.remove(event_type)
