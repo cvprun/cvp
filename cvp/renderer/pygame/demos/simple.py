@@ -7,6 +7,10 @@ from typing import Callable, Optional
 
 class SimpleDemoInterface(ABC):
     @abstractmethod
+    def on_init(self) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
     def on_frame(self) -> None:
         raise NotImplementedError
 
@@ -18,6 +22,7 @@ class SimpleDemoBase(SimpleDemoInterface):
         *,
         force_egl: Optional[bool] = True,
         use_accelerate: Optional[bool] = False,
+        init_callback: Optional[Callable[[], None]] = None,
     ) -> None:
         if force_egl is not None:
             environ["SDL_VIDEO_X11_FORCE_EGL"] = "1" if force_egl else "0"
@@ -25,6 +30,7 @@ class SimpleDemoBase(SimpleDemoInterface):
             environ["PYOPENGL_USE_ACCELERATE"] = "1" if use_accelerate else "0"
 
         self._frame_callback = frame_callback
+        self._init_callback = init_callback
         self._done = False
 
     @property
@@ -59,6 +65,7 @@ class SimpleDemoBase(SimpleDemoInterface):
         io.set_log_filename(str())
 
         renderer = PygameRenderer()
+        self.on_init()
         renderer.refresh_font_texture()
 
         try:
@@ -82,6 +89,10 @@ class SimpleDemoBase(SimpleDemoInterface):
             imgui.destroy_context()
             pygame.quit()
 
+    def on_init(self) -> None:
+        if self._init_callback is not None:
+            self._init_callback()
+
     def on_frame(self) -> None:
         if self._frame_callback is not None:
             self._frame_callback()
@@ -92,10 +103,12 @@ def run_simple_demo(
     *,
     force_egl: Optional[bool] = False,
     use_accelerate: Optional[bool] = False,
+    init_callback: Optional[Callable[[], None]] = None,
 ) -> None:
     demo = SimpleDemoBase(
         frame_callback,
         force_egl=force_egl,
         use_accelerate=use_accelerate,
+        init_callback=init_callback,
     )
     demo.run()
