@@ -189,7 +189,23 @@ class Context(ContextMixins):
 
     def save_config(self) -> None:
         self._config.write_yaml(self._home.cvp_yml)
-        logger.info(f"Save the config file: '{str(self._home.cvp_yml)}'")
+        logger.info(f"Save the Config file: '{str(self._home.cvp_yml)}'")
+
+    def save_all_watchdogs(self) -> None:
+        self._watchdogs.write_all_config_files()
+        logger.info("Save all Watchdog files")
+
+    def save_all_ollamas(self) -> None:
+        self._ollamas.write_all_config_files()
+        logger.info("Save all Ollama files")
+
+    def save_all_canvases(self) -> None:
+        self._canvases.write_all_config_files()
+        logger.info("Save all Canvas files")
+
+    def save_all_services(self) -> None:
+        self._services.write_all_config_files()
+        logger.info("Save all Service files")
 
     def save_flow_graph(self, graph: FlowGraph) -> None:
         self._flows.write_graph_file(graph)
@@ -199,28 +215,32 @@ class Context(ContextMixins):
         self._flows.write_all_graph_file(raise_errors=False)
         logger.info("Save all graph files")
 
-    def save_all_ollamas(self) -> None:
-        self._ollamas.write_all_config_files()
-        logger.info("Save all ollama files")
-
-    def save_all_services(self) -> None:
-        self._services.write_all_config_files()
-        logger.info("Save all service files")
-
     def save_all_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
         logger.info("Save all WS-Discovery files")
 
+    def save_all_downloader(self) -> None:
+        self._downloader.write_all_config_files()
+        logger.info("Save all Downloader files")
+
+    def save_all_onvifs(self) -> None:
+        self._onvifs.write_all_config_files()
+        logger.info("Save all Onvif files")
+
     def save_all_medias(self) -> None:
         self._medias.write_all_config_files()
-        logger.info("Save all media files")
+        logger.info("Save all Media files")
 
     def save_all(self) -> None:
         self.save_config()
-        self.save_all_flow_graphs()
+        self.save_all_watchdogs()
         self.save_all_ollamas()
+        self.save_all_canvases()
         self.save_all_services()
+        self.save_all_flow_graphs()
         self.save_all_wsdiscovery()
+        self.save_all_downloader()
+        self.save_all_onvifs()
         self.save_all_medias()
 
     @property

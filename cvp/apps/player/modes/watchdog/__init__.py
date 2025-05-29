@@ -320,7 +320,7 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             button("Stop", disabled=True)
         else:
             if button("Start", disabled=running):
-                self.watchdogs.start()
+                self.watchdogs.start_safe()
             imgui.same_line()
             if button("Stop", disabled=not running):
                 self.watchdogs.stop()

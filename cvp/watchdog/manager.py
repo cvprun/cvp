@@ -58,6 +58,10 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
             raise ValueError("Observer has not been started")
         return self._observer
 
+    @property
+    def opened(self) -> bool:
+        return self._observer is not None
+
     def open(self) -> None:
         if self._observer is not None:
             raise ValueError("Observer has already been opened")
@@ -74,6 +78,21 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
 
         self._observer = None
 
+    def start_safe(self, timeout: Optional[float] = None) -> None:
+        if self._observer is not None:
+            if self._observer.is_alive():
+                if not self._observer.stopped_event.is_set():
+                    self._observer.stop()
+
+                assert self._observer.stopped_event.is_set()
+                self._observer.join(timeout=timeout)
+
+            self._observer = Observer()
+            self._observer.name = self._thread_name
+
+        assert self._observer is not None
+        self._observer.start()
+
     def start(self) -> None:
         self.observer.start()
 
@@ -84,19 +103,31 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
         self.observer.join(timeout)
 
     def is_alive(self) -> bool:
-        return self.observer.is_alive()
+        if self._observer is not None:
+            return self._observer.is_alive()
+        else:
+            return False
 
     @property
-    def daemon(self) -> bool:
-        return self.observer.daemon
+    def daemon(self) -> Optional[bool]:
+        if self._observer is not None:
+            return self._observer.daemon
+        else:
+            return None
 
     @property
     def ident(self) -> Optional[int]:
-        return self.observer.ident
+        if self._observer is not None:
+            return self._observer.ident
+        else:
+            return None
 
     @property
     def name(self) -> str:
-        return self.observer.name
+        if self._observer is not None:
+            return self._observer.name
+        else:
+            return self._thread_name
 
     @property
     def msgs(self) -> MsgQueue:
