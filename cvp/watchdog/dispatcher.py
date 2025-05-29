@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, Dict, NamedTuple, Union
+from typing import NamedTuple, Union
 from weakref import ReferenceType, ref
 
 from watchdog.events import (
-    EVENT_TYPE_CLOSED,
-    EVENT_TYPE_CLOSED_NO_WRITE,
-    EVENT_TYPE_CREATED,
-    EVENT_TYPE_DELETED,
-    EVENT_TYPE_MODIFIED,
-    EVENT_TYPE_MOVED,
-    EVENT_TYPE_OPENED,
     DirCreatedEvent,
     DirDeletedEvent,
     DirModifiedEvent,
@@ -23,29 +16,32 @@ from watchdog.events import (
     FileMovedEvent,
     FileOpenedEvent,
     FileSystemEvent,
+    FileSystemEventHandler,
 )
 
-from cvp.msgs.msg import Msg
 from cvp.msgs.msg_queue import MsgQueue
+from cvp.types.override import override
 
 
-class WatchdogEventDispatcher:
+class WatchdogEventDispatcher(FileSystemEventHandler):
     _msgs: ReferenceType[MsgQueue]
-    _mapping: Dict[str, Callable[[Any], Msg]]
 
     def __init__(self, msgs: MsgQueue, *, encoding="utf-8", strict="error"):
         self._msgs = ref(msgs)
         self._encoding = encoding
         self._strict = strict
-        self._mapping = {
-            EVENT_TYPE_MOVED: self.send_moved,
-            EVENT_TYPE_DELETED: self.send_moved,
-            EVENT_TYPE_CREATED: self.send_moved,
-            EVENT_TYPE_MODIFIED: self.send_moved,
-            EVENT_TYPE_CLOSED: self.send_moved,
-            EVENT_TYPE_CLOSED_NO_WRITE: self.send_moved,
-            EVENT_TYPE_OPENED: self.send_moved,
-        }
+
+    def __hash__(self):
+        return hash(tuple((self.__class__, self._msgs, self._encoding, self._strict)))
+
+    def __eq__(self, other):
+        if not isinstance(other, type(self)):
+            return False
+        return (
+            self._msgs == other._msgs
+            and self._encoding == other._encoding
+            and self._strict == other._strict
+        )
 
     @property
     def msgs(self) -> MsgQueue:
@@ -74,26 +70,30 @@ class WatchdogEventDispatcher:
 
         return self._MsgArgs(src, dest, event.is_directory)
 
-    def send_event(self, event: FileSystemEvent) -> Msg:
-        return self._mapping[event.event_type](event)
+    @override
+    def on_moved(self, event: Union[DirMovedEvent, FileMovedEvent]) -> None:
+        self.msgs.file_moved(*self.normalize_file_system_event(event))
 
-    def send_moved(self, event: Union[DirMovedEvent, FileMovedEvent]) -> Msg:
-        return self.msgs.file_moved(*self.normalize_file_system_event(event))
+    @override
+    def on_created(self, event: Union[DirCreatedEvent, FileCreatedEvent]) -> None:
+        self.msgs.file_created(*self.normalize_file_system_event(event))
 
-    def send_created(self, event: Union[DirCreatedEvent, FileCreatedEvent]) -> Msg:
-        return self.msgs.file_created(*self.normalize_file_system_event(event))
+    @override
+    def on_deleted(self, event: Union[DirDeletedEvent, FileDeletedEvent]) -> None:
+        self.msgs.file_deleted(*self.normalize_file_system_event(event))
 
-    def send_deleted(self, event: Union[DirDeletedEvent, FileDeletedEvent]) -> Msg:
-        return self.msgs.file_deleted(*self.normalize_file_system_event(event))
+    @override
+    def on_modified(self, event: Union[DirModifiedEvent, FileModifiedEvent]) -> None:
+        self.msgs.file_modified(*self.normalize_file_system_event(event))
 
-    def send_modified(self, event: Union[DirModifiedEvent, FileModifiedEvent]) -> Msg:
-        return self.msgs.file_modified(*self.normalize_file_system_event(event))
+    @override
+    def on_closed(self, event: FileClosedEvent) -> None:
+        self.msgs.file_closed(*self.normalize_file_system_event(event))
 
-    def send_closed(self, event: FileClosedEvent) -> Msg:
-        return self.msgs.file_closed(*self.normalize_file_system_event(event))
+    @override
+    def on_closed_no_write(self, event: FileClosedNoWriteEvent) -> None:
+        self.msgs.file_closed_no_write(*self.normalize_file_system_event(event))
 
-    def send_closed_no_write(self, event: FileClosedNoWriteEvent) -> Msg:
-        return self.msgs.file_closed_no_write(*self.normalize_file_system_event(event))
-
-    def send_opened(self, event: FileOpenedEvent) -> Msg:
-        return self.msgs.file_opened(*self.normalize_file_system_event(event))
+    @override
+    def on_opened(self, event: FileOpenedEvent) -> None:
+        self.msgs.file_opened(*self.normalize_file_system_event(event))

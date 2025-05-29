@@ -6,10 +6,7 @@ from typing import Any, Dict, List, NewType, Optional, Type
 from uuid import uuid4
 
 from type_serialize import Serializable
-from watchdog.events import (
-    FileSystemEvent,
-    FileSystemEventHandler,
-)
+from watchdog.events import FileSystemEvent
 from watchdog.observers.api import ObservedWatch
 
 from cvp.types.override import override
@@ -18,7 +15,7 @@ from cvp.watchdog.dispatcher import WatchdogEventDispatcher
 WatchdogKey = NewType("WatchdogKey", str)
 
 
-class WatchdogItem(Serializable, FileSystemEventHandler):
+class WatchdogItem(Serializable):
     _dispatcher: Optional[WatchdogEventDispatcher]
     _watcher: Optional[ObservedWatch]
 

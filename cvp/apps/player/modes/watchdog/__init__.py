@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from logging import Handler, LogRecord
 from typing import Callable, Deque, Final, NamedTuple
 from weakref import finalize
@@ -20,6 +21,7 @@ from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.containers import PopupList
+from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.loggers import watchdog_logger as logger
 from cvp.msgs.callbacks import MsgCallbacks
@@ -80,7 +82,22 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             cancel="No",
             target=self.on_confirm_clear,
         )
-        self._popups = PopupList(self._confirm_remove, self._confirm_clear)
+        self._file_browser = OpenFilePopup(
+            "Select regular file",
+            target=self.on_file_selected,
+            open_mode=OpenFilePopup.OpenMode.select_file,
+        )
+        self._dir_browser = OpenFilePopup(
+            "Select directory",
+            target=self.on_dir_selected,
+            open_mode=OpenFilePopup.OpenMode.select_directory,
+        )
+        self._popups = PopupList(
+            self._confirm_remove,
+            self._confirm_clear,
+            self._file_browser,
+            self._dir_browser,
+        )
 
         self.autoscroll = False
         self._mouse_wheel = Delta.from_single_value(0.0)
@@ -137,6 +154,38 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         if not value:
             return
         self.watchdogs.remove_all()
+
+    def on_file_selected(self, file: str) -> None:
+        if not file:
+            return
+
+        if not os.path.exists(file):
+            self.context.toast_error(f"'{file}' does not exist")
+            return
+
+        if not os.path.isfile(file):
+            self.context.toast_error(f"'{file}' is not a file")
+            return
+
+        selected_watchdog = self.selected_watchdog
+        assert selected_watchdog is not None
+        selected_watchdog.file = file
+
+    def on_dir_selected(self, file: str) -> None:
+        if not file:
+            return
+
+        if not os.path.exists(file):
+            self.context.toast_error(f"'{file}' does not exist")
+            return
+
+        if not os.path.isdir(file):
+            self.context.toast_error(f"'{file}' is not a directory")
+            return
+
+        selected_watchdog = self.selected_watchdog
+        assert selected_watchdog is not None
+        selected_watchdog.file = file
 
     @override
     def on_msg(self, msg: Msg) -> bool:
@@ -242,6 +291,13 @@ class WatchdogMode(BaseMode, MsgCallbacks):
                 item.name = name.value
             if file := input_text("File", item.file):
                 item.file = file.value
+            if button("Browse File"):
+                self._file_browser.set_location(item.file)
+                self._file_browser.show()
+            imgui.same_line()
+            if button("Browse Directory"):
+                self._dir_browser.set_location(item.file)
+                self._dir_browser.show()
             if recursive := checkbox("Recursive", item.recursive):
                 item.recursive = recursive.state
         finally:
