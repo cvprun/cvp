@@ -1,90 +1,32 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
-from logging import (
-    CRITICAL,
-    DEBUG,
-    ERROR,
-    INFO,
-    NOTSET,
-    WARNING,
-    Handler,
-    Logger,
-    LogRecord,
-    getLogger,
-)
-from typing import Callable, Deque, Final, NamedTuple, Optional, Sequence, Union
+from logging import Logger, LogRecord, getLogger
+from typing import Deque, Optional, Union
 from weakref import finalize
 
 from imgui_bundle import imgui
 
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo import combo
 from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags import color_var
+from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.text_colored import text_colored
+from cvp.logging.handlers.callable import CallableHandler
 from cvp.logging.logging import (
     SEVERITY_NAME_CRITICAL,
-    SEVERITY_NAME_DEBUG,
-    SEVERITY_NAME_ERROR,
-    SEVERITY_NAME_INFO,
-    SEVERITY_NAME_NOTSET,
-    SEVERITY_NAME_OFF,
-    SEVERITY_NAME_WARNING,
+    UNIQUE_LEVEL_NAMES,
     convert_level_number,
 )
-from cvp.palette.basic import BLUE, LIME, MAROON, RED, YELLOW
+from cvp.logging.records.formatted import FormattedLogRecord
+from cvp.logging.styles import GuiLoggingStyle
 from cvp.patterns.delta import Delta
 from cvp.types.colors import RGBA
-from cvp.types.override import override
-
-LEVEL_NAMES: Final[Sequence[str]] = (
-    SEVERITY_NAME_CRITICAL,
-    SEVERITY_NAME_ERROR,
-    SEVERITY_NAME_WARNING,
-    SEVERITY_NAME_INFO,
-    SEVERITY_NAME_DEBUG,
-    SEVERITY_NAME_NOTSET,
-    SEVERITY_NAME_OFF,
-)
-
-DEFAULT_LEVEL_INDEX: Final[int] = LEVEL_NAMES.index(SEVERITY_NAME_NOTSET)
-DEFAULT_LINES: Final[int] = 1_000
 
 
-@dataclass
-class LoggingMultilineOptions:
-    level_index: int = DEFAULT_LEVEL_INDEX
-
-    lines: int = DEFAULT_LINES
-    autoscroll: bool = False
-    filter: str = field(default_factory=str)
-
-    critical_color: RGBA = field(default_factory=lambda: (*MAROON, 1.0))
-    error_color: RGBA = field(default_factory=lambda: (*RED, 1.0))
-    warning_color: RGBA = field(default_factory=lambda: (*YELLOW, 1.0))
-    info_color: RGBA = field(default_factory=lambda: (*LIME, 1.0))
-    debug_color: RGBA = field(default_factory=lambda: (*BLUE, 1.0))
-
-
-class _LoggingHandler(Handler):
-    def __init__(self, callback: Callable[[LogRecord, str], None]):
-        super().__init__()
-        self._callback = callback
-
-    @override
-    def emit(self, record: LogRecord):
-        self._callback(record, self.format(record))
-
-
-class _LineRecord(NamedTuple):
-    level: int
-    levelname: str
-    message: str
-
-
-def _unregister_handler(logger: Logger, handler: _LoggingHandler) -> None:
+def _unregister_handler(logger: Logger, handler: CallableHandler) -> None:
     logger.removeHandler(handler)
 
 
@@ -93,10 +35,10 @@ class LoggingMultiline:
         self,
         label: str,
         logger: Optional[Union[str, Logger]] = None,
-        options: Optional[LoggingMultilineOptions] = None,
+        options: Optional[GuiLoggingStyle] = None,
     ):
         self._label = label
-        self._options = options if options else LoggingMultilineOptions()
+        self._options = options if options else GuiLoggingStyle()
 
         if logger is None:
             self._logger = getLogger()
@@ -107,8 +49,8 @@ class LoggingMultiline:
             self._logger = getLogger(logger)
 
         self._mouse_wheel = Delta.from_single_value(0.0)
-        self._records = Deque[_LineRecord](maxlen=self._options.lines)
-        self._handler = _LoggingHandler(self.on_logging)
+        self._records = Deque[FormattedLogRecord](maxlen=self._options.lines)
+        self._handler = CallableHandler(self.on_logging)
 
         self._logger.addHandler(self._handler)
         self._finalizer = finalize(
@@ -118,8 +60,8 @@ class LoggingMultiline:
             self._handler,
         )
 
-    def on_logging(self, record: LogRecord, message: str) -> None:
-        self._records.append(_LineRecord(record.levelno, record.levelname, message))
+    def on_logging(self, record: LogRecord, formatted_message: str) -> None:
+        self._records.append(FormattedLogRecord.from_log(record, formatted_message))
 
     @property
     def filter(self) -> str:
@@ -153,28 +95,28 @@ class LoggingMultiline:
     def level_index(self, value: int) -> None:
         self._options.level_index = value
 
+    @property
+    def default_text_color(self) -> RGBA:
+        vec4 = imgui.get_style().color_(color_var.TEXT)
+        return vec4.x, vec4.y, vec4.z, vec4.w
+
     def get_level_number(self) -> int:
-        return convert_level_number(LEVEL_NAMES[self.level_index])
+        return convert_level_number(UNIQUE_LEVEL_NAMES[self.level_index])
 
     def get_level_color(self, level: int) -> RGBA:
-        if ERROR < level <= CRITICAL:
-            return self._options.critical_color
-        elif WARNING < level <= ERROR:
-            return self._options.error_color
-        elif INFO < level <= WARNING:
-            return self._options.warning_color
-        elif DEBUG < level <= INFO:
-            return self._options.info_color
-        elif NOTSET < level <= DEBUG:
-            return self._options.debug_color
-        else:
-            vec4 = imgui.get_style().color_(color_var.TEXT)
-            return vec4.x, vec4.y, vec4.z, vec4.w
+        return self._options.get_level_color(level, self.default_text_color)
 
     def update_records_maxlen(self, maxlen: int) -> None:
         new_lines = type(self._records)(maxlen=maxlen)
         new_lines.extend(self._records)
         self._records = new_lines
+
+    def do_process(self):
+        with begin_child_context(type(self).__name__):
+            with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
+                self.do_toolbar_process()
+            with begin_child_context("Logging"):
+                self.do_logging_process()
 
     def do_toolbar_process(self) -> None:
         if self._records.maxlen != self.lines:
@@ -187,15 +129,15 @@ class LoggingMultiline:
         padding = imgui.get_style().item_spacing[0] * 2
         dropdown_width = 20.0
         imgui.set_next_item_width(max_width + dropdown_width + padding)
-        if level_result := combo("##Levels", self.level_index, LEVEL_NAMES):
+        if level_result := combo("##Levels", self.level_index, UNIQUE_LEVEL_NAMES):
             self.level_index = level_result.value
 
         imgui.same_line()
         imgui.set_next_item_width(FIT_WIDTH)
         self.filter = imgui.input_text_with_hint("##Filter", "Filter", self.filter)[1]
 
-    def do_logging_process(self) -> None:
-        if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
+    def do_logging_process(self, *, use_mouse_wheel=False) -> None:
+        if use_mouse_wheel and imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
             if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
                 if 0 < self._mouse_wheel.value:
                     # Drag Up
@@ -211,13 +153,13 @@ class LoggingMultiline:
         filter_level = self.get_level_number()
 
         for line in self._records:
-            if line.level < filter_level:
+            if line.levelno < filter_level:
                 continue
-            if line.message.find(self.filter) == -1:
+            if line.formatted_message.find(self.filter) == -1:
                 continue
 
-            color = self.get_level_color(line.level)
-            text_colored(f"[{line.levelname}] {line.message}", color)
+            color = self.get_level_color(line.levelno)
+            text_colored(line.formatted_message, color)
 
         if self.autoscroll:
             imgui.set_scroll_here_y(1.0)

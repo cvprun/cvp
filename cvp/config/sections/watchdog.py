@@ -2,7 +2,9 @@
 
 from dataclasses import dataclass
 
+from cvp.logging.styles import GuiLoggingStyle
+
 
 @dataclass
-class WatchdogConfig:
+class WatchdogConfig(GuiLoggingStyle):
     pass

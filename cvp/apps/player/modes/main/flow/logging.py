@@ -19,8 +19,8 @@ from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.text_colored import text_colored
 from cvp.logging.loggers import flow_logger as logger
 from cvp.logging.logging import (
-    LEVEL_NAMES,
     SEVERITY_NAME_CRITICAL,
+    UNIQUE_LEVEL_NAMES,
     convert_level_number,
 )
 from cvp.patterns.delta import Delta
@@ -95,7 +95,7 @@ class LoggingFlowWindow(BaseWindow):
         self.context.config.flow.logs.level_index = value
 
     def get_level_number(self) -> int:
-        return convert_level_number(LEVEL_NAMES[self.level_index])
+        return convert_level_number(UNIQUE_LEVEL_NAMES[self.level_index])
 
     def get_level_color(self, level: int) -> RGBA:
         logging_config = self.context.config.flow.logs
@@ -140,7 +140,7 @@ class LoggingFlowWindow(BaseWindow):
         padding = imgui.get_style().item_spacing[0] * 2
         dropdown_width = 20.0
         imgui.set_next_item_width(max_width + dropdown_width + padding)
-        if level_result := combo("##Levels", self.level_index, LEVEL_NAMES):
+        if level_result := combo("##Levels", self.level_index, UNIQUE_LEVEL_NAMES):
             self.level_index = level_result.value
 
         imgui.same_line()

@@ -6,6 +6,7 @@ from logging.config import dictConfig
 from logging.handlers import TimedRotatingFileHandler
 from os import PathLike
 from sys import stdout
+from types import MappingProxyType
 from typing import Final, Optional, Sequence, Union
 
 from cvp.logging.variables import (
@@ -45,7 +46,7 @@ SEVERITIES: Final[Sequence[str]] = (
     SEVERITY_NAME_OFF,
 )
 
-LEVEL_NAMES: Final[Sequence[str]] = [
+UNIQUE_LEVEL_NAMES: Final[Sequence[str]] = (
     SEVERITY_NAME_CRITICAL,
     SEVERITY_NAME_ERROR,
     SEVERITY_NAME_WARNING,
@@ -53,7 +54,21 @@ LEVEL_NAMES: Final[Sequence[str]] = [
     SEVERITY_NAME_DEBUG,
     SEVERITY_NAME_NOTSET,
     SEVERITY_NAME_OFF,
-]
+)
+
+LEVEL_TO_NAME_MAPPING: Final[MappingProxyType[int, str]] = MappingProxyType(
+    {
+        logging.CRITICAL: SEVERITY_NAME_CRITICAL,
+        logging.ERROR: SEVERITY_NAME_ERROR,
+        logging.WARNING: SEVERITY_NAME_WARNING,
+        logging.INFO: SEVERITY_NAME_INFO,
+        logging.DEBUG: SEVERITY_NAME_DEBUG,
+        logging.NOTSET: SEVERITY_NAME_NOTSET,
+        OFF: SEVERITY_NAME_OFF,
+    }
+)
+
+NOTSET_LEVEL_NAME_INDEX: Final[int] = UNIQUE_LEVEL_NAMES.index(SEVERITY_NAME_NOTSET)
 
 
 def convert_level_number(level: Optional[Union[str, int]] = None) -> int:
