@@ -220,4 +220,14 @@ class WatchdogItem(Serializable):
 
     def remove_event_filter(self, event_type: Type[FileSystemEvent]) -> None:
         assert event_type in self.EVENT_FILTERS
-        self.filters.remove(event_type)
+        try:
+            self.filters.remove(event_type)
+        except KeyError:
+            pass
+
+    def add_all_event_filters(self) -> None:
+        for event_type in self.EVENT_FILTERS:
+            self.filters.add(event_type)
+
+    def clear_event_filter(self) -> None:
+        self.filters.clear()

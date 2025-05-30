@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from logging import Handler, LogRecord
-from typing import Callable, Deque, Final, NamedTuple
-from weakref import finalize
+from typing import Final
 
 from imgui_bundle import imgui
 
@@ -14,7 +12,6 @@ from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS, RESIZE_X, RESIZE_Y
-from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.flags.table_column import WIDTH_STRETCH
 from cvp.imgui.input_text import input_text
@@ -24,33 +21,13 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
+from cvp.imgui.widgets.logging_multiline import LoggingMultiline
 from cvp.logging.loggers import watchdog_logger as logger
 from cvp.msgs.callbacks import MsgCallbacks
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_map import create_msg_map
-from cvp.patterns.delta import Delta
 from cvp.types.override import override
 from cvp.watchdog.item import WatchdogItem, WatchdogKey
-
-
-class _LoggingHandler(Handler):
-    def __init__(self, callback: Callable[[LogRecord, str], None]):
-        super().__init__()
-        self._callback = callback
-
-    @override
-    def emit(self, record: LogRecord):
-        self._callback(record, self.format(record))
-
-
-class _LineRecord(NamedTuple):
-    level: int
-    levelname: str
-    message: str
-
-
-def _unregister_handler(handler: _LoggingHandler) -> None:
-    logger.removeHandler(handler)
 
 
 class WatchdogMode(BaseMode, MsgCallbacks):
@@ -93,18 +70,8 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             self._confirm_clear,
             self._file_browser,
         )
-
-        self.autoscroll = False
-        self._mouse_wheel = Delta.from_single_value(0.0)
-        self._maxlen = 100
-        self._records = Deque[_LineRecord](maxlen=self._maxlen)
-        self._handler = _LoggingHandler(self.on_logging)
-        logger.addHandler(self._handler)
-        self._finalizer = finalize(self, _unregister_handler, self._handler)
         self._msg_mapping = create_msg_map(self)
-
-    def on_logging(self, record: LogRecord, message: str) -> None:
-        self._records.append(_LineRecord(record.levelno, record.levelname, message))
+        self._logging_widget = LoggingMultiline(logger)
 
     @property
     def success_color(self):
@@ -206,12 +173,9 @@ class WatchdogMode(BaseMode, MsgCallbacks):
                 self.do_top_process()
 
             imgui.separator()
-
-            with begin_child_context("Bottom"):
-                with begin_child_context("BottomToolbar", child_flags=AUTO_RESIZE_Y):
-                    self.do_bottom_toolbar_process()
-                with begin_child_context("BottomLogging"):
-                    self.do_bottom_logging_process()
+            self.do_bottom_toolbar_process()
+            self._logging_widget.options = self.config
+            self._logging_widget.do_process(use_mouse_wheel=True)
 
         self._popups.do_process()
 
@@ -285,6 +249,12 @@ class WatchdogMode(BaseMode, MsgCallbacks):
                 size=(imgui.calc_item_width(), 0),
                 child_flags=AUTO_RESIZE_Y | BORDERS,
             ):
+                if button("Select all"):
+                    item.add_all_event_filters()
+                imgui.same_line()
+                if button("Unselect all"):
+                    item.clear_event_filter()
+
                 imgui.begin_table("EventFiltersTable", 3, outer_size=(FIT_WIDTH, 0))
                 try:
                     imgui.table_setup_column("##Column1", WIDTH_STRETCH)
@@ -338,23 +308,3 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             self.text_success("Watchdog is running ...")
         else:
             self.text_error("Watchdog is idle")
-
-    def do_bottom_logging_process(self) -> None:
-        if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
-            if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
-                if 0 < self._mouse_wheel.value:
-                    # Drag Up
-                    if imgui.get_scroll_y() < imgui.get_scroll_max_y():
-                        self.autoscroll = False
-                elif self._mouse_wheel.value < 0:
-                    # Drag Down
-                    if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
-                        self.autoscroll = True
-                else:
-                    assert 0 == self._mouse_wheel.value
-
-        for line in self._records:
-            imgui.text(f"[{line.levelname}] {line.message}")
-
-        if self.autoscroll:
-            imgui.set_scroll_here_y(1.0)

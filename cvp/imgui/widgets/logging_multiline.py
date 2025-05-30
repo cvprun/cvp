@@ -33,67 +33,64 @@ def _unregister_handler(logger: Logger, handler: CallableHandler) -> None:
 class LoggingMultiline:
     def __init__(
         self,
-        label: str,
         logger: Optional[Union[str, Logger]] = None,
         options: Optional[GuiLoggingStyle] = None,
     ):
-        self._label = label
-        self._options = options if options else GuiLoggingStyle()
-
         if logger is None:
-            self._logger = getLogger()
+            self.logger = getLogger()
         elif isinstance(logger, Logger):
-            self._logger = logger
+            self.logger = logger
         else:
             assert isinstance(logger, str)
-            self._logger = getLogger(logger)
+            self.logger = getLogger(logger)
 
-        self._mouse_wheel = Delta.from_single_value(0.0)
-        self._records = Deque[FormattedLogRecord](maxlen=self._options.lines)
-        self._handler = CallableHandler(self.on_logging)
+        self.options = options if options else GuiLoggingStyle()
+        self.mouse_wheel = Delta.from_single_value(0.0)
+        self.records = Deque[FormattedLogRecord](maxlen=self.options.lines)
+        self.handler = CallableHandler(self.on_logging)
+        self.logger.addHandler(self.handler)
 
-        self._logger.addHandler(self._handler)
         self._finalizer = finalize(
             self,
             _unregister_handler,
-            self._logger,
-            self._handler,
+            self.logger,
+            self.handler,
         )
 
     def on_logging(self, record: LogRecord, formatted_message: str) -> None:
-        self._records.append(FormattedLogRecord.from_log(record, formatted_message))
+        self.records.append(FormattedLogRecord.from_log(record, formatted_message))
 
     @property
     def filter(self) -> str:
-        return self._options.filter
+        return self.options.filter
 
     @filter.setter
     def filter(self, value: str) -> None:
-        self._options.filter = value
+        self.options.filter = value
 
     @property
     def autoscroll(self) -> bool:
-        return self._options.autoscroll
+        return self.options.autoscroll
 
     @autoscroll.setter
     def autoscroll(self, value: bool) -> None:
-        self._options.autoscroll = value
+        self.options.autoscroll = value
 
     @property
     def lines(self) -> int:
-        return self._options.lines
+        return self.options.lines
 
     @lines.setter
     def lines(self, value: int) -> None:
-        self._options.lines = value
+        self.options.lines = value
 
     @property
     def level_index(self) -> int:
-        return self._options.level_index
+        return self.options.level_index
 
     @level_index.setter
     def level_index(self, value: int) -> None:
-        self._options.level_index = value
+        self.options.level_index = value
 
     @property
     def default_text_color(self) -> RGBA:
@@ -104,22 +101,22 @@ class LoggingMultiline:
         return convert_level_number(UNIQUE_LEVEL_NAMES[self.level_index])
 
     def get_level_color(self, level: int) -> RGBA:
-        return self._options.get_level_color(level, self.default_text_color)
+        return self.options.get_level_color(level, self.default_text_color)
 
     def update_records_maxlen(self, maxlen: int) -> None:
-        new_lines = type(self._records)(maxlen=maxlen)
-        new_lines.extend(self._records)
-        self._records = new_lines
+        new_lines = type(self.records)(maxlen=maxlen)
+        new_lines.extend(self.records)
+        self.records = new_lines
 
-    def do_process(self):
+    def do_process(self, *, use_mouse_wheel=False):
         with begin_child_context(type(self).__name__):
             with begin_child_context("Toolbar", child_flags=AUTO_RESIZE_Y):
                 self.do_toolbar_process()
             with begin_child_context("Logging"):
-                self.do_logging_process()
+                self.do_logging_process(use_mouse_wheel=use_mouse_wheel)
 
     def do_toolbar_process(self) -> None:
-        if self._records.maxlen != self.lines:
+        if self.records.maxlen != self.lines:
             self.update_records_maxlen(self.lines)
 
         self.autoscroll = checkbox("Autoscroll", self.autoscroll)[1]
@@ -138,21 +135,21 @@ class LoggingMultiline:
 
     def do_logging_process(self, *, use_mouse_wheel=False) -> None:
         if use_mouse_wheel and imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
-            if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
-                if 0 < self._mouse_wheel.value:
+            if self.mouse_wheel.update(imgui.get_io().mouse_wheel):
+                if 0 < self.mouse_wheel.value:
                     # Drag Up
                     if imgui.get_scroll_y() < imgui.get_scroll_max_y():
                         self.autoscroll = False
-                elif self._mouse_wheel.value < 0:
+                elif self.mouse_wheel.value < 0:
                     # Drag Down
                     if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
                         self.autoscroll = True
                 else:
-                    assert 0 == self._mouse_wheel.value
+                    assert 0 == self.mouse_wheel.value
 
         filter_level = self.get_level_number()
 
-        for line in self._records:
+        for line in self.records:
             if line.levelno < filter_level:
                 continue
             if line.formatted_message.find(self.filter) == -1:
