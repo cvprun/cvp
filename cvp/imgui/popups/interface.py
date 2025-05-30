@@ -8,6 +8,10 @@ PopupResultT = TypeVar("PopupResultT")
 
 class PopupInterface(Generic[PopupResultT], ABC):
     @abstractmethod
+    def is_opened(self) -> bool:
+        raise NotImplementedError
+
+    @abstractmethod
     def get_min_width(self) -> int:
         raise NotImplementedError
 

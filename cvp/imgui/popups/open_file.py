@@ -25,18 +25,24 @@ from cvp.imgui.popups.input_text import InputTextPopup
 from cvp.imgui.push_item_width import item_width_context
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.logging.loggers import logger
+from cvp.types.colors import RED_RGBA
 from cvp.types.override import override
+
+
+@unique
+class _OpenFilePopupMode(IntFlag):
+    select_file = auto()
+    select_directory = auto()
+    input_filename = auto()
+    show_hidden = auto()
+    overwrite_popup = auto()
 
 
 class OpenFilePopup(PopupBase[str]):
     __cvp_popup_min_width__ = 520
     __cvp_popup_min_height__ = 420
 
-    @unique
-    class OpenMode(IntFlag):
-        select_file = auto()
-        select_directory = auto()
-        input_filename = auto()
+    Mode = _OpenFilePopupMode
 
     def __init__(
         self,
@@ -44,14 +50,14 @@ class OpenFilePopup(PopupBase[str]):
         directory: Optional[Union[str, PathLike]] = None,
         flags: Union[WindowFlags, int] = 0,
         *,
+        mode=Mode.select_file,
+        error_color=RED_RGBA,
         target: Optional[Callable[[str], None]] = None,
         oneshot: Optional[bool] = None,
         identifier: Optional[str] = None,
         min_width: Optional[int] = None,
         min_height: Optional[int] = None,
-        open_mode=OpenMode.select_file,
         centered=True,
-        show_hidden=False,
     ):
         super().__init__(
             title=title,
@@ -67,11 +73,12 @@ class OpenFilePopup(PopupBase[str]):
         self._location_text = str(self.location_path(directory))
         self._current_dir = str()
         self._items: List[str] = list()
-        self._selected = str()
-        self._filename = str()
-        self._filter = str()
-        self._show_hidden = show_hidden
-        self._open_mode = open_mode
+        self._selected_item = str()
+        self._input_filename = str()
+        self._input_filter = str()
+        self._mode = mode
+        self._error_color = error_color
+        self._propagate_overwrite_result = False
 
         self._create_directory_popup = InputTextPopup(
             title="New Directory",
@@ -87,6 +94,72 @@ class OpenFilePopup(PopupBase[str]):
             ok="Delete",
             cancel="Cancel",
             target=self.on_remove_item,
+        )
+        self._overwrite_popup = ConfirmPopup(
+            title="Overwrite",
+            label="Do you want to overwrite the file?",
+            ok="Overwrite",
+            cancel="Cancel",
+            target=self.on_overwrite_item,
+        )
+
+    def has_mode_flag(self, mode: _OpenFilePopupMode) -> bool:
+        return bool(self._mode & mode)
+
+    def set_mode_flag(self, mode: _OpenFilePopupMode, enabled: bool) -> None:
+        if enabled:
+            self._mode |= mode
+        else:
+            self._mode &= ~mode
+
+    @property
+    def select_file_flag(self) -> bool:
+        return self.has_mode_flag(self.Mode.select_file)
+
+    @select_file_flag.setter
+    def select_file_flag(self, value: bool) -> None:
+        self.set_mode_flag(self.Mode.select_file, value)
+
+    @property
+    def select_directory_flag(self) -> bool:
+        return self.has_mode_flag(self.Mode.select_directory)
+
+    @select_directory_flag.setter
+    def select_directory_flag(self, value: bool) -> None:
+        self.set_mode_flag(self.Mode.select_directory, value)
+
+    @property
+    def input_filename_flag(self) -> bool:
+        return self.has_mode_flag(self.Mode.input_filename)
+
+    @input_filename_flag.setter
+    def input_filename_flag(self, value: bool) -> None:
+        self.set_mode_flag(self.Mode.input_filename, value)
+
+    @property
+    def show_hidden_flag(self) -> bool:
+        return self.has_mode_flag(self.Mode.show_hidden)
+
+    @show_hidden_flag.setter
+    def show_hidden_flag(self, value: bool) -> None:
+        self.set_mode_flag(self.Mode.show_hidden, value)
+
+    @property
+    def overwrite_popup_flag(self) -> bool:
+        return self.has_mode_flag(self.Mode.overwrite_popup)
+
+    @overwrite_popup_flag.setter
+    def overwrite_popup_flag(self, value: bool) -> None:
+        self.set_mode_flag(self.Mode.overwrite_popup, value)
+
+    @property
+    def any_subpopup_open(self) -> bool:
+        return any(
+            (
+                self._create_directory_popup.opened,
+                self._remove_item_popup.opened,
+                self._overwrite_popup.opened,
+            )
         )
 
     def on_create_directory_validator(self, value: str) -> bool:
@@ -106,13 +179,20 @@ class OpenFilePopup(PopupBase[str]):
         if not value:
             return
 
-        if not os.path.exists(self._selected):
+        if not os.path.exists(self._selected_item):
             return
 
-        if os.path.isfile(self._selected):
-            os.remove(self._selected)
-        elif os.path.isdir(self._selected):
-            rmtree(self._selected)
+        if os.path.isfile(self._selected_item):
+            os.remove(self._selected_item)
+        elif os.path.isdir(self._selected_item):
+            rmtree(self._selected_item)
+        else:
+            assert False, "Inaccessible section"
+
+        self._selected_item = str()
+
+    def on_overwrite_item(self, value: bool) -> None:
+        self._propagate_overwrite_result = value
 
     @staticmethod
     def location_path(path: Optional[Union[str, PathLike]] = None) -> Path:
@@ -132,8 +212,8 @@ class OpenFilePopup(PopupBase[str]):
         self._location_text = str(self.location_path(path))
         self._current_dir = str()
         self._items = list()
-        self._selected = str()
-        self._filename = str()
+        self._selected_item = str()
+        self._input_filename = str()
 
     @staticmethod
     def list_items(location: Union[str, PathLike], show_hidden=False) -> List[str]:
@@ -154,6 +234,59 @@ class OpenFilePopup(PopupBase[str]):
 
         return dirs + files
 
+    def button_select(self, label="Open", pressed_enter_key=False) -> bool:
+        if not self._selected_item:
+            button(label, disabled=True)
+            hovered_tooltip_text("No item has been selected", self._error_color)
+            return False
+
+        if not os.path.exists(self._selected_item):
+            if self.input_filename_flag:
+                result = button(label) or pressed_enter_key
+                hovered_tooltip_text("Click to create the entered file")
+                return result
+            else:
+                button(label, disabled=True)
+                hovered_tooltip_text("No such file exists", self._error_color)
+                return False
+
+        isfile = os.path.isfile(self._selected_item)
+        isdir = os.path.isdir(self._selected_item)
+        assert isfile != isdir or (not isfile and not isdir)
+
+        if isfile:
+            if self.input_filename_flag:
+                result = False
+                if button(label) or pressed_enter_key:
+                    if self.overwrite_popup_flag:
+                        self._overwrite_popup.show()
+                    else:
+                        result = True
+                hovered_tooltip_text("Click to overwrite the selected file")
+                return result
+            elif self.select_file_flag:
+                result = button(label) or pressed_enter_key
+                hovered_tooltip_text("Click to open the selected file")
+                return result
+            else:
+                button(label, disabled=True)
+                hovered_tooltip_text("Cannot select the file", self._error_color)
+                return False
+        elif isdir:
+            if self.select_directory_flag:
+                result = button(label) or pressed_enter_key
+                hovered_tooltip_text("Click to open the selected directory")
+                return result
+            else:
+                if button(label) or pressed_enter_key:
+                    self._location_text = self._selected_item
+                hovered_tooltip_text("Click to navigate to the selected directory")
+                return False
+        else:
+            button(label, disabled=True)
+            hovered_tooltip_text("This file type is not supported", self._error_color)
+            return False
+
     @override
     def on_main_process(self) -> Optional[str]:
         try:
@@ -161,6 +294,7 @@ class OpenFilePopup(PopupBase[str]):
         finally:
             self._create_directory_popup.on_process()
             self._remove_item_popup.on_process()
+            self._overwrite_popup.on_process()
 
     def do_main_process(self) -> Optional[str]:
         if button(mdi.HOME):
@@ -181,29 +315,45 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.same_line()
 
-        if button(mdi.CLOSE, disabled=not self._selected):
-            if os.path.isfile(self._selected):
-                name = os.path.basename(self._selected)
+        selected = bool(self._selected_item)
+        if selected:
+            isfile = os.path.isfile(self._selected_item)
+            isdir = os.path.isdir(self._selected_item)
+        else:
+            isfile = False
+            isdir = False
+        assert isfile != isdir or (not isfile and not isdir)
+
+        enabled_delete = selected and (isfile or isdir)
+        if button(mdi.DELETE, disabled=not enabled_delete):
+            if os.path.isfile(self._selected_item):
+                name = os.path.basename(self._selected_item)
                 self._remove_item_popup.label = f"Delete '{name}' file?"
                 self._remove_item_popup.show()
-            elif os.path.isdir(self._selected):
-                name = os.path.basename(self._selected)
+            elif os.path.isdir(self._selected_item):
+                name = os.path.basename(self._selected_item)
                 self._remove_item_popup.label = f"Delete '{name}' directory?"
                 self._remove_item_popup.show()
-        hovered_tooltip_text("New Directory")
+
+        if isfile:
+            hovered_tooltip_text("Remove the selected file")
+        elif isdir:
+            hovered_tooltip_text("Remove the selected directory")
+        else:
+            hovered_tooltip_text("Remove the selected item")
 
         imgui.same_line()
 
-        show_hidden_icon = mdi.EYE if self._show_hidden else mdi.EYE_OFF
+        show_hidden_icon = mdi.EYE if self.show_hidden_flag else mdi.EYE_OFF
         if button(show_hidden_icon):
-            self._show_hidden = not self._show_hidden
-            self._items = self.list_items(self._current_dir, self._show_hidden)
+            self.set_mode_flag(self.Mode.show_hidden, not self.show_hidden_flag)
+            self._items = self.list_items(self._current_dir, self.show_hidden_flag)
         hovered_tooltip_text("Show Hidden Files and Directories")
 
         imgui.same_line()
 
         if button(mdi.REFRESH):
-            self._items = self.list_items(self._current_dir, self._show_hidden)
+            self._items = self.list_items(self._current_dir, self.show_hidden_flag)
         hovered_tooltip_text("Refresh Current Directory")
 
         imgui.same_line()
@@ -212,21 +362,21 @@ class OpenFilePopup(PopupBase[str]):
             filter_result = imgui.input_text_with_hint(
                 "##Filter",
                 "Filter",
-                self._filter,
+                self._input_filter,
             )
             if filter_result[0]:
-                self._filter = filter_result[1]
+                self._input_filter = filter_result[1]
 
         with item_width_context(FIT_WIDTH):
             if location_result := input_text(
-                "##Location",
+                "##LocationBar",
                 self._location_text,
                 ENTER_RETURNS_TRUE,
             ):
                 location_text = location_result.value
                 if os.path.isfile(location_text):
-                    if self._open_mode == self.OpenMode.select_directory:
-                        imgui.close_current_popup()
+                    if self.select_file_flag:
+                        self.close()
                         return location_text
                 elif os.path.isdir(location_text):
                     self._location_text = location_text
@@ -234,40 +384,45 @@ class OpenFilePopup(PopupBase[str]):
                     logger.warning(f"Invalid location: '{location_text}'")
 
         files_child_height = footer_height_as_reverse()
-        if self._open_mode == self.OpenMode.input_filename:
-            files_child_height *= 2
+        if self.input_filename_flag:
+            extra_filename_input_height = footer_height_as_reverse()
+            files_child_height += extra_filename_input_height
 
         if begin_child("Files", (FIT_WIDTH, files_child_height), BORDERS):
             try:
                 if self._current_dir != self._location_text:
                     # Update items
                     self._current_dir = self._location_text
-                    self._selected = str()
-                    self._filename = str()
-                    self._items = self.list_items(self._current_dir, self._show_hidden)
+                    self._selected_item = str()
+                    self._input_filename = str()
+                    self._items = self.list_items(
+                        location=self._current_dir,
+                        show_hidden=self.show_hidden_flag,
+                    )
 
                 for item in self._items:
-                    if self._filter and item.find(self._filter) == -1:
+                    if self._input_filter and item.find(self._input_filter) == -1:
                         continue
 
                     item_path = os.path.join(self._current_dir, item)
-                    selected = item_path == self._selected
+                    selected = item_path == self._selected_item
 
                     if os.path.isfile(item_path):
-                        if self._open_mode == self.OpenMode.select_directory:
+                        if not self.select_file_flag:
                             continue
+
                         label = f"{mdi.FILE} {item}"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
-                            self._selected = item_path
-                            self._filename = item
+                            self._selected_item = item_path
+                            self._input_filename = item
                             if imgui.is_mouse_double_clicked(0):
-                                imgui.close_current_popup()
+                                self.close()
                                 return item_path
                     elif os.path.isdir(item_path):
                         label = f"{mdi.FOLDER} {item}/"
                         if imgui.selectable(label, selected, ALLOW_DOUBLE_CLICK)[0]:
-                            self._selected = item_path
-                            self._filename = item
+                            self._selected_item = item_path
+                            self._input_filename = item
                             if imgui.is_mouse_double_clicked(0):
                                 self._location_text = item_path
             finally:
@@ -275,75 +430,45 @@ class OpenFilePopup(PopupBase[str]):
 
         imgui.separator()
 
-        if self._open_mode == self.OpenMode.input_filename:
+        if self.input_filename_flag:
             with item_width_context(FIT_WIDTH):
-                if filename_result := input_text("##Filename", self._filename):
-                    self._filename = filename_result.value
-                    self._selected = os.path.join(self._current_dir, self._filename)
+                if filename_result := input_text("##Filename", self._input_filename):
+                    self._input_filename = filename_result.value
+                    self._selected_item = os.path.join(
+                        self._current_dir,
+                        self._input_filename,
+                    )
 
-        if button("Close"):
-            imgui.close_current_popup()
+        if self.any_subpopup_open:
+            pressed_enter_key = False
+            pressed_escape_key = False
+        else:
+            pressed_enter_key = imgui.is_key_pressed(imgui.Key.enter)
+            pressed_escape_key = imgui.is_key_pressed(imgui.Key.escape)
+
+        if button("Cancel"):
+            self.close()
             return None
-
-        select_file = os.path.isfile(self._selected)
-        select_dir = os.path.isdir(self._selected)
-        assert select_file != select_dir or (not select_file and not select_dir)
 
         imgui.same_line()
+        if self.button_select(pressed_enter_key=pressed_enter_key):
+            self.close()
+            return self._selected_item
 
-        match self._open_mode:
-            case self.OpenMode.select_file:
-                if button("Select", disabled=not select_file and not select_dir):
-                    if select_file:
-                        imgui.close_current_popup()
-                        return self._selected
-                    elif select_dir:
-                        self._location_text = self._selected
-                    else:
-                        assert False, "Inaccessible section"
+        if self.select_directory_flag:
+            imgui.same_line()
+            if button("Select Current Location"):
+                self.close()
+                return self._current_dir
+            hovered_tooltip_text("Click to open the current location directory")
 
-                if imgui.is_key_pressed(imgui.Key.enter):
-                    if select_file:
-                        imgui.close_current_popup()
-                        return self._selected
-                    elif select_dir:
-                        self._location_text = self._selected
-
-            case self.OpenMode.select_directory:
-                assert not select_file, "Regular files are filtered out from the list"
-                if button("Select Directory", disabled=not select_dir):
-                    imgui.close_current_popup()
-                    return self._selected
-
-                imgui.same_line()
-                if button("Select Current Location"):
-                    imgui.close_current_popup()
-                    return self._current_dir
-
-                if select_dir and imgui.is_key_pressed(imgui.Key.enter):
-                    self._location_text = self._selected
-
-            case self.OpenMode.input_filename:
-                if not self._filename:
-                    button("Filename is required", disabled=True)
-                else:
-                    assert self._filename
-                    filepath = os.path.join(self._current_dir, self._filename)
-                    assert self._selected == filepath
-                    if os.path.exists(filepath):
-                        button("Existing files cannot be selected", disabled=True)
-                    else:
-                        if button("Create New File"):
-                            imgui.close_current_popup()
-                            return filepath
-
-                if select_dir and imgui.is_key_pressed(imgui.Key.enter):
-                    self._location_text = self._selected
-            case _:
-                assert False, "Inaccessible section"
-
-        if imgui.is_key_pressed(imgui.Key.escape):
-            imgui.close_current_popup()
+        if pressed_escape_key:
+            self.close()
             return None
+
+        if self._propagate_overwrite_result:
+            self._propagate_overwrite_result = False
+            self.close()
+            return self._selected_item
 
         return None

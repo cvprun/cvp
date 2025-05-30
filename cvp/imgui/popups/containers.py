@@ -13,6 +13,11 @@ class PopupList(List[PopupInterface[Any]]):
     def from_iterable(cls, popups: Iterable[PopupInterface[Any]]):
         return cls(*popups)
 
+    @property
+    def any_subpopup_open(self) -> bool:
+        """It is typically used to block keyboard input."""
+        return any(popup.is_opened() for popup in self)
+
     def do_process(self) -> Optional[Tuple[PopupInterface[Any], Any]]:
         for popup in self:
             result = popup.on_process()

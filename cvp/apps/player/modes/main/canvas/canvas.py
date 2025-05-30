@@ -60,7 +60,7 @@ class CanvasWindow(ControllableCanvas, BaseWindow):
         self._export_canvas_popup = OpenFilePopup(
             title="Export canvas",
             target=self.on_export_canvas,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
+            mode=OpenFilePopup.Mode.input_filename,
         )
         self._confirm_remove_canvas_popup = ConfirmPopup(
             title="Remove canvas",

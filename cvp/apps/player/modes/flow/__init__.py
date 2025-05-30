@@ -37,7 +37,7 @@ class FlowMode(BaseMainMode):
         self._export_graph_popup = OpenFilePopup(
             title="Export graph",
             target=self.on_export_graph,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
+            mode=OpenFilePopup.Mode.input_filename,
         )
         self._confirm_remove_graph_popup = ConfirmPopup(
             title="Remove graph",

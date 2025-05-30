@@ -74,22 +74,22 @@ class ServicesMode(BaseMode):
         self._executable_browser = OpenFilePopup(
             "Select executable file",
             target=self.on_executable_selected,
-            open_mode=OpenFilePopup.OpenMode.select_file,
+            mode=OpenFilePopup.Mode.select_file,
         )
         self._cwd_browser = OpenFilePopup(
             "Select working directory",
             target=self.on_cwd_selected,
-            open_mode=OpenFilePopup.OpenMode.select_directory,
+            mode=OpenFilePopup.Mode.select_directory,
         )
         self._pid_file_browser = OpenFilePopup(
             "Select PID file",
             target=self.on_pid_selected,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
+            mode=OpenFilePopup.Mode.input_filename,
         )
         self._stdio_file_browser = OpenFilePopup(
             "Select stdio file",
             target=self.on_stdio_selected,
-            open_mode=OpenFilePopup.OpenMode.input_filename,
+            mode=OpenFilePopup.Mode.input_filename,
         )
 
         self._popups = PopupList(

@@ -27,7 +27,7 @@ class DirectoryPreference(BasePreference):
     def __init__(self, context: Context):
         super().__init__(context)
         self._directory_browser = OpenFilePopup(
-            open_mode=OpenFilePopup.OpenMode.select_directory,
+            mode=OpenFilePopup.Mode.select_directory,
         )
 
     @property

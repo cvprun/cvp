@@ -53,7 +53,6 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
         assert isinstance(self, PopupProtocol)
 
         self._title = title if title else type(self).__name__
-        self._visible = False
         self._centered = centered
         self._flags = flags
         self._identifier = identifier if identifier else str(uuid4())
@@ -64,6 +63,14 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
         self._result = None
         self._target = target
         self._oneshot = bool(oneshot)
+
+        self._visible = False
+        self._opened = False
+        self._closeable = False
+
+    @override
+    def is_opened(self) -> bool:
+        return self._opened
 
     @override
     def get_min_width(self) -> int:
@@ -78,6 +85,10 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
             return self._min_height
         else:
             return self.__cvp_popup_min_height__
+
+    @property
+    def opened(self) -> bool:
+        return self.is_opened()
 
     @property
     def title(self):
@@ -128,8 +139,19 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
     ) -> None:
         self.show(title, target, oneshot=True)
 
+    def close(self) -> None:
+        if not self._closeable:
+            raise ValueError(
+                f"Calling '{self.close.__name__}' is only allowed in the"
+                f" '{self.on_main_process.__name__}' callback"
+            )
+
+        imgui.close_current_popup()
+
     @override
     def on_process(self) -> Optional[PopupResultT]:
+        self._opened = imgui.is_popup_open(self.popup_label)
+
         if self._visible:
             imgui.open_popup(self.popup_label)
             self._visible = False
@@ -149,11 +171,17 @@ class PopupBase(PopupBaseInterface[PopupResultT], PopupProtocol, ABC):
             set_window_min_size(self.get_min_width(), self.get_min_height())
 
         try:
-            self._result = self.on_main_process()
+            self._closeable = True
+            try:
+                self._result = self.on_main_process()
+            finally:
+                self._closeable = False
+
             if self._target is not None and self._result is not None:
                 self._target(self._result)
                 if self._oneshot:
                     self._target = None
+
             return self._result
         finally:
             imgui.end_popup()
