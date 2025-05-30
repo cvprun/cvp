@@ -86,7 +86,7 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         self._file_browser = OpenFilePopup(
             "Select file or directory",
             target=self.on_file_selected,
-            mode=OpenFilePopup.Mode.select_file,
+            mode=OpenFilePopup.SELECT_FILE_AND_DIRECTORY,
         )
         self._popups = PopupList(
             self._confirm_remove,

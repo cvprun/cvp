@@ -44,6 +44,16 @@ class OpenFilePopup(PopupBase[str]):
 
     Mode = _OpenFilePopupMode
 
+    SELECT_FILE = _OpenFilePopupMode.select_file
+    SELECT_DIRECTORY = _OpenFilePopupMode.select_directory
+    INPUT_FILENAME = _OpenFilePopupMode.input_filename
+    SHOW_HIDDEN = _OpenFilePopupMode.show_hidden
+    OVERWRITE_POPUP = _OpenFilePopupMode.overwrite_popup
+
+    SELECT_FILE_AND_DIRECTORY = (
+        _OpenFilePopupMode.select_file | _OpenFilePopupMode.select_directory
+    )
+
     def __init__(
         self,
         title: Optional[str] = None,
