@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from typing import Optional, Protocol, runtime_checkable
+from typing import Optional, Protocol, Union, runtime_checkable
 
+from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes.interface import ModeInterface
 from cvp.context.context import Context
 from cvp.imgui.begin_mode import begin_mode_context
+from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
 
@@ -61,6 +63,41 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @override
     def on_process(self) -> None:
         pass
+
+    @property
+    def success_color(self):
+        return self.context.config.appearance.success_color
+
+    @property
+    def normal_color(self):
+        return self.context.config.appearance.normal_color
+
+    @property
+    def warning_color(self):
+        return self.context.config.appearance.warning_color
+
+    @property
+    def error_color(self):
+        return self.context.config.appearance.error_color
+
+    def text_success(self, text: str) -> None:
+        imgui.text_colored(self.success_color, text)
+
+    def text_normal(self, text: str) -> None:
+        imgui.text_colored(self.normal_color, text)
+
+    def text_warning(self, text: str) -> None:
+        imgui.text_colored(self.warning_color, text)
+
+    def text_error(self, text: str) -> None:
+        imgui.text_colored(self.error_color, text)
+
+    def hovered_tooltip(self, message: Union[str, BaseException]) -> bool:
+        if isinstance(message, BaseException):
+            return hovered_tooltip_text_wrapped(str(message), self.error_color)
+        else:
+            assert isinstance(message, str)
+            return hovered_tooltip_text_wrapped(message)
 
     def get_selected_submenu(self, *, suffix=None) -> str:
         return self._context.get_selected_submenu(type(self), suffix=suffix)

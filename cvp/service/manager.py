@@ -50,9 +50,11 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         self.add(item.key, item)
         return item.key, item
 
-    @property
-    def processes(self):
-        return self._processes
+    def has_process(self, key: ServiceKey):
+        return self._processes.__contains__(key)
+
+    def get_process(self, key: ServiceKey):
+        return self._processes.get(key)
 
     def spawnable(self, key: ServiceKey) -> bool:
         return self._processes.spawnable(key)
@@ -76,20 +78,23 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         self._processes.shutdown(timeout)
 
     def spawn(self, key: ServiceKey):
-        self._processes[key] = self.create_process(self.__getitem__(key))
+        if self._processes.__contains__(key):
+            raise KeyError(f"A process with key '{key}' is already running")
+        process = self._spawn_new_process(self.__getitem__(key))
+        self._processes[key] = process
 
     @staticmethod
-    def create_process(item: ServiceItem):
+    def _spawn_new_process(item: ServiceItem):
         args = item.normalize_commands
         if not args:
-            raise ValueError()
+            raise ValueError("No command arguments provided to spawn the process")
 
         executable = args[0]
         if not os.path.isfile(executable):
-            raise FileNotFoundError()
+            raise FileNotFoundError(f"Executable not found: '{executable}'")
 
         if item.cwd and not os.path.isdir(item.cwd):
-            raise NotADirectoryError()
+            raise NotADirectoryError(f"Working directory does not exist: '{item.cwd}'")
 
         return Process(
             args=args,

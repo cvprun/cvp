@@ -8,14 +8,13 @@ from imgui_bundle import imgui
 from cvp.imgui.begin_tab_item import begin_tab_item, end_tab_item
 from cvp.imgui.flags.tab_bar import TabBarFlags
 from cvp.imgui.flags.tab_item import TabItemFlags
-
-TabCallable = Callable[[], None]
+from cvp.inspect.bind import force_bind
 
 
 @dataclass
 class TabItem:
     name: str
-    callback: Optional[TabCallable] = None
+    callback: Optional[Callable] = None
     opened: Optional[bool] = None
     flags: Union[TabItemFlags, int] = 0
 
@@ -24,8 +23,8 @@ TabItemLike = Union[
     TabItem,
     str,
     Tuple[str],
-    Tuple[str, TabCallable],
-    Tuple[str, TabCallable, bool],
+    Tuple[str, Callable],
+    Tuple[str, Callable, bool],
 ]
 
 
@@ -56,7 +55,13 @@ class TabList(List[TabItem]):
     def from_iterable(cls, items: Iterable[TabItemLike]):
         return cls(*items)
 
-    def do_process(self, label: str, flags: Union[TabBarFlags, int] = 0) -> None:
+    def do_process(
+        self,
+        label: str,
+        *args,
+        flags: Union[TabBarFlags, int] = 0,
+        **kwargs,
+    ) -> None:
         if isinstance(flags, TabBarFlags):
             flags = int(flags)
         assert isinstance(flags, int)
@@ -83,7 +88,7 @@ class TabList(List[TabItem]):
                     if selected:
                         try:
                             if tab.callback is not None:
-                                tab.callback()
+                                force_bind(tab.callback, *args, **kwargs)()
                         finally:
                             end_tab_item()
             finally:

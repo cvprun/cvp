@@ -186,7 +186,7 @@ class Process:
         self._popen.kill()
 
     def is_alive(self) -> bool:
-        return self._popen.poll() is not None
+        return self._popen.poll() is None
 
     def status(self) -> ProcessStatusEx:
         if self._popen.poll() is None:

@@ -174,6 +174,7 @@ class ServiceItem:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     name: str = field(default_factory=str)
 
+    managed: bool = False
     freeze: bool = False
 
     executable: str = field(default_factory=lambda: sys.executable)
