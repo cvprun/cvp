@@ -61,7 +61,8 @@ def table_mutable_sequence(
 
     if imgui.begin_table(label, 3, flags, outer_size, inner_width):
         try:
-            actions_width = imgui.get_style().cell_padding.x * 2.0
+            actions_width = 0.0
+            # [Note] When calculating the width, do not include `cell_padding`.
             actions_width += calc_button_size(ARROW_UP).x
             actions_width += action_button_spacing
             actions_width += calc_button_size(ARROW_DOWN).x
@@ -137,5 +138,5 @@ def table_mutable_sequence(
             imgui.end_table()
 
         if insertable_callback is not None:
-            if imgui.button("Append new item"):
+            if imgui.button(f"{PLUS}##AppendNewItem"):
                 container.append(insertable_callback(len(container)))

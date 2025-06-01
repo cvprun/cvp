@@ -57,17 +57,6 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
     def get_process(self, key: ServiceKey):
         return self._processes.get(key)
 
-    def generate_stream_log_path(
-        self,
-        key: ServiceKey,
-        stream: StreamInfo,
-        dt: Optional[datetime] = None,
-    ):
-        return self._processes_path.generate_log_path(str(key), stream.name, dt)
-
-    def get_pid_file_path(self, key: ServiceKey):
-        return self._processes_path.get_pid_path(str(key))
-
     def spawnable(self, key: ServiceKey) -> bool:
         return self._processes.spawnable(key)
 
@@ -79,6 +68,9 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
     def status(self, key: ServiceKey):
         return self._processes.status(key)
+
+    def send_signal(self, key: ServiceKey, signum: int) -> None:
+        return self._processes.send_signal(key, signum)
 
     def interrupt(self, key: ServiceKey) -> None:
         return self._processes.interrupt(key)
@@ -119,3 +111,14 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             creation_flags=item.creation_flags,
             name=item.name or None,
         )
+
+    def generate_stream_log_path(
+        self,
+        key: ServiceKey,
+        stream: StreamInfo,
+        dt: Optional[datetime] = None,
+    ):
+        return self._processes_path.generate_log_path(str(key), stream.name, dt)
+
+    def get_pid_file_path(self, key: ServiceKey):
+        return self._processes_path.get_pid_path(str(key))

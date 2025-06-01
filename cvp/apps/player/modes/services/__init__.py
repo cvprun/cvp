@@ -6,7 +6,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.services.config import ServicesConfigTab
-from cvp.apps.player.modes.services.control import ServicesControl
+from cvp.apps.player.modes.services.control import ServicesControlTab
 from cvp.apps.player.modes.services.logging import ServicesLoggingTab
 from cvp.apps.player.modes.services.status import ServicesStatusTab
 from cvp.assets.fonts.mdi import APPLICATION_COG
@@ -40,13 +40,14 @@ class ServicesMode(BaseMode):
         status_tab = ServicesStatusTab(context)
         stdout_tab = ServicesLoggingTab(context, STDOUT_FILE_HANDLE)
         stderr_tab = ServicesLoggingTab(context, STDERR_FILE_HANDLE)
+        self._control_tab = ServicesControlTab(context)
         self._tabs = TabList(
             ("Config", config_tab),
+            ("Control", self._control_tab),
             ("Status", status_tab),
             ("Stdout", stdout_tab),
             ("Stderr", stderr_tab),
         )
-        self._controller = ServicesControl(context)
 
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
@@ -126,7 +127,7 @@ class ServicesMode(BaseMode):
 
             with begin_child_context("Main"):
                 if item := self.services.get(ServiceKey(self.selected_submenu)):
-                    self._controller(item)
+                    self._control_tab.do_remote_control_process(item)
                     self._tabs.do_process("Service Tabs", item)
                 else:
                     text_centered("Please select a item")

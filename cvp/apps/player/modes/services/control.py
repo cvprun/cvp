@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from signal import Signals
+
 from imgui_bundle import imgui
 
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.imgui.button import button
-from cvp.imgui.input_text_disabled import input_text_disabled
+from cvp.imgui.button_enum_wrapped import button_enum_wrapped
 from cvp.service.item import ServiceItem
 
 
-class ServicesControl:
+class ServicesControlTab:
     def __init__(self, context: Context):
         self._context = context
+        self._signal = Signals.SIGINT
 
     @property
     def context(self):
@@ -21,9 +24,15 @@ class ServicesControl:
     def services(self):
         return self.context.services
 
-    def __call__(self, service: ServiceItem) -> None:
-        input_text_disabled("UUID", service.uuid)
-        input_text_disabled("Name", service.name)
+    def do_remote_control_process(self, service: ServiceItem) -> None:
+        label = f"{service.name} ({service.uuid})" if service.name else service.uuid
+        imgui.text(label)
+
+        if service.managed:
+            pass
+
+        if service.freeze:
+            pass
 
         spawnable = self.services.spawnable(service.key)
         stoppable = self.services.stoppable(service.key)
@@ -42,3 +51,9 @@ class ServicesControl:
         if button(f"{mdi.DELETE} Remove", disabled=not removable):
             assert self.services.has_process(service.key)
             self.services.removable_pop(service.key)
+
+    def __call__(self, service: ServiceItem) -> None:
+        clicked_index = button_enum_wrapped(Signals)
+        if clicked_index is not None:
+            signum = int(list(Signals)[clicked_index].value)
+            self.services.get_process(service.key).psutil.send_signal(signum)

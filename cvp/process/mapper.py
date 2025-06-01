@@ -32,6 +32,9 @@ class ProcessMapper(Dict[KeyT, ProcessT]):
         else:
             return ProcessStatusEx.not_exists
 
+    def send_signal(self, key: KeyT, signum: int) -> None:
+        self.__getitem__(key).send_signal(signum)
+
     def interrupt(self, key: KeyT) -> None:
         self.__getitem__(key).interrupt()
 
