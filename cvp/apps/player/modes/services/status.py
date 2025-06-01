@@ -9,6 +9,14 @@ class ServicesStatusTab:
     def __init__(self, context: Context):
         self._context = context
 
+    @property
+    def context(self):
+        return self._context
+
+    @property
+    def services(self):
+        return self.context.services
+
     def __call__(self, service: ServiceItem) -> None:
         input_text_disabled("UUID", service.uuid)
         input_text_disabled("Name", service.name)

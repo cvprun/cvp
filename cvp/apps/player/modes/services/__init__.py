@@ -6,21 +6,22 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.services.config import ServicesConfigTab
+from cvp.apps.player.modes.services.control import ServicesControl
+from cvp.apps.player.modes.services.logging import ServicesLoggingTab
 from cvp.apps.player.modes.services.status import ServicesStatusTab
-from cvp.assets.fonts import mdi
 from cvp.assets.fonts.mdi import APPLICATION_COG
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
-from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.tab_container import TabList
 from cvp.imgui.text_centered import text_centered
-from cvp.service.item import ServiceItem, ServiceKey
+from cvp.service.item import ServiceKey
 from cvp.types.override import override
+from cvp.variables import STDERR_FILE_HANDLE, STDOUT_FILE_HANDLE
 
 
 class ServicesMode(BaseMode):
@@ -37,10 +38,15 @@ class ServicesMode(BaseMode):
 
         config_tab = ServicesConfigTab(context)
         status_tab = ServicesStatusTab(context)
+        stdout_tab = ServicesLoggingTab(context, STDOUT_FILE_HANDLE)
+        stderr_tab = ServicesLoggingTab(context, STDERR_FILE_HANDLE)
         self._tabs = TabList(
             ("Config", config_tab),
             ("Status", status_tab),
+            ("Stdout", stdout_tab),
+            ("Stderr", stderr_tab),
         )
+        self._controller = ServicesControl(context)
 
         self._remove_candidate = str()
         self._confirm_remove = ConfirmPopup(
@@ -120,31 +126,9 @@ class ServicesMode(BaseMode):
 
             with begin_child_context("Main"):
                 if item := self.services.get(ServiceKey(self.selected_submenu)):
-                    self.do_control_process(item)
+                    self._controller(item)
                     self._tabs.do_process("Service Tabs", item)
                 else:
                     text_centered("Please select a item")
 
         self._popups.do_process()
-
-    def do_control_process(self, service: ServiceItem) -> None:
-        input_text_disabled("UUID", service.uuid)
-        input_text_disabled("Name", service.name)
-
-        spawnable = self.services.spawnable(service.key)
-        stoppable = self.services.stoppable(service.key)
-        removable = self.services.removable(service.key)
-
-        if button(f"{mdi.PLAY} Spawn", disabled=not spawnable):
-            assert not self.services.has_process(service.key)
-            self.services.spawn(service.key)
-
-        imgui.same_line()
-        if button(f"{mdi.PAUSE} Interrupt", disabled=not stoppable):
-            assert self.services.has_process(service.key)
-            self.services.interrupt(service.key)
-
-        imgui.same_line()
-        if button(f"{mdi.DELETE} Remove", disabled=not removable):
-            assert self.services.has_process(service.key)
-            self.services.removable_pop(service.key)
