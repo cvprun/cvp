@@ -140,7 +140,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
             ffmpeg_executable=self.ffmpeg,
             ffmpeg_args=ffmpeg_args,
             frame_shape=frame_shape,
-            stderr_path=self._processes_path.generate(name, "stderr"),
+            stderr_path=self._processes_path.generate_log_path(name, "stderr"),
             env=env,
             start_thread=start_thread,
             logging_encoding=self.logging_encoding,

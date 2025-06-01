@@ -55,6 +55,10 @@ THREAD_POOL_PREFIX: Final[str] = "cvp.threadpool"
 MAX_THREAD_WORKERS: Final[int] = 5
 MAX_PROCESS_WORKERS: Final[int] = 5
 
+PROCESS_LOGFILE_PREFIX: Final[str] = ""
+PROCESS_LOGFILE_SUFFIX: Final[str] = ".log"
+PROCESS_PIDFILE_SUFFIX: Final[str] = ".pid"
+
 ASCII_RANGE: Final[int] = 127
 MAX_IMGUI_KEYCODE: Final[int] = 512
 

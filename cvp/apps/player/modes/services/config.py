@@ -7,6 +7,7 @@ from typing import Optional, Union
 
 from imgui_bundle import imgui
 
+from cvp.assets.fonts.mdi import LOCK, LOCK_OPEN_VARIANT
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
@@ -22,11 +23,11 @@ from cvp.imgui.input_text_multiline import (
 )
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
+from cvp.imgui.radio_button import radio_button
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.imgui.widgets.table_mutable_mapping import table_mutable_mapping
-from cvp.service.item import ServiceItem, StreamInfo
-from cvp.types.dataclass.field_default import get_field_default
-from cvp.types.dataclass.field_name import get_field_name
+from cvp.service.item import RestartPolicy, ServiceItem, StreamInfo
+from cvp.system.shell import get_default_shell_path
 from cvp.variables import COMMA
 
 
@@ -64,6 +65,7 @@ class ServicesConfigTab:
 
         self._popups = PopupList(
             self._executable_browser,
+            self._cwd_browser,
             self._pid_file_browser,
             self._stdio_file_browser,
         )
@@ -162,18 +164,29 @@ class ServicesConfigTab:
             return
 
         assert self._stream_candidate is not None
+        self._stream_candidate.set_none_handle()
         self._stream_candidate.set_file(file)
         self._stream_candidate = None
 
     def __call__(self, service: ServiceItem) -> None:
-        if service.managed:
-            self.text_warning("This service is system-managed and cannot be modified")
-        else:
-            if freeze := checkbox("Lock", service.freeze):
-                service.freeze = freeze.state
-            hovered_tooltip_text_wrapped("Freeze service configuration")
+        active_service = not self.services.spawnable(service.key)
 
-        readonly = service.freeze or service.managed
+        if service.managed:
+            self.text_warning("Managed services cannot be modified")
+        elif active_service:
+            self.text_warning("Activated services cannot be modified")
+        else:
+            freeze_icon = LOCK if service.freeze else LOCK_OPEN_VARIANT
+            if freeze := checkbox(freeze_icon, service.freeze):
+                service.freeze = freeze.state
+
+            imgui.same_line()
+            if service.freeze:
+                self.text_success("The service can be controlled")
+            else:
+                self.text_error("The service cannot be controlled unless it is locked")
+
+        readonly = service.freeze or service.managed or active_service
         imgui.begin_disabled(disabled=readonly)
         try:
             self.do_config_process(service)
@@ -181,6 +194,12 @@ class ServicesConfigTab:
             imgui.end_disabled()
 
     def do_config_process(self, service: ServiceItem) -> None:
+        if enabled := checkbox("Start Automatically", service.enabled):
+            service.enabled = enabled.state
+        hovered_tooltip_text_wrapped(
+            "When activated, the program will automatically launch at startup",
+        )
+
         if name := input_text("Name", service.name):
             service.name = name.value
 
@@ -192,6 +211,10 @@ class ServicesConfigTab:
 
         if button("Python Executable"):
             service.executable = sys.executable
+
+        imgui.same_line()
+        if button("Default SHELL"):
+            service.executable = get_default_shell_path()
 
         imgui.same_line()
         if button("Browse Executable"):
@@ -226,37 +249,42 @@ class ServicesConfigTab:
         if buffer_size := input_int("Buffer Size", service.buffer_size):
             service.buffer_size = buffer_size.value
 
-        if button("Default"):
-            buffer_size_key = get_field_name(service).buffer_size
-            buffer_size_default = get_field_default(service, buffer_size_key)
-            service.buffer_size = buffer_size_default
-        imgui.same_line()
         if button("Unbuffered"):
             service.set_unbuffered()
         imgui.same_line()
         if button("Line Buffered"):
             service.set_line_buffered()
         imgui.same_line()
-        if button("System Default Buffer"):
+        if button("Use System Default"):
             service.set_system_default_buffer()
         imgui.same_line()
-        if button("Obtain Default Buffer Size"):
+        if button("Obtain System Default"):
             service.set_default_buffer_size()
 
-        self.do_stream_process("Standard input", service.stdin)
-        self.do_stream_process("Standard output", service.stdout)
-        self.do_stream_process("Standard error", service.stderr)
+        imgui.begin_disabled(not self.context.debug)
+        try:
+            self.do_stream_process("Standard input", service, service.stdin)
+            self.text_warning("Standard input does not support direct control")
+        finally:
+            imgui.end_disabled()
+
+        self.do_stream_process("Standard output", service, service.stdout)
+        self.do_stream_process("Standard error", service, service.stderr)
 
         if cwd := input_text("Working Directory", service.cwd):
             service.cwd = cwd.value
 
+        if button("Home Directory"):
+            service.cwd = str(Path.home())
+        imgui.same_line()
+        if button("CWD"):
+            service.cwd = str(Path.cwd())
+        self.hovered_tooltip("Current Working Directory")
+        imgui.same_line()
         if button("Browse Directory"):
             self._selected_service = service
             self._cwd_browser.set_location(service.cwd)
             self._cwd_browser.show()
-        imgui.same_line()
-        if button("Home Directory"):
-            service.cwd = str(Path.home())
 
         if service.cwd:
             if not os.path.exists(service.cwd):
@@ -279,10 +307,11 @@ class ServicesConfigTab:
         imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
         imgui.text("Environment variables")
 
-        imgui.begin_disabled()
+        imgui.begin_disabled(not self.context.debug)
         try:
             if creation_flags := input_int("Creation flags", service.creation_flags):
                 service.creation_flags = creation_flags.value
+            self.hovered_tooltip("Modifying this value is generally not recommended")
         finally:
             imgui.end_disabled()
 
@@ -305,14 +334,17 @@ class ServicesConfigTab:
         if restart_policy := combo_enum("Restart policy", service.restart_policy):
             service.restart_policy = restart_policy.item
 
-        if restart_delay := input_float("Restart delay", service.restart_delay):
-            service.restart_delay = restart_delay.item
-
-        if restart_max_attempts := input_int(
-            "Restart max attempts",
-            service.restart_max_attempts,
-        ):
-            service.restart_max_attempts = restart_max_attempts.item
+        imgui.begin_disabled(service.restart_policy == RestartPolicy.none)
+        try:
+            if restart_delay := input_float("Restart delay", service.restart_delay):
+                service.restart_delay = restart_delay.item
+            if restart_max_attempts := input_int(
+                "Restart max attempts",
+                service.restart_max_attempts,
+            ):
+                service.restart_max_attempts = restart_max_attempts.item
+        finally:
+            imgui.end_disabled()
 
         success_exit_codes = input_text(
             "Success exit codes",
@@ -329,61 +361,83 @@ class ServicesConfigTab:
 
         if pid_file := input_text("PID File", service.pid_file):
             service.pid_file = pid_file.value
+
+        if button("No PID File"):
+            service.pid_file = str()
+        imgui.same_line()
+        if button("Default PID File"):
+            pid_file_path = self.services.get_pid_file_path(service.key)
+            service.pid_file = str(pid_file_path)
+        imgui.same_line()
         if button("Browse PID File"):
             self._selected_service = service
             self._pid_file_browser.set_location(service.pid_file)
             self._pid_file_browser.show()
 
-    def do_stream_process(self, label: str, stream: StreamInfo) -> None:
-        stream.validate()
-
+    def do_stream_process(
+        self,
+        label: str,
+        service: ServiceItem,
+        stream: StreamInfo,
+    ) -> None:
         with begin_child_context(
             label=f"##StdioChild.{stream.type}",
             size=(imgui.calc_item_width(), 0),
             child_flags=AUTO_RESIZE_Y,
         ):
-            if imgui.radio_button(f"Handle##RadioH.{stream.type}", stream.is_handle):
+            if radio_button("DEVNULL", stream.is_devnull):
+                stream.set_devnull()
+
+            imgui.same_line()
+            imgui.begin_disabled(not stream.is_stderr)
+            try:
+                if radio_button("Same STDOUT", stream.is_same_standard_output):
+                    stream.set_same_standard_output()
+            finally:
+                imgui.end_disabled()
+
+            imgui.begin_disabled(not self.context.debug)
+            try:
+                imgui.same_line()
+                if radio_button("PIPE", stream.is_pipe):
+                    stream.set_pipe()
+                self.hovered_tooltip(
+                    "PIPE is only supported for programmable subprocesses.\n"
+                    "(i.e., managed subprocesses)"
+                )
+            finally:
+                imgui.end_disabled()
+
+            imgui.same_line()
+            padded_label = stream.name.upper() + (" " if stream.is_stdin else "")
+            if radio_button(padded_label, stream.is_same_type):
                 stream.set_default()
-            imgui.same_line()
-            if imgui.radio_button(f"File##RadioF.{stream.type}", stream.is_file):
-                stream.set_empty_file()
 
             imgui.same_line()
-            if stream.is_handle:
-                assert stream.handle is not None
-                if handle := input_text(
-                    f"##InputHandle.{stream.type}",
-                    str(stream.handle),
-                ):
-                    stream.handle = handle.value
-            else:
-                assert stream.file is not None
-                if file := input_text(f"##InputFile.{stream.type}", stream.file):
+            if radio_button("File", stream.is_file):
+                stream.set_none_handle()
+
+            imgui.begin_disabled(not stream.is_file)
+            try:
+                imgui.same_line()
+                if file := input_text(f"##StreamFile.{stream.type}", stream.file):
                     stream.file = file.value
+                self.hovered_tooltip(stream.file)
+            finally:
+                imgui.end_disabled()
 
             imgui.same_line()
-            if button("Browse file"):
+            if button("Generate Log File"):
+                log_path = self.services.generate_stream_log_path(service.key, stream)
+                stream.set_none_handle()
+                stream.set_file(str(log_path))
+
+            imgui.same_line()
+            if button("Browse Log File"):
                 self._stream_candidate = stream
                 if stream.file:
                     self._stdio_file_browser.set_location(stream.file)
                 self._stdio_file_browser.show()
-
-            imgui.same_line()
-            if button("DEVNULL"):
-                stream.set_devnull()
-
-            if stream.is_stderr:
-                imgui.same_line()
-                if button("Same STDOUT"):
-                    stream.set_same_standard_output()
-
-            imgui.same_line()
-            if button("PIPE"):
-                stream.set_pipe()
-
-            imgui.same_line()
-            if button(stream.name):
-                stream.set_default()
 
         imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
         imgui.text(label)

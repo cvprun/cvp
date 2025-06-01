@@ -61,22 +61,22 @@ class RestartPolicy(StrEnum):
 class StreamInfo:
     type: int
     handle: Optional[int] = None
-    file: Optional[str] = None
+    file: str = field(default_factory=str)
 
     @classmethod
     def from_stdin(cls):
         assert 0 == STDIN_FILE_HANDLE
-        return cls(0, STDIN_FILE_HANDLE, None)
+        return cls(STDIN_FILE_HANDLE, DEVNULL)
 
     @classmethod
     def from_stdout(cls):
         assert 1 == STDOUT_FILE_HANDLE
-        return cls(1, STDOUT_FILE_HANDLE, None)
+        return cls(STDOUT_FILE_HANDLE, DEVNULL)
 
     @classmethod
     def from_stderr(cls):
         assert 2 == STDERR_FILE_HANDLE
-        return cls(2, STDERR_FILE_HANDLE, None)
+        return cls(STDERR_FILE_HANDLE, DEVNULL)
 
     @property
     def is_stdin(self) -> bool:
@@ -128,45 +128,37 @@ class StreamInfo:
         return self.handle == DEVNULL
 
     @property
-    def is_file(self) -> bool:
-        return self.handle is None and self.file is not None
+    def is_same_type(self) -> bool:
+        return self.handle == self.type
 
     @property
     def is_handle(self) -> bool:
-        return not self.is_file
+        return self.handle is not None
 
-    def validate(self) -> None:
-        if self.handle is None and self.file is None:
-            raise ValueError("Stream value and file cannot be both None")
-        if self.handle is not None and self.file is not None:
-            raise ValueError("Stream value and file cannot be both set")
+    @property
+    def is_file(self) -> bool:
+        return not self.is_handle
 
     def set_pipe(self) -> None:
         self.handle = PIPE
-        self.file = None
 
     def set_same_standard_output(self) -> None:
         self.handle = STDOUT
-        self.file = None
 
     def set_devnull(self) -> None:
         self.handle = DEVNULL
-        self.file = None
 
     def set_default(self) -> None:
         self.handle = self.type
-        self.file = None
 
     def set_handle(self, value: int) -> None:
         self.handle = value
-        self.file = None
+
+    def set_none_handle(self) -> None:
+        self.handle = None
 
     def set_file(self, file: str) -> None:
-        self.handle = None
         self.file = file
-
-    def set_empty_file(self) -> None:
-        self.set_file(str())
 
 
 @dataclass
@@ -176,6 +168,7 @@ class ServiceItem:
 
     managed: bool = False
     freeze: bool = False
+    enabled: bool = False
 
     executable: str = field(default_factory=lambda: sys.executable)
     args: str = field(default_factory=str)

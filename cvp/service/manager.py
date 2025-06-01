@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from datetime import datetime
 from typing import Optional, Tuple
 from uuid import uuid4
 
@@ -9,7 +10,7 @@ from cvp.process.process import Process
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.services import ServicesPath
-from cvp.service.item import ServiceItem, ServiceKey
+from cvp.service.item import ServiceItem, ServiceKey, StreamInfo
 from cvp.variables import SERVICE_NONAME
 
 
@@ -55,6 +56,17 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
     def get_process(self, key: ServiceKey):
         return self._processes.get(key)
+
+    def generate_stream_log_path(
+        self,
+        key: ServiceKey,
+        stream: StreamInfo,
+        dt: Optional[datetime] = None,
+    ):
+        return self._processes_path.generate_log_path(str(key), stream.name, dt)
+
+    def get_pid_file_path(self, key: ServiceKey):
+        return self._processes_path.get_pid_path(str(key))
 
     def spawnable(self, key: ServiceKey) -> bool:
         return self._processes.spawnable(key)
