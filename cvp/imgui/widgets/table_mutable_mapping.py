@@ -339,9 +339,9 @@ def table_mutable_mapping(
     *,
     addable_factory: Optional[AddableFactoryCallable] = None,
     filter_callback: Optional[FilterCallable] = None,
-    removable: Optional[bool] = True,
-    show_key: Optional[bool] = True,
-    show_value: Optional[bool] = True,
+    removable: Optional[bool] = None,
+    show_key: Optional[bool] = None,
+    show_value: Optional[bool] = None,
 ):
     if options is None:
         global_options = GlobalTableMutableMappingOptions()

@@ -303,6 +303,9 @@ class ServicesConfigTab:
                 label="EnvTable",
                 container=service.env,
                 addable_factory=lambda k, v: (k, v),
+                removable=True,
+                show_key=True,
+                show_value=True,
             )
         imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
         imgui.text("Environment variables")
