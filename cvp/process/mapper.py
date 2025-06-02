@@ -14,11 +14,14 @@ class ProcessMapper(Dict[KeyT, ProcessT]):
     def spawnable(self, key: KeyT) -> bool:
         return not self.__contains__(key)
 
-    def stoppable(self, key: KeyT) -> bool:
+    def is_alive(self, key: KeyT) -> bool:
         if self.__contains__(key):
-            return self.__getitem__(key).poll() is None
+            return self.__getitem__(key).is_alive()
         else:
             return False
+
+    def stoppable(self, key: KeyT) -> bool:
+        return self.is_alive(key)
 
     def removable(self, key: KeyT) -> bool:
         if self.__contains__(key):

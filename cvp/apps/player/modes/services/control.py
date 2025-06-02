@@ -12,6 +12,7 @@ from cvp.imgui.button_enum_wrapped import button_enum_wrapped
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.flags.style_var import ITEM_SPACING
 from cvp.service.item import ServiceItem
+from cvp.strings.case_converter import title_case
 
 
 class ServicesControlTab:
@@ -27,40 +28,68 @@ class ServicesControlTab:
     def services(self):
         return self.context.services
 
+    @property
+    def warning_color(self):
+        return self.context.config.appearance.warning_color
+
+    @property
+    def error_color(self):
+        return self.context.config.appearance.error_color
+
+    def text_warning(self, text: str) -> None:
+        imgui.text_colored(self.warning_color, text)
+
+    def text_error(self, text: str) -> None:
+        imgui.text_colored(self.error_color, text)
+
     def do_remote_control_process(self, service: ServiceItem) -> None:
-        label = f"{service.name} ({service.uuid})" if service.name else service.uuid
-        imgui.text(label)
+        name = service.name if service.name else service.uuid
+        status = title_case(self.services.status(service.key))
+        imgui.text(f"{name} ({status})")
 
-        if service.managed:
-            pass
-
-        if service.freeze:
-            pass
-
+        locked = service.freeze
         spawnable = self.services.spawnable(service.key)
         stoppable = self.services.stoppable(service.key)
         removable = self.services.removable(service.key)
 
-        if button(f"{mdi.PLAY} Spawn", disabled=not spawnable):
+        if button(f"{mdi.PLAY} Spawn", disabled=not locked or not spawnable):
             assert not self.services.has_process(service.key)
             self.services.spawn(service.key)
 
         imgui.same_line()
-        if button(f"{mdi.PAUSE} Interrupt", disabled=not stoppable):
+        if button(f"{mdi.PAUSE} Interrupt", disabled=not locked or not stoppable):
             assert self.services.has_process(service.key)
             self.services.interrupt(service.key)
 
         imgui.same_line()
-        if button(f"{mdi.DELETE} Remove", disabled=not removable):
+        if button(f"{mdi.DELETE} Remove", disabled=not locked or not removable):
             assert self.services.has_process(service.key)
             self.services.removable_pop(service.key)
 
+        # suspend() resume(), send_signal(), terminate() and kill().
+
+        if not locked:
+            imgui.same_line()
+            self.text_error("The service cannot be controlled unless it is locked")
+            return
+
+    def __call__(self, service: ServiceItem) -> None:
+        stoppable = self.services.stoppable(service.key)
+        imgui.begin_disabled(not stoppable)
+        try:
+            self.do_detail_control_process(service)
+        finally:
+            imgui.end_disabled()
+
     def do_detail_control_process(self, service: ServiceItem) -> None:
         with begin_child_context(
-            label="Signals",
+            label="InterruptSignal",
             size=(imgui.calc_item_width(), 0),
             child_flags=AUTO_RESIZE_Y | BORDERS,
         ):
+            imgui.text("Interrupt signal")
+            imgui.separator()
+
             imgui.push_style_var_x(ITEM_SPACING, 1.0)
             try:
                 show_debugging = self.context.debug and 2 <= self.context.verbose
@@ -75,13 +104,7 @@ class ServicesControlTab:
                 signum = int(list(Signals)[clicked_index].value)
                 self.services.get_process(service.key).psutil.send_signal(signum)
 
-        imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
-        imgui.text("Signals")
-
-    def __call__(self, service: ServiceItem) -> None:
-        stoppable = self.services.stoppable(service.key)
-        imgui.begin_disabled(not stoppable)
-        try:
-            self.do_detail_control_process(service)
-        finally:
-            imgui.end_disabled()
+        # nice() (set)
+        # ionice() (set)
+        # cpu_affinity() (set)
+        # rlimit() (set),

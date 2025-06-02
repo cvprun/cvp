@@ -40,4 +40,4 @@ class ProcessesPath(PathFlavour):
         return self.as_path() / key / self.generate_logfile_fullname(stream, dt)
 
     def get_pid_path(self, key: str):
-        return self.as_path() / (key + self.logfile_suffix)
+        return self.as_path() / (key + self.pidfile_suffix)

@@ -21,6 +21,7 @@ from pygame.key import ScancodeWrapper, get_pressed
 from cvp.apps.player.modes import ModeManager
 from cvp.apps.player.windows.overlay import OverlayWindow
 from cvp.apps.player.windows.toast import ToastWindow
+from cvp.assets.fonts import mdi
 from cvp.assets.icons import get_default_icon_path
 from cvp.chrono.filename import short_datetime_name
 from cvp.chrono.tznow import tznow
@@ -33,6 +34,7 @@ from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.push_style_var import style_frame_border_size_context
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.loggers import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
@@ -53,6 +55,7 @@ class PlayerApplication:
     def __init__(self, context: Context):
         self._context = context
         self._profiler = ProfileLogging(profile_logger)
+        self._show_debug_status = context.debug
 
         self._toast = ToastWindow(context)
         self._overlay = OverlayWindow(context)
@@ -467,12 +470,25 @@ class PlayerApplication:
                         self._modes.current_mode.on_status_menu()
 
                         imgui.spring()
-                        input_method = self._context.imes.handler
 
+                        input_method = self._context.imes.handler
                         imgui.set_next_item_width(avail_size.y)
                         imgui.text(input_method.get_composing())
 
                         with style_frame_border_size_context(0.0):
+                            if self._show_debug_status:
+                                is_debug = self._context.config.developer.debug
+                                bug_icon = mdi.BUG if is_debug else mdi.BUG_PAUSE
+                                if imgui.small_button(bug_icon):
+                                    self._context.config.developer.debug = not is_debug
+
+                                bug_text = "enabled" if is_debug else "disabled"
+                                hovered_tooltip_text(f"DEBUG mode is {bug_text}")
+
+                                if imgui.small_button(f"V{self.verbose}"):
+                                    pass
+                                hovered_tooltip_text(f"Verbose level: {self.verbose}")
+
                             if imgui.small_button(input_method.get_icon()):
                                 self._context.imes.change_next_mode()
                     finally:

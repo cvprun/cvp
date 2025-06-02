@@ -261,12 +261,9 @@ class ServicesConfigTab:
         if button("Obtain System Default"):
             service.set_default_buffer_size()
 
-        imgui.begin_disabled(not self.context.debug)
-        try:
+        if self.context.debug:
             self.do_stream_process("Standard input", service, service.stdin)
             self.text_warning("Standard input does not support direct control")
-        finally:
-            imgui.end_disabled()
 
         self.do_stream_process("Standard output", service, service.stdout)
         self.do_stream_process("Standard error", service, service.stderr)
@@ -310,13 +307,10 @@ class ServicesConfigTab:
         imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
         imgui.text("Environment variables")
 
-        imgui.begin_disabled(not self.context.debug)
-        try:
+        if self.context.debug:
             if creation_flags := input_int("Creation flags", service.creation_flags):
                 service.creation_flags = creation_flags.value
             self.hovered_tooltip("Modifying this value is generally not recommended")
-        finally:
-            imgui.end_disabled()
 
         if user := input_text("User", service.user):
             service.user = user.value
