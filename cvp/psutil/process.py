@@ -10,7 +10,7 @@ from cvp.patterns.interval import IntervalUpdater
 
 
 @dataclass
-class ProcessInfo:
+class PsutilProcessCache:
     pid: Annotated[int, "PID"]
     ppid: Annotated[int, "Parent PID"]
     name: Annotated[str, "Name"]
@@ -63,7 +63,7 @@ class ProcessInfo:
 @lru_cache
 def get_process_info_field_titles() -> Dict[str, str]:
     result = dict()
-    hints = get_type_hints(ProcessInfo, include_extras=True)
+    hints = get_type_hints(PsutilProcessCache, include_extras=True)
     for key, field_type in hints.items():
         if get_origin(field_type) is Annotated:
             args = get_args(field_type)
@@ -73,16 +73,16 @@ def get_process_info_field_titles() -> Dict[str, str]:
     return result
 
 
-def query_all_process_infos() -> List[ProcessInfo]:
+def query_all_process_infos() -> List[PsutilProcessCache]:
     result = list()
     for proc in process_iter():
         try:
-            result.append(ProcessInfo.from_process(proc))
+            result.append(PsutilProcessCache.from_process(proc))
         except (AccessDenied, NoSuchProcess):
             continue
     return result
 
 
-class ProcessInfos(IntervalUpdater[List[ProcessInfo]]):
+class PsutilProcessCacheList(IntervalUpdater[List[PsutilProcessCache]]):
     def __init__(self, interval: Optional[float] = None):
         super().__init__(query_all_process_infos, interval)

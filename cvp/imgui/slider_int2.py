@@ -7,9 +7,9 @@ from imgui_bundle import imgui
 from cvp.imgui.flags.slider import SliderFlags
 
 
-class SliderFloat2Result(NamedTuple):
+class SliderInt2Result(NamedTuple):
     changed: bool
-    value: Tuple[float, float]
+    value: Tuple[int, int]
 
     @classmethod
     def from_raw(cls, result):
@@ -21,21 +21,21 @@ class SliderFloat2Result(NamedTuple):
         assert isinstance(value, (tuple, list))
         assert len(value) == 2
         value0, value1 = value
-        assert isinstance(value0, float)
-        assert isinstance(value1, float)
+        assert isinstance(value0, int)
+        assert isinstance(value1, int)
         return cls(changed, (value0, value1))
 
     def __bool__(self):
         return self.changed
 
 
-def slider_float2(
+def slider_int2(
     label: str,
-    value0: float,
-    value1: float,
-    min_value: float,
-    max_value: float,
-    fmt="%.3f",
+    value0: int,
+    value1: int,
+    min_value: int,
+    max_value: int,
+    fmt="%d",
     flags: Union[SliderFlags, int] = 0,
 ):
     if isinstance(flags, SliderFlags):
@@ -43,5 +43,5 @@ def slider_float2(
     assert isinstance(flags, int)
 
     values = [value0, value1]
-    result = imgui.slider_float2(label, values, min_value, max_value, fmt, flags)
-    return SliderFloat2Result.from_raw(result)
+    result = imgui.slider_int2(label, values, min_value, max_value, fmt, flags)
+    return SliderInt2Result.from_raw(result)

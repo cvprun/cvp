@@ -139,6 +139,10 @@ class StreamInfo:
     def is_file(self) -> bool:
         return not self.is_handle
 
+    def set_file(self, file: Optional[str] = None) -> None:
+        self.handle = None
+        self.file = file if file else str()
+
     def set_pipe(self) -> None:
         self.handle = PIPE
 
@@ -148,7 +152,7 @@ class StreamInfo:
     def set_devnull(self) -> None:
         self.handle = DEVNULL
 
-    def set_default(self) -> None:
+    def set_default_stream_number(self) -> None:
         self.handle = self.type
 
     def set_handle(self, value: int) -> None:
@@ -156,9 +160,6 @@ class StreamInfo:
 
     def set_none_handle(self) -> None:
         self.handle = None
-
-    def set_file(self, file: str) -> None:
-        self.file = file
 
 
 @dataclass

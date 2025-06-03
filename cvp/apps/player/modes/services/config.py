@@ -57,17 +57,11 @@ class ServicesConfigTab:
             target=self.on_pid_selected,
             mode=OpenFilePopup.Mode.input_filename,
         )
-        self._stdio_file_browser = OpenFilePopup(
-            "Select stdio file",
-            target=self.on_stdio_selected,
-            mode=OpenFilePopup.Mode.input_filename,
-        )
 
         self._popups = PopupList(
             self._executable_browser,
             self._cwd_browser,
             self._pid_file_browser,
-            self._stdio_file_browser,
         )
 
     @property
@@ -158,15 +152,6 @@ class ServicesConfigTab:
         assert self._selected_service is not None
         self._selected_service.pid_file = file
         self._selected_service = None
-
-    def on_stdio_selected(self, file: str) -> None:
-        if not file:
-            return
-
-        assert self._stream_candidate is not None
-        self._stream_candidate.set_none_handle()
-        self._stream_candidate.set_file(file)
-        self._stream_candidate = None
 
     def __call__(self, service: ServiceItem) -> None:
         active_service = not self.services.spawnable(service.key)
@@ -262,11 +247,11 @@ class ServicesConfigTab:
             service.set_default_buffer_size()
 
         if self.context.debug:
-            self.do_stream_process("Standard input", service, service.stdin)
+            self.do_stream_process("Standard input", service.stdin)
             self.text_warning("Standard input does not support direct control")
 
-        self.do_stream_process("Standard output", service, service.stdout)
-        self.do_stream_process("Standard error", service, service.stderr)
+        self.do_stream_process("Standard output", service.stdout)
+        self.do_stream_process("Standard error", service.stderr)
 
         if cwd := input_text("Working Directory", service.cwd):
             service.cwd = cwd.value
@@ -371,70 +356,40 @@ class ServicesConfigTab:
             self._pid_file_browser.set_location(service.pid_file)
             self._pid_file_browser.show()
 
-    def do_stream_process(
-        self,
-        label: str,
-        service: ServiceItem,
-        stream: StreamInfo,
-    ) -> None:
+    def do_stream_process(self, label: str, stream: StreamInfo) -> None:
         with begin_child_context(
             label=f"##StdioChild.{stream.type}",
             size=(imgui.calc_item_width(), 0),
             child_flags=AUTO_RESIZE_Y,
         ):
-            if radio_button("DEVNULL", stream.is_devnull):
-                stream.set_devnull()
+            if radio_button("File", stream.is_file):
+                stream.set_file()
+            self.hovered_tooltip("Log files are managed internally by the system")
 
             imgui.same_line()
+            if radio_button("DEVNULL", stream.is_devnull):
+                stream.set_devnull()
+            self.hovered_tooltip("Discard output device")
+
             imgui.begin_disabled(not stream.is_stderr)
             try:
-                if radio_button("Same STDOUT", stream.is_same_standard_output):
-                    stream.set_same_standard_output()
+                if self.context.debug or stream.is_stderr:
+                    imgui.same_line()
+                    if radio_button("Same STDOUT", stream.is_same_standard_output):
+                        stream.set_same_standard_output()
+                    self.hovered_tooltip("Redirects standard error to standard output")
             finally:
                 imgui.end_disabled()
 
-            imgui.begin_disabled(not self.context.debug)
-            try:
+            if self.context.debug:
                 imgui.same_line()
                 if radio_button("PIPE", stream.is_pipe):
                     stream.set_pipe()
-                self.hovered_tooltip(
-                    "PIPE is only supported for programmable subprocesses.\n"
-                    "(i.e., managed subprocesses)"
-                )
-            finally:
-                imgui.end_disabled()
 
-            imgui.same_line()
-            padded_label = stream.name.upper() + (" " if stream.is_stdin else "")
-            if radio_button(padded_label, stream.is_same_type):
-                stream.set_default()
-
-            imgui.same_line()
-            if radio_button("File", stream.is_file):
-                stream.set_none_handle()
-
-            imgui.begin_disabled(not stream.is_file)
-            try:
                 imgui.same_line()
-                if file := input_text(f"##StreamFile.{stream.type}", stream.file):
-                    stream.file = file.value
-                self.hovered_tooltip(stream.file)
-            finally:
-                imgui.end_disabled()
-
-            imgui.same_line()
-            if button("Generate Log File"):
-                log_path = self.services.generate_stream_log_path(service.key, stream)
-                stream.set_none_handle()
-                stream.set_file(str(log_path))
-
-            imgui.same_line()
-            if button("Browse Log File"):
-                self._stream_candidate = stream
-                if stream.file:
-                    self._stdio_file_browser.set_location(stream.file)
-                self._stdio_file_browser.show()
+                padded_label = stream.name.upper() + (" " if stream.is_stdin else "")
+                if radio_button(padded_label, stream.is_same_type):
+                    stream.set_default_stream_number()
 
         imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
         imgui.text(label)

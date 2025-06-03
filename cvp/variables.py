@@ -10,6 +10,7 @@ INFINITE: Final[int] = -1
 UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
 UNKNOWN_TOTAL_SIZE: Final[int] = -1
+UNKNOWN_PID: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
@@ -106,6 +107,9 @@ FAKER_REPEAT: Final[int] = 10
 FAKER_SEPARATOR: Final[str] = "\\n"
 
 PROCESS_TEARDOWN_TIMEOUT: Final[float] = 24.0
+MIN_NICE = -20
+MAX_NICE = 19
+DEFAULT_NICE = 0
 
 FFMPEG_EXECUTABLE_FILENAME: Final[str] = "ffmpeg"
 FFPROBE_EXECUTABLE_FILENAME: Final[str] = "ffprobe"

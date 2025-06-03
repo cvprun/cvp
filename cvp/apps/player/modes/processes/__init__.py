@@ -9,7 +9,7 @@ from cvp.assets.fonts.mdi import MONITOR_EYE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.table import BORDERS, ROW_BG
-from cvp.psutil.process import ProcessInfos, get_process_info_field_titles
+from cvp.psutil.process import PsutilProcessCacheList, get_process_info_field_titles
 from cvp.types.override import override
 
 
@@ -21,7 +21,7 @@ class ProcessesMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._infos = ProcessInfos(interval=1.0)
+        self._infos = PsutilProcessCacheList(interval=1.0)
         self._headers = get_process_info_field_titles()
 
     @property
