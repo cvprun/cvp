@@ -53,35 +53,60 @@ class MsgQueue(Queue[Msg]):
         self.put(msg, block=True, timeout=None)
         return msg
 
+    # ----------------------------------------------------------------------------------
     assert __TOAST_FS_EVENTS_PAIR__, "Toast methods BEGIN"
+    # ----------------------------------------------------------------------------------
 
     def append_toast(self, message: str, level: Optional[Union[int, str]] = None):
         return self.append_msg(MsgType.toast, message=message, level=level)
 
     def toast(
         self,
-        message: str,
+        message: Union[BaseException, str],
         level: Optional[Union[int, str]] = None,
         logger: Optional[Logger] = None,
     ):
         if logger is not None:
             logger.log(convert_level_number(level), message)
+
+        if isinstance(message, BaseException):
+            message = str(message)
+        assert isinstance(message, str)
+
         return self.append_toast(message, level)
 
-    def toast_error(self, message: str, logger: Optional[Logger] = None):
+    def toast_error(
+        self,
+        message: Union[BaseException, str],
+        logger: Optional[Logger] = None,
+    ):
         return self.toast(message, ERROR, logger=logger)
 
-    def toast_warning(self, message: str, logger: Optional[Logger] = None):
+    def toast_warning(
+        self,
+        message: Union[BaseException, str],
+        logger: Optional[Logger] = None,
+    ):
         return self.toast(message, WARNING, logger=logger)
 
-    def toast_info(self, message: str, logger: Optional[Logger] = None):
+    def toast_info(
+        self,
+        message: Union[BaseException, str],
+        logger: Optional[Logger] = None,
+    ):
         return self.toast(message, INFO, logger=logger)
 
-    def toast_debug(self, message: str, logger: Optional[Logger] = None):
+    def toast_debug(
+        self,
+        message: Union[BaseException, str],
+        logger: Optional[Logger] = None,
+    ):
         return self.toast(message, DEBUG, logger=logger)
 
+    # ----------------------------------------------------------------------------------
     assert __TOAST_FS_EVENTS_PAIR__, "Toast methods END"
     assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events BEGIN"
+    # ----------------------------------------------------------------------------------
 
     def file_moved(self, src: str, dest: str, isdir: bool):
         return self.append_msg(MsgType.file_moved, src=src, dest=dest, isdir=isdir)
@@ -109,5 +134,10 @@ class MsgQueue(Queue[Msg]):
     def file_opened(self, src: str, dest: str, isdir: bool):
         return self.append_msg(MsgType.file_opened, src=src, dest=dest, isdir=isdir)
 
+    # ----------------------------------------------------------------------------------
     assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events END"
-    assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."
+    # ----------------------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------------------
+    assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."  # TODO
+    # ----------------------------------------------------------------------------------

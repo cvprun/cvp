@@ -148,7 +148,7 @@ class ServicesControlTab:
             try:
                 process.psutil.nice(nice_result.value)
             except BaseException as e:
-                logger.error(e)
+                self.context.toast_error(e, logger)
             else:
                 self._cache.update(process.psutil)
 
@@ -174,7 +174,7 @@ class ServicesControlTab:
                 level = ionice_result.level
                 process.psutil.ionice(io_class, level)
             except BaseException as e:
-                logger.error(e)
+                self.context.toast_error(e, logger)
             else:
                 self._cache.update(process.psutil)
 
