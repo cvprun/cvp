@@ -6,7 +6,7 @@ import psutil
 
 from cvp.patterns.delta import Delta
 from cvp.patterns.temp import TempValue
-from cvp.psutil.rlimit import ResourceLimits
+from cvp.psutil.process.rlimit import ResourceLimits
 from cvp.variables import DEFAULT_NICE, UNKNOWN_PID
 
 

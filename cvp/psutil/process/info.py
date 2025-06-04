@@ -2,16 +2,13 @@
 
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Annotated, Dict, List, Optional, get_args, get_origin, get_type_hints
+from typing import Annotated, Dict, List, get_args, get_origin, get_type_hints
 
-from psutil import AccessDenied, NoSuchProcess, Process, process_iter
-
-from cvp.patterns.interval import IntervalUpdater
-from cvp.types.override import override
+import psutil
 
 
 @dataclass
-class PsutilProcessCache:
+class ProcessInfo:
     pid: Annotated[int, "PID"]
     ppid: Annotated[int, "Parent PID"]
     name: Annotated[str, "Name"]
@@ -50,7 +47,7 @@ class PsutilProcessCache:
     # username
 
     @classmethod
-    def from_process(cls, proc: Process):
+    def from_process(cls, proc: psutil.Process):
         return cls(
             pid=proc.pid,
             ppid=proc.ppid(),
@@ -60,11 +57,15 @@ class PsutilProcessCache:
             cmdline=proc.cmdline(),
         )
 
+    @classmethod
+    def from_pid(cls, pid: int):
+        return cls.from_process(psutil.Process(pid))
+
 
 @lru_cache
 def get_process_info_field_titles() -> Dict[str, str]:
     result = dict()
-    hints = get_type_hints(PsutilProcessCache, include_extras=True)
+    hints = get_type_hints(ProcessInfo, include_extras=True)
     for key, field_type in hints.items():
         if get_origin(field_type) is Annotated:
             args = get_args(field_type)
@@ -72,22 +73,3 @@ def get_process_info_field_titles() -> Dict[str, str]:
             assert isinstance(title, str)
             result[key] = title
     return result
-
-
-def query_all_process_infos() -> List[PsutilProcessCache]:
-    result = list()
-    for proc in process_iter():
-        try:
-            result.append(PsutilProcessCache.from_process(proc))
-        except (AccessDenied, NoSuchProcess):
-            continue
-    return result
-
-
-class PsutilProcessCacheList(IntervalUpdater[List[PsutilProcessCache]]):
-    def __init__(self, interval: Optional[float] = None):
-        super().__init__(initial=query_all_process_infos(), interval=interval)
-
-    @override
-    def on_update(self) -> List[PsutilProcessCache]:
-        return query_all_process_infos()
