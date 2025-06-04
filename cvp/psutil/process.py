@@ -7,6 +7,7 @@ from typing import Annotated, Dict, List, Optional, get_args, get_origin, get_ty
 from psutil import AccessDenied, NoSuchProcess, Process, process_iter
 
 from cvp.patterns.interval import IntervalUpdater
+from cvp.types.override import override
 
 
 @dataclass
@@ -85,4 +86,8 @@ def query_all_process_infos() -> List[PsutilProcessCache]:
 
 class PsutilProcessCacheList(IntervalUpdater[List[PsutilProcessCache]]):
     def __init__(self, interval: Optional[float] = None):
-        super().__init__(query_all_process_infos, interval)
+        super().__init__(initial=query_all_process_infos(), interval=interval)
+
+    @override
+    def on_update(self) -> List[PsutilProcessCache]:
+        return query_all_process_infos()

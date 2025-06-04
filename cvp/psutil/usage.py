@@ -5,6 +5,7 @@ from typing import NamedTuple, Optional
 from psutil import cpu_percent, virtual_memory
 
 from cvp.patterns.interval import IntervalUpdater
+from cvp.types.override import override
 
 
 class Percentage(NamedTuple):
@@ -18,4 +19,8 @@ def query_system_usage():
 
 class SystemUsage(IntervalUpdater[Percentage]):
     def __init__(self, interval: Optional[float] = None):
-        super().__init__(query_system_usage, interval)
+        super().__init__(initial=query_system_usage(), interval=interval)
+
+    @override
+    def on_update(self) -> Percentage:
+        return query_system_usage()
