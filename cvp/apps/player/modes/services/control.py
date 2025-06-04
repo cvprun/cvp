@@ -14,6 +14,7 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.button_signals import button_signals
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
+from cvp.imgui.widgets.psutil.cpu_affinity_edit import cpu_affinity_edit
 from cvp.imgui.widgets.psutil.ionice_edit import ionice_edit
 from cvp.imgui.widgets.psutil.nice_edit import nice_edit
 from cvp.logging.loggers import logger
@@ -139,7 +140,6 @@ class ServicesControlTab:
             nice=self._cache.nice,
             top_title="Process Niceness (Priority)",
             border=True,
-            no_commit=False,
         ):
             process = self.services.get_process(key)
             assert process is not None
@@ -162,7 +162,6 @@ class ServicesControlTab:
             ionice_level=self._cache.ionice_level,
             top_title="Process I/O niceness (Priority)",
             border=True,
-            no_commit=False,
         ):
             process = self.services.get_process(key)
             assert process is not None
@@ -170,26 +169,35 @@ class ServicesControlTab:
             assert not self._cache.ionice_level.changed
 
             try:
-                io_class = ionice_result.value
+                ioclass = ionice_result.ioclass
                 level = ionice_result.level
-                process.psutil.ionice(io_class, level)
+                process.psutil.ionice(ioclass, level)
             except BaseException as e:
                 self.context.toast_error(e, logger)
             else:
                 self._cache.update(process.psutil)
 
     def do_cpu_affinity_process(self, key: ServiceKey) -> None:
-        system = platform.system()
-        if system not in ("Linux", "Windows", "FreeBSD"):
+        if not (psutil.LINUX or psutil.WINDOWS or psutil.FREEBSD):
             return
 
-        with begin_child_context(
+        if cpu_affinity_result := cpu_affinity_edit(
             label="CPUAffinity",
-            size=(imgui.calc_item_width(), 0),
-            child_flags=AUTO_RESIZE_Y | BORDERS,
+            cpu_indexes=self._cache.cpu_indexes,
+            cpu_affinity=self._cache.cpu_affinity,
+            top_title="Process CPU Affinity",
+            border=True,
         ):
-            imgui.text("Process CPU affinity")
-            imgui.separator()
+            process = self.services.get_process(key)
+            assert process is not None
+            assert not self._cache.cpu_affinity.changed
+
+            try:
+                process.psutil.cpu_affinity(cpu_affinity_result.value)
+            except BaseException as e:
+                self.context.toast_error(e, logger)
+            else:
+                self._cache.update(process.psutil)
 
     def do_rlimit_process(self, key: ServiceKey) -> None:
         system = platform.system()

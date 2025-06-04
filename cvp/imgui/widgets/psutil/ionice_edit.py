@@ -16,7 +16,7 @@ from cvp.patterns.temp import TempValue
 
 class IoniceEditResult(NamedTuple):
     changed: bool
-    value: int
+    ioclass: int
     level: Optional[int]
 
     @classmethod
@@ -24,12 +24,12 @@ class IoniceEditResult(NamedTuple):
         assert isinstance(result, tuple)
         assert len(result) == 3
         changed = result[0]
-        value = result[1]
+        ioclass = result[1]
         level = result[2]
         assert isinstance(changed, bool)
-        assert isinstance(value, int)
+        assert isinstance(ioclass, int)
         assert isinstance(level, (type(None), int))
-        return cls(changed, value, level)
+        return cls(changed, ioclass, level)
 
     def __bool__(self):
         return self.changed

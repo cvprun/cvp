@@ -40,11 +40,19 @@ class TempValue(Generic[_T]):
     def changed(self) -> bool:
         return self._value != self._temp
 
-    def reset(self) -> None:
-        self._temp = self._value
+    def reset(self, *, use_copy=False, use_deepcopy=False) -> None:
+        self._temp = copy_flexible(
+            self._value,
+            use_copy=use_copy,
+            use_deepcopy=use_deepcopy,
+        )
 
-    def commit(self) -> None:
-        self._value = self._temp
+    def commit(self, *, use_copy=False, use_deepcopy=False) -> None:
+        self._value = copy_flexible(
+            self._temp,
+            use_copy=use_copy,
+            use_deepcopy=use_deepcopy,
+        )
 
     def fill(self, value: _T, *, use_copy=False, use_deepcopy=False) -> None:
         self._value = copy_flexible(value, use_copy=use_copy, use_deepcopy=use_deepcopy)

@@ -22,7 +22,7 @@ class ServicesControlCache:
         self.ionice_class = TempValue.from_single_value(0)
         self.ionice_level = TempValue.from_single_value(0)
         self.cpu_indexes = list(range(psutil.cpu_count()))
-        self.cpu_affinity = TempValue.from_single_value(0)
+        self.cpu_affinity = TempValue.from_single_value(list())
 
     def _update_nice(self, process: psutil.Process) -> None:
         self.nice.fill(process.nice())
