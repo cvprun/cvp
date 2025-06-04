@@ -7,6 +7,7 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.services.config import ServicesConfigTab
 from cvp.apps.player.modes.services.control import ServicesControlTab
+from cvp.apps.player.modes.services.environ import ServicesEnvironTab
 from cvp.apps.player.modes.services.logging import ServicesLoggingTab
 from cvp.apps.player.modes.services.status import ServicesStatusTab
 from cvp.assets.fonts.mdi import APPLICATION_COG
@@ -38,6 +39,7 @@ class ServicesMode(BaseMode):
 
         config_tab = ServicesConfigTab(context)
         status_tab = ServicesStatusTab(context)
+        environ_tab = ServicesEnvironTab(context)
         stdout_tab = ServicesLoggingTab(context, STDOUT_FILE_HANDLE)
         stderr_tab = ServicesLoggingTab(context, STDERR_FILE_HANDLE)
         self._control_tab = ServicesControlTab(context)
@@ -45,6 +47,7 @@ class ServicesMode(BaseMode):
             ("Config", config_tab),
             ("Control", self._control_tab),
             ("Status", status_tab),
+            ("Environ", environ_tab),
             ("Stdout", stdout_tab),
             ("Stderr", stderr_tab),
         )

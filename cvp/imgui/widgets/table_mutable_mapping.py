@@ -71,6 +71,7 @@ class TableMutableMappingOptions:
     value_init_width_or_weight: float = 0.0
     value_user_id: int = 0
     value_show: bool = True
+    value_disabled: bool = False
 
     actions_label: str = DEFAULT_ACTIONS_LABEL
     actions_flags: Union[TableColumnFlags, int] = WIDTH_FIXED
@@ -136,7 +137,7 @@ class TableMutableMappingOptions:
 
     def table_setup_column_key(self) -> None:
         if not self.key_show:
-            raise ValueError("Table column 'key' is hidden")
+            return
 
         imgui.table_setup_column(
             self.key_label,
@@ -147,7 +148,7 @@ class TableMutableMappingOptions:
 
     def table_setup_column_value(self) -> None:
         if not self.value_show:
-            raise ValueError("Table column 'value' is hidden")
+            return
 
         imgui.table_setup_column(
             self.value_label,
@@ -165,7 +166,7 @@ class TableMutableMappingOptions:
 
     def table_setup_column_actions(self) -> None:
         if not self.actions_show:
-            raise ValueError("Table column 'actions' is hidden")
+            return
 
         flags = self.actions_flags_integer
         init_width_or_weight = self.actions_init_width_or_weight
@@ -257,8 +258,12 @@ class TableMutableMapping(TableMutableMappingInterface[_KT, _VT]):
                     imgui.text(str(key))
 
                     imgui.table_set_column_index(1)
-                    if result := self.on_input_value(key, value):
-                        changed_result = result
+                    imgui.begin_disabled(self._options.value_disabled)
+                    try:
+                        if result := self.on_input_value(key, value):
+                            changed_result = result
+                    finally:
+                        imgui.end_disabled()
 
                     if self._options.removable:
                         imgui.table_set_column_index(2)
@@ -342,6 +347,8 @@ def table_mutable_mapping(
     removable: Optional[bool] = None,
     show_key: Optional[bool] = None,
     show_value: Optional[bool] = None,
+    show_actions: Optional[bool] = None,
+    disabled_value: Optional[bool] = None,
 ):
     if options is None:
         global_options = GlobalTableMutableMappingOptions()
@@ -357,6 +364,10 @@ def table_mutable_mapping(
         options.key_show = show_key
     if show_value is not None:
         options.value_show = show_value
+    if show_actions is not None:
+        options.actions_show = show_actions
+    if disabled_value is not None:
+        options.value_disabled = disabled_value
 
     table = TableMutableMapping(
         label,

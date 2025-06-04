@@ -6,11 +6,8 @@ import psutil
 from imgui_bundle import imgui
 
 from cvp.context.context import Context
-from cvp.imgui.begin_child import begin_child_context
-from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.text_centered import text_centered
-from cvp.imgui.widgets.table_mutable_mapping import table_mutable_mapping
 from cvp.service.item import ServiceItem
 
 
@@ -46,26 +43,6 @@ class ServicesStatusTab:
         # input_text_disabled("Name", str(proc.name()))
         # input_text_disabled("Executable path", str(proc.exe()))
         # input_text_disabled("Command line", str(proc.cmdline()))
-
-        try:
-            envs = proc.environ()
-        except psutil.NoSuchProcess:
-            envs = dict()
-
-        with begin_child_context(
-            label="EnvChild",
-            size=(imgui.calc_item_width(), 0),
-            child_flags=AUTO_RESIZE_Y | BORDERS,
-        ):
-            table_mutable_mapping(
-                label="EnvTable",
-                container=envs,
-                removable=False,
-                show_key=True,
-                show_value=True,
-            )
-        imgui.same_line(spacing=imgui.get_style().item_inner_spacing.x)
-        imgui.text("Environment variables")
 
         create_time = datetime.fromtimestamp(proc.create_time()).isoformat()
         input_text_disabled("Create time", create_time)
