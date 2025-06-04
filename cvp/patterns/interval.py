@@ -34,7 +34,7 @@ class IntervalUpdater(IntervalUpdaterInterface[ResultT]):
         else:
             raise NotImplementedError
 
-    def update(self, update_time: Optional[float] = None) -> ResultT:
+    def force_update(self, update_time: Optional[float] = None) -> ResultT:
         self.latest_time = update_time if update_time is not None else time()
         self.result = self.on_update()
         return self.result
@@ -46,4 +46,4 @@ class IntervalUpdater(IntervalUpdaterInterface[ResultT]):
             if current - self.latest_time < self.interval:
                 return self.result
 
-        return self.update(current)
+        return self.force_update(current)

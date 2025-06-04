@@ -92,7 +92,7 @@ def cpu_affinity_edit(
             cpu_affinity.temp = list()
 
         imgui.same_line()
-        if button(f"{mdi.CLOSE} Cancel"):
+        if button(f"{mdi.CLOSE} Cancel", disabled=not cpu_affinity.changed):
             cpu_affinity.reset(use_deepcopy=True)
 
         imgui.same_line()

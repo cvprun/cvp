@@ -57,6 +57,9 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
     def get_process(self, key: ServiceKey):
         return self._processes.get(key)
 
+    def get_process_pid(self, key: ServiceKey) -> int:
+        return self._processes.get_process_pid(key)
+
     def spawnable(self, key: ServiceKey) -> bool:
         return self._processes.spawnable(key)
 

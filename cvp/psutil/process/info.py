@@ -1,27 +1,29 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 from functools import lru_cache
 from typing import Annotated, Dict, List, get_args, get_origin, get_type_hints
 
 import psutil
 
+from cvp.variables import UNKNOWN_PID
+
 
 @dataclass
 class ProcessInfo:
-    pid: Annotated[int, "PID"]
-    ppid: Annotated[int, "Parent PID"]
-    name: Annotated[str, "Name"]
-    status: Annotated[str, "Status"]
-    num_threads: Annotated[int, "Threads"]
-    cmdline: Annotated[List[str], "Commandline"]
-
+    pid: Annotated[int, "PID"] = UNKNOWN_PID
+    ppid: Annotated[int, "Parent PID"] = UNKNOWN_PID
+    name: Annotated[str, "Name"] = field(default_factory=str)
+    status: Annotated[str, "Status"] = field(default_factory=str)
+    num_threads: Annotated[int, "Threads"] = 0
+    cmdline: Annotated[List[str], "Commandline"] = field(default_factory=list)
     # net_connections
     # cpu_affinity
     # cpu_num
     # cpu_percent
     # cpu_times
-    # create_time
+    create_time: datetime = field(default_factory=lambda: datetime.now().astimezone())
     # cwd
     # environ
     # exe
@@ -55,6 +57,7 @@ class ProcessInfo:
             status=proc.status(),
             num_threads=proc.num_threads(),
             cmdline=proc.cmdline(),
+            create_time=datetime.fromtimestamp(proc.create_time()).astimezone(),
         )
 
     @classmethod

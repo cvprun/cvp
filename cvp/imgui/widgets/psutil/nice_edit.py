@@ -89,7 +89,7 @@ def nice_edit(
                 "Higher values yield CPU time to other processes."
             )
 
-        if button(f"{mdi.CLOSE} Cancel"):
+        if button(f"{mdi.CLOSE} Cancel", disabled=not nice.changed):
             nice.reset()
 
         imgui.same_line()

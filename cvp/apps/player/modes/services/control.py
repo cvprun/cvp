@@ -6,7 +6,6 @@ from typing import Optional
 import psutil
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.services.control_cache import ServicesControlCache
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
 from cvp.imgui.button import button
@@ -17,6 +16,7 @@ from cvp.imgui.widgets.psutil.nice_edit import nice_edit
 from cvp.imgui.widgets.psutil.rlimit_edit import rlimit_edit
 from cvp.logging.loggers import logger
 from cvp.process.status import ProcessStatusEx
+from cvp.psutil.process.editable import EditableProcessAttribute
 from cvp.service.item import ServiceItem, ServiceKey
 
 
@@ -24,7 +24,7 @@ class ServicesControlTab:
     def __init__(self, context: Context):
         self._context = context
         self._signal = Signals.SIGINT
-        self._cache = ServicesControlCache()
+        self._cache = EditableProcessAttribute()
 
     @property
     def context(self):
@@ -106,9 +106,15 @@ class ServicesControlTab:
             return
 
     def __call__(self, service: ServiceItem) -> None:
+        imgui.text("Process Attributes Controller")
+        imgui.separator()
+
         stoppable = self.services.stoppable(service.key)
         imgui.begin_disabled(not stoppable)
         try:
+            if self._cache.error is not None:
+                self.text_error(str(self._cache.error))
+
             if process := self.services.get_process(service.key):
                 self._cache.update_if_pid_changed(process.psutil)
 

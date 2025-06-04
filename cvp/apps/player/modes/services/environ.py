@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from typing import Optional, Union
+
 import psutil
 from imgui_bundle import imgui
 
@@ -11,18 +13,31 @@ from cvp.service.item import ServiceItem, ServiceKey
 
 
 class ServicesEnvironTab:
+    _error: Optional[Union[BaseException, str]]
+
     def __init__(self, context: Context):
         self._context = context
+        self._error = None
 
     @property
     def context(self):
         return self._context
 
     @property
+    def error_color(self):
+        return self.context.config.appearance.error_color
+
+    def text_error(self, text: str) -> None:
+        imgui.text_colored(self.error_color, text)
+
+    @property
     def services(self):
         return self.context.services
 
     def __call__(self, service: ServiceItem) -> None:
+        imgui.text("Environment variables")
+        imgui.separator()
+
         stoppable = self.services.stoppable(service.key)
         imgui.begin_disabled(not stoppable)
         try:
@@ -31,16 +46,19 @@ class ServicesEnvironTab:
             imgui.end_disabled()
 
     def do_environ_process(self, key: ServiceKey) -> None:
-        imgui.text("Environment variables")
-        imgui.separator()
-
         try:
             if process := self.services.get_process(key):
                 environ = process.psutil.environ()
+                self._error = None
             else:
                 environ = dict()
-        except psutil.NoSuchProcess:
+                self._error = f"Service process could not be found: '{key}'"
+        except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+            self._error = e
             environ = dict()
+
+        if self._error is not None:
+            self.text_error(str(self._error))
 
         with begin_child_context(
             label="EnvironChild",

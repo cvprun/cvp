@@ -5,12 +5,19 @@ from typing import Dict, Optional, TypeVar
 from cvp.logging.loggers import logger
 from cvp.process.process import Process
 from cvp.process.status import ProcessStatusEx
+from cvp.variables import UNKNOWN_PID
 
 ProcessT = TypeVar("ProcessT", bound=Process)
 KeyT = TypeVar("KeyT")
 
 
 class ProcessMapper(Dict[KeyT, ProcessT]):
+    def get_process_pid(self, key: KeyT) -> int:
+        if process := self.get(key):
+            return process.pid
+        else:
+            return UNKNOWN_PID
+
     def spawnable(self, key: KeyT) -> bool:
         return not self.__contains__(key)
 

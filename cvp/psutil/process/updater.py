@@ -19,16 +19,6 @@ def query_all_process_infos() -> Dict[int, ProcessInfo]:
     return result
 
 
-class ProcessInfoUpdater(IntervalUpdater[ProcessInfo]):
-    def __init__(self, pid: int, interval: Optional[float] = None):
-        super().__init__(initial=ProcessInfo.from_pid(pid), interval=interval)
-        self._pid = pid
-
-    @override
-    def on_update(self) -> ProcessInfo:
-        return ProcessInfo.from_pid(self._pid)
-
-
 class ProcessInfoDictUpdater(IntervalUpdater[Dict[int, ProcessInfo]]):
     def __init__(self, interval: Optional[float] = None):
         super().__init__(initial=query_all_process_infos(), interval=interval)

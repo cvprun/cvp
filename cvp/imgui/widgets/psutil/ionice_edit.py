@@ -99,12 +99,12 @@ def ionice_edit(
                 ionice_class.temp = psutil.IOPRIO_CLASS_NONE
                 ionice_level.temp = 0
 
-        if button(f"{mdi.CLOSE} Cancel"):
+        disabled_commit = not ionice_class.changed and not ionice_level.changed
+        if button(f"{mdi.CLOSE} Cancel", disabled=disabled_commit):
             ionice_class.reset()
             ionice_level.reset()
 
         imgui.same_line()
-        disabled_commit = not ionice_class.changed and not ionice_level.changed
         if button(f"{mdi.CHECK} Commit", disabled=disabled_commit):
             if not no_commit:
                 ionice_class.commit()

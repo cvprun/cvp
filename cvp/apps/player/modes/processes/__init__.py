@@ -44,7 +44,7 @@ class ProcessesMode(BaseMode):
                     imgui.table_setup_column(header)
                 imgui.table_headers_row()
 
-                for proc in self._infos.get():
+                for proc in self._infos.get().values():
                     imgui.table_next_row()
                     for i, key in enumerate(self._headers.keys()):
                         imgui.table_set_column_index(i)

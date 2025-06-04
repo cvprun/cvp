@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List
+from typing import List, Optional
 
 import psutil
 
@@ -10,13 +10,14 @@ from cvp.psutil.process.rlimit import ResourceLimits
 from cvp.variables import DEFAULT_NICE, UNKNOWN_PID
 
 
-class ServicesControlCache:
+class EditableProcessAttribute:
     pid: Delta[int]
     nice: TempValue[int]
     ionice_class: TempValue[int]
     ionice_level: TempValue[int]
     cpu_affinity: TempValue[List[int]]
     rlimit: TempValue[ResourceLimits]
+    error: Optional[BaseException]
 
     def __init__(self):
         self.pid = Delta.from_single_value(UNKNOWN_PID)
@@ -26,6 +27,7 @@ class ServicesControlCache:
         self.cpu_indexes = list(range(psutil.cpu_count()))
         self.cpu_affinity = TempValue.from_single_value(list())
         self.rlimit = TempValue.from_single_value(ResourceLimits())
+        self.error = None
 
     def _update_nice(self, process: psutil.Process) -> None:
         self.nice.fill(process.nice())
@@ -59,10 +61,14 @@ class ServicesControlCache:
         self.rlimit.fill(ResourceLimits.from_process(process), use_deepcopy=True)
 
     def force_update(self, process: psutil.Process) -> None:
-        self._update_nice(process)
-        self._update_ionice(process)
-        self._update_cpu_affinity(process)
-        self._update_rlimit(process)
+        try:
+            self._update_nice(process)
+            self._update_ionice(process)
+            self._update_cpu_affinity(process)
+            self._update_rlimit(process)
+            self.error = None
+        except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+            self.error = e
 
     def update_if_pid_changed(self, process: psutil.Process) -> None:
         if not self.pid.update(process.pid):

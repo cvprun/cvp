@@ -116,7 +116,7 @@ def rlimit_edit(
         finally:
             imgui.end_table()
 
-        if button(f"{mdi.CLOSE} Cancel"):
+        if button(f"{mdi.CLOSE} Cancel", disabled=not rlimit.changed):
             rlimit.reset(use_deepcopy=True)
 
         imgui.same_line()
