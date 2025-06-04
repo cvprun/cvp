@@ -6,6 +6,7 @@ import psutil
 
 from cvp.patterns.delta import Delta
 from cvp.patterns.temp import TempValue
+from cvp.psutil.rlimit import ResourceLimits
 from cvp.variables import DEFAULT_NICE, UNKNOWN_PID
 
 
@@ -15,6 +16,7 @@ class ServicesControlCache:
     ionice_class: TempValue[int]
     ionice_level: TempValue[int]
     cpu_affinity: TempValue[List[int]]
+    rlimit: TempValue[ResourceLimits]
 
     def __init__(self):
         self.pid = Delta.from_single_value(UNKNOWN_PID)
@@ -23,6 +25,7 @@ class ServicesControlCache:
         self.ionice_level = TempValue.from_single_value(0)
         self.cpu_indexes = list(range(psutil.cpu_count()))
         self.cpu_affinity = TempValue.from_single_value(list())
+        self.rlimit = TempValue.from_single_value(ResourceLimits())
 
     def _update_nice(self, process: psutil.Process) -> None:
         self.nice.fill(process.nice())
@@ -52,10 +55,17 @@ class ServicesControlCache:
         cpu_affinity = list(process.cpu_affinity() or ())
         self.cpu_affinity.fill(cpu_affinity, use_deepcopy=True)
 
-    def update(self, process: psutil.Process) -> None:
-        if not self.pid.update(process.pid):
-            return
+    def _update_rlimit(self, process: psutil.Process) -> None:
+        self.rlimit.fill(ResourceLimits.from_process(process), use_deepcopy=True)
 
+    def force_update(self, process: psutil.Process) -> None:
         self._update_nice(process)
         self._update_ionice(process)
         self._update_cpu_affinity(process)
+        self._update_rlimit(process)
+
+    def update_if_pid_changed(self, process: psutil.Process) -> None:
+        if not self.pid.update(process.pid):
+            return
+
+        self.force_update(process)

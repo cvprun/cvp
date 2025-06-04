@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import platform
 from signal import Signals
 from typing import Optional
 
@@ -10,13 +9,12 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes.services.control_cache import ServicesControlCache
 from cvp.assets.fonts import mdi
 from cvp.context.context import Context
-from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.button_signals import button_signals
-from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.widgets.psutil.cpu_affinity_edit import cpu_affinity_edit
 from cvp.imgui.widgets.psutil.ionice_edit import ionice_edit
 from cvp.imgui.widgets.psutil.nice_edit import nice_edit
+from cvp.imgui.widgets.psutil.rlimit_edit import rlimit_edit
 from cvp.logging.loggers import logger
 from cvp.process.status import ProcessStatusEx
 from cvp.service.item import ServiceItem, ServiceKey
@@ -112,7 +110,10 @@ class ServicesControlTab:
         imgui.begin_disabled(not stoppable)
         try:
             if process := self.services.get_process(service.key):
-                self._cache.update(process.psutil)
+                self._cache.update_if_pid_changed(process.psutil)
+
+            if button(f"{mdi.REFRESH} Refresh"):
+                self._cache.force_update(process.psutil)
 
             self.do_signals_process(service.key)
             self.do_nice_process(service.key)
@@ -150,7 +151,7 @@ class ServicesControlTab:
             except BaseException as e:
                 self.context.toast_error(e, logger)
             else:
-                self._cache.update(process.psutil)
+                self._cache.force_update(process.psutil)
 
     def do_ionice_process(self, key: ServiceKey) -> None:
         if not (psutil.LINUX or psutil.WINDOWS):  # Windows Vista+
@@ -175,7 +176,7 @@ class ServicesControlTab:
             except BaseException as e:
                 self.context.toast_error(e, logger)
             else:
-                self._cache.update(process.psutil)
+                self._cache.force_update(process.psutil)
 
     def do_cpu_affinity_process(self, key: ServiceKey) -> None:
         if not (psutil.LINUX or psutil.WINDOWS or psutil.FREEBSD):
@@ -197,17 +198,27 @@ class ServicesControlTab:
             except BaseException as e:
                 self.context.toast_error(e, logger)
             else:
-                self._cache.update(process.psutil)
+                self._cache.force_update(process.psutil)
 
     def do_rlimit_process(self, key: ServiceKey) -> None:
-        system = platform.system()
-        if system not in ("Linux", "FreeBSD"):
+        if not (psutil.LINUX or psutil.FREEBSD):
             return
 
-        with begin_child_context(
+        if rlimit_result := rlimit_edit(
             label="ResourceLimits",
-            size=(imgui.calc_item_width(), 0),
-            child_flags=AUTO_RESIZE_Y | BORDERS,
+            rlimit=self._cache.rlimit,
+            top_title="Process resource limits",
+            border=True,
         ):
-            imgui.text("Process resource limits")
-            imgui.separator()
+            process = self.services.get_process(key)
+            assert process is not None
+            assert not self._cache.rlimit.changed
+
+            try:
+                for changed_key in rlimit_result.keys:
+                    item = rlimit_result.value[changed_key]
+                    process.psutil.rlimit(item.resource, item.limits)
+            except BaseException as e:
+                self.context.toast_error(e, logger)
+            else:
+                self._cache.force_update(process.psutil)

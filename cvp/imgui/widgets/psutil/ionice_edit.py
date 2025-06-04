@@ -80,6 +80,7 @@ def ionice_edit(
                 imgui.same_line()
                 if level := slider_int("##Level", ionice_level.temp, 0, 7):
                     ionice_level.temp = level.value
+                imgui.same_line()
                 imgui.text("Additional priority level. 0 (highest) to 7 (lowest)")
 
             if radio_button("BE", ionice_class.temp == psutil.IOPRIO_CLASS_BE):
@@ -88,6 +89,7 @@ def ionice_edit(
                 imgui.same_line()
                 if level := slider_int("##Level", ionice_level.temp, 0, 7):
                     ionice_level.temp = level.value
+                imgui.same_line()
                 imgui.text("Additional priority level. 0 (highest) to 7 (lowest)")
 
             if radio_button("IDLE", ionice_class.temp == psutil.IOPRIO_CLASS_IDLE):
