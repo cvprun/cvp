@@ -179,7 +179,10 @@ class Context(ContextMixins):
         self._flows.stop_all_runners()
 
         logger.info(f"Stop all media processes ... ({timeout:.02f}s)")
-        self._medias.teardown_all(timeout)
+        self._medias.shutdown(timeout)
+
+        logger.info(f"Stop all service processes ... ({timeout:.02f}s)")
+        self._services.shutdown(timeout)
 
         logger.info("Shutting down thread pool ...")
         self._thread_pool.shutdown(wait=True)

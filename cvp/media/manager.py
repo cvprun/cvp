@@ -114,7 +114,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
         texture.close()
         return process
 
-    def teardown_all(self, timeout: Optional[float] = None):
+    def shutdown(self, timeout: Optional[float] = None):
         self._processes.shutdown(timeout)
 
     @property
