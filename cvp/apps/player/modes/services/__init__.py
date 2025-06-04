@@ -72,6 +72,8 @@ class ServicesMode(BaseMode):
             self._confirm_remove,
             self._confirm_clear,
             *config_tab.popups,
+            *stdout_tab.popups,
+            *stderr_tab.popups,
         )
 
     @property
