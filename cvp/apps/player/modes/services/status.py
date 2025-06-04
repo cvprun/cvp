@@ -82,20 +82,17 @@ class ServicesStatusTab:
 
         input_text_disabled("PID", str(proc.pid))
         input_text_disabled("PPID", str(proc.ppid))
-        input_text_disabled("Name", str(proc.name))
-        input_text_disabled("Status", str(proc.status))
-
-        # input_text_disabled("Executable path", str(proc.exe()))
-        # input_text_disabled("Command line", str(proc.cmdline()))
-
+        input_text_disabled("Name", proc.name)
+        input_text_disabled("Status", proc.status)
+        input_text_disabled("Executable path", proc.exe)
+        input_text_disabled("Command line", str(proc.cmdline))
         input_text_disabled("Create time", proc.create_time.isoformat())
-
-        # input_text_disabled("Status", proc.status())
-        # input_text_disabled("CWD", proc.cwd())
+        input_text_disabled("CWD", proc.cwd)
         # input_text_disabled("UIDs", str(proc.uids()))
         # input_text_disabled("GIDs", str(proc.gids()))
         # input_text_disabled("Terminal", str(proc.terminal()))
-        # input_text_disabled("Nice", str(proc.nice()))
+        input_text_disabled("Nice", str(proc.nice))
         # input_text_disabled("I/O niceness", str(proc.ionice()))
         # input_text_disabled("I/O counters", str(proc.io_counters()))
         # input_text_disabled("Context switches", str(proc.num_ctx_switches()))
+        input_text_disabled("Username", proc.username)
