@@ -7,7 +7,7 @@ from imgui_bundle import imgui
 
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
-from cvp.psutil.process.info import ProcessInfo
+from cvp.psutil.process.state import ProcessState
 from cvp.service.item import ServiceItem, ServiceKey
 from cvp.values.delta import DeltaValue
 from cvp.values.interval import IntervalUpdater
@@ -17,14 +17,14 @@ from cvp.variables import UNKNOWN_PID
 class ServicesStatusTab:
     _error: Optional[Union[BaseException, str]]
     _pid: DeltaValue[int]
-    _updater: IntervalUpdater[ProcessInfo]
+    _updater: IntervalUpdater[ProcessState]
 
     def __init__(self, context: Context):
         self._context = context
         self._error = None
         self._pid = DeltaValue.from_single_value(UNKNOWN_PID)
         self._updater = IntervalUpdater(
-            initial=ProcessInfo(),
+            initial=ProcessState(),
             interval=1.0,
             updater=self.on_update_process_info,
         )
@@ -44,13 +44,13 @@ class ServicesStatusTab:
     def text_error(self, text: str) -> None:
         imgui.text_colored(self.error_color, text)
 
-    def on_update_process_info(self) -> ProcessInfo:
+    def on_update_process_info(self) -> ProcessState:
         if self._pid.value == UNKNOWN_PID:
-            return ProcessInfo()
+            return ProcessState()
         else:
-            return ProcessInfo.from_pid(self._pid.value)
+            return ProcessState.from_pid(self._pid.value)
 
-    def get_latest_info(self, key: ServiceKey) -> ProcessInfo:
+    def get_latest_info(self, key: ServiceKey) -> ProcessState:
         pid = self.services.get_process_pid(key)
 
         try:
@@ -63,7 +63,7 @@ class ServicesStatusTab:
             return result
         except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
             self._error = e
-            return ProcessInfo()
+            return ProcessState()
 
     def __call__(self, service: ServiceItem) -> None:
         imgui.text("Process Status Browser")
@@ -76,7 +76,7 @@ class ServicesStatusTab:
         finally:
             imgui.end_disabled()
 
-    def do_psutil_process(self, proc: ProcessInfo) -> None:
+    def do_psutil_process(self, proc: ProcessState) -> None:
         if self._error is not None:
             self.text_error(str(self._error))
 

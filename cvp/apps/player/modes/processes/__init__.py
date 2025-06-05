@@ -9,7 +9,7 @@ from cvp.assets.fonts.mdi import MONITOR_EYE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.table import BORDERS, ROW_BG
-from cvp.psutil.process.info import get_process_info_field_titles
+from cvp.psutil.process.state import get_process_info_field_titles
 from cvp.psutil.process.updater import ProcessInfoDictUpdater
 from cvp.types.override import override
 

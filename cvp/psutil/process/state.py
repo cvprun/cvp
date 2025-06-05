@@ -11,7 +11,7 @@ from cvp.variables import UNKNOWN_PID
 
 
 @dataclass
-class ProcessInfo:
+class ProcessState:
     pid: Annotated[int, "PID"] = UNKNOWN_PID
     ppid: Annotated[int, "Parent PID"] = UNKNOWN_PID
     name: Annotated[str, "Name"] = field(default_factory=str)
@@ -74,7 +74,7 @@ class ProcessInfo:
 @lru_cache
 def get_process_info_field_titles() -> Dict[str, str]:
     result = dict()
-    hints = get_type_hints(ProcessInfo, include_extras=True)
+    hints = get_type_hints(ProcessState, include_extras=True)
     for key, field_type in hints.items():
         if get_origin(field_type) is Annotated:
             args = get_args(field_type)
