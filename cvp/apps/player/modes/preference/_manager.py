@@ -4,7 +4,7 @@ from collections import OrderedDict
 from functools import lru_cache
 from typing import Sequence, Type
 
-from cvp.apps.player.modes.preference import BasePreference
+from cvp.apps.player.modes.preference._base import BasePreference
 from cvp.context.context import Context
 
 

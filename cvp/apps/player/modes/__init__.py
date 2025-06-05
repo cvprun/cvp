@@ -35,12 +35,11 @@ class ModeManager:
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
-        from cvp.apps.player.modes.processes import ProcessesMode
         from cvp.apps.player.modes.qrcode import QrCodeMode
         from cvp.apps.player.modes.services import ServicesMode
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.swagger import SwaggerMode
-        from cvp.apps.player.modes.sysinfo import SysinfoMode
+        from cvp.apps.player.modes.system import SystemMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.threading import ThreadingMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
@@ -73,12 +72,11 @@ class ModeManager:
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
-        self.process_mode = ProcessesMode(context)
         self.qrcode_mode = QrCodeMode(context)
         self.services_mode = ServicesMode(context)
         self.sockmap_mode = SockmapMode(context)
         self.swagger_mode = SwaggerMode(context)
-        self.sysinfo_map = SysinfoMode(context)
+        self.system_mode = SystemMode(context)
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.threading_mode = ThreadingMode(context)
@@ -111,12 +109,11 @@ class ModeManager:
             self.medias_mode,
             self.object_tracker_mode,
             self.onvif_mode,
-            self.process_mode,
             self.qrcode_mode,
             self.services_mode,
             self.sockmap_mode,
             self.swagger_mode,
-            self.sysinfo_map,
+            self.system_mode,
             self.terminal_mode,
             self.threading_mode,
             self.watchdog_mode,
