@@ -71,18 +71,3 @@ class SystemMode(BaseMode):
                 widget.on_process()
             else:
                 text_centered("Please select a item")
-
-    # def on_child_process(self) -> None:
-    #     if imgui.begin_table("Table", len(self._headers), self._TABLE_FLAGS):
-    #         try:
-    #             for header in self._headers.values():
-    #                 imgui.table_setup_column(header)
-    #             imgui.table_headers_row()
-    #
-    #             for proc in self._infos.get().values():
-    #                 imgui.table_next_row()
-    #                 for i, key in enumerate(self._headers.keys()):
-    #                     imgui.table_set_column_index(i)
-    #                     imgui.text(str(getattr(proc, key)))
-    #         finally:
-    #             imgui.end_table()

@@ -3,7 +3,17 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from functools import lru_cache
-from typing import Annotated, Dict, List, get_args, get_origin, get_type_hints
+from types import MappingProxyType
+from typing import (
+    Annotated,
+    Dict,
+    Final,
+    List,
+    Optional,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 import psutil
 
@@ -45,26 +55,49 @@ class ProcessState:
     # threads
     # uids
     username: Annotated[str, "username"] = field(default_factory=str)
+    error: Optional[BaseException] = None
 
     @classmethod
     def from_process(cls, proc: psutil.Process):
-        return cls(
-            pid=proc.pid,
-            ppid=proc.ppid(),
-            name=proc.name(),
-            status=proc.status(),
-            cmdline=proc.cmdline(),
-            cpu_affinity=list(proc.cpu_affinity() or ()),
-            cpu_num=proc.cpu_num(),
-            cpu_percent=proc.cpu_percent(),
-            # cpu_times=proc.cpu_times(), # user, system, children_user, children_system
-            create_time=datetime.fromtimestamp(proc.create_time()).astimezone(),
-            cwd=proc.cwd(),
-            exe=proc.exe(),
-            nice=proc.nice(),
-            num_threads=proc.num_threads(),
-            username=proc.username(),
-        )
+        try:
+            pid = proc.pid
+            ppid = proc.ppid()
+            name = proc.name()
+            status = proc.status()
+            cmdline = proc.cmdline()
+            cpu_affinity = list(proc.cpu_affinity() or ())
+            cpu_num = proc.cpu_num()
+            cpu_percent = proc.cpu_percent()
+
+            # cpu_times = proc.cpu_times()
+            # user, system, children_user, children_system
+
+            create_time = datetime.fromtimestamp(proc.create_time()).astimezone()
+            cwd = proc.cwd()
+            exe = proc.exe()
+            nice = proc.nice()
+            num_threads = proc.num_threads()
+            username = proc.username()
+
+            return cls(
+                pid=pid,
+                ppid=ppid,
+                name=name,
+                status=status,
+                cmdline=cmdline,
+                cpu_affinity=cpu_affinity,
+                cpu_num=cpu_num,
+                cpu_percent=cpu_percent,
+                create_time=create_time,
+                cwd=cwd,
+                exe=exe,
+                nice=nice,
+                num_threads=num_threads,
+                username=username,
+                error=None,
+            )
+        except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
+            return cls(error=e)
 
     @classmethod
     def from_pid(cls, pid: int):
@@ -74,8 +107,7 @@ class ProcessState:
             return cls.from_process(psutil.Process(pid))
 
 
-@lru_cache
-def get_process_info_field_titles() -> Dict[str, str]:
+def _create_process_state_field_titles() -> Dict[str, str]:
     result = dict()
     hints = get_type_hints(ProcessState, include_extras=True)
     for key, field_type in hints.items():
@@ -84,4 +116,22 @@ def get_process_info_field_titles() -> Dict[str, str]:
             title = args[1]
             assert isinstance(title, str)
             result[key] = title
+    return result
+
+
+@lru_cache()
+def _process_state_field_titles() -> MappingProxyType[str, str]:
+    return MappingProxyType(_create_process_state_field_titles())
+
+
+PROCESS_STATE_TITLES: Final[MappingProxyType[str, str]] = _process_state_field_titles()
+
+
+def query_all_process_states() -> Dict[int, ProcessState]:
+    result = dict()
+    for proc in psutil.process_iter():
+        state = ProcessState.from_process(proc)
+        if state.error is not None:
+            continue
+        result[proc.pid] = state
     return result
