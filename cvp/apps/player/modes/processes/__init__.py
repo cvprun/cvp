@@ -10,7 +10,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.table import BORDERS, ROW_BG
 from cvp.psutil.process.state import get_process_info_field_titles
-from cvp.psutil.process.updater import ProcessInfoDictUpdater
+from cvp.psutil.top import Top
 from cvp.types.override import override
 
 
@@ -22,7 +22,7 @@ class ProcessesMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._infos = ProcessInfoDictUpdater(interval=1.0)
+        self._infos = Top(interval=1.0)
         self._headers = get_process_info_field_titles()
 
     @property
