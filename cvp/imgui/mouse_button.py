@@ -3,8 +3,8 @@
 from enum import Enum, auto, unique
 from typing import Optional
 
-from cvp.patterns.delta import Delta
 from cvp.types.shapes import Point
+from cvp.values.delta import DeltaValue
 
 
 @unique
@@ -18,8 +18,8 @@ class MouseButton:
     _pivot: Optional[Point]
 
     def __init__(self) -> None:
-        self._down = Delta.from_single_value(False)
-        self._drag = Delta.from_single_value(False)
+        self._down = DeltaValue.from_single_value(False)
+        self._drag = DeltaValue.from_single_value(False)
         self._state = ButtonState.normal
         self._pivot = None
 

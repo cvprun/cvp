@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 from types import TracebackType
 from typing import Any, Iterable, Mapping, Optional, Tuple, Type, Union
 
-from cvp.patterns.proxy import ValueProxy
 from cvp.pins.pin import Pin, PinName
+from cvp.values.proxy import ProxyValue
 
 ExceptionInfo = Tuple[Type[BaseException], BaseException, TracebackType]
 NullInfo = Tuple[None, None, None]
@@ -21,7 +21,7 @@ class NodeRecord:
         args: Iterable[Any],
         kwargs: Mapping[PinName, Any],
         exception: Optional[ExceptionInfo] = None,
-        shared_variables: Optional[Mapping[str, ValueProxy]] = None,
+        shared_variables: Optional[Mapping[str, ProxyValue]] = None,
     ):
         self._index = index
         self._node_uuid = node_uuid

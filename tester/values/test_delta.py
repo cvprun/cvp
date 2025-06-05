@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.patterns.delta import Delta
+from cvp.values.delta import DeltaValue
 
 
 class DeltaTestCase(TestCase):
@@ -15,7 +15,7 @@ class DeltaTestCase(TestCase):
         self._previous = prev
 
     def test_default(self):
-        watcher = Delta(0, 0, self._on_change)
+        watcher = DeltaValue(0, 0, self._on_change)
         self.assertFalse(watcher.update(0))
         self.assertEqual(0, self._current)
         self.assertEqual(0, self._previous)

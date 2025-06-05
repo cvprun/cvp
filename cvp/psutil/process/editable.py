@@ -4,14 +4,25 @@ from typing import List, Optional
 
 import psutil
 
-from cvp.patterns.delta import Delta
-from cvp.patterns.temp import TempValue
 from cvp.psutil.process.rlimit import ResourceLimits
+from cvp.values.delta import DeltaValue
+from cvp.values.temp import TempValue
 from cvp.variables import DEFAULT_NICE, UNKNOWN_PID
 
 
 class EditableProcessAttribute:
-    pid: Delta[int]
+    """
+    A class designed for interoperability with `imgui`.
+
+    When the PID of the currently editable process changes,
+    all associated data is refreshed.
+
+    When using components like `imgui.input_int`,
+    a temporary variable (TempValue) is needed to store the editing state.
+    Once the changes are committed, the original value is updated accordingly.
+    """
+
+    pid: DeltaValue[int]
     nice: TempValue[int]
     ionice_class: TempValue[int]
     ionice_level: TempValue[int]
@@ -20,7 +31,7 @@ class EditableProcessAttribute:
     error: Optional[BaseException]
 
     def __init__(self):
-        self.pid = Delta.from_single_value(UNKNOWN_PID)
+        self.pid = DeltaValue.from_single_value(UNKNOWN_PID)
         self.nice = TempValue.from_single_value(DEFAULT_NICE)
         self.ionice_class = TempValue.from_single_value(0)
         self.ionice_level = TempValue.from_single_value(0)

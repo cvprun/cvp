@@ -7,22 +7,22 @@ from imgui_bundle import imgui
 
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
-from cvp.patterns.delta import Delta
-from cvp.patterns.interval import IntervalUpdater
 from cvp.psutil.process.info import ProcessInfo
 from cvp.service.item import ServiceItem, ServiceKey
+from cvp.values.delta import DeltaValue
+from cvp.values.interval import IntervalUpdater
 from cvp.variables import UNKNOWN_PID
 
 
 class ServicesStatusTab:
     _error: Optional[Union[BaseException, str]]
-    _pid: Delta[int]
+    _pid: DeltaValue[int]
     _updater: IntervalUpdater[ProcessInfo]
 
     def __init__(self, context: Context):
         self._context = context
         self._error = None
-        self._pid = Delta.from_single_value(UNKNOWN_PID)
+        self._pid = DeltaValue.from_single_value(UNKNOWN_PID)
         self._updater = IntervalUpdater(
             initial=ProcessInfo(),
             interval=1.0,

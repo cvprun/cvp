@@ -12,7 +12,7 @@ from cvp.imgui.checkbox import checkbox
 from cvp.imgui.fit_size import FIT_WIDTH
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.flags.table_column import WIDTH_STRETCH
-from cvp.patterns.temp import TempValue
+from cvp.values.temp import TempValue
 from cvp.variables import NOT_FOUND_INDEX
 
 

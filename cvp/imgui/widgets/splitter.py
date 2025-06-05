@@ -18,7 +18,7 @@ from cvp.imgui.splitter import (
     splitter,
 )
 from cvp.logging.loggers import widgets_logger as logger
-from cvp.patterns.proxy import ValueProxy
+from cvp.values.proxy import ProxyValue
 
 
 class Splitter:
@@ -31,7 +31,7 @@ class Splitter:
         orientation: SplitterOrientation,
         width: float,
         height: float,
-        value_proxy: Optional[ValueProxy[float]] = None,
+        value_proxy: Optional[ProxyValue[float]] = None,
         min_value: Optional[Union[int, float]] = None,
         max_value: Optional[Union[int, float]] = None,
         negative_delta=False,
@@ -82,7 +82,7 @@ class Splitter:
         identifier=DEFAULT_VERTICAL_SPLITTER_IDENTIFIER,
         width=DEFAULT_SPLITTER_SIZE,
         height=AVAILABLE_REGION_SIZE,
-        value_proxy: Optional[ValueProxy[float]] = None,
+        value_proxy: Optional[ProxyValue[float]] = None,
         min_value: Optional[Union[int, float]] = None,
         max_value: Optional[Union[int, float]] = None,
         negative_delta=False,
@@ -110,7 +110,7 @@ class Splitter:
         identifier=DEFAULT_HORIZONTAL_SPLITTER_IDENTIFIER,
         width=AVAILABLE_REGION_SIZE,
         height=DEFAULT_SPLITTER_SIZE,
-        value_proxy: Optional[ValueProxy[float]] = None,
+        value_proxy: Optional[ProxyValue[float]] = None,
         min_value: Optional[Union[int, float]] = None,
         max_value: Optional[Union[int, float]] = None,
         negative_delta=False,

@@ -5,16 +5,23 @@ from typing import Callable, Generic, Optional, TypeVar
 _T = TypeVar("_T")
 
 
-class Delta(Generic[_T]):
+class DeltaValue(Generic[_T]):
+    """
+    A class designed for interoperability with `imgui`.
+
+    Provides a value container that tracks changes and
+    optionally triggers a callback when updated.
+    """
+
     def __init__(
         self,
         value: _T,
         prev: _T,
-        on_change: Optional[Callable[[_T, _T], None]] = None,
+        callback: Optional[Callable[[_T, _T], None]] = None,
     ):
         self.prev = prev
         self.value = value
-        self._on_change = on_change
+        self._callback = callback
 
     @classmethod
     def from_single_value(
@@ -33,6 +40,6 @@ class Delta(Generic[_T]):
         self.value = value
 
         changed = self.prev != self.value
-        if not no_emit and changed and self._on_change is not None:
-            self._on_change(self.value, self.prev)
+        if not no_emit and changed and self._callback is not None:
+            self._callback(self.value, self.prev)
         return changed

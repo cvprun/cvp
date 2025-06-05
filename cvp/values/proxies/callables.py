@@ -2,11 +2,11 @@
 
 from typing import Callable, Optional
 
-from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
+from cvp.values.proxy import ProxyValue, ValueT
 
 
-class CallableTypeProxy(ValueProxy[ValueT]):
+class CallableProxyValue(ProxyValue[ValueT]):
     def __init__(
         self,
         getter: Optional[Callable[[], ValueT]] = None,

@@ -2,17 +2,17 @@
 
 from typing import Optional, Protocol
 
-from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
+from cvp.values.proxy import ProxyValue, ValueT
 
 
-class LockerProtocol(Protocol):
+class LockableProtocol(Protocol):
     def __enter__(self): ...
     def __exit__(self, exc_type, exc_val, exc_tb): ...
 
 
-class BuiltinTypeProxy(ValueProxy[ValueT]):
-    def __init__(self, value: ValueT, *, locker: Optional[LockerProtocol] = None):
+class LockableProxyValue(ProxyValue[ValueT]):
+    def __init__(self, value: ValueT, *, locker: Optional[LockableProtocol] = None):
         self._locker = locker
         self.value = value
 
@@ -67,19 +67,3 @@ class BuiltinTypeProxy(ValueProxy[ValueT]):
         else:
             with self._locker:
                 self.value = value
-
-
-class Boolean(BuiltinTypeProxy[bool]):
-    pass
-
-
-class Integer(BuiltinTypeProxy[int]):
-    pass
-
-
-class Floating(BuiltinTypeProxy[float]):
-    pass
-
-
-class Complex(BuiltinTypeProxy[complex]):
-    pass

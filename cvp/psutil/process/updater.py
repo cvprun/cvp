@@ -5,8 +5,8 @@ from typing import Dict, Optional
 from overrides import override
 from psutil import AccessDenied, NoSuchProcess, process_iter
 
-from cvp.patterns.interval import IntervalUpdater
 from cvp.psutil.process.info import ProcessInfo
+from cvp.values.interval import IntervalUpdater
 
 
 def query_all_process_infos() -> Dict[int, ProcessInfo]:

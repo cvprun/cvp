@@ -8,6 +8,14 @@ _T = TypeVar("_T")
 
 
 class TempValue(Generic[_T]):
+    """
+    A class designed for interoperability with `imgui`.
+
+    When using components like `imgui.input_int`,
+    a temporary variable (TempValue) is needed to store the editing state.
+    Once the changes are committed, the original value is updated accordingly.
+    """
+
     def __init__(self, value: _T, temp: _T):
         self._value = value
         self._temp = temp

@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from cvp.patterns.proxies.callables import CallableTypeProxy
+from cvp.values.proxies.callables import CallableProxyValue
 
 
 @dataclass
@@ -26,7 +26,7 @@ class GraphicConfig:
         def _setter(value: Optional[bool]) -> None:
             self.force_egl = value
 
-        return CallableTypeProxy(_getter, _setter)
+        return CallableProxyValue(_getter, _setter)
 
     def create_use_accelerate_proxy(self):
         def _getter() -> Optional[bool]:
@@ -35,4 +35,4 @@ class GraphicConfig:
         def _setter(value: Optional[bool]) -> None:
             self.use_accelerate = value
 
-        return CallableTypeProxy(_getter, _setter)
+        return CallableProxyValue(_getter, _setter)

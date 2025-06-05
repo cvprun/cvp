@@ -4,8 +4,8 @@ from typing import NamedTuple, Optional
 
 from psutil import cpu_percent, virtual_memory
 
-from cvp.patterns.interval import IntervalUpdater
 from cvp.types.override import override
+from cvp.values.interval import IntervalUpdater
 
 
 class Percentage(NamedTuple):

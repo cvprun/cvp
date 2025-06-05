@@ -14,8 +14,8 @@ from cvp.imgui.flags.input_text import ENTER_RETURNS_TRUE
 from cvp.imgui.input_text import input_text
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.spinner import spinner
-from cvp.patterns.proxy import ValueProxy
 from cvp.types.override import override
+from cvp.values.proxy import ProxyValue
 
 
 class FFmpegPreference(BasePreference):
@@ -28,7 +28,7 @@ class FFmpegPreference(BasePreference):
         result: Optional[Dict[str, Union[str, BaseException]]] = None,
     ):
         super().__init__(context)
-        self._executable_proxy: Optional[ValueProxy[str]] = None
+        self._executable_proxy: Optional[ProxyValue[str]] = None
         self._outputs = dict(result if result else {})
         self._version_runner = context.create_thread_runner(self._on_version_main)
         self._executable_browser = OpenFilePopup(
@@ -61,7 +61,7 @@ class FFmpegPreference(BasePreference):
         finally:
             self._executable_proxy = None
 
-    def show_executable_browser(self, proxy: ValueProxy[str]) -> None:
+    def show_executable_browser(self, proxy: ProxyValue[str]) -> None:
         self._executable_proxy = proxy
         self._executable_browser.show()
 
@@ -93,14 +93,14 @@ class FFmpegPreference(BasePreference):
     def on_postprocess(self) -> None:
         self._executable_browser.on_process()
 
-    def do_executable_tab(self, filename: str, proxy: ValueProxy[str]) -> None:
+    def do_executable_tab(self, filename: str, proxy: ProxyValue[str]) -> None:
         if imgui.begin_tab_item(filename)[0]:
             try:
                 self.do_executable_process(filename, proxy)
             finally:
                 imgui.end_tab_item()
 
-    def do_executable_process(self, filename: str, proxy: ValueProxy[str]) -> None:
+    def do_executable_process(self, filename: str, proxy: ProxyValue[str]) -> None:
         imgui.text(f"The {filename} executable")
 
         if path_result := input_text("Path", proxy.get(), ENTER_RETURNS_TRUE):

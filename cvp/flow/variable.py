@@ -9,13 +9,13 @@ from type_serialize import Serializable, deserialize, serialize
 from cvp.dtypes.dtype import Dtype
 from cvp.flow.raw_value import dumps, loads
 from cvp.memory.copy import CopyMethod, copy_flexible
-from cvp.patterns.proxy import ValueProxy, ValueT
 from cvp.types.override import override
+from cvp.values.proxy import ProxyValue, ValueT
 
 VariableKey = NewType("VariableKey", str)
 
 
-class FlowVariable(ValueProxy[ValueT], Serializable):
+class FlowVariable(ProxyValue[ValueT], Serializable):
 
     @unique
     class _Keys(StrEnum):

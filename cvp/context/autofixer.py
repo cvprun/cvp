@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 
 from cvp.context.context import Context
 from cvp.logging.loggers import logger
-from cvp.patterns.proxy import ValueProxy, ValueT
+from cvp.values.proxy import ProxyValue, ValueT
 
 ErrorT = TypeVar("ErrorT", bound=BaseException)
 
@@ -22,7 +22,7 @@ class AutoFixer(Generic[ValueT, ErrorT]):
     def __init__(
         self,
         context: Context,
-        config_proxy: ValueProxy[ValueT],
+        config_proxy: ProxyValue[ValueT],
         config_section_path: str,
         not_exists_value: ValueT,
         update_value: ValueT,

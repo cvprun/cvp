@@ -12,8 +12,8 @@ from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.flags.table_column import WIDTH_FIXED, WIDTH_STRETCH
 from cvp.imgui.input_int import input_int
-from cvp.patterns.temp import TempValue
 from cvp.psutil.process.rlimit import ResourceLimits, ResourceLimitTuple
+from cvp.values.temp import TempValue
 from cvp.variables import NOT_FOUND_INDEX
 
 

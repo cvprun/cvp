@@ -6,7 +6,7 @@ from typing import Generic, TypeVar
 ValueT = TypeVar("ValueT")
 
 
-class ValueProxy(Generic[ValueT], ABC):
+class ProxyValue(Generic[ValueT], ABC):
     @abstractmethod
     def get(self) -> ValueT:
         raise NotImplementedError

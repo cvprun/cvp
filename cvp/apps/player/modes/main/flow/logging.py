@@ -23,9 +23,9 @@ from cvp.logging.logging import (
     UNIQUE_LEVEL_NAMES,
     convert_level_number,
 )
-from cvp.patterns.delta import Delta
 from cvp.types.colors import RGBA
 from cvp.types.override import override
+from cvp.values.delta import DeltaValue
 
 
 class _LoggingHandler(Handler):
@@ -55,7 +55,7 @@ class LoggingFlowWindow(BaseWindow):
     def __init__(self, context: Context):
         super().__init__(context)
         assert 1 <= self.context.config.flow.logs.lines
-        self._mouse_wheel = Delta.from_single_value(0.0)
+        self._mouse_wheel = DeltaValue.from_single_value(0.0)
         maxlen = self.context.config.flow.logs.lines
         self._records = Deque[_LineRecord](maxlen=maxlen)
         self._handler = _LoggingHandler(self.on_logging)

@@ -18,11 +18,11 @@ from cvp.flow.pin import FlowPin
 from cvp.flow.pins import FlowPins
 from cvp.flow.variable import FlowVariable, VariableKey
 from cvp.nodes.record import NodeRecord
-from cvp.patterns.proxy import ValueProxy
 from cvp.pins.action import Action
 from cvp.pins.kind import PinKind
 from cvp.pins.pin import PinName
 from cvp.pins.stream import Stream
+from cvp.values.proxy import ProxyValue
 from cvp.variables import FLOW_PATH_SEPARATOR
 
 WireKey = NewType("WireKey", str)
@@ -40,7 +40,7 @@ class FlowMemory:
     _datas: Deque[Any]
     _pins: Dict[PinKey, int]
     _wires: Dict[WireKey, int]
-    _vars: Dict[VariableKey, ValueProxy]
+    _vars: Dict[VariableKey, ProxyValue]
 
     def __init__(self):
         self._datas = deque()

@@ -11,7 +11,7 @@ from cvp.imgui.button import button
 from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.radio_button import radio_button
 from cvp.imgui.slider_int import slider_int
-from cvp.patterns.temp import TempValue
+from cvp.values.temp import TempValue
 
 
 class IoniceEditResult(NamedTuple):

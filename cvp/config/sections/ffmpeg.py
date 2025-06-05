@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from cvp.patterns.proxies.callables import CallableTypeProxy
+from cvp.values.proxies.callables import CallableProxyValue
 from cvp.variables import (
     FFMPEG_EXECUTABLE_FILENAME,
     FFPROBE_EXECUTABLE_FILENAME,
@@ -28,7 +28,7 @@ class FFmpegConfig:
         def _setter(value: str) -> None:
             self.ffmpeg = value
 
-        return CallableTypeProxy(_getter, _setter)
+        return CallableProxyValue(_getter, _setter)
 
     def create_ffprobe_proxy(self):
         def _getter() -> str:
@@ -37,4 +37,4 @@ class FFmpegConfig:
         def _setter(value: str) -> None:
             self.ffprobe = value
 
-        return CallableTypeProxy(_getter, _setter)
+        return CallableProxyValue(_getter, _setter)

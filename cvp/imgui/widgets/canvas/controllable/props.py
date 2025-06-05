@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
 from cvp.imgui.mouse_button import MouseButton
-from cvp.patterns.delta import Delta
 from cvp.types.shapes import Point
+from cvp.values.delta import DeltaValue
 
 
 class ControllableProps:
     def __init__(self):
-        self._pan_x = Delta.from_single_value(0.0)
-        self._pan_y = Delta.from_single_value(0.0)
-        self._zoom = Delta.from_single_value(1.0)
+        self._pan_x = DeltaValue.from_single_value(0.0)
+        self._pan_y = DeltaValue.from_single_value(0.0)
+        self._zoom = DeltaValue.from_single_value(1.0)
 
-        self._activating = Delta.from_single_value(False)
-        self._hovering = Delta.from_single_value(False)
-        self._focusing = Delta.from_single_value(False)
+        self._activating = DeltaValue.from_single_value(False)
+        self._hovering = DeltaValue.from_single_value(False)
+        self._focusing = DeltaValue.from_single_value(False)
 
-        self._shift_down = Delta.from_single_value(False)
-        self._ctrl_down = Delta.from_single_value(False)
-        self._alt_down = Delta.from_single_value(False)
+        self._shift_down = DeltaValue.from_single_value(False)
+        self._ctrl_down = DeltaValue.from_single_value(False)
+        self._alt_down = DeltaValue.from_single_value(False)
 
         self._left_button = MouseButton()
         self._middle_button = MouseButton()

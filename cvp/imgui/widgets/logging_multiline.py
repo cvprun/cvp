@@ -22,8 +22,8 @@ from cvp.logging.logging import (
 )
 from cvp.logging.records.formatted import FormattedLogRecord
 from cvp.logging.styles import GuiLoggingStyle
-from cvp.patterns.delta import Delta
 from cvp.types.colors import RGBA
+from cvp.values.delta import DeltaValue
 
 
 def _unregister_handler(logger: Logger, handler: CallableHandler) -> None:
@@ -45,7 +45,7 @@ class LoggingMultiline:
             self.logger = getLogger(logger)
 
         self.options = options if options else GuiLoggingStyle()
-        self.mouse_wheel = Delta.from_single_value(0.0)
+        self.mouse_wheel = DeltaValue.from_single_value(0.0)
         self.records = Deque[FormattedLogRecord](maxlen=self.options.lines)
         self.handler = CallableHandler(self.on_logging)
         self.logger.addHandler(self.handler)
