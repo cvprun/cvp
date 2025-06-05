@@ -68,7 +68,10 @@ class ProcessState:
 
     @classmethod
     def from_pid(cls, pid: int):
-        return cls.from_process(psutil.Process(pid))
+        if pid == UNKNOWN_PID:
+            return cls()
+        else:
+            return cls.from_process(psutil.Process(pid))
 
 
 @lru_cache

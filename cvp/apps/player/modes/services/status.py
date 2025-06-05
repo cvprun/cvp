@@ -8,26 +8,17 @@ from imgui_bundle import imgui
 from cvp.context.context import Context
 from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.psutil.process.state import ProcessState
+from cvp.psutil.process.updater import ProcessStateUpdater
 from cvp.service.item import ServiceItem, ServiceKey
-from cvp.values.delta import DeltaValue
-from cvp.values.interval import IntervalUpdater
-from cvp.variables import UNKNOWN_PID
 
 
 class ServicesStatusTab:
     _error: Optional[Union[BaseException, str]]
-    _pid: DeltaValue[int]
-    _updater: IntervalUpdater[ProcessState]
 
     def __init__(self, context: Context):
         self._context = context
+        self._updater = ProcessStateUpdater(interval=1.0)
         self._error = None
-        self._pid = DeltaValue.from_single_value(UNKNOWN_PID)
-        self._updater = IntervalUpdater(
-            initial=ProcessState(),
-            interval=1.0,
-            updater=self.on_update_process_info,
-        )
 
     @property
     def context(self):
@@ -44,21 +35,10 @@ class ServicesStatusTab:
     def text_error(self, text: str) -> None:
         imgui.text_colored(self.error_color, text)
 
-    def on_update_process_info(self) -> ProcessState:
-        if self._pid.value == UNKNOWN_PID:
-            return ProcessState()
-        else:
-            return ProcessState.from_pid(self._pid.value)
-
-    def get_latest_info(self, key: ServiceKey) -> ProcessState:
-        pid = self.services.get_process_pid(key)
-
+    def get_process_state(self, key: ServiceKey) -> ProcessState:
         try:
-            if self._pid.update(pid):
-                result = self._updater.force_update()
-            else:
-                result = self._updater.get()
-
+            process_pid = self.services.get_process_pid(key)
+            result = self._updater.update_pid(process_pid)
             self._error = None
             return result
         except (psutil.AccessDenied, psutil.NoSuchProcess) as e:
@@ -72,11 +52,12 @@ class ServicesStatusTab:
         stoppable = self.services.stoppable(service.key)
         imgui.begin_disabled(not stoppable)
         try:
-            self.do_psutil_process(self.get_latest_info(service.key))
+            state = self.get_process_state(service.key)
+            self.do_state_process(state)
         finally:
             imgui.end_disabled()
 
-    def do_psutil_process(self, proc: ProcessState) -> None:
+    def do_state_process(self, proc: ProcessState) -> None:
         if self._error is not None:
             self.text_error(str(self._error))
 
