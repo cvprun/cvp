@@ -41,6 +41,7 @@ class ModeManager:
         from cvp.apps.player.modes.swagger import SwaggerMode
         from cvp.apps.player.modes.system import SystemMode
         from cvp.apps.player.modes.terminal import TerminalMode
+        from cvp.apps.player.modes.text import TextMode
         from cvp.apps.player.modes.threading import ThreadingMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.video import VideoPlayerMode
@@ -78,6 +79,7 @@ class ModeManager:
         self.swagger_mode = SwaggerMode(context)
         self.system_mode = SystemMode(context)
         self.terminal_mode = TerminalMode(context)
+        self.text_mode = TextMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.threading_mode = ThreadingMode(context)
         self.watchdog_mode = WatchdogMode(context)
@@ -115,6 +117,7 @@ class ModeManager:
             self.swagger_mode,
             self.system_mode,
             self.terminal_mode,
+            self.text_mode,
             self.threading_mode,
             self.watchdog_mode,
             self.wsdiscovery_mode,
