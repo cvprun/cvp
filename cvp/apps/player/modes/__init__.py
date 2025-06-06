@@ -40,6 +40,7 @@ class ModeManager:
         from cvp.apps.player.modes.sockmap import SockmapMode
         from cvp.apps.player.modes.swagger import SwaggerMode
         from cvp.apps.player.modes.system import SystemMode
+        from cvp.apps.player.modes.tail import TailMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.text import TextMode
         from cvp.apps.player.modes.threading import ThreadingMode
@@ -78,6 +79,7 @@ class ModeManager:
         self.sockmap_mode = SockmapMode(context)
         self.swagger_mode = SwaggerMode(context)
         self.system_mode = SystemMode(context)
+        self.tail_mode = TailMode(context)
         self.terminal_mode = TerminalMode(context)
         self.text_mode = TextMode(context)
         self.tetrix_mode = TetrixMode(context)
@@ -116,6 +118,7 @@ class ModeManager:
             self.sockmap_mode,
             self.swagger_mode,
             self.system_mode,
+            self.tail_mode,
             self.terminal_mode,
             self.text_mode,
             self.threading_mode,

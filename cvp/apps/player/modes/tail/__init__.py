@@ -8,7 +8,7 @@ from pygame import DROPFILE
 from pygame.event import Event
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.assets.fonts.mdi import FILE_DOCUMENT
+from cvp.assets.fonts.mdi import FILE_EYE
 from cvp.concurrency.threading.progress_value import ProgressValue
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
@@ -21,9 +21,9 @@ from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 
-class TextMode(BaseMode):
-    __cvp_mode_name__ = "Text"
-    __cvp_mode_icon__ = FILE_DOCUMENT
+class TailMode(BaseMode):
+    __cvp_mode_name__ = "Tail"
+    __cvp_mode_icon__ = FILE_EYE
 
     def __init__(self, context: Context):
         super().__init__(context)
