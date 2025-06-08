@@ -103,12 +103,12 @@ class Process:
             pass_fds=tuple(pass_fds or ()),
             user=user,
             group=group,
-            # extra_groups=extra_groups or None,
-            # encoding=encoding,
-            # errors=errors,
-            # text=text,
-            # umask=umask or -1,
-            # pipesize=pipe_size or -1,
+            extra_groups=extra_groups or None,
+            encoding=encoding,
+            errors=errors,
+            text=text,
+            umask=umask or -1,
+            pipesize=pipe_size or -1,
             process_group=process_group,
         )
         assert self._popen.pid != 0

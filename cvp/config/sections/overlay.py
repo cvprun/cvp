@@ -20,8 +20,10 @@ class OverlayConfig:
     anchor: Anchor = Anchor.top_left
     padding: float = 10.0
     alpha: float = 0.2
+
     fps_warning_threshold: float = 30.0
     fps_error_threshold: float = 8.0
+
     error_color: RGBA = RED_RGBA
     normal_color: RGBA = GREEN_RGBA
     warning_color: RGBA = YELLOW_RGBA
@@ -69,3 +71,11 @@ class OverlayConfig:
     @property
     def is_bottom_side(self):
         return not self.is_top_side
+
+    def get_framerate_color(self, framerate: float) -> RGBA:
+        if framerate >= self.fps_warning_threshold:
+            return self.normal_color
+        elif framerate >= self.fps_error_threshold:
+            return self.warning_color
+        else:
+            return self.error_color

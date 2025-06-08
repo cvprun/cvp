@@ -3,6 +3,7 @@
 import os
 from collections import OrderedDict
 from io import StringIO
+from math import floor
 from os import PathLike
 from pathlib import Path
 from typing import Callable, Optional, Tuple
@@ -33,6 +34,7 @@ from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.confirm import ConfirmPopup
 from cvp.imgui.push_style_var import style_frame_border_size_context
+from cvp.imgui.text_colored import text_colored
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.shortcut import Shortcut
@@ -55,7 +57,6 @@ class PlayerApplication:
     def __init__(self, context: Context):
         self._context = context
         self._profiler = ProfileLogging(profile_logger)
-        self._show_debug_status = context.debug
 
         self._toast = ToastWindow(context)
         self._overlay = OverlayWindow(context)
@@ -454,6 +455,11 @@ class PlayerApplication:
             finally:
                 imgui.end_main_menu_bar()
 
+    def text_colored_framerate(self, prefix="FPS: ", suffix="") -> None:
+        framerate = imgui.get_io().framerate
+        color = self._context.config.overlay.get_framerate_color(framerate)
+        text_colored(f"{prefix}{floor(framerate)}{suffix}", color)
+
     def on_status_bar(self) -> None:
         if imgui.internal.begin_viewport_side_bar(
             "##StatusBar",
@@ -476,7 +482,9 @@ class PlayerApplication:
                         imgui.text(input_method.get_composing())
 
                         with style_frame_border_size_context(0.0):
-                            if self._show_debug_status:
+                            if self._context.config.developer.persistent_debug:
+                                self.text_colored_framerate()
+
                                 is_debug = self._context.config.developer.debug
                                 bug_icon = mdi.BUG if is_debug else mdi.BUG_PAUSE
                                 if imgui.small_button(bug_icon):
@@ -486,7 +494,7 @@ class PlayerApplication:
                                 hovered_tooltip_text(f"DEBUG mode is {bug_text}")
 
                                 if imgui.small_button(f"V{self.verbose}"):
-                                    pass
+                                    self._context.config.developer.rotate_verbose()
                                 hovered_tooltip_text(f"Verbose level: {self.verbose}")
 
                             if imgui.small_button(input_method.get_icon()):

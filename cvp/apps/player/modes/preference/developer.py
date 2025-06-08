@@ -20,19 +20,19 @@ class DeveloperPreference(BasePreference):
 
     @property
     def debug(self) -> bool:
-        return self.config.debug
+        return self.config.persistent_debug
 
     @debug.setter
-    def debug(self, value: bool):
-        self.config.debug = value
+    def debug(self, value: bool) -> None:
+        self.config.set_persistent_debug(value, update_temp=True)
 
     @property
     def verbose(self) -> int:
-        return self.config.verbose
+        return self.config.persistent_verbose
 
     @verbose.setter
-    def verbose(self, value: int):
-        self.config.verbose = value
+    def verbose(self, value: int) -> None:
+        self.config.set_persistent_verbose(value, update_temp=True)
 
     @override
     def on_process(self) -> None:

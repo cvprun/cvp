@@ -12,7 +12,6 @@ from cvp.imgui.flags.window import WindowFlags, merge_window_flags
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.text_colored import text_colored
 from cvp.psutil.usage import SystemUsage
-from cvp.types.colors import RGBA
 
 _OVERLAY_WINDOW_FLAGS: Final[int] = merge_window_flags(
     WindowFlags.no_move,
@@ -72,14 +71,6 @@ class OverlayWindow:
         y = 0.0 if self.is_top_side else 1.0
         return x, y
 
-    def get_framerate_color(self, framerate: float) -> RGBA:
-        if framerate >= self.config.fps_warning_threshold:
-            return self.config.normal_color
-        elif framerate >= self.config.fps_error_threshold:
-            return self.config.warning_color
-        else:
-            return self.config.error_color
-
     def on_process(self) -> None:
         if not self.opened:
             return
@@ -90,7 +81,7 @@ class OverlayWindow:
         imgui.set_next_window_bg_alpha(self.config.alpha)
         with begin_context("Overlay", closable=False, flags=_OVERLAY_WINDOW_FLAGS):
             io = imgui.get_io()
-            framerate_color = self.get_framerate_color(io.framerate)
+            framerate_color = self.config.get_framerate_color(io.framerate)
             text_colored(f"FPS: {floor(io.framerate)}", framerate_color)
 
             imgui.text(f"Vertices: {io.metrics_render_vertices}")
