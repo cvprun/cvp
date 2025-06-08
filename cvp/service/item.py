@@ -208,6 +208,25 @@ class ServiceItem:
 
     pid_file: str = field(default_factory=str)
 
+    # preexec_fn=None,
+    # close_fds=True,
+    # shell=False,
+    # universal_newlines=None,
+    # startupinfo=None,
+    # creationflags=creation_flags,
+    # restore_signals=True,
+    # start_new_session=False,
+    # pass_fds=(),
+    # user=None,
+    # group=None,
+    # extra_groups=None,
+    # encoding=None,
+    # errors=None,
+    # text=None,
+    # umask=-1,
+    # pipesize=-1,
+    # process_group=None,
+
     @property
     def key(self):
         return ServiceKey(self.uuid)
