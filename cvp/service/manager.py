@@ -90,8 +90,11 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         process = self._spawn_new_process(self.__getitem__(key))
         self._processes[key] = process
 
-    @staticmethod
-    def _spawn_new_process(item: ServiceItem):
+    def _spawn_new_process(
+        self,
+        item: ServiceItem,
+        dt: Optional[datetime] = None,
+    ):
         args = item.normalize_commands
         if not args:
             raise ValueError("No command arguments provided to spawn the process")
@@ -103,16 +106,41 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         if item.cwd and not os.path.isdir(item.cwd):
             raise NotADirectoryError(f"Working directory does not exist: '{item.cwd}'")
 
+        if dt is None:
+            dt = datetime.now().astimezone()
+        assert isinstance(dt, datetime)
+
+        def _gen_stdin_file():
+            return self.generate_stream_log_path(item.key, item.stdin, dt, mkdirs=True)
+
+        def _gen_stdout_file():
+            return self.generate_stream_log_path(item.key, item.stdout, dt, mkdirs=True)
+
+        def _gen_stderr_file():
+            return self.generate_stream_log_path(item.key, item.stderr, dt, mkdirs=True)
+
         return Process(
             args=args,
             buffer_size=item.buffer_size,
-            stdin=None,
-            stdout=None,
-            stderr=None,
+            stdin=item.stdin.open(path_generator=_gen_stdin_file),
+            stdout=item.stdout.open(path_generator=_gen_stdout_file),
+            stderr=item.stderr.open(path_generator=_gen_stderr_file),
             cwd=item.cwd or None,
             env=item.env or None,
             creation_flags=item.creation_flags,
             name=item.name or None,
+            pass_fds=item.pass_fds or None,
+            user=item.user or None,
+            group=item.group or None,
+            extra_groups=item.extra_groups or None,
+            encoding=item.encoding or None,
+            errors=item.errors or None,
+            text=item.text or None,
+            umask=item.umask,
+            pipe_size=item.pipe_size,
+            process_group=item.process_group,
+            stream_buffers=None,
+            teardown=None,
         )
 
     def generate_stream_log_path(
@@ -120,8 +148,14 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         key: ServiceKey,
         stream: StreamInfo,
         dt: Optional[datetime] = None,
+        mkdirs=False,
     ):
-        return self._processes_path.generate_log_path(str(key), stream.name, dt)
+        return self._processes_path.generate_log_path(
+            key=str(key),
+            stream=stream.name,
+            dt=dt,
+            mkdirs=mkdirs,
+        )
 
     def get_pid_file_path(self, key: ServiceKey):
         return self._processes_path.get_pid_path(str(key))

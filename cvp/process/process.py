@@ -5,7 +5,7 @@ import os
 from argparse import Namespace
 from signal import SIGINT
 from subprocess import DEVNULL, Popen
-from typing import IO, Callable, Mapping, Optional, Sequence, Tuple, Union
+from typing import IO, Callable, Iterable, Mapping, Optional, Sequence, Tuple, Union
 
 import psutil
 
@@ -24,6 +24,16 @@ class ProcessInit(Namespace):
     env: Optional[Union[Mapping[str, str], Mapping[bytes, bytes]]]
     creation_flags: Optional[int]
     name: Optional[str]
+    pass_fds: Optional[Iterable[int]]
+    user: Optional[Union[str, str]]
+    group: Optional[Union[str, str]]
+    extra_groups: Optional[Iterable[Union[str, int]]]
+    encoding: Optional[str]
+    errors: Optional[str]
+    text: Optional[bool]
+    umask: Optional[int]
+    pipe_size: Optional[int]
+    process_group: Optional[int]
 
 
 class Process:
@@ -38,6 +48,16 @@ class Process:
         env: Optional[Union[Mapping[str, str], Mapping[bytes, bytes]]] = None,
         creation_flags: Optional[int] = None,
         name: Optional[str] = None,
+        pass_fds: Optional[Iterable[int]] = None,
+        user: Optional[Union[str, str]] = None,
+        group: Optional[Union[str, str]] = None,
+        extra_groups: Optional[Iterable[Union[str, int]]] = None,
+        encoding: Optional[str] = None,
+        errors: Optional[str] = None,
+        text: Optional[bool] = None,
+        umask: Optional[int] = None,
+        pipe_size: Optional[int] = None,
+        process_group: Optional[int] = None,
         *,
         stream_buffers: Optional[StreamBufferPair] = None,
         teardown: Optional[Callable[..., None]] = None
@@ -80,16 +100,16 @@ class Process:
             creationflags=creation_flags,
             restore_signals=True,
             start_new_session=False,
-            pass_fds=(),
-            user=None,
-            group=None,
-            extra_groups=None,
-            encoding=None,
-            errors=None,
-            text=None,
-            umask=-1,
-            pipesize=-1,
-            process_group=None,
+            pass_fds=pass_fds or (),
+            user=user,
+            group=group,
+            extra_groups=extra_groups or None,
+            encoding=encoding,
+            errors=errors,
+            text=text,
+            umask=umask or -1,
+            pipesize=pipe_size or -1,
+            process_group=process_group,
         )
         assert self._popen.pid != 0
         self._psutil = psutil.Process(self._popen.pid)
@@ -108,6 +128,16 @@ class Process:
             env=init.env,
             creation_flags=init.creation_flags,
             name=init.name,
+            pass_fds=init.pass_fds,
+            user=init.user,
+            group=init.group,
+            extra_groups=init.extra_groups,
+            encoding=init.encoding,
+            errors=init.errors,
+            text=init.text,
+            umask=init.umask,
+            pipe_size=init.pipe_size,
+            process_group=init.process_group,
         )
 
     @property

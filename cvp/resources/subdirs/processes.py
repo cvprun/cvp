@@ -36,8 +36,17 @@ class ProcessesPath(PathFlavour):
         filename = self.generate_logfile_name(stream, dt)
         return self.logfile_prefix + filename + self.logfile_suffix
 
-    def generate_log_path(self, key: str, stream: str, dt: Optional[datetime] = None):
-        return self.as_path() / key / self.generate_logfile_fullname(stream, dt)
+    def generate_log_path(
+        self,
+        key: str,
+        stream: str,
+        dt: Optional[datetime] = None,
+        mkdirs=False,
+    ):
+        parent_dirpath = self.as_path() / key
+        if mkdirs:
+            parent_dirpath.mkdir(parents=True, exist_ok=True)
+        return parent_dirpath / self.generate_logfile_fullname(stream, dt)
 
     def get_pid_path(self, key: str):
         return self.as_path() / (key + self.pidfile_suffix)

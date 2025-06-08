@@ -3,14 +3,14 @@
 import io
 import os
 import shlex
+import subprocess
 import sys
 from dataclasses import dataclass, field
-from enum import StrEnum, auto, unique
+from enum import IntFlag, StrEnum, auto, unique
 from getpass import getuser
 from grp import getgrgid
 from pathlib import Path
-from subprocess import DEVNULL, PIPE, STDOUT
-from typing import Dict, Final, List, NewType, Optional, Union
+from typing import Callable, Dict, Final, List, NewType, Optional, Union
 from uuid import uuid4
 
 from cvp.paths.normalize import normalize_path
@@ -66,17 +66,17 @@ class StreamInfo:
     @classmethod
     def from_stdin(cls):
         assert 0 == STDIN_FILE_HANDLE
-        return cls(STDIN_FILE_HANDLE, DEVNULL)
+        return cls(STDIN_FILE_HANDLE, subprocess.DEVNULL)
 
     @classmethod
     def from_stdout(cls):
         assert 1 == STDOUT_FILE_HANDLE
-        return cls(STDOUT_FILE_HANDLE, DEVNULL)
+        return cls(STDOUT_FILE_HANDLE, subprocess.DEVNULL)
 
     @classmethod
     def from_stderr(cls):
         assert 2 == STDERR_FILE_HANDLE
-        return cls(STDERR_FILE_HANDLE, DEVNULL)
+        return cls(STDERR_FILE_HANDLE, subprocess.DEVNULL)
 
     @property
     def is_stdin(self) -> bool:
@@ -109,7 +109,7 @@ class StreamInfo:
         `Popen` and indicates that a pipe to the standard stream should be opened.
         Most useful with `Popen.communicate()`.
         """
-        return self.handle == PIPE
+        return self.handle == subprocess.PIPE
 
     @property
     def is_same_standard_output(self) -> bool:
@@ -117,7 +117,7 @@ class StreamInfo:
         Special value that can be used as the stderr argument to `Popen` and indicates
         that standard error should go into the same handle as standard output.
         """
-        return self.handle == STDOUT
+        return self.handle == subprocess.STDOUT
 
     @property
     def is_devnull(self) -> bool:
@@ -125,7 +125,7 @@ class StreamInfo:
         Special value that can be used as the stdin, stdout or stderr argument to
         `Popen` and indicates that the special file `os.devnull` will be used.
         """
-        return self.handle == DEVNULL
+        return self.handle == subprocess.DEVNULL
 
     @property
     def is_same_type(self) -> bool:
@@ -144,13 +144,13 @@ class StreamInfo:
         self.file = file if file else str()
 
     def set_pipe(self) -> None:
-        self.handle = PIPE
+        self.handle = subprocess.PIPE
 
     def set_same_standard_output(self) -> None:
-        self.handle = STDOUT
+        self.handle = subprocess.STDOUT
 
     def set_devnull(self) -> None:
-        self.handle = DEVNULL
+        self.handle = subprocess.DEVNULL
 
     def set_default_stream_number(self) -> None:
         self.handle = self.type
@@ -160,6 +160,35 @@ class StreamInfo:
 
     def set_none_handle(self) -> None:
         self.handle = None
+
+    def open(
+        self,
+        *,
+        path_generator: Optional[Callable[[], str]] = None,
+        mode=0o600,
+    ) -> int:
+        if self.is_handle:
+            assert self.handle is not None
+            return self.handle
+
+        assert self.is_file
+        assert self.handle is None
+
+        if self.file:
+            file = self.file
+        elif path_generator:
+            file = path_generator()
+        else:
+            raise ValueError("No file source specified")
+
+        if self.is_stdin:
+            if not os.path.exists(file):
+                os.close(os.open(file, os.O_WRONLY | os.O_CREAT, mode))
+            flags = os.O_RDONLY
+        else:
+            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+
+        return os.open(file, flags, mode)
 
 
 @dataclass
@@ -194,8 +223,16 @@ class ServiceItem:
     env: Dict[str, str] = field(default_factory=dict)
     creation_flags: int = field(default_factory=default_creation_flags)
 
+    pass_fds: List[int] = field(default_factory=list)
     user: str = field(default_factory=getuser)
     group: str = field(default_factory=lambda: getgrgid(os.getgid()).gr_name)
+    extra_groups: List[str] = field(default_factory=list)
+    encoding: str = field(default_factory=str)
+    errors: str = field(default_factory=str)
+    text: bool = False
+    umask: int = -1
+    pipe_size: int = -1
+    process_group: int = -1
 
     restart: str = field(default_factory=str)
     restart_delay: float = 1.0
@@ -207,25 +244,6 @@ class ServiceItem:
     base_class_kwargs: Dict[str, str] = field(default_factory=dict)
 
     pid_file: str = field(default_factory=str)
-
-    # preexec_fn=None,
-    # close_fds=True,
-    # shell=False,
-    # universal_newlines=None,
-    # startupinfo=None,
-    # creationflags=creation_flags,
-    # restore_signals=True,
-    # start_new_session=False,
-    # pass_fds=(),
-    # user=None,
-    # group=None,
-    # extra_groups=None,
-    # encoding=None,
-    # errors=None,
-    # text=None,
-    # umask=-1,
-    # pipesize=-1,
-    # process_group=None,
 
     @property
     def key(self):
@@ -315,3 +333,7 @@ class ServiceItem:
         items = filter(lambda x: x.strip(), value.split(sep=COMMA))
         codes = map(lambda x: int(x), items)
         return list(codes)
+
+    @property
+    def is_text_mode(self) -> bool:
+        return bool(self.encoding or self.errors or self.text)

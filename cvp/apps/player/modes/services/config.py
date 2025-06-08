@@ -17,6 +17,7 @@ from cvp.imgui.flags.child import AUTO_RESIZE_Y, BORDERS
 from cvp.imgui.input_float import input_float
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
+from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.imgui.input_text_multiline import (
     calc_input_text_multiline_with_line_count,
     input_text_multiline,
@@ -184,6 +185,8 @@ class ServicesConfigTab:
         hovered_tooltip_text_wrapped(
             "When activated, the program will automatically launch at startup",
         )
+
+        input_text_disabled("UUID", service.uuid)
 
         if name := input_text("Name", service.name):
             service.name = name.value
@@ -355,6 +358,9 @@ class ServicesConfigTab:
             self._selected_service = service
             self._pid_file_browser.set_location(service.pid_file)
             self._pid_file_browser.show()
+
+        if text_mode := checkbox("Text Mode", service.text):
+            service.text = text_mode.state
 
     def do_stream_process(self, label: str, stream: StreamInfo) -> None:
         with begin_child_context(
