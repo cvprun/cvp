@@ -6,7 +6,7 @@ import shlex
 import subprocess
 import sys
 from dataclasses import dataclass, field
-from enum import IntFlag, StrEnum, auto, unique
+from enum import StrEnum, auto, unique
 from getpass import getuser
 from grp import getgrgid
 from pathlib import Path

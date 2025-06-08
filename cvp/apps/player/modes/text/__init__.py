@@ -57,6 +57,9 @@ class TextMode(BaseMode):
             progress.set(0, limit=100)
             if hasattr(file, "read"):
                 text = file.read()
+                if isinstance(text, bytes):
+                    text = text.decode(encoding="utf-8", errors="strict")
+                assert isinstance(text, str)
             else:
                 with open(file, "rt") as f:
                     text = f.read()
