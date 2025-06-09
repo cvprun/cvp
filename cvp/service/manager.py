@@ -2,25 +2,31 @@
 
 import os
 from datetime import datetime
-from typing import Optional, Tuple
+from typing import Dict, Optional, Tuple
 from uuid import uuid4
+from weakref import ReferenceType, ref
 
+from cvp.msgs.msg_queue import MsgQueue
 from cvp.process.mapper import ProcessMapper
 from cvp.process.process import Process
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.services import ServicesPath
-from cvp.service.item import ServiceItem, ServiceKey, StreamInfo
+from cvp.service.dispatcher import ServicePollDispatcher
+from cvp.service.item import RestartPolicy, ServiceItem, ServiceKey, StreamInfo
 from cvp.variables import SERVICE_NONAME
 
 
 class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
+    _msgs: ReferenceType[MsgQueue]
     _processes: ProcessMapper[ServiceKey, Process]
+    _dispatchers: Dict[ServiceKey, ServicePollDispatcher]
 
     def __init__(
         self,
         path: ServicesPath,
         processes_path: ProcessesPath,
+        msgs: MsgQueue,
         *,
         reload=False,
         raise_errors=False,
@@ -33,7 +39,16 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             raise_errors=raise_errors,
         )
         self._processes_path = processes_path
+        self._msgs = ref(msgs)
         self._processes = ProcessMapper()
+        self._dispatchers = dict()
+
+    @property
+    def msgs(self) -> MsgQueue:
+        result = self._msgs()
+        if result is None:
+            raise ReferenceError("Expired msgs instance")
+        return result
 
     def add_service(
         self,
@@ -50,6 +65,37 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
         self.add(item.key, item)
         return item.key, item
+
+    def update_exited_process(self, key: str) -> None:
+        service_key = ServiceKey(key)
+
+        process = self._processes[service_key]
+        if process.is_alive():
+            raise
+
+        dispatcher = self._dispatchers[service_key]
+        if dispatcher.is_alive():
+            raise
+
+        del self._dispatchers[service_key]
+        service = self.__getitem__(service_key)
+
+        if service.restart_policy == RestartPolicy.none:
+            return
+        elif service.restart_policy == RestartPolicy.on_failure:
+            code = process.returncode
+            success_exit_codes = service.success_exit_codes or [0]
+            if code in success_exit_codes:
+                return
+            if service.restart_max_attempts <= service.current_restart_attempts:
+                return
+            service.current_restart_attempts += 1
+        elif service.restart_policy == RestartPolicy.always:
+            pass
+        else:
+            assert False, "Inaccessible section"
+
+        # service.restart_delay  # TODO
 
     def has_process(self, key: ServiceKey):
         return self._processes.__contains__(key)
@@ -88,13 +134,12 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         if self._processes.__contains__(key):
             raise KeyError(f"A process with key '{key}' is already running")
         process = self._spawn_new_process(self.__getitem__(key))
+        dispatcher = ServicePollDispatcher(self.msgs, process, key=key)
+        dispatcher.start()
+        self._dispatchers[key] = dispatcher
         self._processes[key] = process
 
-    def _spawn_new_process(
-        self,
-        item: ServiceItem,
-        dt: Optional[datetime] = None,
-    ):
+    def _spawn_new_process(self, item: ServiceItem, dt: Optional[datetime] = None):
         args = item.normalize_commands
         if not args:
             raise ValueError("No command arguments provided to spawn the process")

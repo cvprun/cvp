@@ -30,6 +30,9 @@ class MsgType(IntEnum):
     file_closed_no_write = auto()
     file_opened = auto()
 
+    # Process events
+    process_exited = auto()
+
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' name here"
 
 

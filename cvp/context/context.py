@@ -124,6 +124,7 @@ class Context(ContextMixins):
         self._services = ServiceManager(
             self._home.services,
             self._home.processes,
+            self._msgs,
             reload=True,
         )
         self._wsdiscovery = WsDiscoveryManager(self._home.wsdiscovery, reload=True)

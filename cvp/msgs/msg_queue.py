@@ -7,8 +7,9 @@ from typing import List, Optional, Union
 
 from cvp.debugging.markers import (
     __MSG_ADD_A_NEW_TODO__,
-    __TOAST_FS_EVENTS_PAIR__,
-    __WATCHDOG_FS_EVENTS_PAIR__,
+    __PROCESS_POLL_EVENTS_PAIR__,
+    __TOAST_EVENTS_PAIR__,
+    __WATCHDOG_EVENTS_PAIR__,
 )
 from cvp.logging.logging import convert_level_number
 from cvp.msgs.msg import Msg
@@ -54,7 +55,7 @@ class MsgQueue(Queue[Msg]):
         return msg
 
     # ----------------------------------------------------------------------------------
-    assert __TOAST_FS_EVENTS_PAIR__, "Toast methods BEGIN"
+    assert __TOAST_EVENTS_PAIR__, "Toast methods BEGIN"
     # ----------------------------------------------------------------------------------
 
     def append_toast(self, message: str, level: Optional[Union[int, str]] = None):
@@ -104,8 +105,8 @@ class MsgQueue(Queue[Msg]):
         return self.toast(message, DEBUG, logger=logger)
 
     # ----------------------------------------------------------------------------------
-    assert __TOAST_FS_EVENTS_PAIR__, "Toast methods END"
-    assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events BEGIN"
+    assert __TOAST_EVENTS_PAIR__, "Toast methods END"
+    assert __WATCHDOG_EVENTS_PAIR__, "Watchdog filesystem events BEGIN"
     # ----------------------------------------------------------------------------------
 
     def file_moved(self, src: str, dest: str, isdir: bool):
@@ -135,9 +136,14 @@ class MsgQueue(Queue[Msg]):
         return self.append_msg(MsgType.file_opened, src=src, dest=dest, isdir=isdir)
 
     # ----------------------------------------------------------------------------------
-    assert __WATCHDOG_FS_EVENTS_PAIR__, "Watchdog filesystem events END"
+    assert __WATCHDOG_EVENTS_PAIR__, "Watchdog filesystem events END"
+    assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events BEGIN"
     # ----------------------------------------------------------------------------------
 
+    def process_exit(self, key: str, pid: int, code: int):
+        return self.append_msg(MsgType.process_exited, key=key, pid=pid, code=code)
+
     # ----------------------------------------------------------------------------------
+    assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."  # TODO
     # ----------------------------------------------------------------------------------

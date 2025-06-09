@@ -166,6 +166,7 @@ class StreamInfo:
         *,
         path_generator: Optional[Callable[[], str]] = None,
         mode=0o600,
+        trunc=False,
     ) -> int:
         if self.is_handle:
             assert self.handle is not None
@@ -181,12 +182,14 @@ class StreamInfo:
         else:
             raise ValueError("No file source specified")
 
+        write_flags = os.O_WRONLY | os.O_CREAT | (os.O_TRUNC if trunc else 0)
+
         if self.is_stdin:
             if not os.path.exists(file):
-                os.close(os.open(file, os.O_WRONLY | os.O_CREAT, mode))
+                os.close(os.open(file, write_flags, mode))
             flags = os.O_RDONLY
         else:
-            flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC
+            flags = write_flags
 
         return os.open(file, flags, mode)
 
@@ -237,6 +240,7 @@ class ServiceItem:
     restart: str = field(default_factory=str)
     restart_delay: float = 1.0
     restart_max_attempts: int = 1
+    current_restart_attempts: int = 0
 
     success_exit_codes: List[int] = field(default_factory=lambda: [0])
 
