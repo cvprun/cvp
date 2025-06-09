@@ -17,13 +17,14 @@ def menu_recent_items(
     *,
     suffix=None,
     append_clear_menu=False,
+    no_reversed=False,
     clear_menu_label=CLEAR_RECENT_ITEMS_MENU_LABEL,
 ) -> Optional[RecentItem]:
     recent_items = config.get_recent_items(cls, suffix=suffix)
 
     if imgui.begin_menu(label, enabled=bool(recent_items)):
         try:
-            for item in recent_items:
+            for item in reversed(recent_items) if not no_reversed else recent_items:
                 if menu_item(item.value):
                     return item
 
