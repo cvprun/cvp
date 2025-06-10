@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
 from logging import DEBUG, ERROR, INFO, WARNING, Logger
 from multiprocessing import get_context
 from multiprocessing.queues import Queue
@@ -8,6 +9,7 @@ from typing import List, Optional, Union
 from cvp.debugging.markers import (
     __MSG_ADD_A_NEW_TODO__,
     __PROCESS_POLL_EVENTS_PAIR__,
+    __SCHEDULER_EVENTS_PAIR__,
     __TOAST_EVENTS_PAIR__,
     __WATCHDOG_EVENTS_PAIR__,
 )
@@ -145,5 +147,13 @@ class MsgQueue(Queue[Msg]):
 
     # ----------------------------------------------------------------------------------
     assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
+    assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"
+    # ----------------------------------------------------------------------------------
+
+    def job_scheduled(self, key: str, scheduled: datetime):
+        return self.append_msg(MsgType.job_scheduled, key=key, scheduled=scheduled)
+
+    # ----------------------------------------------------------------------------------
+    assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events END"
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."  # TODO
     # ----------------------------------------------------------------------------------

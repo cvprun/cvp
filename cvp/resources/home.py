@@ -11,6 +11,7 @@ from cvp.resources.subdirs.canvases import CanvasesPath
 from cvp.resources.subdirs.chat import ChatPath
 from cvp.resources.subdirs.downloads import DownloadsPath
 from cvp.resources.subdirs.flows import FlowsPath
+from cvp.resources.subdirs.jobs import JobsPath
 from cvp.resources.subdirs.keyrings import KeyringsPath
 from cvp.resources.subdirs.layouts import LayoutsPath
 from cvp.resources.subdirs.logs import LogsPath
@@ -40,6 +41,7 @@ class HomeDir(PathFlavour):
         self.chat = ChatPath.classname_subdir(self)
         self.downloads = DownloadsPath.classname_subdir(self)
         self.flows = FlowsPath.classname_subdir(self)
+        self.jobs = JobsPath.classname_subdir(self)
         self.keyrings = KeyringsPath.classname_subdir(self)
         self.layouts = LayoutsPath.classname_subdir(self)
         self.logs = LogsPath.classname_subdir(self)
@@ -60,6 +62,7 @@ class HomeDir(PathFlavour):
             self.chat,
             self.downloads,
             self.flows,
+            self.jobs,
             self.keyrings,
             self.layouts,
             self.logs,

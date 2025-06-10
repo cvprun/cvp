@@ -4,6 +4,7 @@ PyOpenGL_accelerate==3.1.9
 PyYAML==6.0.2
 WSDiscovery==2.1.2
 coloredlogs==15.0.1
+croniter==6.0.0
 distro==1.9.0
 fonttools==4.54.1
 httpx==0.28.1

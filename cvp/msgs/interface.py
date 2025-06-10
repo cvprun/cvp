@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABCMeta
+from datetime import datetime
 from typing import Optional, Union
 
 from cvp.debugging.markers import (
     __MSG_ADD_A_NEW_TODO__,
     __PROCESS_POLL_EVENTS_PAIR__,
+    __SCHEDULER_EVENTS_PAIR__,
     __TOAST_EVENTS_PAIR__,
     __WATCHDOG_EVENTS_PAIR__,
 )
@@ -70,5 +72,14 @@ class MsgInterface(metaclass=ABCMeta):
 
     # ----------------------------------------------------------------------------------
     assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
+    assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"
+    # ----------------------------------------------------------------------------------
+
+    @abstractmsg(MsgType.job_scheduled)
+    def on_job_scheduled(self, key: str, scheduled: datetime):
+        raise NotImplementedError
+
+    # ----------------------------------------------------------------------------------
+    assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events END"
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' method here."  # TODO
     # ----------------------------------------------------------------------------------

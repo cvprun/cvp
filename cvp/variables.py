@@ -90,8 +90,8 @@ MEDIA_FRAME_WIDTH: Final[int] = 400
 MEDIA_FRAME_HEIGHT: Final[int] = 300
 MEDIA_INSPECT_TIMEOUT: Final[float] = 3.0
 
+JOB_NONAME: Final[str] = "[New Job]"
 SERVICE_NONAME: Final[str] = "[New Service]"
-
 WATCHDOG_NONAME: Final[str] = "[New Watchdog]"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"

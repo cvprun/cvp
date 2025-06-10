@@ -33,6 +33,9 @@ class MsgType(IntEnum):
     # Process events
     process_exited = auto()
 
+    # Scheduler events
+    job_scheduled = auto()
+
     assert __MSG_ADD_A_NEW_TODO__, "Insert the 'msg' name here"
 
 

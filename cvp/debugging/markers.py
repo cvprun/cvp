@@ -12,3 +12,6 @@ __WATCHDOG_EVENTS_PAIR__ = MarkBeginEndPair.from_mark(__WATCHDOG_MARK__)
 
 __PROCESS_POLL_MARK__ = Mark("Process polling message events")
 __PROCESS_POLL_EVENTS_PAIR__ = MarkBeginEndPair.from_mark(__PROCESS_POLL_MARK__)
+
+__SCHEDULER_MARK__ = Mark("Scheduler events")
+__SCHEDULER_EVENTS_PAIR__ = MarkBeginEndPair.from_mark(__SCHEDULER_MARK__)
