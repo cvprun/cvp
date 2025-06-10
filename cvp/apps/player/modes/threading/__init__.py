@@ -29,9 +29,9 @@ class ThreadingMode(BaseMode):
             with begin_child_context("Main"):
                 imgui.text("Thread Monitoring")
                 imgui.separator()
-                self.on_child_process()
+                self.do_child_process()
 
-    def on_child_process(self) -> None:
+    def do_child_process(self) -> None:
         if imgui.begin_table("Table", self._TABLE_COLUMNS, self._TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Identifier")
