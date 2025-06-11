@@ -1,5 +1,5 @@
 aiohappyeyeballs==2.6.1
-aiohttp==3.11.18
+aiohttp==3.12.12
 aiosignal==1.3.2
 altgraph==0.17.4
 annotated-types==0.7.0
@@ -14,7 +14,8 @@ click==8.2.1
 colorama==0.4.6
 coloredlogs==15.0.1
 coverage==7.6.12
-cryptography==45.0.2
+croniter==6.0.0
+cryptography==45.0.4
 Cython==3.0.12
 deprecation==2.1.0
 distro==1.9.0
@@ -22,7 +23,7 @@ docutils==0.21.2
 Faker==37.1.0
 flake8==7.1.2
 fonttools==4.54.1
-frozenlist==1.6.0
+frozenlist==1.7.0
 glfw==2.9.0
 gotrue==2.12.0
 h11==0.16.0
@@ -71,13 +72,13 @@ pillow==11.1.0
 platformdirs==4.3.8
 pluggy==1.6.0
 plumbum==1.9.0
-postgrest==1.0.1
-propcache==0.3.1
+postgrest==1.0.2
+propcache==0.3.2
 psutil==7.0.0
 pycodestyle==2.12.1
 pycparser==2.22
 pycryptodome==3.23.0
-pydantic==2.11.4
+pydantic==2.11.5
 pydantic_core==2.33.2
 pydevd-pycharm==251.21418.69
 pyflakes==3.2.0
@@ -85,7 +86,7 @@ pygame-ce==2.5.3
 Pygments==2.19.1
 pyinotify==0.9.6
 pyinstaller==6.12.0
-pyinstaller-hooks-contrib==2025.4
+pyinstaller-hooks-contrib==2025.5
 PyJWT==2.10.1
 PyNaCl==1.5.0
 PyOpenGL==3.1.9
@@ -94,7 +95,7 @@ pystray==0.19.5
 pyte==0.8.2
 pytest==8.3.4
 pytest-cov==6.0.0
-pytest-mock==3.14.0
+pytest-mock==3.14.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.0.1
 python-mpv==1.0.8
@@ -110,7 +111,7 @@ rfc3986==2.0.0
 rich==14.0.0
 sagecipher==0.7.5
 SecretStorage==3.3.3
-setuptools==80.8.0
+setuptools==80.9.0
 shapely==2.0.7
 six==1.17.0
 sniffio==1.3.1
@@ -121,11 +122,12 @@ supafunc==0.9.4
 tqdm==4.67.1
 twine==6.1.0
 type-serialize==2.1.0
+types-croniter==6.0.0.20250411
 types-paramiko==3.5.0.20250516
 types-PyYAML==6.0.12.20250516
-types-requests==2.32.0.20250515
-typing-inspection==0.4.0
-typing_extensions==4.13.2
+types-requests==2.32.0.20250602
+typing-inspection==0.4.1
+typing_extensions==4.14.0
 tzdata==2025.2
 urllib3==2.4.0
 uvloop==0.21.0
@@ -135,5 +137,5 @@ websockets==14.2
 wheel==0.45.1
 WSDiscovery==2.1.2
 yaml-translator==1.0.1
-yarl==1.20.0
+yarl==1.20.1
 zeep==4.3.1
