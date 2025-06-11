@@ -10,6 +10,7 @@ from cvp.assets.fonts.mdi import WEB_CLOCK
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.fit_size import FIT_WIDTH
+from cvp.imgui.flags.child import AUTO_RESIZE_Y
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
 from cvp.imgui.flags.table_column import WIDTH_STRETCH
 from cvp.imgui.input_text_with_hint import input_text_with_hint
@@ -19,6 +20,8 @@ from cvp.types.override import override
 class TimeZoneMode(BaseMode):
     __cvp_mode_name__ = "TimeZone"
     __cvp_mode_icon__ = WEB_CLOCK
+
+    _TOP_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y
 
     _TABLE_COLUMNS: Final[int] = 3
     _TABLE_FLAGS: Final[int] = DEFAULT_TABLE_FLAGS
@@ -31,12 +34,16 @@ class TimeZoneMode(BaseMode):
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
-            with begin_child_context("Main"):
-                imgui.text("Available TimeZones")
-                imgui.separator()
-                self.do_child_process()
+            imgui.text("Available TimeZones")
+            imgui.separator()
 
-    def do_child_process(self) -> None:
+            with begin_child_context("Top", child_flags=self._TOP_CHILD_FLAGS):
+                self.do_top_process()
+
+            with begin_child_context("Main"):
+                self.do_main_process()
+
+    def do_top_process(self) -> None:
         imgui.set_next_item_width(FIT_WIDTH)
         self._filter = input_text_with_hint(
             label="##Filter",
@@ -44,6 +51,7 @@ class TimeZoneMode(BaseMode):
             value=self._filter,
         ).value
 
+    def do_main_process(self) -> None:
         if imgui.begin_table("Table", self._TABLE_COLUMNS, self._TABLE_FLAGS):
             try:
                 imgui.table_setup_column("Region", WIDTH_STRETCH)

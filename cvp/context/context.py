@@ -31,6 +31,7 @@ from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
 from cvp.resources.home import HomeDir
+from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
@@ -121,6 +122,12 @@ class Context(ContextMixins):
         self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
+        self._scheduler = Scheduler(
+            self._home.jobs,
+            self._msgs,
+            reload=True,
+            autostart=True,
+        )
         self._services = ServiceManager(
             self._home.services,
             self._home.processes,
@@ -167,7 +174,7 @@ class Context(ContextMixins):
             logger.info("Stop watchdog thread ...")
             self._watchdogs.stop()
 
-        logger.info(f"Stop watchdog thread ... ({timeout:.02f}s)")
+        logger.info(f"Join watchdog thread ... ({timeout:.02f}s)")
         self._watchdogs.join(timeout)
 
         logger.info("Close message queue ...")
@@ -178,6 +185,16 @@ class Context(ContextMixins):
 
         logger.info("Stop all flow runners")
         self._flows.stop_all_runners()
+
+        logger.info("Unschedule jobs ...")
+        self._scheduler.unschedule_all()
+
+        if self._scheduler.is_alive():
+            logger.info("Stop scheduler thread ...")
+            self._scheduler.quit()
+
+        logger.info(f"Join scheduler thread ... ({timeout:.02f}s)")
+        self._scheduler.join(timeout)
 
         logger.info(f"Stop all media processes ... ({timeout:.02f}s)")
         self._medias.shutdown(timeout)
@@ -213,11 +230,15 @@ class Context(ContextMixins):
 
     def save_flow_graph(self, graph: FlowGraph) -> None:
         self._flows.write_graph_file(graph)
-        logger.info(f"Save the graph file: '{graph.key}'")
+        logger.info(f"Save the Graph file: '{graph.key}'")
 
     def save_all_flow_graphs(self) -> None:
         self._flows.write_all_graph_file(raise_errors=False)
-        logger.info("Save all graph files")
+        logger.info("Save all Graph files")
+
+    def save_all_scheduler(self) -> None:
+        self._scheduler.write_all_config_files()
+        logger.info("Save all Schedule files")
 
     def save_all_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
@@ -242,6 +263,7 @@ class Context(ContextMixins):
         self.save_all_canvases()
         self.save_all_services()
         self.save_all_flow_graphs()
+        self.save_all_scheduler()
         self.save_all_wsdiscovery()
         self.save_all_downloader()
         self.save_all_onvifs()
@@ -282,6 +304,10 @@ class Context(ContextMixins):
     @property
     def flows(self):
         return self._flows
+
+    @property
+    def scheduler(self):
+        return self._scheduler
 
     @property
     def services(self):

@@ -32,8 +32,6 @@ class ServicesMode(BaseMode):
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
-    _ARGS_LINE_COUNT: Final[int] = 5
-
     def __init__(self, context: Context):
         super().__init__(context)
 

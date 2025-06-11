@@ -16,6 +16,7 @@ from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
 from cvp.resources.home import HomeDir
+from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.watchdog.manager import WatchdogManager
@@ -40,6 +41,7 @@ class ContextProtocol(Protocol):
     _canvases: CanvasManager
     _chat: ChatManager
     _flows: FlowManager
+    _scheduler: Scheduler
     _services: ServiceManager
     _wsdiscovery: WsDiscoveryManager
     _downloader: DownloadManager

@@ -28,6 +28,7 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
         reload=False,
         raise_errors=False,
         autostart=False,
+        no_clear=False,
         thread_name: Optional[str] = None,
     ):
         super().__init__(
@@ -53,7 +54,7 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
         if autostart:
             self.open()
             self.start()
-            # self.schedule_all(raise_errors=raise_errors)
+            self.schedule_all(no_clear=no_clear)
 
     def clear(self) -> None:
         with self._condition:
@@ -62,11 +63,11 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
             self._condition.notify_all()
 
     def schedule(self, key: JobKey, *, no_clear=False) -> None:
-        item = deepcopy(self.__getitem__(key))
+        job = deepcopy(self[key])
         if not no_clear:
-            item.clear_repeat_count()
+            job.clear_repeat_count()
         with self._condition:
-            self._scheduled[key] = item
+            self._scheduled[key] = job
             self._condition.notify_all()
 
     def unschedule(self, key: JobKey) -> None:
@@ -76,12 +77,12 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
             self._condition.notify_all()
 
     def schedule_all(self, *, no_clear=False) -> None:
-        items = {key: deepcopy(val) for key, val in self.items()}
+        jobs = {key: deepcopy(val) for key, val in self.items()}
         if not no_clear:
-            for item in items.values():
-                item.clear_repeat_count()
+            for job in jobs.values():
+                job.clear_repeat_count()
         with self._condition:
-            self._scheduled = items
+            self._scheduled = jobs
             self._condition.notify_all()
 
     def unschedule_all(self) -> None:
@@ -111,18 +112,6 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
         with self._condition:
             begin = datetime.now().astimezone()
             while not self._done:
-                next_schedule = find_min_next_schedule(self._scheduled, begin)
-                if next_schedule is not None:
-                    adjusted_begin = datetime.now().astimezone()
-                    # Update the reference time to ignore the delay caused during
-                    # schedule calculation.
-
-                    timeout = (next_schedule - adjusted_begin).total_seconds()
-                else:
-                    timeout = None
-
-                self._condition.wait(timeout)
-
                 end = datetime.now().astimezone()
                 emits = find_jobs_in_time_range(self._scheduled, begin, end)
                 begin = end
@@ -134,6 +123,18 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
                         continue
                     job.increment_repeat_count()
                     self.msgs.job_scheduled(job_key, job_schedule)
+
+                next_schedule = find_min_next_schedule(self._scheduled, begin)
+                if next_schedule is not None:
+                    adjusted_begin = datetime.now().astimezone()
+                    # Update the reference time to ignore the delay caused during
+                    # schedule calculation.
+
+                    timeout = (next_schedule - adjusted_begin).total_seconds()
+                else:
+                    timeout = None
+
+                self._condition.wait(timeout)
 
     @property
     def thread(self) -> Thread:
