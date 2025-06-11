@@ -33,7 +33,7 @@ from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.canvas.controllable import ControllableCanvas
 from cvp.imgui.widgets.shortcut import Shortcut
 from cvp.logging.loggers import flow_logger as logger
-from cvp.maths.geometry.rectangle import is_rectangle_collision
+from cvp.maths.geometry.bbox.intersection import is_bbox_boundary_contact
 from cvp.types.colors import RGBA
 from cvp.types.override import override
 from cvp.types.shapes import Rect
@@ -947,7 +947,7 @@ class GraphFlowWindow(ControllableCanvas, BaseWindow):
         canvas_roi = self.screen_to_canvas_roi(self._roi)
 
         for node in self.graph.nodes:
-            if is_rectangle_collision(canvas_roi, node.node_roi):
+            if is_bbox_boundary_contact(canvas_roi, node.node_roi):
                 node.selected = node not in self._selection_stash
             else:
                 node.selected = node in self._selection_stash
