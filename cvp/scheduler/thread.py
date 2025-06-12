@@ -61,6 +61,7 @@ class SchedulerThread(SchedulerThreadInterface):
         if not no_clear:
             for job in jobs:
                 job.clear_repeat_count()
+
         with self._condition:
             self._scheduled = {job.key: job for job in jobs}
             self._condition.notify_all()
@@ -70,9 +71,11 @@ class SchedulerThread(SchedulerThreadInterface):
             self._scheduled.clear()
             self._condition.notify_all()
 
-    def quit(self) -> None:
+    def quit(self, *, no_clear_scheduled=False) -> None:
         with self._condition:
             self._done = True
+            if not no_clear_scheduled:
+                self._scheduled.clear()
             self._condition.notify_all()
 
     def is_done(self) -> bool:
@@ -80,13 +83,6 @@ class SchedulerThread(SchedulerThreadInterface):
             result = self._done
             self._condition.notify_all()
             return result
-
-    def wait(self, timeout: Optional[float] = None) -> bool:
-        with self._condition:
-            signaled = self._done
-            if not signaled:
-                signaled = self._condition.wait(timeout)
-            return signaled
 
     def _runner_main(self) -> None:
         with self._condition:
@@ -122,12 +118,6 @@ class SchedulerThread(SchedulerThreadInterface):
             self._callback(key, scheduled)
 
     @property
-    def thread(self) -> Thread:
-        if self._thread is None:
-            raise ValueError("Thread has not been started")
-        return self._thread
-
-    @property
     def opened(self) -> bool:
         return self._thread is not None
 
@@ -149,11 +139,19 @@ class SchedulerThread(SchedulerThreadInterface):
 
         self._thread = None
 
+    def __enter__(self):
+        self.open()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def start_safe(self, timeout: Optional[float] = None) -> None:
         if self._thread is not None:
             if self._thread.is_alive():
                 with self._condition:
                     self._done = True
+                    self._scheduled.clear()
                     self._condition.notify_all()
 
                 self._thread.join(timeout=timeout)
@@ -164,10 +162,16 @@ class SchedulerThread(SchedulerThreadInterface):
         self._thread.start()
 
     def start(self) -> None:
-        self.thread.start()
+        if self._thread is None:
+            raise ValueError("Thread has not been started")
+
+        self._thread.start()
 
     def join(self, timeout: Optional[float] = None) -> None:
-        self.thread.join(timeout)
+        if self._thread is None:
+            raise ValueError("Thread has not been started")
+
+        self._thread.join(timeout)
 
     def is_alive(self) -> bool:
         if self._thread is not None:

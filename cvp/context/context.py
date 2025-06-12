@@ -186,9 +186,6 @@ class Context(ContextMixins):
         logger.info("Stop all flow runners")
         self._flows.stop_all_runners()
 
-        logger.info("Unschedule jobs ...")
-        self._scheduler.unschedule_all()
-
         if self._scheduler.is_alive():
             logger.info("Stop scheduler thread ...")
             self._scheduler.quit()

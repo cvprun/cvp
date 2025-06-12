@@ -60,8 +60,8 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
     def unschedule_all(self) -> None:
         self._thread.unschedule_all()
 
-    def quit(self) -> None:
-        self._thread.quit()
+    def quit(self, *, no_clear_scheduled=False) -> None:
+        self._thread.quit(no_clear_scheduled=no_clear_scheduled)
 
     def is_done(self) -> bool:
         return self._thread.is_done()
