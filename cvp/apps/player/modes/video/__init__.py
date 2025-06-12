@@ -24,7 +24,7 @@ from cvp.logging.loggers import logger
 from cvp.types.override import override
 
 
-class VideoPlayerMode(BaseMode):
+class VideoMode(BaseMode):
     __cvp_mode_name__ = "Video Player"
     __cvp_mode_icon__ = PLAY_CIRCLE
 

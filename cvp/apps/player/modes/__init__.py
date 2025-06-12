@@ -31,6 +31,7 @@ class ModeManager:
         from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
         from cvp.apps.player.modes.main.layout import MainLayout
+        from cvp.apps.player.modes.map import MapMode
         from cvp.apps.player.modes.mediamtx import MediaMTXMode
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
@@ -47,7 +48,7 @@ class ModeManager:
         from cvp.apps.player.modes.threading import ThreadingMode
         from cvp.apps.player.modes.timezone import TimeZoneMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
-        from cvp.apps.player.modes.video import VideoPlayerMode
+        from cvp.apps.player.modes.video import VideoMode
         from cvp.apps.player.modes.watchdog import WatchdogMode
         from cvp.apps.player.modes.wsdiscovery import WsDiscoveryMode
 
@@ -57,7 +58,7 @@ class ModeManager:
         # region: Initialize Mode Instances
         # [IMPORTANT] Do not change the initialize order!
 
-        self.binary_text_mode = BinaryMode(context)
+        self.binary_mode = BinaryMode(context)
         self.calibration_mode = CalibrationMode(context)
         self.canvas_mode = CanvasMode(self._main_layout)
         self.case_mode = CaseMode(context)
@@ -70,7 +71,7 @@ class ModeManager:
         self.font_mode = FontMode(context)
         self.hash_mode = HashMode(context)
         self.image_mode = ImageMode(context)
-        self.media_player_mode = VideoPlayerMode(context)
+        self.map_mode = MapMode(context)
         self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
@@ -84,10 +85,11 @@ class ModeManager:
         self.system_mode = SystemMode(context)
         self.tail_mode = TailMode(context)
         self.terminal_mode = TerminalMode(context)
-        self.text_mode = TextMode(context)
         self.tetrix_mode = TetrixMode(context)
+        self.text_mode = TextMode(context)
         self.threading_mode = ThreadingMode(context)
         self.timezone_mode = TimeZoneMode(context)
+        self.video_mode = VideoMode(context)
         self.watchdog_mode = WatchdogMode(context)
         self.wsdiscovery_mode = WsDiscoveryMode(context)
 
@@ -100,7 +102,7 @@ class ModeManager:
 
         self._context = context
         self._menu_modes = (
-            self.binary_text_mode,
+            self.binary_mode,
             self.calibration_mode,
             self.canvas_mode,
             self.case_mode,
@@ -112,7 +114,8 @@ class ModeManager:
             self.font_mode,
             self.hash_mode,
             self.image_mode,
-            self.media_player_mode,
+            self.video_mode,
+            self.map_mode,
             self.mediamtx_mode,
             self.medias_mode,
             self.object_tracker_mode,
