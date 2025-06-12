@@ -111,6 +111,12 @@ class Context(ContextMixins):
             self._keyring.update_default_filepath(self._home.keyrings)
 
         self._msgs = MsgQueue()
+        self._scheduler = Scheduler(
+            self._home.jobs,
+            self._msgs,
+            reload=True,
+            autostart=True,
+        )
         self._watchdogs = WatchdogManager(
             self._msgs,
             self._home.watchdog,
@@ -122,12 +128,6 @@ class Context(ContextMixins):
         self._canvases = CanvasManager(self._home.canvases, reload=True)
         self._chat = ChatManager(self._home.chat, create_tables=True, reload=True)
         self._flows = FlowManager(self._home.flows, reload=True)
-        self._scheduler = Scheduler(
-            self._home.jobs,
-            self._msgs,
-            reload=True,
-            autostart=True,
-        )
         self._services = ServiceManager(
             self._home.services,
             self._home.processes,
@@ -177,6 +177,13 @@ class Context(ContextMixins):
         logger.info(f"Join watchdog thread ... ({timeout:.02f}s)")
         self._watchdogs.join(timeout)
 
+        if self._scheduler.is_alive():
+            logger.info("Stop scheduler thread ...")
+            self._scheduler.quit()
+
+        logger.info(f"Join scheduler thread ... ({timeout:.02f}s)")
+        self._scheduler.join(timeout)
+
         logger.info("Close message queue ...")
         self._msgs.close()
 
@@ -185,13 +192,6 @@ class Context(ContextMixins):
 
         logger.info("Stop all flow runners")
         self._flows.stop_all_runners()
-
-        if self._scheduler.is_alive():
-            logger.info("Stop scheduler thread ...")
-            self._scheduler.quit()
-
-        logger.info(f"Join scheduler thread ... ({timeout:.02f}s)")
-        self._scheduler.join(timeout)
 
         logger.info(f"Stop all media processes ... ({timeout:.02f}s)")
         self._medias.shutdown(timeout)
@@ -208,6 +208,10 @@ class Context(ContextMixins):
     def save_config(self) -> None:
         self._config.write_yaml(self._home.cvp_yml)
         logger.info(f"Save the Config file: '{str(self._home.cvp_yml)}'")
+
+    def save_all_scheduler(self) -> None:
+        self._scheduler.write_all_config_files()
+        logger.info("Save all Schedule files")
 
     def save_all_watchdogs(self) -> None:
         self._watchdogs.write_all_config_files()
@@ -233,10 +237,6 @@ class Context(ContextMixins):
         self._flows.write_all_graph_file(raise_errors=False)
         logger.info("Save all Graph files")
 
-    def save_all_scheduler(self) -> None:
-        self._scheduler.write_all_config_files()
-        logger.info("Save all Schedule files")
-
     def save_all_wsdiscovery(self) -> None:
         self._wsdiscovery.write_all_config_files()
         logger.info("Save all WS-Discovery files")
@@ -255,12 +255,12 @@ class Context(ContextMixins):
 
     def save_all(self) -> None:
         self.save_config()
+        self.save_all_scheduler()
         self.save_all_watchdogs()
         self.save_all_ollamas()
         self.save_all_canvases()
         self.save_all_services()
         self.save_all_flow_graphs()
-        self.save_all_scheduler()
         self.save_all_wsdiscovery()
         self.save_all_downloader()
         self.save_all_onvifs()

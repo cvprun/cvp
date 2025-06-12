@@ -122,7 +122,7 @@ class SchedulerThread(SchedulerThreadInterface):
         return self._thread is not None
 
     def _create_thread(self) -> Thread:
-        return Thread(target=self._runner_main, name=self._name)
+        return Thread(target=self._runner_main, name=self._name, daemon=True)
 
     def open(self) -> None:
         if self._thread is not None:

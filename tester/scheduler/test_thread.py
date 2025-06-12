@@ -14,7 +14,7 @@ class ThreadTestCase(TestCase):
         n3 = JobItem(uuid="3", name="n3", cron="* * * * * */7", enabled=True, repeat=1)
         self.jobs = {n1.key: n1, n2.key: n2, n3.key: n3}
 
-    def test_find_min_next_schedule(self):
+    def test_default(self):
         def scheduled_callback(key: JobKey, scheduled: datetime) -> None:
             print(key, scheduled)
 
