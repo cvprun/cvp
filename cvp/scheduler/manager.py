@@ -2,23 +2,21 @@
 
 from copy import deepcopy
 from datetime import datetime
-from threading import Condition, RLock, Thread
-from typing import Dict, Optional, Tuple
+from typing import Optional, Tuple
 from uuid import uuid4
 from weakref import ReferenceType, ref
 
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.jobs import JobsPath
-from cvp.scheduler.find import find_jobs_in_time_range, find_min_next_schedule
 from cvp.scheduler.item import JobItem, JobKey
+from cvp.scheduler.thread import SchedulerThread, SchedulerThreadInterface
+from cvp.types.override import override
 from cvp.variables import JOB_NONAME
 
 
-class Scheduler(ResourceManager[JobKey, JobItem]):
+class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
     _msgs: ReferenceType[MsgQueue]
-    _thread: Optional[Thread]
-    _scheduled: Dict[JobKey, JobItem]
 
     def __init__(
         self,
@@ -39,17 +37,7 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
             raise_errors=raise_errors,
         )
         self._msgs = ref(msgs)
-
-        self._thread_name = thread_name if thread_name else type(self).__name__
-        self._thread = None
-        self._lock = RLock()
-        self._condition = Condition(self._lock)
-
-        # ------------------------
-        # Race Condition Variables
-        self._scheduled = dict()
-        self._done = False
-        # ------------------------
+        self._thread = SchedulerThread(self.on_scheduled, name=thread_name)
 
         if autostart:
             self.open()
@@ -57,159 +45,48 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
             self.schedule_all(no_clear=no_clear)
 
     def clear(self) -> None:
-        with self._condition:
-            self._done = False
-            self._scheduled.clear()
-            self._condition.notify_all()
+        self._thread.clear()
 
     def schedule(self, key: JobKey, *, no_clear=False) -> None:
-        job = deepcopy(self[key])
-        if not no_clear:
-            job.clear_repeat_count()
-        with self._condition:
-            self._scheduled[key] = job
-            self._condition.notify_all()
+        self._thread.schedule(deepcopy(self[key]), no_clear=no_clear)
 
     def unschedule(self, key: JobKey) -> None:
-        with self._condition:
-            if key in self._scheduled:
-                del self._scheduled[key]
-            self._condition.notify_all()
+        self._thread.unschedule(key)
 
     def schedule_all(self, *, no_clear=False) -> None:
-        jobs = {key: deepcopy(val) for key, val in self.items()}
-        if not no_clear:
-            for job in jobs.values():
-                job.clear_repeat_count()
-        with self._condition:
-            self._scheduled = jobs
-            self._condition.notify_all()
+        jobs = [deepcopy(job) for job in self.values()]
+        self._thread.schedule_all(jobs, no_clear=no_clear)
 
     def unschedule_all(self) -> None:
-        with self._condition:
-            self._scheduled.clear()
-            self._condition.notify_all()
+        self._thread.unschedule_all()
 
     def quit(self) -> None:
-        with self._condition:
-            self._done = True
-            self._condition.notify_all()
+        self._thread.quit()
 
     def is_done(self) -> bool:
-        with self._condition:
-            result = self._done
-            self._condition.notify_all()
-            return result
-
-    def wait(self, timeout: Optional[float] = None) -> bool:
-        with self._condition:
-            signaled = self._done
-            if not signaled:
-                signaled = self._condition.wait(timeout)
-            return signaled
-
-    def _runner_main(self) -> None:
-        with self._condition:
-            begin = datetime.now().astimezone()
-            while not self._done:
-                end = datetime.now().astimezone()
-                emits = find_jobs_in_time_range(self._scheduled, begin, end)
-                begin = end
-
-                for emit_info in emits:
-                    job_key, job_schedule = emit_info
-                    job = self._scheduled[job_key]
-                    if job.is_done:
-                        continue
-                    job.increment_repeat_count()
-                    self.msgs.job_scheduled(job_key, job_schedule)
-
-                next_schedule = find_min_next_schedule(self._scheduled, begin)
-                if next_schedule is not None:
-                    adjusted_begin = datetime.now().astimezone()
-                    # Update the reference time to ignore the delay caused during
-                    # schedule calculation.
-
-                    timeout = (next_schedule - adjusted_begin).total_seconds()
-                else:
-                    timeout = None
-
-                self._condition.wait(timeout)
-
-    @property
-    def thread(self) -> Thread:
-        if self._thread is None:
-            raise ValueError("Thread has not been started")
-        return self._thread
+        return self._thread.is_done()
 
     @property
     def opened(self) -> bool:
-        return self._thread is not None
-
-    def _create_thread(self) -> Thread:
-        return Thread(target=self._runner_main, name=self._thread_name)
+        return self._thread.opened
 
     def open(self) -> None:
-        if self._thread is not None:
-            raise ValueError("Thread has already been opened")
-
-        self._thread = self._create_thread()
+        self._thread.open()
 
     def close(self) -> None:
-        if self._thread is None:
-            raise ValueError("Thread has not been opened")
-
-        if self._thread.is_alive():
-            raise ValueError("Thread is still running. Stop it before closing.")
-
-        self._thread = None
+        self._thread.close()
 
     def start_safe(self, timeout: Optional[float] = None) -> None:
-        if self._thread is not None:
-            if self._thread.is_alive():
-                with self._condition:
-                    self._done = True
-                    self._condition.notify_all()
-
-                self._thread.join(timeout=timeout)
-
-            self._thread = self._create_thread()
-
-        assert self._thread is not None
-        self._thread.start()
+        self._thread.start_safe(timeout)
 
     def start(self) -> None:
-        self.thread.start()
+        self._thread.start()
 
     def join(self, timeout: Optional[float] = None) -> None:
-        self.thread.join(timeout)
+        self._thread.join(timeout)
 
     def is_alive(self) -> bool:
-        if self._thread is not None:
-            return self._thread.is_alive()
-        else:
-            return False
-
-    @property
-    def daemon(self) -> Optional[bool]:
-        if self._thread is not None:
-            return self._thread.daemon
-        else:
-            return None
-
-    @property
-    def ident(self) -> Optional[int]:
-        if self._thread is not None:
-            return self._thread.ident
-        else:
-            return None
-
-    @property
-    def name(self) -> str:
-        if self._thread is not None:
-            return self._thread.name
-        else:
-            return self._thread_name
+        return self._thread.is_alive()
 
     @property
     def msgs(self) -> MsgQueue:
@@ -217,6 +94,10 @@ class Scheduler(ResourceManager[JobKey, JobItem]):
         if result is None:
             raise ReferenceError("Expired msgs instance")
         return result
+
+    @override
+    def on_scheduled(self, key: JobKey, scheduled: datetime) -> None:
+        self.msgs.job_scheduled(key, scheduled)
 
     def add_job(
         self,
