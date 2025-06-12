@@ -30,6 +30,7 @@ class ModeManager:
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
+        from cvp.apps.player.modes.logging import LoggingMode
         from cvp.apps.player.modes.main.layout import MainLayout
         from cvp.apps.player.modes.map import MapMode
         from cvp.apps.player.modes.mediamtx import MediaMTXMode
@@ -71,6 +72,7 @@ class ModeManager:
         self.font_mode = FontMode(context)
         self.hash_mode = HashMode(context)
         self.image_mode = ImageMode(context)
+        self.logging_mode = LoggingMode(context)
         self.map_mode = MapMode(context)
         self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
@@ -114,6 +116,7 @@ class ModeManager:
             self.font_mode,
             self.hash_mode,
             self.image_mode,
+            self.logging_mode,
             self.video_mode,
             self.map_mode,
             self.mediamtx_mode,
