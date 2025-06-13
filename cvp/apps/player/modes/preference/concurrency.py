@@ -29,7 +29,7 @@ class ConcurrencyPreference(BasePreference):
         return self.config.thread_name_prefix
 
     @thread_name_prefix.setter
-    def thread_name_prefix(self, value: str):
+    def thread_name_prefix(self, value: str) -> None:
         self.config.thread_name_prefix = value
 
     @property
@@ -37,7 +37,7 @@ class ConcurrencyPreference(BasePreference):
         return self.config.thread_workers
 
     @thread_workers.setter
-    def thread_workers(self, value: int):
+    def thread_workers(self, value: int) -> None:
         self.config.thread_workers = value
 
     @property
@@ -45,7 +45,7 @@ class ConcurrencyPreference(BasePreference):
         return self.config.process_workers
 
     @process_workers.setter
-    def process_workers(self, value: int):
+    def process_workers(self, value: int) -> None:
         self.config.process_workers = value
 
     @override

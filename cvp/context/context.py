@@ -2,6 +2,7 @@
 
 import os
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from multiprocessing import get_start_method
 from os import PathLike
 from threading import Event
 from typing import Optional, Union
@@ -78,6 +79,10 @@ class Context(ContextMixins):
             level = convert_level_number(root_severity)
             set_root_level(level)
             logger.log(level, f"Changed root severity: {root_severity}")
+
+        logger.info(f"Current multiprocessing start method: {get_start_method()}")
+        # [NOTE] The "multiprocessing start method" should be changed immediately after
+        # importing the module, so calling it in the constructor of Context is too late.
 
         thread_workers = self._config.concurrency.thread_workers
         thread_name_prefix = self._config.concurrency.thread_name_prefix
