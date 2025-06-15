@@ -66,7 +66,7 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         self.add(item.key, item)
         return item.key, item
 
-    def update_exited_process(self, key: str) -> None:
+    def handle_exited_process(self, key: str):
         service_key = ServiceKey(key)
 
         process = self._processes[service_key]
@@ -79,10 +79,11 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
         del self._dispatchers[service_key]
         service = self.__getitem__(service_key)
+        policy = service.restart_policy
 
-        if service.restart_policy == RestartPolicy.none:
+        if policy == RestartPolicy.none:
             return
-        elif service.restart_policy == RestartPolicy.on_failure:
+        elif policy == RestartPolicy.on_failure:
             code = process.returncode
             success_exit_codes = service.success_exit_codes or [0]
             if code in success_exit_codes:
@@ -90,12 +91,12 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
             if service.restart_max_attempts <= service.current_restart_attempts:
                 return
             service.current_restart_attempts += 1
-        elif service.restart_policy == RestartPolicy.always:
+        elif policy == RestartPolicy.always:
             pass
         else:
             assert False, "Inaccessible section"
 
-        # service.restart_delay  # TODO
+        return policy, service.restart_delay
 
     def has_process(self, key: ServiceKey):
         return self._processes.__contains__(key)

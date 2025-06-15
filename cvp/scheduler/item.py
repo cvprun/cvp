@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import NewType
+from typing import Any, Callable, Dict, List, NewType, Optional
 from uuid import uuid4
 
 from cvp.scheduler.predefined import EVERY_MINUTE
@@ -19,6 +19,12 @@ class JobItem:
     managed: bool = False
     repeat: int = INFINITE
 
+    command: str = field(default_factory=str)
+
+    _target: Optional[Callable[..., Any]] = None
+    _args: List[Any] = field(default_factory=list)
+    _kwargs: Dict[str, Any] = field(default_factory=dict)
+
     @property
     def key(self):
         return JobKey(self.uuid)
@@ -29,3 +35,13 @@ class JobItem:
 
     def set_infinite(self) -> None:
         self.repeat = INFINITE
+
+    def set_target(self, target: Callable[..., Any], *args, **kwargs) -> None:
+        self._target = target
+        self._args = list(args)
+        self._kwargs = kwargs
+
+    def call_target(self) -> Any:
+        if self._target is None:
+            raise ValueError("Target callable is not set")
+        return self._target(*self._args, **self._kwargs)
