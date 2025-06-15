@@ -76,7 +76,11 @@ class MsgInterface(metaclass=ABCMeta):
     # ----------------------------------------------------------------------------------
 
     @abstractmsg(MsgType.job_scheduled)
-    def on_job_scheduled(self, key: str, scheduled: datetime):
+    def on_job_scheduled(self, key: str, timestamp: datetime):
+        raise NotImplementedError
+
+    @abstractmsg(MsgType.job_completed)
+    def on_job_completed(self, key: str):
         raise NotImplementedError
 
     # ----------------------------------------------------------------------------------

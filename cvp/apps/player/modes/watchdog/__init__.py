@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from typing import Final
 
 from imgui_bundle import imgui
@@ -35,6 +36,7 @@ class WatchdogMode(BaseMode, MsgCallbacks):
     __cvp_mode_icon__ = DOG
 
     _TOP_CHILD_FLAGS: Final[int] = RESIZE_Y
+    _BOTTOM_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y
 
     _MENU_SPLIT_X: Final[int] = 300
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
@@ -72,27 +74,6 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         )
         self._msg_mapping = create_msg_map(self)
         self._logging_widget = LoggingMultiline(logger)
-
-    @property
-    def success_color(self):
-        return self.context.config.appearance.success_color
-
-    @property
-    def warning_color(self):
-        return self.context.config.appearance.warning_color
-
-    @property
-    def error_color(self):
-        return self.context.config.appearance.error_color
-
-    def text_success(self, text: str) -> None:
-        imgui.text_colored(self.success_color, text)
-
-    def text_warning(self, text: str) -> None:
-        imgui.text_colored(self.warning_color, text)
-
-    def text_error(self, text: str) -> None:
-        imgui.text_colored(self.error_color, text)
 
     @property
     def config(self):
@@ -173,13 +154,19 @@ class WatchdogMode(BaseMode, MsgCallbacks):
                 self.do_top_process()
 
             imgui.separator()
-            self.do_bottom_toolbar_process()
+
+            with begin_child_context(
+                label="Bottom",
+                child_flags=self._BOTTOM_CHILD_FLAGS,
+            ):
+                self.do_bottom_toolbar_process()
+
             self._logging_widget.options = self.config
             self._logging_widget.do_process(use_mouse_wheel=True)
 
         self._popups.do_process()
 
-    def do_top_process(self):
+    def do_top_process(self) -> None:
         with begin_child_context(
             label="Menu",
             size=(self._MENU_SPLIT_X, 0),
@@ -277,7 +264,8 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         finally:
             imgui.end_disabled()
 
-        if button("Schedule", disabled=has_watcher):
+        not_exists = not os.path.exists(item.file)
+        if button("Schedule", disabled=has_watcher or not_exists):
             self.watchdogs.schedule(item.key)
         imgui.same_line()
         if button("Unschedule", disabled=not has_watcher):

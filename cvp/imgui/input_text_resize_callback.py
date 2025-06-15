@@ -6,7 +6,7 @@ import pygame
 from imgui_bundle import imgui
 from pygame.key import get_pressed
 
-from cvp.imgui.flags.input_text import CALLBACK_ALWAYS
+from cvp.imgui.flags.input_text import CALLBACK_RESIZE
 from cvp.imgui.version import version
 
 
@@ -57,7 +57,7 @@ def _paste_selection(data: imgui.InputTextCallbackData) -> None:
 
 
 def input_text_resize_callback(data: imgui.InputTextCallbackData) -> int:
-    assert data.flags & CALLBACK_ALWAYS
+    assert data.flags & CALLBACK_RESIZE
     keys = get_pressed()
 
     if keys[pygame.K_LCTRL] or keys[pygame.K_RCTRL]:

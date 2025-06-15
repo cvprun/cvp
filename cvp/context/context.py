@@ -184,7 +184,7 @@ class Context(ContextMixins):
 
         if self._scheduler.is_alive():
             logger.info("Stop scheduler thread ...")
-            self._scheduler.quit()
+            self._scheduler.stop()
 
         logger.info(f"Join scheduler thread ... ({timeout:.02f}s)")
         self._scheduler.join(timeout)

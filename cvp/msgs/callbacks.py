@@ -75,8 +75,12 @@ class MsgCallbacks(MsgInterface):
     # ----------------------------------------------------------------------------------
 
     @override
-    def on_job_scheduled(self, key: str, scheduled: datetime):
-        raise NotImplementedError
+    def on_job_scheduled(self, key: str, timestamp: datetime):
+        pass
+
+    @override
+    def on_job_completed(self, key: str):
+        pass
 
     # ----------------------------------------------------------------------------------
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events END"

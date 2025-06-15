@@ -26,7 +26,7 @@ class ThreadTestCase(TestCase):
                 thread.start()
                 self.assertTrue(thread.is_alive())
             finally:
-                thread.quit()
+                thread.stop()
                 self.assertTrue(thread.is_done())
                 thread.join()
                 self.assertFalse(thread.is_alive())

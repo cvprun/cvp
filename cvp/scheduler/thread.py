@@ -3,26 +3,32 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from threading import Condition, RLock, Thread
-from typing import Callable, Dict, Iterable, Optional
+from typing import Dict, Iterable, Optional
 
+from cvp.logging.loggers import scheduler_logger as logger
 from cvp.scheduler.find import find_jobs_in_time_range, find_min_next_schedule
 from cvp.scheduler.item import JobItem, JobKey
+from cvp.scheduler.state import JobState
 from cvp.types.override import override
 
 
 class SchedulerThreadInterface(ABC):
     @abstractmethod
-    def on_scheduled(self, key: JobKey, scheduled: datetime) -> None:
+    def on_schedule_triggered(self, key: JobKey, scheduled: datetime) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def on_schedule_completed(self, key: JobKey) -> None:
         raise NotImplementedError
 
 
 class SchedulerThread(SchedulerThreadInterface):
     _thread: Optional[Thread]
-    _scheduled: Dict[JobKey, JobItem]
+    _scheduled: Dict[JobKey, JobState]
 
     def __init__(
         self,
-        callback: Optional[Callable[[JobKey, datetime], None]] = None,
+        callback: Optional[SchedulerThreadInterface] = None,
         *,
         name: Optional[str] = None,
     ):
@@ -38,52 +44,6 @@ class SchedulerThread(SchedulerThreadInterface):
         self._done = False
         # ------------------------
 
-    def clear(self) -> None:
-        with self._condition:
-            self._done = False
-            self._scheduled.clear()
-            self._condition.notify_all()
-
-    def schedule(self, job: JobItem, *, no_clear=False) -> None:
-        if not no_clear:
-            job.clear_repeat_count()
-        with self._condition:
-            self._scheduled[job.key] = job
-            self._condition.notify_all()
-
-    def unschedule(self, key: JobKey) -> None:
-        with self._condition:
-            if key in self._scheduled:
-                del self._scheduled[key]
-            self._condition.notify_all()
-
-    def schedule_all(self, jobs: Iterable[JobItem], *, no_clear=False) -> None:
-        if not no_clear:
-            for job in jobs:
-                job.clear_repeat_count()
-
-        with self._condition:
-            self._scheduled = {job.key: job for job in jobs}
-            self._condition.notify_all()
-
-    def unschedule_all(self) -> None:
-        with self._condition:
-            self._scheduled.clear()
-            self._condition.notify_all()
-
-    def quit(self, *, no_clear_scheduled=False) -> None:
-        with self._condition:
-            self._done = True
-            if not no_clear_scheduled:
-                self._scheduled.clear()
-            self._condition.notify_all()
-
-    def is_done(self) -> bool:
-        with self._condition:
-            result = self._done
-            self._condition.notify_all()
-            return result
-
     def _runner_main(self) -> None:
         with self._condition:
             begin = datetime.now().astimezone()
@@ -92,13 +52,23 @@ class SchedulerThread(SchedulerThreadInterface):
                 emits = find_jobs_in_time_range(self._scheduled, begin, end)
                 begin = end
 
+                pop_keys = set()
                 for emit_info in emits:
                     job_key, job_schedule = emit_info
-                    job = self._scheduled[job_key]
-                    if job.is_done:
+                    state = self._scheduled[job_key]
+
+                    if job_key in pop_keys:
                         continue
-                    job.increment_repeat_count()
-                    self.on_scheduled(job_key, job_schedule)
+
+                    state.increment_repeat_count()
+                    self.on_schedule_triggered(job_key, job_schedule)
+
+                    if state.is_done:
+                        pop_keys.add(job_key)
+
+                for pop_key in pop_keys:
+                    self._scheduled.pop(pop_key)
+                    self.on_schedule_completed(pop_key)
 
                 next_schedule = find_min_next_schedule(self._scheduled, begin)
                 if next_schedule is not None:
@@ -113,9 +83,14 @@ class SchedulerThread(SchedulerThreadInterface):
                 self._condition.wait(timeout)
 
     @override
-    def on_scheduled(self, key: JobKey, scheduled: datetime) -> None:
+    def on_schedule_triggered(self, key: JobKey, scheduled: datetime) -> None:
         if self._callback is not None:
-            self._callback(key, scheduled)
+            self._callback.on_schedule_triggered(key, scheduled)
+
+    @override
+    def on_schedule_completed(self, key: JobKey) -> None:
+        if self._callback is not None:
+            self._callback.on_schedule_completed(key)
 
     @property
     def opened(self) -> bool:
@@ -128,6 +103,8 @@ class SchedulerThread(SchedulerThreadInterface):
         if self._thread is not None:
             raise ValueError("Thread has already been opened")
 
+        with self._condition:
+            self._done = False
         self._thread = self._create_thread()
 
     def close(self) -> None:
@@ -146,6 +123,12 @@ class SchedulerThread(SchedulerThreadInterface):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+    def start(self) -> None:
+        if self._thread is None:
+            raise ValueError("Thread has not been started")
+
+        self._thread.start()
+
     def start_safe(self, timeout: Optional[float] = None) -> None:
         if self._thread is not None:
             if self._thread.is_alive():
@@ -159,13 +142,68 @@ class SchedulerThread(SchedulerThreadInterface):
             self._thread = self._create_thread()
 
         assert self._thread is not None
+        with self._condition:
+            self._done = False
+            self._scheduled.clear()
         self._thread.start()
 
-    def start(self) -> None:
-        if self._thread is None:
-            raise ValueError("Thread has not been started")
+    def stop(self, *, no_clear=False) -> None:
+        with self._condition:
+            self._done = True
+            if not no_clear:
+                self._scheduled.clear()
+            self._condition.notify_all()
 
-        self._thread.start()
+    def clear(self) -> None:
+        with self._condition:
+            self._done = False
+            self._scheduled.clear()
+            self._condition.notify_all()
+
+    def __contains__(self, key: JobKey) -> bool:
+        with self._condition:
+            return self._scheduled.__contains__(key)
+
+    def get_repeat_count(self, key: JobKey) -> int:
+        with self._condition:
+            return self._scheduled[key].repeat_count
+
+    def schedule(self, job: JobItem) -> None:
+        state = JobState(job.cron, job.repeat)
+        with self._condition:
+            self._scheduled[job.key] = state
+            self._condition.notify_all()
+
+    def unschedule(self, key: JobKey) -> None:
+        with self._condition:
+            if key in self._scheduled:
+                del self._scheduled[key]
+            self._condition.notify_all()
+
+    def schedule_all(self, jobs: Iterable[JobItem], *, raise_errors=False) -> None:
+        scheduled = dict()
+        for job in jobs:
+            try:
+                scheduled[job.key] = JobState(job.cron, job.repeat)
+            except BaseException as e:
+                if raise_errors:
+                    raise
+                logger.error(f"Failed to schedule '{job.key}' - reason: '{e}'")
+
+        with self._condition:
+            self._scheduled = scheduled
+            self._condition.notify_all()
+
+    def unschedule_all(self) -> None:
+        with self._condition:
+            self._scheduled.clear()
+            self._condition.notify_all()
+
+    def is_done(self) -> bool:
+        with self._condition:
+            result = self._done
+            self._condition.notify_all()
+            return result
 
     def join(self, timeout: Optional[float] = None) -> None:
         if self._thread is None:

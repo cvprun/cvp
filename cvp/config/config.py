@@ -28,6 +28,7 @@ from cvp.config.sections.navigation import NavigationConfig
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.overlay import OverlayConfig
 from cvp.config.sections.process import ProcessConfig
+from cvp.config.sections.scheduler import SchedulerConfig
 from cvp.config.sections.sockmap import SockmapConfig
 from cvp.config.sections.stitching import StitchingConfig
 from cvp.config.sections.supabase import SupabaseConfig
@@ -64,6 +65,7 @@ class Config:
     sockmap: SockmapConfig = field(default_factory=SockmapConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
     terminal: TerminalConfig = field(default_factory=TerminalConfig)
+    scheduler: SchedulerConfig = field(default_factory=SchedulerConfig)
     stitching: StitchingConfig = field(default_factory=StitchingConfig)
     tetrix: TetrixConfig = field(default_factory=TetrixConfig)
     toast: ToastConfig = field(default_factory=ToastConfig)

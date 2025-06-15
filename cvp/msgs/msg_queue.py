@@ -150,8 +150,11 @@ class MsgQueue(Queue[Msg]):
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"
     # ----------------------------------------------------------------------------------
 
-    def job_scheduled(self, key: str, scheduled: datetime):
-        return self.append_msg(MsgType.job_scheduled, key=key, scheduled=scheduled)
+    def job_scheduled(self, key: str, timestamp: datetime):
+        return self.append_msg(MsgType.job_scheduled, key=key, timestamp=timestamp)
+
+    def job_completed(self, key: str):
+        return self.append_msg(MsgType.job_completed, key=key)
 
     # ----------------------------------------------------------------------------------
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events END"

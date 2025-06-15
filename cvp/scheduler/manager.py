@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from copy import deepcopy
 from datetime import datetime
 from typing import Optional, Tuple
 from uuid import uuid4
@@ -26,7 +25,6 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
         reload=False,
         raise_errors=False,
         autostart=False,
-        no_clear=False,
         thread_name: Optional[str] = None,
     ):
         super().__init__(
@@ -37,31 +35,12 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
             raise_errors=raise_errors,
         )
         self._msgs = ref(msgs)
-        self._thread = SchedulerThread(self.on_scheduled, name=thread_name)
+        self._thread = SchedulerThread(self, name=thread_name)
 
         if autostart:
             self.open()
             self.start()
-            self.schedule_all(no_clear=no_clear)
-
-    def clear(self) -> None:
-        self._thread.clear()
-
-    def schedule(self, key: JobKey, *, no_clear=False) -> None:
-        self._thread.schedule(deepcopy(self[key]), no_clear=no_clear)
-
-    def unschedule(self, key: JobKey) -> None:
-        self._thread.unschedule(key)
-
-    def schedule_all(self, *, no_clear=False) -> None:
-        jobs = [deepcopy(job) for job in self.values()]
-        self._thread.schedule_all(jobs, no_clear=no_clear)
-
-    def unschedule_all(self) -> None:
-        self._thread.unschedule_all()
-
-    def quit(self, *, no_clear_scheduled=False) -> None:
-        self._thread.quit(no_clear_scheduled=no_clear_scheduled)
+            self.schedule_all(raise_errors=raise_errors)
 
     def is_done(self) -> bool:
         return self._thread.is_done()
@@ -76,11 +55,35 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
     def close(self) -> None:
         self._thread.close()
 
+    def start(self) -> None:
+        self._thread.start()
+
     def start_safe(self, timeout: Optional[float] = None) -> None:
         self._thread.start_safe(timeout)
 
-    def start(self) -> None:
-        self._thread.start()
+    def stop(self, *, no_clear=False) -> None:
+        self._thread.stop(no_clear=no_clear)
+
+    def clear(self) -> None:
+        self._thread.clear()
+
+    def is_scheduled(self, key: JobKey) -> bool:
+        return self._thread.__contains__(key)
+
+    def schedule(self, key: JobKey) -> None:
+        self._thread.schedule(self[key])
+
+    def unschedule(self, key: JobKey) -> None:
+        self._thread.unschedule(key)
+
+    def schedule_all(self, *, raise_errors=False) -> None:
+        self._thread.schedule_all(
+            filter(lambda x: x.enabled, self.values()),
+            raise_errors=raise_errors,
+        )
+
+    def unschedule_all(self) -> None:
+        self._thread.unschedule_all()
 
     def join(self, timeout: Optional[float] = None) -> None:
         self._thread.join(timeout)
@@ -96,8 +99,12 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
         return result
 
     @override
-    def on_scheduled(self, key: JobKey, scheduled: datetime) -> None:
+    def on_schedule_triggered(self, key: JobKey, scheduled: datetime) -> None:
         self.msgs.job_scheduled(key, scheduled)
+
+    @override
+    def on_schedule_completed(self, key: JobKey) -> None:
+        self.msgs.job_completed(key)
 
     def add_job(
         self,

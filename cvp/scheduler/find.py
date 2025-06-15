@@ -3,11 +3,12 @@
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
-from cvp.scheduler.item import JobItem, JobKey
+from cvp.scheduler.item import JobKey
+from cvp.scheduler.state import JobState
 
 
 def find_min_next_schedule(
-    jobs: Dict[JobKey, JobItem],
+    jobs: Dict[JobKey, JobState],
     base: datetime,
 ) -> Optional[datetime]:
     if not jobs:
@@ -16,14 +17,10 @@ def find_min_next_schedule(
     result: Optional[datetime] = None
 
     for job in jobs.values():
-        if not job.enabled:
-            continue
-        if not job.cron:
-            continue
         if job.is_done:
             continue
 
-        job_schedule = job.next_schedule(base)
+        job_schedule = job.get_next(base)
         assert base <= job_schedule
 
         if result is None:
@@ -36,7 +33,7 @@ def find_min_next_schedule(
 
 
 def find_jobs_in_time_range(
-    jobs: Dict[JobKey, JobItem],
+    jobs: Dict[JobKey, JobState],
     begin: datetime,
     end: datetime,
     *,
@@ -48,16 +45,12 @@ def find_jobs_in_time_range(
     result = list()
 
     for key, job in jobs.items():
-        if not job.enabled:
-            continue
-        if not job.cron:
-            continue
         if job.is_done:
             continue
 
-        job_iter = job.create_croniter(begin)
+        job.set_current(begin)
         while True:
-            job_schedule = job_iter.get_next(datetime)
+            job_schedule = job.get_next()
             assert isinstance(job_schedule, datetime)
             if end < job_schedule:
                 break
