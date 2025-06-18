@@ -28,7 +28,9 @@ from cvp.logging.logging import (
     set_root_level,
 )
 from cvp.media.manager import MediaManager
+from cvp.msgs.msg import Msg
 from cvp.msgs.msg_queue import MsgQueue
+from cvp.msgs.msg_type import MsgType
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
 from cvp.resources.home import HomeDir
@@ -352,6 +354,12 @@ class Context(ContextMixins):
 
     def is_done(self) -> bool:
         return self._done.is_set()
+
+    def do_msg(self, msg: Msg) -> None:
+        if msg.mtype == MsgType.process_exited:
+            self.handle_exited_process(msg.key)
+        elif msg.mtype == MsgType.process_restart:
+            self.handle_restart_process(msg.key)
 
     def start_flow_thread(self, graph: FlowGraph, start_node: Union[FlowNode, str]):
         runner = FlowRunner(

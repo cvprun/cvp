@@ -240,7 +240,7 @@ class ServiceItem:
     restart: str = field(default_factory=str)
     restart_delay: float = 1.0
     restart_max_attempts: int = 1
-    current_restart_attempts: int = 0
+    stable_runtime_duration: float = 12.0
 
     success_exit_codes: List[int] = field(default_factory=lambda: [0])
 

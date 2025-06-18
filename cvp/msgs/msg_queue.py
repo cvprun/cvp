@@ -145,6 +145,9 @@ class MsgQueue(Queue[Msg]):
     def process_exit(self, key: str, pid: int, code: int):
         return self.append_msg(MsgType.process_exited, key=key, pid=pid, code=code)
 
+    def process_restart(self, key: str):
+        return self.append_msg(MsgType.process_restart, key=key)
+
     # ----------------------------------------------------------------------------------
     assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"

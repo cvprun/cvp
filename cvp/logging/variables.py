@@ -152,6 +152,7 @@ def default_logging_config(logs_dirname=EXPECTED_LOGS_DIRNAME) -> Dict[str, Any]
             names.CVP_PROFILE_LOGGER_NAME: {"level": "DEBUG"},
             names.CVP_RENDERER_LOGGER_NAME: {"level": "WARNING"},
             names.CVP_SCHEDULER_LOGGER_NAME: {"level": "DEBUG"},
+            names.CVP_SERVICE_LOGGER_NAME: {"level": "DEBUG"},
             names.CVP_WATCHDOG_LOGGER_NAME: {"level": "DEBUG"},
             names.CVP_WIDGETS_LOGGER_NAME: {"level": "INFO"},
             names.CVP_WORKER_LOGGER_NAME: {

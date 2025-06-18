@@ -36,6 +36,9 @@ class JobItem:
     def set_infinite(self) -> None:
         self.repeat = INFINITE
 
+    def has_target(self) -> bool:
+        return self._target is not None
+
     def set_target(self, target: Callable[..., Any], *args, **kwargs) -> None:
         self._target = target
         self._args = list(args)

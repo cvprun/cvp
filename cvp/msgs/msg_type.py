@@ -32,6 +32,7 @@ class MsgType(IntEnum):
 
     # Process events
     process_exited = auto()
+    process_restart = auto()
 
     # Scheduler events
     job_scheduled = auto()

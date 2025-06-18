@@ -69,6 +69,10 @@ class MsgCallbacks(MsgInterface):
     def on_process_exit(self, key: str, pid: int, code: int):
         pass
 
+    @override
+    def on_process_restart(self, key: str):
+        pass
+
     # ----------------------------------------------------------------------------------
     assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"

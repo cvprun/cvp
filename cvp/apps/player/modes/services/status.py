@@ -10,6 +10,7 @@ from cvp.imgui.input_text_disabled import input_text_disabled
 from cvp.psutil.process.state import ProcessState
 from cvp.psutil.process.updater import ProcessStateUpdater
 from cvp.service.item import ServiceItem, ServiceKey
+from cvp.service.state import ServiceState
 
 
 class ServicesStatusTab:
@@ -52,28 +53,44 @@ class ServicesStatusTab:
         stoppable = self.services.stoppable(service.key)
         imgui.begin_disabled(not stoppable)
         try:
-            state = self.get_process_state(service.key)
-            self.do_state_process(state)
+            process_state = self.get_process_state(service.key)
+            service_state = self.services.get_service_state(service.key)
+            self.do_state_process(process_state, service_state)
         finally:
             imgui.end_disabled()
 
-    def do_state_process(self, proc: ProcessState) -> None:
+    def do_state_process(
+        self,
+        process_state: ProcessState,
+        service_state: Optional[ServiceState] = None,
+    ) -> None:
         if self._error is not None:
             self.text_error(str(self._error))
 
-        input_text_disabled("PID", str(proc.pid))
-        input_text_disabled("PPID", str(proc.ppid))
-        input_text_disabled("Name", proc.name)
-        input_text_disabled("Status", proc.status)
-        input_text_disabled("Executable path", proc.exe)
-        input_text_disabled("Command line", str(proc.cmdline))
-        input_text_disabled("Create time", proc.create_time.isoformat())
-        input_text_disabled("CWD", proc.cwd)
+        if service_state is not None:
+            restart_count = str(service_state.restart_count)
+            spawned_at = service_state.spawned_at.isoformat()
+            elapsed_seconds = f"{service_state.elapsed_seconds():.02f}s"
+            awaiting_restart = str(service_state.is_awaiting_restart)
+            input_text_disabled("Restart Count", restart_count)
+            input_text_disabled("Spawned At", spawned_at)
+            input_text_disabled("Elapsed Seconds", elapsed_seconds)
+            input_text_disabled("Awaiting Restart", awaiting_restart)
+            imgui.separator()
+
+        input_text_disabled("PID", str(process_state.pid))
+        input_text_disabled("PPID", str(process_state.ppid))
+        input_text_disabled("Name", process_state.name)
+        input_text_disabled("Status", process_state.status)
+        input_text_disabled("Executable path", process_state.exe)
+        input_text_disabled("Command line", str(process_state.cmdline))
+        input_text_disabled("Create time", process_state.create_time.isoformat())
+        input_text_disabled("CWD", process_state.cwd)
         # input_text_disabled("UIDs", str(proc.uids()))
         # input_text_disabled("GIDs", str(proc.gids()))
         # input_text_disabled("Terminal", str(proc.terminal()))
-        input_text_disabled("Nice", str(proc.nice))
+        input_text_disabled("Nice", str(process_state.nice))
         # input_text_disabled("I/O niceness", str(proc.ionice()))
         # input_text_disabled("I/O counters", str(proc.io_counters()))
         # input_text_disabled("Context switches", str(proc.num_ctx_switches()))
-        input_text_disabled("Username", proc.username)
+        input_text_disabled("Username", process_state.username)

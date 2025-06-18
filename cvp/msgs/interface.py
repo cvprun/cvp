@@ -70,6 +70,10 @@ class MsgInterface(metaclass=ABCMeta):
     def on_process_exit(self, key: str, pid: int, code: int):
         raise NotImplementedError
 
+    @abstractmsg(MsgType.process_restart)
+    def on_process_restart(self, key: str):
+        raise NotImplementedError
+
     # ----------------------------------------------------------------------------------
     assert __PROCESS_POLL_EVENTS_PAIR__, "Process polling events END"
     assert __SCHEDULER_EVENTS_PAIR__, "Scheduler events BEGIN"

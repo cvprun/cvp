@@ -363,11 +363,10 @@ class PlayerApplication:
             self.on_msg_fallback(msg)
 
     def on_msg_fallback(self, msg: Msg) -> None:
-        assert self
         if msg.mtype == MsgType.toast:
             self._toast.show(**msg.as_args())
-        elif msg.mtype == MsgType.process_exited:
-            self._context.do_process_exited(msg.key)
+
+        self._context.do_msg(msg)
 
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
