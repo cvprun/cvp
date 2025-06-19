@@ -46,6 +46,10 @@ def _resolve_keyword_collision(text: str) -> str:
         return text
 
 
+def _resolve_empty_symbol(text: str) -> str:
+    return text or "_"
+
+
 def python_symbol_case(name: str) -> str:
     text = normalize_nfkd(name)
     text = _remove_none_ascii_chars(text)
@@ -53,4 +57,10 @@ def python_symbol_case(name: str) -> str:
     text = _strip_underscores(text)
     text = _escape_numeric_prefix(text)
     text = _resolve_keyword_collision(text)
+    text = _resolve_empty_symbol(text)
+
+    assert text
+    assert text.isidentifier()
+    assert not iskeyword(text)
+
     return text
