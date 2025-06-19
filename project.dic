@@ -233,8 +233,10 @@ rbutton
 rctrl
 redoable
 remapper
+remux
 reorderable
 requestable
+retrans
 returncode
 rgbx
 rieul
@@ -246,6 +248,7 @@ rsuper
 rtmps
 rtmpt
 rtmpts
+rtsps
 sameq
 scrollock
 setend
@@ -292,6 +295,7 @@ tvstd
 tznow
 udplite
 uids
+undecrypt
 undoable
 unhovered
 unhovering

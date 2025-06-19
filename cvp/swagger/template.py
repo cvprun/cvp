@@ -32,9 +32,9 @@ class DefaultTemplate(FileTemplateInterface):
             """\
             import datetime
             import json
-            from typing import Any, Dict, List, Optional, Union, cast
-            from urllib.parse import urljoin, quote\n
+            import typing
+            import urllib.parse
             import httpx
-            from pydantic import BaseModel, Field
+            import pydantic
             """
         )

@@ -3,32 +3,32 @@
 from typing import Any, Dict, Optional
 
 
-def map_openapi_type_to_python(
+def openapi_type_to_python_annotation(
     openapi_type: str,
-    fmt: Optional[str] = None,
-    items: Optional[Dict[str, Any]] = None,
+    openapi_format: Optional[str] = None,
+    openapi_items: Optional[Dict[str, Any]] = None,
 ) -> str:
     match openapi_type:
         case "integer":
-            if fmt == "int64":
+            if openapi_format == "int64":
                 return "int"
             else:
                 return "int"
 
         case "number":
-            if fmt == "float":
+            if openapi_format == "float":
                 return "float"
-            elif fmt == "double":
+            elif openapi_format == "double":
                 return "float"
             else:
                 return "float"
 
         case "string":
-            if fmt == "date":
+            if openapi_format == "date":
                 return "datetime.date"
-            elif fmt == "date-time":
+            elif openapi_format == "date-time":
                 return "datetime.datetime"
-            elif fmt == "binary":
+            elif openapi_format == "binary":
                 return "bytes"
             else:
                 return "str"
@@ -37,21 +37,21 @@ def map_openapi_type_to_python(
             return "bool"
 
         case "array":
-            if items and "type" in items:
-                item_type = map_openapi_type_to_python(
-                    items["type"],
-                    items.get("format"),
-                    items.get("items"),
+            if openapi_items and "type" in openapi_items:
+                item_annotation = openapi_type_to_python_annotation(
+                    openapi_items["type"],
+                    openapi_items.get("format"),
+                    openapi_items.get("items"),
                 )
-                return f"List[{item_type}]"
+                return f"typing.List[{item_annotation}]"
             else:
-                return "List[Any]"
+                return "typing.List[typing.Any]"
 
         case "object":
-            return "Dict[str, Any]"
+            return "typing.Dict[str, typing.Any]"
 
         case "null":
             return "None"
 
         case _:
-            return "Any"
+            return "typing.Any"

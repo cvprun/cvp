@@ -2,8 +2,9 @@
 
 from unittest import TestCase, main
 
-from cvp.mediamtx.model import load_mediamtx_model
 from pydantic import HttpUrl
+
+from cvp.mediamtx.model import load_mediamtx_model
 
 
 class ModelTestCase(TestCase):

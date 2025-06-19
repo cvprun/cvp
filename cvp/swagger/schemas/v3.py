@@ -80,6 +80,9 @@ class DiscriminatorObject(BaseModel):
     mapping: Optional[Dict[str, str]] = None
 
 
+AdditionalPropertiesUnion = Union[bool, "SchemaObject", "ReferenceObject"]
+
+
 class SchemaObject(BaseModel):
     """
     This is a simplified Schema Object.
@@ -111,11 +114,7 @@ class SchemaObject(BaseModel):
     not_: Optional[Union["SchemaObject", "ReferenceObject"]] = Field(None, alias="not")
     items: Optional[Union["SchemaObject", "ReferenceObject"]] = None
     properties: Optional[Dict[str, Union["SchemaObject", "ReferenceObject"]]] = None
-
-    # fmt: off
-    additionalProperties: Optional[Union[bool, "SchemaObject", "ReferenceObject"]] = None  # noqa: E501
-    # fmt: on
-
+    additionalProperties: Optional[AdditionalPropertiesUnion] = None
     description: Optional[str] = None
     format: Optional[str] = None
     default: Optional[Any] = None
@@ -156,6 +155,9 @@ class TagObject(BaseModel):
     externalDocs: Optional["ExternalDocumentationObject"] = None
 
 
+SchemaUnion = Union[SchemaObject, ReferenceObject]
+
+
 class HeaderObject(BaseModel):
     description: Optional[str] = None
     required: Optional[bool] = False
@@ -164,7 +166,7 @@ class HeaderObject(BaseModel):
     style: Optional[str] = None
     explode: Optional[bool] = None
     allowReserved: Optional[bool] = False
-    schema: Optional[Union[SchemaObject, ReferenceObject]] = None
+    schema_: Optional[SchemaUnion] = Field(None, alias="schema")
     example: Optional[Any] = None
     examples: Optional[Dict[str, Union["ExampleObject", ReferenceObject]]] = None
     content: Optional[Dict[str, "MediaTypeObject"]] = None
@@ -274,7 +276,7 @@ class EncodingObject(BaseModel):
 
 
 class MediaTypeObject(BaseModel):
-    schema: Optional[Union[SchemaObject, ReferenceObject]] = None
+    schema_: Optional[SchemaUnion] = Field(None, alias="schema")
     example: Optional[Any] = None
     examples: Optional[Dict[str, Union[ExampleObject, ReferenceObject]]] = None
     encoding: Optional[Dict[str, EncodingObject]] = None
@@ -296,7 +298,7 @@ class ParameterObject(BaseModel):
     style: Optional[str] = None
     explode: Optional[bool] = None
     allowReserved: Optional[bool] = False
-    schema: Optional[Union[SchemaObject, ReferenceObject]] = None
+    schema_: Optional[SchemaUnion] = Field(None, alias="schema")
     example: Optional[Any] = None
     examples: Optional[Dict[str, Union[ExampleObject, ReferenceObject]]] = None
     content: Optional[Dict[str, MediaTypeObject]] = None
@@ -347,6 +349,9 @@ class PathsObject(RootModel[Dict[str, PathItemObject]]):
     """
 
 
+SecuritySchemesDict = Dict[str, Union[SecuritySchemeObject, ReferenceObject]]
+
+
 class ComponentsObject(BaseModel):
     schemas: Optional[Dict[str, Union[SchemaObject, ReferenceObject]]] = None
     responses: Optional[Dict[str, Union[ResponseObject, ReferenceObject]]] = None
@@ -354,11 +359,7 @@ class ComponentsObject(BaseModel):
     examples: Optional[Dict[str, Union[ExampleObject, ReferenceObject]]] = None
     requestBodies: Optional[Dict[str, Union[RequestBodyObject, ReferenceObject]]] = None
     headers: Optional[Dict[str, Union[HeaderObject, ReferenceObject]]] = None
-
-    # fmt: off
-    securitySchemes: Optional[Dict[str, Union[SecuritySchemeObject, ReferenceObject]]] = None  # noqa: E501
-    # fmt: on
-
+    securitySchemes: Optional[SecuritySchemesDict] = None
     links: Optional[Dict[str, Union[LinkObject, ReferenceObject]]] = None
     callbacks: Optional[Dict[str, Union[CallbackObject, ReferenceObject]]] = None
     pathItems: Optional[Dict[str, Union[PathItemObject, ReferenceObject]]] = None
