@@ -512,10 +512,9 @@ class MediamtxApi:
         _queries = dict()
         _headers = dict()
         _url = self._format_path(_path, _path_kwargs, _queries)
-        _content = requestBody.model_dump_json()
-        _response = self._client.request(
-            _method, _url, content=_content, headers=_headers
-        )
+        _body = requestBody.model_dump_json()
+        _headers["Content-Type"] = "application/json"
+        _response = self._client.request(_method, _url, content=_body, headers=_headers)
         _status_code = _response.status_code
         if _status_code == 400:
             return Error.model_validate(_response.json())
@@ -559,10 +558,9 @@ class MediamtxApi:
         _queries = dict()
         _headers = dict()
         _url = self._format_path(_path, _path_kwargs, _queries)
-        _content = requestBody.model_dump_json()
-        _response = self._client.request(
-            _method, _url, content=_content, headers=_headers
-        )
+        _body = requestBody.model_dump_json()
+        _headers["Content-Type"] = "application/json"
+        _response = self._client.request(_method, _url, content=_body, headers=_headers)
         _status_code = _response.status_code
         if _status_code == 400:
             return Error.model_validate(_response.json())
@@ -636,10 +634,9 @@ class MediamtxApi:
         _queries = dict()
         _headers = dict()
         _url = self._format_path(_path, _path_kwargs, _queries)
-        _content = requestBody.model_dump_json()
-        _response = self._client.request(
-            _method, _url, content=_content, headers=_headers
-        )
+        _body = requestBody.model_dump_json()
+        _headers["Content-Type"] = "application/json"
+        _response = self._client.request(_method, _url, content=_body, headers=_headers)
         _status_code = _response.status_code
         if _status_code == 400:
             return Error.model_validate(_response.json())
@@ -662,10 +659,9 @@ class MediamtxApi:
         _queries = dict()
         _headers = dict()
         _url = self._format_path(_path, _path_kwargs, _queries)
-        _content = requestBody.model_dump_json()
-        _response = self._client.request(
-            _method, _url, content=_content, headers=_headers
-        )
+        _body = requestBody.model_dump_json()
+        _headers["Content-Type"] = "application/json"
+        _response = self._client.request(_method, _url, content=_body, headers=_headers)
         _status_code = _response.status_code
         if _status_code == 400:
             return Error.model_validate(_response.json())
@@ -690,10 +686,9 @@ class MediamtxApi:
         _queries = dict()
         _headers = dict()
         _url = self._format_path(_path, _path_kwargs, _queries)
-        _content = requestBody.model_dump_json()
-        _response = self._client.request(
-            _method, _url, content=_content, headers=_headers
-        )
+        _body = requestBody.model_dump_json()
+        _headers["Content-Type"] = "application/json"
+        _response = self._client.request(_method, _url, content=_body, headers=_headers)
         _status_code = _response.status_code
         if _status_code == 400:
             return Error.model_validate(_response.json())

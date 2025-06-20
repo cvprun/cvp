@@ -341,10 +341,11 @@ class HttpxClientGenerator:
             code.write(f'        _headers["{header_param}"] = {header_key}\n')
         code.write("        _url = self._format_path(_path, _path_kwargs, _queries)\n")
         if operation.requestBody:
-            code.write("        _content = requestBody.model_dump_json()\n")
+            code.write("        _body = requestBody.model_dump_json()\n")
+            code.write('        _headers["Content-Type"] = "application/json"\n')
         code.write("        _response = self._client.request(_method, _url")
         if operation.requestBody:
-            code.write(", content=_content")
+            code.write(", content=_body")
         code.write(", headers=_headers)\n")
         code.write(f"        _status_code = _response.status_code\n")
 
