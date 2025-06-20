@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -230,6 +230,9 @@ class ResponsesObject(BaseModel):
     @classmethod
     def validate_response_fields(cls, v: Any, info: ValidationInfo):
         field_name = info.field_name
+        if not field_name:
+            field_name = str()
+        assert isinstance(field_name, str)
 
         if field_name.startswith("_") or field_name == "default":
             return v
@@ -242,7 +245,10 @@ class ResponsesObject(BaseModel):
 
         return v
 
-    def get_response(
+    def list_status_codes(self):
+        return self.model_extra.keys()
+
+    def get_status_code(
         self,
         status_code: Union[str, int],
     ) -> Optional[Union[ResponseObject, ReferenceObject]]:
@@ -250,13 +256,21 @@ class ResponsesObject(BaseModel):
             status_code = str(status_code)
         assert isinstance(status_code, str)
 
-        return getattr(self, status_code, None)
+        assert self.model_extra is not None
+        response = self.model_extra.get(status_code)
+        if response is None:
+            return None
 
-    def set_response(
+        if "$ref" in response:
+            return ReferenceObject.model_validate(response)
+        else:
+            return ResponseObject.model_validate(response)
+
+    def set_status_code(
         self,
         status_code: Union[str, int],
         response: Union[ResponseObject, ReferenceObject],
-    ):
+    ) -> None:
         if isinstance(status_code, int):
             status_code = str(status_code)
         assert isinstance(status_code, str)
@@ -264,7 +278,8 @@ class ResponsesObject(BaseModel):
         if not self._is_valid_status_code(status_code) and status_code != "default":
             raise ValueError(f"Invalid status code: {status_code}")
 
-        setattr(self, status_code, response)
+        assert self.model_extra is not None
+        self.model_extra[status_code] = response.model_dump()
 
 
 class EncodingObject(BaseModel):
@@ -288,9 +303,12 @@ class RequestBodyObject(BaseModel):
     required: Optional[bool] = False
 
 
+LocationParameterLiteral = Literal["query", "header", "path", "cookie"]
+
+
 class ParameterObject(BaseModel):
     name: str
-    in_: str = Field(alias="in")  # Use alias for 'in' keyword
+    in_: LocationParameterLiteral = Field(alias="in")
     description: Optional[str] = None
     required: Optional[bool] = False
     deprecated: Optional[bool] = False
@@ -337,6 +355,19 @@ class PathItemObject(BaseModel):
     trace: Optional[OperationObject] = None
     servers: Optional[List["ServerObject"]] = None
     parameters: Optional[List[Union[ParameterObject, ReferenceObject]]] = None
+
+    @property
+    def operations(self) -> Dict[str, Optional[OperationObject]]:
+        return dict(
+            get=self.get,
+            put=self.put,
+            post=self.post,
+            delete=self.delete,
+            options=self.options,
+            head=self.head,
+            patch=self.patch,
+            trace=self.trace,
+        )
 
 
 class PathsObject(RootModel[Dict[str, PathItemObject]]):

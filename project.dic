@@ -20,6 +20,7 @@ appendleft
 argtypes
 armv
 asctime
+astimezone
 athlon
 athlonxp
 autodect
@@ -300,6 +301,7 @@ undoable
 unhovered
 unhovering
 unicast
+urlencode
 urple
 uxga
 vcodec
