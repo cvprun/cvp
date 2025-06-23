@@ -93,6 +93,7 @@ MEDIA_INSPECT_TIMEOUT: Final[float] = 3.0
 JOB_NONAME: Final[str] = "[New Job]"
 SERVICE_NONAME: Final[str] = "[New Service]"
 WATCHDOG_NONAME: Final[str] = "[New Watchdog]"
+MEDIAMTX_NONAME: Final[str] = "[New MediaMTX]"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

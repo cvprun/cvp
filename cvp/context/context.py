@@ -28,6 +28,7 @@ from cvp.logging.logging import (
     set_root_level,
 )
 from cvp.media.manager import MediaManager
+from cvp.mediamtx.manager import MediamtxManager
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.msgs.msg_type import MsgType
@@ -157,6 +158,7 @@ class Context(ContextMixins):
             self._config.ffmpeg,
             reload=True,
         )
+        self._mediamtxs = MediamtxManager(self._home.mediamtx, reload=True)
 
         self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
@@ -260,6 +262,10 @@ class Context(ContextMixins):
         self._medias.write_all_config_files()
         logger.info("Save all Media files")
 
+    def save_all_mediamtxs(self) -> None:
+        self._mediamtxs.write_all_config_files()
+        logger.info("Save all MediaMTX files")
+
     def save_all(self) -> None:
         self.save_config()
         self.save_all_scheduler()
@@ -272,6 +278,7 @@ class Context(ContextMixins):
         self.save_all_downloader()
         self.save_all_onvifs()
         self.save_all_medias()
+        self.save_all_mediamtxs()
 
     @property
     def home(self):
@@ -336,6 +343,10 @@ class Context(ContextMixins):
     @property
     def medias(self):
         return self._medias
+
+    @property
+    def mediamtxs(self):
+        return self._mediamtxs
 
     @property
     def supabase(self):
