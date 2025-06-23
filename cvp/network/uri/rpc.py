@@ -6,8 +6,8 @@ from io import StringIO
 from socket import AF_INET, AF_INET6
 from typing import Final, List, NamedTuple, Optional, Tuple, Union
 
-from cvp.net.address_family import get_ip_address_family
-from cvp.net.host_port import (
+from cvp.network.address_family import get_ip_address_family
+from cvp.network.host_port import (
     CLOSING_IPV6,
     OPENING_IPV6,
     OPENING_PORT,

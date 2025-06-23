@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.uri.parser import replace_netloc
+from cvp.network.uri.parser import replace_netloc
 
 
 class ParserTestCase(TestCase):

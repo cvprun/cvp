@@ -11,7 +11,7 @@ from cvp.logging.loggers import logger
 from cvp.media.config import MediaConfig, MediaKey
 from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.media.process.spawn import spawn_frame_reader_process
-from cvp.net.uri.parser import is_file_scheme
+from cvp.network.uri.parser import is_file_scheme
 from cvp.process.mapper import ProcessMapper
 from cvp.resources.manager.manager import ResourceManager
 from cvp.resources.subdirs.medias import MediasPath

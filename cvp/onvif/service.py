@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, Final, List, Optional, Tuple, TypedDict
 
-from cvp.net.uri.parser import replace_netloc
+from cvp.network.uri.parser import replace_netloc
 from cvp.resources.formats.json import JsonFormatPath
 
 DeviceBinding: Final[str] = "DeviceBinding"

@@ -3,7 +3,7 @@
 from ipaddress import IPv4Address, IPv6Address
 from typing import List
 
-from cvp.net.address_family import is_ipv4_address, is_ipv6_address
+from cvp.network.address_family import is_ipv4_address, is_ipv6_address
 
 
 def calc_ipv4_range(start: str, end: str) -> List[str]:

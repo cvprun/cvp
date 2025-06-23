@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from cvp.net.address_range import calc_ip_range
+from cvp.network.address_range import calc_ip_range
 from cvp.strings.parse_number_ranges import parse_integer_ranges
 from cvp.variables import (
     SOCKMAP_ADDRESS_BEGIN,

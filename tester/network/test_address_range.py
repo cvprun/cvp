@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.address_range import calc_ip_range, calc_ipv4_range, calc_ipv6_range
+from cvp.network.address_range import calc_ip_range, calc_ipv4_range, calc_ipv6_range
 
 
 class AddressRangeTestCase(TestCase):

@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.uri.host_port import has_scheme
+from cvp.network.uri.host_port import has_scheme
 
 
 class HostPortTestCase(TestCase):

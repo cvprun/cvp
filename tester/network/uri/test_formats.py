@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.uri.formats import format_path
+from cvp.network.uri.formats import format_path
 
 
 class FormatsTestCase(TestCase):

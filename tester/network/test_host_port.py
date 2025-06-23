@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.host_port import parse_host_port
+from cvp.network.host_port import parse_host_port
 
 
 class HostPortTestCase(TestCase):

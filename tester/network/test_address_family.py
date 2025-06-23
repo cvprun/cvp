@@ -2,7 +2,7 @@
 
 from unittest import TestCase, main
 
-from cvp.net.address_family import is_ipv4_address, is_ipv6_address
+from cvp.network.address_family import is_ipv4_address, is_ipv6_address
 
 
 class AddressFamilyTestCase(TestCase):

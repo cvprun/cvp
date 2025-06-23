@@ -7,7 +7,7 @@ from typing import Optional, TypeVar, Union, overload
 
 from dotenv import dotenv_values
 
-from cvp.net.liveness import ServerLivenessProbe
+from cvp.network.liveness import ServerLivenessProbe
 
 
 @lru_cache
