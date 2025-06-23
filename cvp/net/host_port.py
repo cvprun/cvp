@@ -54,6 +54,8 @@ def parse_ipv6_port(address: str) -> HostPort:
 
 def parse_host_port(address: str) -> HostPort:
     if address.startswith(OPENING_IPV6):
+        # e.g. [::1]
         return parse_ipv6_port(address)
     else:
+        # e.g. 192.168.0.1
         return parse_ipv4_or_domain_port(address)
