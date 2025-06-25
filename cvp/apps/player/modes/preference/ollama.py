@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from enum import StrEnum, auto, unique
-from typing import Final, Tuple
+from typing import Final
 
 from imgui_bundle import imgui
 
@@ -10,7 +10,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
-from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE, FIT_WIDTH
+from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
 from cvp.imgui.flags import table_column
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
@@ -28,7 +28,9 @@ class OllamaPreference(BasePreference):
 
     _MENU_SPLIT_X: Final[int] = 150
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
-    _API_LIST_SIZE: Final[Tuple[int, int]] = 150, int(FIT_HEIGHT)
+
+    _API_SPLIT_X: Final[int] = 150
+    _API_CHILD_FLAGS: Final[int] = RESIZE_X
 
     @unique
     class RunnerCommand(StrEnum):
@@ -69,15 +71,16 @@ class OllamaPreference(BasePreference):
             size=(self._MENU_SPLIT_X, 0),
             child_flags=self._MENU_CHILD_FLAGS,
         ):
-            if imgui.button("Reload"):
+            if button("Reload"):
                 self.ollamas.read_all_config_files()
             imgui.same_line()
-            if imgui.button("Add"):
+            if button("Add"):
                 self.selected_submenu = self.ollamas.add_new()[0]
             imgui.same_line()
             disabled_delete = self.selected_submenu not in self.ollamas
             if button("Del", disabled=disabled_delete):
                 self.ollamas.remove(self.selected_submenu)
+                self.context.msgs.append_toast("Remove ollama file")
 
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
@@ -120,10 +123,6 @@ class OllamaPreference(BasePreference):
 
         if ollama.has_error:
             imgui.text_colored(self.context.error_color, str(ollama.error))
-            if button("Remove"):
-                self.ollamas.remove(filename)
-                self.context.msgs.append_toast("Remove ollama file")
-            return
 
         ollama.name = input_text_value("Ollama Name", ollama.name)
         ollama.url = input_text_value("Ollama URL", ollama.url)
@@ -180,20 +179,26 @@ class OllamaPreference(BasePreference):
         running = self._runner.running
         has_error = bool(self._runner.error)
 
-        if imgui.begin_list_box("##APIList", size=self._API_LIST_SIZE):
-            try:
-                if imgui.button("Reload"):
-                    self._runner(ollama, self.RunnerCommand.list_)
-                for model_name in ollama.model_names:
-                    selected = model_name == self._selected_model
-                    if imgui.selectable(model_name, selected)[1]:
-                        self._selected_model = model_name
-            finally:
-                imgui.end_list_box()
+        with begin_child_context(
+            label="APIList",
+            size=(self._API_SPLIT_X, 0),
+            child_flags=self._API_CHILD_FLAGS,
+        ):
+            if button("Reload models", disabled=running):
+                self._runner(ollama, self.RunnerCommand.list_)
+
+            if imgui.begin_list_box("##APIList", size=FIT_SIZE):
+                try:
+                    for model_name in ollama.model_names:
+                        selected = model_name == self._selected_model
+                        if imgui.selectable(model_name, selected)[1]:
+                            self._selected_model = model_name
+                finally:
+                    imgui.end_list_box()
 
         imgui.same_line()
 
-        with begin_child_context("APIMain", FIT_SIZE):
+        with begin_child_context("APIMain", size=FIT_SIZE):
             if running:
                 text_centered("Requesting a list of models...")
             elif has_error:
@@ -218,7 +223,7 @@ class OllamaPreference(BasePreference):
 
         imgui.separator()
 
-        if imgui.button("Show"):
+        if button("Show"):
             self._runner(ollama, self.RunnerCommand.show, model_name)
 
         imgui.separator()

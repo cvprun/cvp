@@ -129,9 +129,9 @@ class ServicesMode(BaseMode):
             imgui.same_line()
 
             with begin_child_context("Main"):
-                if item := self.services.get(ServiceKey(self.selected_submenu)):
-                    self._control_tab.do_remote_control_process(item)
-                    self._tabs.do_process("Service Tabs", item)
+                if selected_service := self.selected_service:
+                    self._control_tab.do_remote_control_process(selected_service)
+                    self._tabs.do_process("Service Tabs", selected_service)
                 else:
                     text_centered("Please select a item")
 

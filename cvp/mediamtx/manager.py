@@ -19,7 +19,7 @@ class MediamtxManager(ResourceManager[MediamtxKey, MediamtxItem]):
             raise_errors=raise_errors,
         )
 
-    def add_client(
+    def add_new(
         self,
         name=MEDIAMTX_NONAME,
         *,
