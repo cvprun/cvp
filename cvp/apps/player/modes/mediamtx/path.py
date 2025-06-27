@@ -7,11 +7,14 @@ from imgui_bundle import imgui
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
+from cvp.imgui.checkbox_value import checkbox_value
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import RESIZE_X
+from cvp.imgui.input_int_value import input_int_value
 from cvp.imgui.input_text_value import input_text_value
 from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.widgets.begin_table_mutable_sequence import begin_table_mutable_sequence
 from cvp.mediamtx.client import Path
 from cvp.mediamtx.item import MediamtxItem
 
@@ -31,7 +34,6 @@ class MediamtxPathTab:
     @staticmethod
     def on_update_paths_main(mediamtx: MediamtxItem):
         mediamtx.update_paths()
-        print(mediamtx.paths)
 
     def get_selected_path(self, mediamtx: MediamtxItem) -> str:
         return self.context.get_selected_submenu(type(self), suffix=mediamtx.uuid)
@@ -63,8 +65,8 @@ class MediamtxPathTab:
                     if mediamtx.paths:
                         for path in mediamtx.paths.items or []:
                             selected = path.name == self.get_selected_path(mediamtx)
-                            if imgui.selectable(path, selected)[1]:
-                                self.set_selected_path(mediamtx, path)
+                            if imgui.selectable(path.name, selected)[1]:
+                                self.set_selected_path(mediamtx, path.name)
                 finally:
                     imgui.end_list_box()
 
@@ -85,11 +87,25 @@ class MediamtxPathTab:
                     text_centered("Please select a item")
                     return
 
-                self.do_mediamtx_path(media_path)
+                with style_disable_input_context():
+                    self.do_mediamtx_path(media_path)
 
     @staticmethod
-    def do_mediamtx_path(media_path: Path) -> None:
-        with style_disable_input_context():
-            input_text_value("Path Name", media_path.name)
+    def do_mediamtx_path(path: Path) -> None:
+        input_text_value("name", path.name)
 
-        imgui.separator()
+        input_text_value("confName", path.confName)
+        input_text_value("source", str(path.source))
+        checkbox_value("ready", path.ready)
+        input_text_value("readyTime", path.readyTime)
+        begin_table_mutable_sequence("tracks", path.tracks)
+        input_int_value("bytesReceived", path.bytesReceived)
+        input_int_value("bytesSent", path.bytesSent)
+
+        imgui.text("Readers")
+        for reader in path.readers:
+            imgui.bullet()
+            imgui.same_line()
+            imgui.text(reader.type)
+            imgui.same_line()
+            imgui.text(reader.id)

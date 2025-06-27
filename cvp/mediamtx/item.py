@@ -16,9 +16,6 @@ MediamtxKey = NewType("MediamtxKey", str)
 
 
 class MediamtxItem(Serializable):
-    _config: Optional[GlobalConf]
-    _paths: Optional[PathList]
-
     @unique
     class _Keys(StrEnum):
         uuid = auto()
@@ -28,7 +25,8 @@ class MediamtxItem(Serializable):
         follow_redirects = auto()
         verify = auto()
         timeout = auto()
-        model_names = auto()
+        config = auto()
+        paths = auto()
 
     def __init__(
         self,
@@ -39,9 +37,8 @@ class MediamtxItem(Serializable):
         follow_redirects=True,
         verify=True,
         timeout=TIMEOUT_INFINITE,
-        model_names: Optional[Sequence[str]] = None,
-        *,
-        error: Optional[BaseException] = None,
+        config: Optional[GlobalConf] = None,
+        paths: Optional[PathList] = None,
     ):
         self.uuid = uuid if uuid else str(uuid4())
         self.name = name if name else str()
@@ -50,10 +47,8 @@ class MediamtxItem(Serializable):
         self.follow_redirects = follow_redirects
         self.verify = verify
         self.timeout = timeout
-        self.model_names = list(model_names if model_names else ())
-        self._error = error
-        self._config = None
-        self._paths = None
+        self._config = config
+        self._paths = paths
 
     def headers_as_dict(self) -> Dict[str, str]:
         return {str(k): str(v) for k, v in self.headers}
@@ -69,8 +64,6 @@ class MediamtxItem(Serializable):
             and self.follow_redirects == other.follow_redirects
             and self.verify == other.verify
             and self.timeout == other.timeout
-            and self.model_names == other.model_names
-            and self._error == other._error
             and self._config == other._config
             and self._paths == other._paths
         )
@@ -85,8 +78,6 @@ class MediamtxItem(Serializable):
         result.follow_redirects = copy(self.follow_redirects)
         result.verify = copy(self.verify)
         result.timeout = copy(self.timeout)
-        result.model_names = copy(self.model_names)
-        result._error = copy(self._error)
         result._config = copy(self._config)
         result._paths = copy(self._paths)
         return result
@@ -103,8 +94,6 @@ class MediamtxItem(Serializable):
         result.follow_redirects = deepcopy(self.follow_redirects, memo)
         result.verify = deepcopy(self.verify, memo)
         result.timeout = deepcopy(self.timeout, memo)
-        result.model_names = deepcopy(self.model_names, memo)
-        result._error = deepcopy(self._error, memo)
         result._config = deepcopy(self._config, memo)
         result._paths = deepcopy(self._paths, memo)
         memo[id(self)] = result
@@ -112,6 +101,8 @@ class MediamtxItem(Serializable):
 
     @override
     def __serialize__(self) -> Any:
+        config_obj = self._config.model_dump(by_alias=True) if self._config else None
+        paths_obj = self._paths.model_dump(by_alias=True) if self._paths else None
         return {
             str(self._Keys.uuid): self.uuid,
             str(self._Keys.name_): self.name,
@@ -120,7 +111,8 @@ class MediamtxItem(Serializable):
             str(self._Keys.follow_redirects): self.follow_redirects,
             str(self._Keys.verify): self.verify,
             str(self._Keys.timeout): self.timeout,
-            str(self._Keys.model_names): self.model_names,
+            str(self._Keys.config): config_obj,
+            str(self._Keys.paths): paths_obj,
         }
 
     @override
@@ -138,11 +130,18 @@ class MediamtxItem(Serializable):
         self.follow_redirects = bool(data.get(self._Keys.follow_redirects, True))
         self.verify = bool(data.get(self._Keys.verify, True))
         self.timeout = float(data.get(self._Keys.timeout, TIMEOUT_INFINITE))
-        self.model_names = data.get(self._Keys.model_names, list())
 
-        self._error = None
-        self._config = None
-        self._paths = None
+        config = data.get(self._Keys.config)
+        if config is not None:
+            self._config = GlobalConf.model_validate(config)
+        else:
+            self._config = None
+
+        paths = data.get(self._Keys.paths)
+        if paths is not None:
+            self._paths = PathList.model_validate(paths)
+        else:
+            self._paths = None
 
     @property
     def key(self):
@@ -151,14 +150,6 @@ class MediamtxItem(Serializable):
     @key.setter
     def key(self, value: MediamtxKey) -> None:
         self.uuid = str(value)
-
-    @property
-    def has_error(self) -> bool:
-        return self._error is not None
-
-    @property
-    def error(self):
-        return self._error
 
     @property
     def config(self):
@@ -184,37 +175,29 @@ class MediamtxItem(Serializable):
             follow_redirects=self.follow_redirects,
         )
 
-    def update_global_config(self):
-        try:
-            response = self.client.configGlobalGet()
-            if isinstance(response, GlobalConf):
-                self._config = response
-                self._error = None
-            elif isinstance(response, Error):
-                self._config = None
-                self._error = ValueError(response.error)
-            elif isinstance(response, Response):
-                self._config = None
-                self._error = ValueError(str(response.status_code))
-        except BaseException as e:
-            self._config = None
-            self._error = e
+    def update_global_config(self) -> None:
+        self._config = None
+        response = self.client.configGlobalGet()
+        if isinstance(response, GlobalConf):
+            self._config = response
+        elif isinstance(response, Error):
+            raise ValueError(response.error)
+        elif isinstance(response, Response):
+            raise ValueError(str(response.status_code))
+        else:
+            assert False, "Inaccessible section"
 
-    def update_paths(self, page=0, items_per_page=100):
-        try:
-            response = self.client.pathsList(page, items_per_page)
-            if isinstance(response, PathList):
-                self._paths = response
-                self._error = None
-            elif isinstance(response, Error):
-                self._paths = None
-                self._error = ValueError(response.error)
-            elif isinstance(response, Response):
-                self._paths = None
-                self._error = ValueError(str(response.status_code))
-        except BaseException as e:
-            self._paths = None
-            self._error = e
+    def update_paths(self, page=0, items_per_page=100) -> None:
+        self._paths = None
+        response = self.client.pathsList(page, items_per_page)
+        if isinstance(response, PathList):
+            self._paths = response
+        elif isinstance(response, Error):
+            raise ValueError(response.error)
+        elif isinstance(response, Response):
+            raise ValueError(str(response.status_code))
+        else:
+            assert False, "Inaccessible section"
 
     def get_path(self, name: str) -> Optional[Path]:
         if not self._paths:

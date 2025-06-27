@@ -9,6 +9,7 @@ from cvp.imgui.checkbox_value import checkbox_value as _check
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.input_int_value import input_int_value as _int
 from cvp.imgui.input_text_value import input_text_value as _text
+from cvp.imgui.push_style_color import style_disable_input_context
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.widgets.begin_table_mutable_sequence import begin_table_mutable_sequence
 from cvp.mediamtx.client import GlobalConf
@@ -54,7 +55,8 @@ class MediamtxGlobalConfTab:
                 if mediamtx.config is None:
                     text_centered("Empty global config ...")
                 else:
-                    self.do_mediamtx_config(mediamtx.config)
+                    with style_disable_input_context():
+                        self.do_mediamtx_config(mediamtx.config)
 
     @staticmethod
     def do_mediamtx_config(c: GlobalConf) -> None:

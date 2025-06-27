@@ -6,7 +6,7 @@ from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.apps.player.modes.mediamtx.config import MediamtxConfigTab
-from cvp.apps.player.modes.mediamtx.mtx_config import MediamtxGlobalConfTab
+from cvp.apps.player.modes.mediamtx.global_conf import MediamtxGlobalConfTab
 from cvp.apps.player.modes.mediamtx.path import MediamtxPathTab
 from cvp.assets.fonts.mdi import SIGNAL_VARIANT
 from cvp.context.context import Context
