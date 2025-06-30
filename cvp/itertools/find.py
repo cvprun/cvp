@@ -12,3 +12,10 @@ def find_index(iterable: Iterable[_T], key: Callable[[_T], bool]) -> int:
         if key(item):
             return i
     return NOT_FOUND_INDEX
+
+
+def find_element(iterable: Iterable[_T], key: Callable[[_T], bool]) -> _T:
+    for i, item in enumerate(iterable):
+        if key(item):
+            return item
+    raise IndexError("Not found element")

@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Dict, List, NamedTuple, NewType, Optional, Type, Union
 
-from cvp.itertools.find_index import find_index
+from cvp.itertools.find import find_index
 from cvp.variables import INFINITE, MODULE_PATH_SEPARATOR, NOT_FOUND_INDEX
 
 CategoryKey = NewType("CategoryKey", str)
