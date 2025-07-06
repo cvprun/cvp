@@ -4,7 +4,7 @@ import os
 from dataclasses import dataclass
 from io import StringIO
 from subprocess import check_output
-from typing import Dict, Final, List, Sequence
+from typing import Dict, Final, List, Optional, Sequence
 from urllib.parse import urlparse
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
@@ -41,7 +41,7 @@ class Format(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         demuxing = line[1] == "D"
         muxing = line[2] == "E"
         name_desc = line[4:].split(maxsplit=1)

@@ -3,16 +3,25 @@
 from dataclasses import dataclass
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.utils.version import inspect_version
 from cvp.itertools.find import find_element
 
 FFMPEG_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (
+    "File formats:",
+    " D. = Demuxing supported",
+    " .E = Muxing supported",
+    " --",
+)
+
+FFMPEG_V7_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (
     "Formats:",
     " D.. = Demuxing supported",
     " .E. = Muxing supported",
     " ..d = Is a device",
+    " ---",
 )
 """Skip unnecessary header lines in `ffmpeg -hide_banner -demuxers` command."""
 
@@ -21,7 +30,7 @@ FFMPEG_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (
 class Demuxer(FormatLineProtocol):
     demuxing: bool
     muxing: bool
-    device: bool
+    device: Optional[bool]
     name: str
     description: str
 
@@ -34,14 +43,20 @@ class Demuxer(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         demuxing = line[1] == "D"
         muxing = line[2] == "E"
-        device = line[3] == "d"
-        name_desc = line[5:].split(maxsplit=1)
-        assert len(name_desc) == 2
+
+        if major is not None and 7 <= major:
+            device = line[3] == "d"
+            name_desc = line[5:].split(maxsplit=1)
+        else:
+            device = None
+            name_desc = line[4:].split(maxsplit=1)
+
         name = name_desc[0].strip()
-        desc = name_desc[1].strip()
+        desc = name_desc[1].strip() if 2 <= len(name_desc) else str()
+
         return cls(
             demuxing=demuxing,
             muxing=muxing,
@@ -55,10 +70,23 @@ def parse_demuxers_output(text: str) -> List[Demuxer]:
     return parse_ffmpeg_format_output(text, FFMPEG_DEMUXERS_HEADER_LINES, Demuxer)
 
 
+def parse_v7_demuxers_output(text: str) -> List[Demuxer]:
+    return parse_ffmpeg_format_output(
+        text,
+        FFMPEG_V7_DEMUXERS_HEADER_LINES,
+        Demuxer,
+        major=7,
+    )
+
+
 def inspect_demuxers(ffmpeg="ffmpeg") -> List[Demuxer]:
     cmds = ffmpeg, "-hide_banner", "-demuxers"
     output = check_output(cmds).decode("utf-8")
-    return parse_demuxers_output(output)
+    version = inspect_version(ffmpeg)
+    if 7 <= version.major:
+        return parse_v7_demuxers_output(output)
+    else:
+        return parse_demuxers_output(output)
 
 
 def find_demuxer(name: str, ffmpeg="ffmpeg") -> Demuxer:

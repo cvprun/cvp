@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 
@@ -15,6 +15,7 @@ FFMPEG_PIX_FMTS_HEADER_LINES: Final[Sequence[str]] = (
     "...P. = Paletted format",
     "....B = Bitstream format",
     "FLAGS NAME            NB_COMPONENTS BITS_PER_PIXEL",
+    "-----",
 )
 """Skip unnecessary header lines in `ffmpeg -hide_banner -pix_fmts` command."""
 
@@ -43,7 +44,7 @@ class PixFmt(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         cols = [c.strip() for c in line.split()]
         assert len(cols) == 4
         flags = cols[0]

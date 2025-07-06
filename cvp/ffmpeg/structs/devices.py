@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 
@@ -11,6 +11,7 @@ FFMPEG_DEVICES_HEADER_LINES: Final[Sequence[str]] = (
     "Devices:",
     " D. = Demuxing supported",
     " .E = Muxing supported",
+    " --",
 )
 """Skip unnecessary header lines in `ffmpeg -hide_banner -devices` command."""
 
@@ -30,13 +31,12 @@ class Device(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         demuxing = line[1] == "D"
         muxing = line[2] == "E"
         name_desc = line[4:].split(maxsplit=1)
-        assert len(name_desc) == 2
         name = name_desc[0].strip()
-        desc = name_desc[1].strip()
+        desc = name_desc[1].strip() if 2 <= len(name_desc) else str()
         return cls(
             demuxing=demuxing,
             muxing=muxing,

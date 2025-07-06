@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from subprocess import check_output
-from typing import Final, List, Sequence, Tuple
+from typing import Final, List, Optional, Sequence, Tuple
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 from cvp.itertools.find import find_element, find_index
@@ -29,7 +29,7 @@ class IndividualChannel(FormatLineProtocol):
         return f"{self.name} {self.description}"
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         name_desc = line.split(maxsplit=1)
         assert len(name_desc) == 2
         name = name_desc[0].strip()
@@ -46,7 +46,7 @@ class Layout(FormatLineProtocol):
         return f"{self.name} {self.decomposition}"
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         name_desc = line.split(maxsplit=1)
         assert len(name_desc) == 2
         name = name_desc[0].strip()

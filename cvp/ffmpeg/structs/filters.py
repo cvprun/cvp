@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 from cvp.itertools.find import find_element
@@ -62,7 +62,7 @@ class Filter(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         timeline_support = line[1] == "T"
         slice_threading = line[2] == "S"
         command_support = line[3] == "X"

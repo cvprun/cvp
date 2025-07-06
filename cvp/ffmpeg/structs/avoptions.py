@@ -14,6 +14,9 @@ from cvp.itertools.find import find_element
 _AV_OPTION_CONST_PREFIX: Final[str] = "     "
 _RANGE_REGEX: Final[Pattern[str]] = re_compile(r" \(from (.+?) to (.+?)\)")
 _DEFAULT_REGEX: Final[Pattern[str]] = re_compile(r" \(default (.+?)\)")
+_FLAG_REGEX: Final[Pattern[str]] = re_compile(
+    r"(.*)([E.][D.][F.][V.][A.][S.][X.][R.][B.][T.][P.])(.*)",
+)
 
 
 @unique
@@ -202,6 +205,11 @@ class AVOptions:
     options: List[AVOption] = field(default_factory=list)
 
 
+class AVOptionsFormatError(ValueError):
+    def __init__(self, *args):
+        super().__init__(*args)
+
+
 def extract_option_range(text: str) -> Optional[Tuple[str, str]]:
     if match := _RANGE_REGEX.search(text):
         return match.group(1), match.group(2)
@@ -232,12 +240,12 @@ def parse_avoptions_with_deque(lines: Deque[str]) -> AVOptions:
             continue
 
         if not line.endswith("AVOptions:"):
-            raise ValueError("Could not find AVOptions title")
+            raise ValueError("Unexpected AVOptions title format")
 
         result.name = line.removesuffix("AVOptions:").strip()
         break
 
-    if result.name:
+    if not result.name:
         raise ValueError("Could not find AVOptions title")
 
     while lines_deque:
@@ -247,32 +255,52 @@ def parse_avoptions_with_deque(lines: Deque[str]) -> AVOptions:
             break
 
         if line.startswith(_AV_OPTION_CONST_PREFIX):
-            assert 1 <= len(result.options)
-            const_name, value_or_flag, more = line.split(maxsplit=2)
+            if 0 == len(result.options):
+                # If the const prefix ('     ') comes at the beginning,
+                # it means the previous `AVOption` has already been added.
+                raise AVOptionsFormatError("AVOptions must have at least one option")
+
+            name_more = line.split(maxsplit=1)
+            if 2 != len(name_more):
+                raise AVOptionsFormatError("Invalid AVOptionConst format")
+
+            const_name = name_more[0]
+            more = name_more[1]
             assert isinstance(const_name, str)
             assert isinstance(more, str)
 
-            try:
-                const_value = int(value_or_flag)
-                flag, const_desc = more.split(maxsplit=2)
-                const_flag = AVOptionFlag.from_text(flag)
-            except ValueError:
-                const_value = None
-                const_flag = AVOptionFlag.from_text(value_or_flag)
-                const_desc = more
+            const_match = _FLAG_REGEX.match(more)
+            if const_match is None:
+                raise AVOptionsFormatError("Not found AVOptionConst's flag format")
+
+            const_value_text = const_match.group(1).strip()
+            const_flag_text = const_match.group(2)
+            const_desc_text = const_match.group(3).strip()
+
+            const_value = int(const_value_text) if const_value_text else None
+            const_flag = AVOptionFlag.from_text(const_flag_text)
+            const_desc = str(const_desc_text) or None
 
             const = AVOptionConst(const_name, const_value, const_flag, const_desc)
             result.options[-1].constants.append(const)
         else:
-            name, type_, flag, desc = line.split(maxsplit=3)
+            option_items = line.split(maxsplit=3)
+            if len(option_items) not in (3, 4):
+                raise AVOptionsFormatError("Invalid AVOption format")
+
+            opt_name = option_items[0]
+            opt_type = option_items[1]
+            opt_flag = option_items[2]
+            opt_desc = option_items[3] if 4 <= len(option_items) else str()
+
             option = AVOption(
-                name=name,
-                type=AVOptionType(type_),
-                flag=AVOptionFlag.from_text(flag),
-                description=desc,
+                name=opt_name,
+                type=AVOptionType(opt_type),
+                flag=AVOptionFlag.from_text(opt_flag),
+                description=opt_desc,
                 constants=list(),
-                range=extract_option_range(desc),
-                default=extract_option_default(desc),
+                range=extract_option_range(opt_desc),
+                default=extract_option_default(opt_desc),
             )
             result.options.append(option)
 
@@ -305,8 +333,15 @@ def parse_avoptions_output(text: str) -> List[AVOptions]:
             if section_range is not None:
                 begin = section_range.begin
                 end = section_range.end
-                result.append(parse_avoptions_with_deque(deque(lines[begin:end])))
-                section_range = None
+                try:
+                    options = parse_avoptions_with_deque(deque(lines[begin:end]))
+                    result.append(options)
+                except AVOptionsFormatError:
+                    raise
+                except ValueError:
+                    pass
+                finally:
+                    section_range = None
             else:
                 pass
 

@@ -3,16 +3,25 @@
 from dataclasses import dataclass
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.utils.version import inspect_version
 from cvp.itertools.find import find_element
 
 FFMPEG_MUXERS_HEADER_LINES: Final[Sequence[str]] = (
+    "File formats:",
+    " D. = Demuxing supported",
+    " .E = Muxing supported",
+    " --",
+)
+
+FFMPEG_V7_MUXERS_HEADER_LINES: Final[Sequence[str]] = (
     "Formats:",
     " D.. = Demuxing supported",
     " .E. = Muxing supported",
     " ..d = Is a device",
+    " ---",
 )
 """Skip unnecessary header lines in `ffmpeg -hide_banner -muxers` command."""
 
@@ -21,7 +30,7 @@ FFMPEG_MUXERS_HEADER_LINES: Final[Sequence[str]] = (
 class Muxer(FormatLineProtocol):
     demuxing: bool
     muxing: bool
-    device: bool
+    device: Optional[bool]
     name: str
     description: str
 
@@ -34,14 +43,20 @@ class Muxer(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         demuxing = line[1] == "D"
         muxing = line[2] == "E"
-        device = line[3] == "d"
-        name_desc = line[5:].split(maxsplit=1)
-        assert len(name_desc) == 2
+
+        if major is not None and 7 <= major:
+            device = line[3] == "d"
+            name_desc = line[5:].split(maxsplit=1)
+        else:
+            device = None
+            name_desc = line[4:].split(maxsplit=1)
+
         name = name_desc[0].strip()
-        desc = name_desc[1].strip()
+        desc = name_desc[1].strip() if 2 <= len(name_desc) else str()
+
         return cls(
             demuxing=demuxing,
             muxing=muxing,
@@ -55,10 +70,23 @@ def parse_muxers_output(text: str) -> List[Muxer]:
     return parse_ffmpeg_format_output(text, FFMPEG_MUXERS_HEADER_LINES, Muxer)
 
 
+def parse_v7_muxers_output(text: str) -> List[Muxer]:
+    return parse_ffmpeg_format_output(
+        text,
+        FFMPEG_V7_MUXERS_HEADER_LINES,
+        Muxer,
+        major=7,
+    )
+
+
 def inspect_muxers(ffmpeg="ffmpeg") -> List[Muxer]:
     cmds = ffmpeg, "-hide_banner", "-muxers"
     output = check_output(cmds).decode("utf-8")
-    return parse_muxers_output(output)
+    version = inspect_version(ffmpeg)
+    if 7 <= version.major:
+        return parse_v7_muxers_output(output)
+    else:
+        return parse_muxers_output(output)
 
 
 def find_muxer(name: str, ffmpeg="ffmpeg") -> Muxer:

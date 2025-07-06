@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from io import StringIO
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 from cvp.itertools.find import find_element
@@ -19,6 +19,7 @@ FFMPEG_ENCODERS_HEADER_LINES: Final[Sequence[str]] = (
     " ...X.. = Codec is experimental",
     " ....B. = Supports draw_horiz_band",
     " .....D = Supports direct rendering method 1",
+    " ------",
 )
 """Skip unnecessary header lines in `ffmpeg -hide_banner -encoders` command."""
 
@@ -52,7 +53,7 @@ class Encoder(FormatLineProtocol):
         return buffer.getvalue()
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         type_ = EncoderType(line[1])
         frame_level_multithreading = line[2] == "F"
         slice_level_multithreading = line[3] == "S"

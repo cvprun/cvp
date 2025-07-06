@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from subprocess import check_output
-from typing import Final, List, Sequence
+from typing import Final, List, Optional, Sequence
 
 from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
 from cvp.itertools.find import find_element
@@ -20,7 +20,7 @@ class SampleFmt(FormatLineProtocol):
         return f"{self.name} {self.depth}"
 
     @classmethod
-    def from_format_line(cls, line: str):
+    def from_format_line(cls, line: str, major: Optional[int] = None):
         name_depth = line.split(maxsplit=1)
         assert len(name_depth) == 2
         name = name_depth[0].strip()

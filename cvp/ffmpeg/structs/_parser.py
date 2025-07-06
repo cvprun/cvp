@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Protocol, Self, Sequence, Type, TypeVar
+from typing import List, Optional, Protocol, Self, Sequence, Type, TypeVar
 
 
 class FormatLineProtocol(Protocol):
@@ -9,7 +9,7 @@ class FormatLineProtocol(Protocol):
     def __repr__(self): ...
 
     @classmethod
-    def from_format_line(cls, line: str) -> Self: ...
+    def from_format_line(cls, line: str, major: Optional[int] = None) -> Self: ...
 
 
 _T = TypeVar("_T", bound=FormatLineProtocol)
@@ -19,6 +19,7 @@ def parse_ffmpeg_format_output(
     text: str,
     header_lines: Sequence[str],
     cls: Type[_T],
+    major: Optional[int] = None,
 ) -> List[_T]:
     lines = text.splitlines()
     for i, header_line in enumerate(header_lines):
@@ -29,4 +30,4 @@ def parse_ffmpeg_format_output(
     lines = lines[begin:]
 
     # [IMPORTANT] Do not use strip
-    return [cls.from_format_line(line) for line in lines]
+    return [cls.from_format_line(line, major) for line in lines]
