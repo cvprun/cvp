@@ -3,13 +3,13 @@
 from shutil import which
 from unittest import TestCase, main, skipIf
 
-from cvp.ffmpeg.structs.muxers import find_muxer
+from cvp.ffmpeg.capabilities.decoders import find_decoder
 
 
 @skipIf(not which("ffmpeg"), "Not found ffmpeg executable")
-class MuxersTestCase(TestCase):
+class DecodersTestCase(TestCase):
     def test_h264(self):
-        h264 = find_muxer("h264")
+        h264 = find_decoder("h264")
         self.assertEqual("h264", h264.name)
 
 

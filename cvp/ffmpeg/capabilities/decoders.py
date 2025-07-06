@@ -6,7 +6,10 @@ from io import StringIO
 from subprocess import check_output
 from typing import Final, List, Optional, Sequence
 
-from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.capabilities._parser import (
+    FormatLineProtocol,
+    parse_ffmpeg_format_output,
+)
 from cvp.itertools.find import find_element
 
 FFMPEG_DECODERS_HEADER_LINES: Final[Sequence[str]] = (

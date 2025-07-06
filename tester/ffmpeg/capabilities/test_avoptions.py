@@ -3,7 +3,7 @@
 from shutil import which
 from unittest import TestCase, main, skipIf
 
-from cvp.ffmpeg.structs.avoptions import find_avoptions
+from cvp.ffmpeg.capabilities.avoptions import find_avoptions
 
 
 @skipIf(not which("ffmpeg"), "Not found ffmpeg executable")

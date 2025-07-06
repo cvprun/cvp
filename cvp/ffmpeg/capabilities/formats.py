@@ -7,7 +7,10 @@ from subprocess import check_output
 from typing import Dict, Final, List, Optional, Sequence
 from urllib.parse import urlparse
 
-from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.capabilities._parser import (
+    FormatLineProtocol,
+    parse_ffmpeg_format_output,
+)
 from cvp.itertools.find import find_element
 
 AUTOMATIC_DETECT_FORMAT: Final[str] = "autodect"

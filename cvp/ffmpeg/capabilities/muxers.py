@@ -5,29 +5,32 @@ from io import StringIO
 from subprocess import check_output
 from typing import Final, List, Optional, Sequence
 
-from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.capabilities._parser import (
+    FormatLineProtocol,
+    parse_ffmpeg_format_output,
+)
 from cvp.ffmpeg.utils.version import inspect_version
 from cvp.itertools.find import find_element
 
-FFMPEG_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (
+FFMPEG_MUXERS_HEADER_LINES: Final[Sequence[str]] = (
     "File formats:",
     " D. = Demuxing supported",
     " .E = Muxing supported",
     " --",
 )
 
-FFMPEG_V7_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (
+FFMPEG_V7_MUXERS_HEADER_LINES: Final[Sequence[str]] = (
     "Formats:",
     " D.. = Demuxing supported",
     " .E. = Muxing supported",
     " ..d = Is a device",
     " ---",
 )
-"""Skip unnecessary header lines in `ffmpeg -hide_banner -demuxers` command."""
+"""Skip unnecessary header lines in `ffmpeg -hide_banner -muxers` command."""
 
 
 @dataclass
-class Demuxer(FormatLineProtocol):
+class Muxer(FormatLineProtocol):
     demuxing: bool
     muxing: bool
     device: Optional[bool]
@@ -66,28 +69,28 @@ class Demuxer(FormatLineProtocol):
         )
 
 
-def parse_demuxers_output(text: str) -> List[Demuxer]:
-    return parse_ffmpeg_format_output(text, FFMPEG_DEMUXERS_HEADER_LINES, Demuxer)
+def parse_muxers_output(text: str) -> List[Muxer]:
+    return parse_ffmpeg_format_output(text, FFMPEG_MUXERS_HEADER_LINES, Muxer)
 
 
-def parse_v7_demuxers_output(text: str) -> List[Demuxer]:
+def parse_v7_muxers_output(text: str) -> List[Muxer]:
     return parse_ffmpeg_format_output(
         text,
-        FFMPEG_V7_DEMUXERS_HEADER_LINES,
-        Demuxer,
+        FFMPEG_V7_MUXERS_HEADER_LINES,
+        Muxer,
         major=7,
     )
 
 
-def inspect_demuxers(ffmpeg="ffmpeg") -> List[Demuxer]:
-    cmds = ffmpeg, "-hide_banner", "-demuxers"
+def inspect_muxers(ffmpeg="ffmpeg") -> List[Muxer]:
+    cmds = ffmpeg, "-hide_banner", "-muxers"
     output = check_output(cmds).decode("utf-8")
     version = inspect_version(ffmpeg)
     if 7 <= version.major:
-        return parse_v7_demuxers_output(output)
+        return parse_v7_muxers_output(output)
     else:
-        return parse_demuxers_output(output)
+        return parse_muxers_output(output)
 
 
-def find_demuxer(name: str, ffmpeg="ffmpeg") -> Demuxer:
-    return find_element(inspect_demuxers(ffmpeg), lambda x: x.name == name)
+def find_muxer(name: str, ffmpeg="ffmpeg") -> Muxer:
+    return find_element(inspect_muxers(ffmpeg), lambda x: x.name == name)

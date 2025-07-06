@@ -5,7 +5,10 @@ from io import StringIO
 from subprocess import check_output
 from typing import Final, List, Optional, Sequence
 
-from cvp.ffmpeg.structs._parser import FormatLineProtocol, parse_ffmpeg_format_output
+from cvp.ffmpeg.capabilities._parser import (
+    FormatLineProtocol,
+    parse_ffmpeg_format_output,
+)
 
 FFMPEG_PIX_FMTS_HEADER_LINES: Final[Sequence[str]] = (
     "Pixel formats:",

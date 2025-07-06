@@ -3,7 +3,7 @@
 from shutil import which
 from unittest import TestCase, main, skipIf
 
-from cvp.ffmpeg.structs.layouts import find_layout, find_layout_decomposition
+from cvp.ffmpeg.capabilities.layouts import find_layout, find_layout_decomposition
 
 
 @skipIf(not which("ffmpeg"), "Not found ffmpeg executable")

@@ -3,7 +3,7 @@
 from shutil import which
 from unittest import TestCase, main, skipIf
 
-from cvp.ffmpeg.structs.encoders import find_encoder
+from cvp.ffmpeg.capabilities.encoders import find_encoder
 
 
 @skipIf(not which("ffmpeg"), "Not found ffmpeg executable")

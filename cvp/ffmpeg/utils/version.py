@@ -26,7 +26,8 @@ class FFmpegVersion(NamedTuple):
             major = int(major_text)
         else:
             assert major_text[1].isnumeric()
-            major = int(major_text[1:])
+            major = int(major_text[1:])  # e.g. 'n7'
+
         minor = int(minor_text)
         patch = int(patch_text)
 
