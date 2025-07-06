@@ -138,5 +138,6 @@ MANIFEST
 ### Project ###
 .env*
 .venv/
+.taskmaster/
 imgui.ini
 player.ini
