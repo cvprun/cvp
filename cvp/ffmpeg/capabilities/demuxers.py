@@ -9,7 +9,7 @@ from cvp.ffmpeg.capabilities._parser import (
     FormatLineProtocol,
     parse_ffmpeg_format_output,
 )
-from cvp.ffmpeg.utils.version import inspect_version
+from cvp.ffmpeg.capabilities.version import inspect_version
 from cvp.itertools.find import find_element
 
 FFMPEG_DEMUXERS_HEADER_LINES: Final[Sequence[str]] = (

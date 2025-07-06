@@ -3,7 +3,7 @@
 from shutil import which
 from unittest import TestCase, main, skipIf
 
-from cvp.ffmpeg.utils.version import inspect_version, parse_version_output
+from cvp.ffmpeg.capabilities.version import inspect_version, parse_version_output
 
 
 class VersionTestCase(TestCase):
