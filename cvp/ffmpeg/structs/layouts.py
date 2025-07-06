@@ -76,7 +76,7 @@ def parse_layouts_output(text: str) -> Tuple[List[IndividualChannel], List[Layou
 
 
 def inspect_layouts(ffmpeg="ffmpeg") -> Tuple[List[IndividualChannel], List[Layout]]:
-    cmds = (ffmpeg, "-hide_banner", "-layouts")
+    cmds = ffmpeg, "-hide_banner", "-layouts"
     output = check_output(cmds).decode("utf-8")
     return parse_layouts_output(output)
 

@@ -80,7 +80,7 @@ def parse_encoders_output(text: str) -> List[Encoder]:
 
 
 def inspect_encoders(ffmpeg="ffmpeg") -> List[Encoder]:
-    cmds = (ffmpeg, "-hide_banner", "-encoders")
+    cmds = ffmpeg, "-hide_banner", "-encoders"
     output = check_output(cmds).decode("utf-8")
     return parse_encoders_output(output)
 

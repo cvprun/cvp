@@ -56,7 +56,7 @@ def parse_muxers_output(text: str) -> List[Muxer]:
 
 
 def inspect_muxers(ffmpeg="ffmpeg") -> List[Muxer]:
-    cmds = (ffmpeg, "-hide_banner", "-muxers")
+    cmds = ffmpeg, "-hide_banner", "-muxers"
     output = check_output(cmds).decode("utf-8")
     return parse_muxers_output(output)
 

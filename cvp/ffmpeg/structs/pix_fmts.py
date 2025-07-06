@@ -64,7 +64,7 @@ def parse_fix_fmts_output(text: str) -> List[PixFmt]:
 
 
 def inspect_pix_fmts(ffmpeg="ffmpeg") -> List[PixFmt]:
-    cmds = (ffmpeg, "-hide_banner", "-pix_fmts")
+    cmds = ffmpeg, "-hide_banner", "-pix_fmts"
     output = check_output(cmds).decode("utf-8")
     return parse_fix_fmts_output(output)
 

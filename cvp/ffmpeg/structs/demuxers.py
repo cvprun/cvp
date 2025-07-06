@@ -56,7 +56,7 @@ def parse_demuxers_output(text: str) -> List[Demuxer]:
 
 
 def inspect_demuxers(ffmpeg="ffmpeg") -> List[Demuxer]:
-    cmds = (ffmpeg, "-hide_banner", "-demuxers")
+    cmds = ffmpeg, "-hide_banner", "-demuxers"
     output = check_output(cmds).decode("utf-8")
     return parse_demuxers_output(output)
 

@@ -61,7 +61,7 @@ def parse_formats_output(text: str) -> List[Format]:
 
 
 def inspect_formats(ffmpeg="ffmpeg") -> List[Format]:
-    cmds = (ffmpeg, "-hide_banner", "-formats")
+    cmds = ffmpeg, "-hide_banner", "-formats"
     output = check_output(cmds).decode("utf-8")
     return parse_formats_output(output)
 

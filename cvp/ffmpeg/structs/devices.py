@@ -50,7 +50,7 @@ def parse_devices_output(text: str) -> List[Device]:
 
 
 def inspect_devices(ffmpeg="ffmpeg") -> List[Device]:
-    cmds = (ffmpeg, "-hide_banner", "-devices")
+    cmds = ffmpeg, "-hide_banner", "-devices"
     output = check_output(cmds).decode("utf-8")
     return parse_devices_output(output)
 

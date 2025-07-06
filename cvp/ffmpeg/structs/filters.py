@@ -89,7 +89,7 @@ def parse_filters_output(text: str) -> List[Filter]:
 
 
 def inspect_filters(ffmpeg="ffmpeg") -> List[Filter]:
-    cmds = (ffmpeg, "-hide_banner", "-filters")
+    cmds = ffmpeg, "-hide_banner", "-filters"
     output = check_output(cmds).decode("utf-8")
     return parse_filters_output(output)
 

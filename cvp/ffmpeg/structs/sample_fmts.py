@@ -33,7 +33,7 @@ def parse_sample_fmts_output(text: str) -> List[SampleFmt]:
 
 
 def inspect_sample_fmts(ffmpeg="ffmpeg") -> List[SampleFmt]:
-    cmds = (ffmpeg, "-hide_banner", "-sample_fmts")
+    cmds = ffmpeg, "-hide_banner", "-sample_fmts"
     output = check_output(cmds).decode("utf-8")
     return parse_sample_fmts_output(output)
 
