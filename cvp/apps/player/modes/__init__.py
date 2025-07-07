@@ -204,8 +204,13 @@ class ModeManager:
         self.preference_mode.layout_menu.load_layout(filename)
 
     def _mode_menu_item(self, mode: ModeInterface) -> None:
+        show = mode.get_mode_show()
         icon = mode.get_mode_icon()
         name = mode.get_mode_name()
+
+        if not show:
+            return
+
         label = f"{icon} {name}"
         number = -1  # mode.get_mode_number()
         selected = name == self.mode_key

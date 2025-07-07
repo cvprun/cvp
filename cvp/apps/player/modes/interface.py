@@ -20,6 +20,11 @@ class ModeInterface(ABC):
     def get_mode_icon(cls) -> str:
         raise NotImplementedError
 
+    @classmethod
+    @abstractmethod
+    def get_mode_show(cls) -> bool:
+        raise NotImplementedError
+
     @abstractmethod
     def on_main_menu(self) -> None:
         raise NotImplementedError

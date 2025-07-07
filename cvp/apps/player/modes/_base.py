@@ -19,9 +19,12 @@ from cvp.types.override import override
 class BaseModeProtocol(Protocol):
     __cvp_mode_name__: str
     __cvp_mode_icon__: str
+    __cvp_mode_show__: bool
 
 
 class BaseMode(ModeInterface, BaseModeProtocol):
+    __cvp_mode_show__ = True
+
     def __init__(self, context: Context):
         assert isinstance(self, BaseModeProtocol)
         self._context = context
@@ -39,6 +42,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
     @override
     def get_mode_icon(cls) -> str:
         return cls.__cvp_mode_icon__
+
+    @classmethod
+    @override
+    def get_mode_show(cls) -> bool:
+        return cls.__cvp_mode_show__
 
     @override
     def on_main_menu(self) -> None:
