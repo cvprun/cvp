@@ -21,6 +21,7 @@ from cvp.types.override import override
 class CanvasMode(BaseMainMode):
     __cvp_mode_name__ = "Canvas"
     __cvp_mode_icon__ = DRAWING
+    __cvp_mode_show__ = False
 
     def __init__(self, layout: MainLayout):
         self._new_canvas_popup = InputTextPopup(

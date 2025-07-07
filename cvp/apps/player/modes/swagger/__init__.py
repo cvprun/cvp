@@ -10,6 +10,7 @@ from cvp.types.override import override
 class SwaggerMode(BaseMode):
     __cvp_mode_name__ = "Swagger"
     __cvp_mode_icon__ = CODE_BRACES_BOX
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)

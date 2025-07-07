@@ -10,6 +10,7 @@ from cvp.types.override import override
 class VmsMode(BaseMode):
     __cvp_mode_name__ = "VMS"  # Video Management System
     __cvp_mode_icon__ = CCTV
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)

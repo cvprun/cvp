@@ -24,6 +24,7 @@ from cvp.types.override import override
 class TailMode(BaseMode):
     __cvp_mode_name__ = "Tail"
     __cvp_mode_icon__ = FILE_EYE
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)

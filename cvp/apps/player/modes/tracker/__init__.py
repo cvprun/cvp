@@ -10,6 +10,7 @@ from cvp.types.override import override
 class ObjectTrackerMode(BaseMode):
     __cvp_mode_name__ = "Object Tracker"
     __cvp_mode_icon__ = MAP_MARKER_RADIUS
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)

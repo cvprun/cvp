@@ -10,6 +10,7 @@ from cvp.types.override import override
 class QrCodeMode(BaseMode):
     __cvp_mode_name__ = "QR Code"
     __cvp_mode_icon__ = QRCODE
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)
