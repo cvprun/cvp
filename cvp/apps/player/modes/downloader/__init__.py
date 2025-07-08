@@ -21,6 +21,7 @@ from cvp.types.override import override
 class DownloaderMode(BaseMode):
     __cvp_mode_name__ = "Downloader"
     __cvp_mode_icon__ = CLOUD_DOWNLOAD
+    __cvp_mode_show__ = False
 
     _TOP_CHILD_FLAGS: Final[int] = AUTO_RESIZE_Y
 

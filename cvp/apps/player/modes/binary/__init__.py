@@ -17,6 +17,7 @@ from cvp.encoding.binary_text import (
     binary_to_text_encoding,
 )
 from cvp.encoding.lookup import ENCODINGS
+from cvp.exceptions.traceback import traceback_exception_string
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.button import button
 from cvp.imgui.fit_size import FIT_SIZE, FIT_WIDTH
@@ -24,6 +25,7 @@ from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.input_text_with_hint import input_text_with_hint
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.types.override import override
 
 
@@ -35,6 +37,9 @@ class BinaryMode(BaseMode):
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     _SEPARATOR_LABEL: Final[str] = "--"
+
+    _input_error: Optional[BaseException]
+    _output_error: Optional[BaseException]
 
     @unique
     class _TranscodeDirection(Enum):
@@ -50,8 +55,8 @@ class BinaryMode(BaseMode):
         self._filter = str()
         self._input = str()
         self._output = str()
-        self._input_error: Optional[Union[BaseException, str]] = None
-        self._output_error: Optional[Union[BaseException, str]] = None
+        self._input_error = None
+        self._output_error = None
         self._encoding = "utf-8"
         self._errors = "strict"
         self._last_transcoding = self._TranscodeDirection.encoding
@@ -107,7 +112,7 @@ class BinaryMode(BaseMode):
             self._output_error = None
         except BaseException as e:
             self._output = str()
-            self._output_error = e if str(e) else type(e).__name__
+            self._output_error = e
         finally:
             self._last_transcoding = self._TranscodeDirection.encoding
 
@@ -139,7 +144,7 @@ class BinaryMode(BaseMode):
             self._input_error = None
         except BaseException as e:
             self._input = str()
-            self._input_error = e if str(e) else type(e).__name__
+            self._input_error = e
         finally:
             self._last_transcoding = self._TranscodeDirection.decoding
 
@@ -253,6 +258,8 @@ class BinaryMode(BaseMode):
 
             if self._input_error is not None:
                 self.text_error(str(self._input_error))
+                if self.context.debug:
+                    hovered_tooltip_text(traceback_exception_string(self._input_error))
             else:
                 input_result = input_text_multiline("##Input", self._input, FIT_SIZE)
                 if self._input != input_result.value:
@@ -274,9 +281,9 @@ class BinaryMode(BaseMode):
                 self.clear_fields()
 
             if self._output_error is not None:
-                error_typename = type(self._output_error).__name__
-                error_message = str(self._output_error)
-                self.text_error(f"{error_typename}: {error_message}")
+                self.text_error(str(self._output_error))
+                if self.context.debug:
+                    hovered_tooltip_text(traceback_exception_string(self._output_error))
             else:
                 output_result = input_text_multiline("##Output", self._output, FIT_SIZE)
                 if self._output != output_result.value:
