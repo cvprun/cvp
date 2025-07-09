@@ -14,8 +14,7 @@ from typing import (
     get_origin,
 )
 
-# noinspection PyProtectedMember
-from typing_extensions import _AnnotatedAlias
+from cvp.types.annotations import AnnotatedAlias
 
 _ValueT = TypeVar("_ValueT")
 
@@ -85,7 +84,7 @@ class Argument:
     def is_annotated(self):
         return (
             hasattr(self.param.annotation, "__metadata__")
-            and isinstance(self.param.annotation, _AnnotatedAlias)
+            and isinstance(self.param.annotation, AnnotatedAlias)
             and get_origin(self.param.annotation) == Annotated
         )
 
