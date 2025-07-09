@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from inspect import signature
 from io import StringIO
-from typing import Callable, Final, List, NamedTuple, NewType, Sequence
+from typing import Callable, Final, List, NamedTuple, NewType, Optional, Sequence
 
 from faker import Faker
 from faker.providers import BaseProvider
@@ -11,9 +12,10 @@ from imgui_bundle import imgui
 from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FILE_QUESTION
 from cvp.context.context import Context
+from cvp.exceptions.traceback import traceback_exception_string
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.combo import combo
-from cvp.imgui.fit_size import FIT_SIZE
+from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
 from cvp.imgui.flags.focused import CHILD_WINDOWS
 from cvp.imgui.flags.input_text import READ_ONLY
@@ -21,6 +23,7 @@ from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.signature import input_signature
 from cvp.nodes.ntype import generate_node_path
 from cvp.types.override import override
@@ -84,6 +87,8 @@ class FakerMode(BaseMode):
     _APIS_SPLIT_X: Final[int] = 250
     _APIS_CHILD_FLAGS: Final[int] = RESIZE_X
 
+    _error: Optional[BaseException]
+
     def __init__(self, context: Context):
         super().__init__(context)
         self._faker = Faker(context.config.faker.locale)
@@ -91,6 +96,7 @@ class FakerMode(BaseMode):
         self._providers = _create_providers_map(self._faker)
         self._locales = _get_language_locale_codes()
         self._output = str()
+        self._error = None
 
     @property
     def config(self):
@@ -144,6 +150,7 @@ class FakerMode(BaseMode):
                                     first_api_name = provider.apis[0]
                                     self.set_selected_api(provider_name, first_api_name)
                                 self._output = str()
+                                self._error = None
                             self.selected_submenu = str(provider_name)
                             provider_index = i
                 finally:
@@ -224,7 +231,14 @@ class FakerMode(BaseMode):
                     selected_api_name = provider.apis[api_index]
                     self.set_selected_api(provider.name, selected_api_name)
 
+            menu_window_width = imgui.get_window_width()
+
         imgui.same_line()
+        spacing = imgui.get_style().item_inner_spacing.x
+        min_main_window_width = (imgui.calc_item_width() * 0.5) - (spacing * 0.5)
+        remain_spacing = imgui.calc_item_width() - menu_window_width - spacing
+        main_window_width = max(min_main_window_width, remain_spacing)
+        imgui.set_next_window_size((main_window_width, FIT_HEIGHT))
 
         with begin_child_context("API Main"):
             selected_api = self.get_selected_api(provider.name)
@@ -250,11 +264,19 @@ class FakerMode(BaseMode):
     def do_api_process(self, api: Callable) -> None:
         imgui.text(f"API : {api.__name__}")
 
-        sig_name = generate_node_path(api)
-        input_signature(sig_name, api)
+        if self.context.debug:
+            hovered_tooltip_text(str(signature(api)))
+
+        api_path = generate_node_path(api)
+        input_signature(api_path, api)
 
         if imgui.button("Generate"):
-            self._output = self.generate(api)
+            try:
+                self._output = self.generate(api)
+                self._error = None
+            except BaseException as e:
+                self._output = str()
+                self._error = e
 
         imgui.separator()
 
@@ -262,9 +284,18 @@ class FakerMode(BaseMode):
             imgui.text("Output")
 
             if imgui.button("Copy"):
-                imgui.set_clipboard_text(self._output)
+                if self._error is not None:
+                    imgui.set_clipboard_text(str(self._error))
+                elif self._output:
+                    imgui.set_clipboard_text(self._output)
             imgui.same_line()
             if imgui.button("Clear"):
                 self._output = str()
+                self._error = None
 
-            input_text_multiline("##Output", self._output, FIT_SIZE, READ_ONLY)
+            if self._error is not None:
+                self.text_error(str(self._error))
+                if self.context.debug:
+                    hovered_tooltip_text(traceback_exception_string(self._error))
+            else:
+                input_text_multiline("##Output", self._output, FIT_SIZE, READ_ONLY)
