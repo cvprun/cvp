@@ -15,6 +15,7 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.combo import combo
 from cvp.imgui.fit_size import FIT_SIZE
 from cvp.imgui.flags.child import BORDERS, RESIZE_X
+from cvp.imgui.flags.focused import CHILD_WINDOWS
 from cvp.imgui.flags.input_text import READ_ONLY
 from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
@@ -126,31 +127,53 @@ class FakerMode(BaseMode):
             size=(self._MENU_SPLIT_X, 0),
             child_flags=self._MENU_CHILD_FLAGS,
         ):
+            provider_keys = list(self._providers.keys())
+            provider_index = NOT_FOUND_INDEX
+
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
-                    for name, provider in self._providers.items():
-                        selected = name == self.selected_submenu
-                        if imgui.selectable(str(name), selected)[1]:
-                            if self.selected_submenu != str(name):
-                                api_name = self.get_selected_api(name)
+                    for i, provider_name in enumerate(provider_keys):
+                        provider = self._providers[provider_name]
+                        selected = provider_name == self.selected_submenu
+                        if selected:
+                            provider_index = i
+                        if imgui.selectable(str(provider_name), selected)[1]:
+                            if self.selected_submenu != str(provider_name):
+                                api_name = self.get_selected_api(provider_name)
                                 if not api_name or api_name not in provider.apis:
-                                    self.set_selected_api(name, provider.apis[0])
+                                    first_api_name = provider.apis[0]
+                                    self.set_selected_api(provider_name, first_api_name)
                                 self._output = str()
-                            self.selected_submenu = str(name)
+                            self.selected_submenu = str(provider_name)
+                            provider_index = i
                 finally:
                     imgui.end_list_box()
+
+            if imgui.is_window_focused(CHILD_WINDOWS):
+                min_provider_index = 0
+                max_provider_index = len(provider_keys) - 1
+
+                if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
+                    provider_index = max(min_provider_index, provider_index - 1)
+                    provider_name = provider_keys[provider_index]
+                    self.selected_submenu = str(provider_name)
+
+                if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
+                    provider_index = min(max_provider_index, provider_index + 1)
+                    provider_name = provider_keys[provider_index]
+                    self.selected_submenu = str(provider_name)
 
         imgui.same_line()
 
         with begin_child_context("Main"):
             selected_provider_name = ProviderName(self.selected_submenu)
             if selected_provider := self._providers.get(selected_provider_name):
-                self.do_provider_process(selected_provider_name, selected_provider)
+                self.do_provider_process(selected_provider)
             else:
                 text_centered("Please select a item")
 
-    def do_provider_process(self, name: ProviderName, provider: ProviderInfo) -> None:
-        imgui.text(f"Faker : {name}")
+    def do_provider_process(self, provider: ProviderInfo) -> None:
+        imgui.text(f"Provider : {provider.name}")
         imgui.separator()
 
         if locale_result := combo("Locale", self.locale_index, self._locales):
@@ -173,19 +196,38 @@ class FakerMode(BaseMode):
             size=(self._APIS_SPLIT_X, 0),
             child_flags=self._APIS_CHILD_FLAGS,
         ):
+            api_index = NOT_FOUND_INDEX
+
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
-                    for api_name in provider.apis:
-                        selected = api_name == self.get_selected_api(name)
+                    for i, api_name in enumerate(provider.apis):
+                        selected = api_name == self.get_selected_api(provider.name)
+                        if selected:
+                            api_index = i
                         if imgui.selectable(str(api_name), selected)[1]:
-                            self.set_selected_api(name, api_name)
+                            self.set_selected_api(provider.name, api_name)
+                            api_index = i
                 finally:
                     imgui.end_list_box()
+
+            if imgui.is_window_focused(CHILD_WINDOWS):
+                min_api_index = 0
+                max_api_index = len(provider.apis) - 1
+
+                if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
+                    api_index = max(min_api_index, api_index - 1)
+                    selected_api_name = provider.apis[api_index]
+                    self.set_selected_api(provider.name, selected_api_name)
+
+                if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
+                    api_index = min(max_api_index, api_index + 1)
+                    selected_api_name = provider.apis[api_index]
+                    self.set_selected_api(provider.name, selected_api_name)
 
         imgui.same_line()
 
         with begin_child_context("API Main"):
-            selected_api = self.get_selected_api(name)
+            selected_api = self.get_selected_api(provider.name)
             api_callable = getattr(self._faker, selected_api, None)
             if api_callable is not None:
                 assert callable(api_callable)
