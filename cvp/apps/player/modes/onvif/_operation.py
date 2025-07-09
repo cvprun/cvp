@@ -38,18 +38,6 @@ class WsdlOperation:
         label = f"{name}###{key}"
         return label, key
 
-    @staticmethod
-    def tooltip(argument: Argument) -> None:
-        if not argument.doc:
-            return
-
-        if imgui.is_item_hovered():
-            if imgui.begin_tooltip():
-                try:
-                    imgui.text(argument.doc)
-                finally:
-                    imgui.end_tooltip()
-
     def text_error(self, text: str) -> None:
         text_colored(text, self._error_color)
 

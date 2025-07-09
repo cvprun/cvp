@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-from inspect import Parameter
+from inspect import Parameter, Signature, signature
 from typing import (
     Annotated,
     Any,
+    Callable,
     Dict,
     Optional,
     Sequence,
@@ -116,6 +117,14 @@ class Argument:
 
 
 class ArgumentMapper(OrderedDict[str, Argument]):
+    @classmethod
+    def from_signature(cls, sig: Signature):
+        return cls(**{key: Argument(param) for key, param in sig.parameters.items()})
+
+    @classmethod
+    def from_callable(cls, func: Callable):
+        return cls.from_signature(signature(func))
+
     @property
     def requestable(self) -> bool:
         """Ready to Callable?"""

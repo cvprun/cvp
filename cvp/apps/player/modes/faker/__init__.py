@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from collections import OrderedDict
 from io import StringIO
-from typing import Callable, Dict, Final, List, NamedTuple, NewType, Sequence
+from typing import Callable, Final, List, NamedTuple, NewType, Sequence
 
 from faker import Faker
 from faker.providers import BaseProvider
@@ -19,6 +20,8 @@ from cvp.imgui.input_int import input_int
 from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
+from cvp.imgui.widgets.signature import input_signature
+from cvp.nodes.ntype import generate_node_path
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
 
@@ -36,10 +39,12 @@ def _create_providers(faker: Faker) -> List[BaseProvider]:
     return faker.providers
 
 
-def _create_providers_map(faker: Faker) -> Dict[ProviderName, ProviderInfo]:
-    result = dict()
+def _create_providers_map(faker: Faker) -> OrderedDict[ProviderName, ProviderInfo]:
+    result = OrderedDict()
     base_provider_key = set(dir(BaseProvider))
-    for provider in _create_providers(faker):
+    providers = _create_providers(faker)
+    providers.sort(key=lambda p: type(p).__module__)
+    for provider in providers:
         assert isinstance(provider, BaseProvider)
         module = type(provider).__module__
         name = module.removeprefix("faker.providers.")
@@ -49,6 +54,7 @@ def _create_providers_map(faker: Faker) -> Dict[ProviderName, ProviderInfo]:
         apis1 = set(dir(type(provider))) - base_provider_key
         apis2 = filter(lambda x: callable(getattr(faker, x, None)), apis1)
         apis = list(map(lambda x: ProviderApi(x), apis2))
+        apis.sort()
         result[provider_name] = ProviderInfo(provider_name, apis, provider)
     return result
 
@@ -75,7 +81,7 @@ class FakerMode(BaseMode):
     _MENU_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
 
     _APIS_SPLIT_X: Final[int] = 250
-    _APIS_CHILD_FLAGS: Final[int] = RESIZE_X | BORDERS
+    _APIS_CHILD_FLAGS: Final[int] = RESIZE_X
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -103,13 +109,11 @@ class FakerMode(BaseMode):
         except IndexError:
             self.config.locale = str()
 
-    @property
-    def selected_submenu_api(self) -> str:
-        return self.get_selected_submenu(suffix="api")
+    def get_selected_api(self, provider: ProviderName) -> ProviderApi:
+        return ProviderApi(self.get_selected_submenu(suffix=str(provider)))
 
-    @selected_submenu_api.setter
-    def selected_submenu_api(self, value: str) -> None:
-        self.set_selected_submenu(value, suffix="api")
+    def set_selected_api(self, provider: ProviderName, api: ProviderApi) -> None:
+        self.set_selected_submenu(str(api), suffix=str(provider))
 
     @override
     def on_process(self) -> None:
@@ -128,7 +132,9 @@ class FakerMode(BaseMode):
                         selected = name == self.selected_submenu
                         if imgui.selectable(str(name), selected)[1]:
                             if self.selected_submenu != str(name):
-                                self.selected_submenu_api = str(provider.apis[0])
+                                api_name = self.get_selected_api(name)
+                                if not api_name or api_name not in provider.apis:
+                                    self.set_selected_api(name, provider.apis[0])
                                 self._output = str()
                             self.selected_submenu = str(name)
                 finally:
@@ -170,16 +176,16 @@ class FakerMode(BaseMode):
             if imgui.begin_list_box("##List", FIT_SIZE):
                 try:
                     for api_name in provider.apis:
-                        selected = api_name == self.selected_submenu_api
+                        selected = api_name == self.get_selected_api(name)
                         if imgui.selectable(str(api_name), selected)[1]:
-                            self.selected_submenu_api = str(api_name)
+                            self.set_selected_api(name, api_name)
                 finally:
                     imgui.end_list_box()
 
         imgui.same_line()
 
         with begin_child_context("API Main"):
-            selected_api = ProviderApi(self.selected_submenu_api)
+            selected_api = self.get_selected_api(name)
             api_callable = getattr(self._faker, selected_api, None)
             if api_callable is not None:
                 assert callable(api_callable)
@@ -201,6 +207,10 @@ class FakerMode(BaseMode):
 
     def do_api_process(self, api: Callable) -> None:
         imgui.text(f"API : {api.__name__}")
+
+        sig_name = generate_node_path(api)
+        input_signature(sig_name, api)
+
         if imgui.button("Generate"):
             self._output = self.generate(api)
 
