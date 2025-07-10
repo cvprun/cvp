@@ -17,41 +17,21 @@ from imgui_bundle import imgui
 
 from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument, ArgumentMapper
-from cvp.memory.copy import copy_method, copy_with_method
+from cvp.memory.copy import copy_flexible, copy_method, copy_with_method
 from cvp.types.colors import RED_RGBA, RGBA
 from cvp.variables import MODULE_PATH_SEPARATOR, NOT_FOUND_INDEX
 
 _T = TypeVar("_T")
 
 
-class InputArguments:
+class BaseInputArguments:
     def __init__(
         self,
-        label: str,
-        function: Callable[..., Any],
-        arguments: Optional[ArgumentMapper] = None,
+        separator=MODULE_PATH_SEPARATOR,
         error_color: Optional[RGBA] = None,
-        *,
-        use_copy=False,
-        use_deepcopy=False,
     ):
-        self._label = label
+        self._separator = separator
         self._error_color = error_color if error_color else RED_RGBA
-        self._separator = MODULE_PATH_SEPARATOR
-        self._copy_method = copy_method(use_copy=use_copy, use_deepcopy=use_deepcopy)
-
-        if arguments is None:
-            parameters = signature(function).parameters
-            arguments = ArgumentMapper.from_parameters(parameters)
-            for key, param in parameters.items():
-                if key not in arguments:
-                    arguments[key] = Argument(param)
-
-        self._arguments = arguments
-
-    @property
-    def arguments(self):
-        return self._arguments
 
     def value_key(self, name: str, parent: str, *, suffix: Optional[str] = None) -> str:
         prefix = f"{parent}{self._separator}{name}" if parent else name
@@ -61,6 +41,20 @@ class InputArguments:
         key = self.value_key(name, parent)
         label = f"{name}###{key}"
         return label, key
+
+    def text_error(self, text: str) -> None:
+        text_colored(text, self._error_color)
+
+    def do_root_arguments(
+        self,
+        arguments: ArgumentMapper,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
+    ) -> ArgumentMapper:
+        for key, argument in arguments.items():
+            self.do_root_argument(argument)
+        return copy_flexible(arguments, use_copy=use_copy, use_deepcopy=use_deepcopy)
 
     def do_root_argument(self, argument: Argument, *, raise_errors=False) -> bool:
         cls = argument.type_deduction()
@@ -72,7 +66,7 @@ class InputArguments:
                 raise
 
             typename = cls.__name__ if isinstance(cls, type) else str(cls)
-            text_colored(f"{argument.name} <{typename}> {e}", self._error_color)
+            self.text_error(f"{argument.name} <{typename}> {e}")
             return False
 
     def do_argument(self, cls: Any, argument: Argument) -> Any:
@@ -197,14 +191,41 @@ class InputArguments:
         assert isinstance(current, int)
         return choices[current] if changed else value
 
+
+class InputArguments(BaseInputArguments):
+    def __init__(
+        self,
+        function: Callable[..., Any],
+        arguments: Optional[ArgumentMapper] = None,
+        *,
+        separator=MODULE_PATH_SEPARATOR,
+        error_color: Optional[RGBA] = None,
+        use_copy=False,
+        use_deepcopy=False,
+    ):
+        super().__init__(separator=separator, error_color=error_color)
+
+        if arguments is None:
+            parameters = signature(function).parameters
+            arguments = ArgumentMapper.from_parameters(parameters)
+
+        self._arguments = arguments
+        self._copy_method = copy_method(use_copy=use_copy, use_deepcopy=use_deepcopy)
+
+    @property
+    def arguments(self):
+        return self._arguments
+
     def do_process(self) -> ArgumentMapper:
-        for key, argument in self._arguments.items():
-            self.do_root_argument(argument)
-        return copy_with_method(self._arguments, self._copy_method)
+        result = self.do_root_arguments(
+            arguments=self._arguments,
+            use_copy=False,
+            use_deepcopy=False,
+        )
+        return copy_with_method(result, self._copy_method)
 
 
 def input_arguments(
-    label: str,
     function: Callable[..., Any],
     arguments: ArgumentMapper,
     error_color: Optional[RGBA] = None,
@@ -213,7 +234,6 @@ def input_arguments(
     use_deepcopy=False,
 ):
     widget = InputArguments(
-        label=label,
         function=function,
         arguments=arguments,
         error_color=error_color,

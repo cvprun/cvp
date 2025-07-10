@@ -232,7 +232,6 @@ class FakerMode(BaseMode):
             hovered_tooltip_text(str(api.signature))
 
         input_arguments(
-            label=api.path,
             function=api.function,
             arguments=api.arguments,
             error_color=self.error_color,

@@ -2,146 +2,32 @@
 
 from argparse import Namespace
 from inspect import Parameter
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 from imgui_bundle import imgui
 from lxml.etree import QName as _EtreeQName
 from zeep.xsd import Attribute, Element
 from zeep.xsd.valueobjects import CompoundValue
 
-from cvp.imgui.text_colored import text_colored
+from cvp.imgui.widgets.input_arguments import BaseInputArguments
 from cvp.inspect.argument import Argument
 from cvp.inspect.member import get_public_instance_attributes, is_private_member
 from cvp.types.colors import RGBA
-from cvp.variables import NOT_FOUND_INDEX, ZEEP_ELEMENT_SEPARATOR
+from cvp.variables import ZEEP_ELEMENT_SEPARATOR
 from cvp.wsdl.annotation import ElementAnnotation
 from cvp.wsdl.operation import WsdlOperationProxy
 from cvp.wsdl.schema import XsdSchema
 
 
-class WsdlOperation:
+class WsdlOperation(BaseInputArguments):
     def __init__(
         self,
         operation: Optional[WsdlOperationProxy] = None,
-        element_separator=ZEEP_ELEMENT_SEPARATOR,
+        separator=ZEEP_ELEMENT_SEPARATOR,
         error_color: Optional[RGBA] = None,
     ):
+        super().__init__(separator=separator, error_color=error_color)
         self._operation = operation
-        self._element_separator = element_separator
-        self._error_color = error_color if error_color else (1.0, 0.0, 0.0, 1.0)
-
-    def value_key(self, name: str, parent: str) -> str:
-        return f"{parent}{self._element_separator}{name}" if parent else name
-
-    def label_key(self, name: str, parent: str) -> Tuple[str, str]:
-        key = self.value_key(name, parent)
-        label = f"{name}###{key}"
-        return label, key
-
-    def text_error(self, text: str) -> None:
-        text_colored(text, self._error_color)
-
-    def do_root_argument(self, argument: Argument) -> bool:
-        cls = argument.type_deduction()
-        try:
-            argument.value = self.do_argument(cls, argument)
-            return True
-        except BaseException as e:
-            typename = cls.__name__ if isinstance(cls, type) else str(cls)
-            self.text_error(f"{argument.name} <{typename}> {e}")
-            return False
-
-    def do_argument(self, cls: Any, argument: Argument) -> Any:
-        name = argument.name
-        parent = str()
-
-        if cls is None:
-            return self.do_none(name, None, parent)
-
-        if isinstance(cls, type):
-            if issubclass(cls, bool):
-                return self.do_boolean(name, argument.get_value(False), parent)
-            elif issubclass(cls, int):
-                return self.do_integer(name, argument.get_value(0), parent)
-            elif issubclass(cls, float):
-                return self.do_floating(name, argument.get_value(0.0), parent)
-            elif issubclass(cls, str):
-                return self.do_string(name, argument.get_value(str()), parent)
-            raise TypeError(f"Cannot find handler for {cls}")
-
-        if isinstance(cls, ElementAnnotation):
-            return self.do_element_annotation(argument, parent)
-
-        raise TypeError(f"Cannot find handler for {cls}")
-
-    def do_none(self, name: str, value: Any, parent: str) -> None:
-        if value == Parameter.empty:
-            value = None
-        assert value is None
-        label, key = self.label_key(name, parent)
-        imgui.text(label)
-        return None
-
-    def do_boolean(self, name: str, value: Any, parent: str) -> bool:
-        if value in (None, Parameter.empty):
-            value = False
-        assert isinstance(value, bool)
-        label, key = self.label_key(name, parent)
-        changed, value = imgui.checkbox(label, value)
-        assert isinstance(changed, bool)
-        assert isinstance(value, bool)
-        return value
-
-    def do_integer(self, name: str, value: Any, parent: str) -> int:
-        if value in (None, Parameter.empty):
-            value = 0
-        assert isinstance(value, int)
-        label, key = self.label_key(name, parent)
-        changed, value = imgui.input_int(label, value)
-        assert isinstance(changed, bool)
-        assert isinstance(value, int)
-        return value
-
-    def do_floating(self, name: str, value: Any, parent: str) -> float:
-        if value in (None, Parameter.empty):
-            value = 0.0
-        assert isinstance(value, float)
-        label, key = self.label_key(name, parent)
-        changed, value = imgui.input_float(label, value)
-        assert isinstance(changed, bool)
-        assert isinstance(value, float)
-        return value
-
-    def do_string(self, name: str, value: Any, parent: str) -> str:
-        if value in (None, Parameter.empty):
-            value = str()
-        assert isinstance(value, str)
-        label, key = self.label_key(name, parent)
-        changed, value = imgui.input_text(label, value)
-        assert isinstance(changed, bool)
-        assert isinstance(value, str)
-        return value
-
-    def do_combo(
-        self,
-        name: str,
-        value: Any,
-        parent: str,
-        choices: List[str],
-    ) -> str:
-        assert choices
-        if value in (None, Parameter.empty):
-            value = choices[0]
-        assert isinstance(value, str)
-        label, key = self.label_key(name, parent)
-        try:
-            choice_index = choices.index(value)
-        except ValueError:
-            choice_index = NOT_FOUND_INDEX
-        changed, current = imgui.combo(label, choice_index, choices)
-        assert isinstance(changed, bool)
-        assert isinstance(current, int)
-        return choices[current] if changed else value
 
     def do_element_annotation(self, argument: Argument, parent: str) -> Any:
         annotation = argument.annotation
