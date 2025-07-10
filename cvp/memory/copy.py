@@ -26,6 +26,18 @@ class CopyMethod(Enum):
     deepcopy = auto()
 
 
+def copy_method(*, use_copy=False, use_deepcopy=False) -> CopyMethod:
+    if use_copy and use_deepcopy:
+        raise ValueError("use_copy and use_deepcopy cannot coexist")
+
+    if use_copy:
+        return CopyMethod.copy
+    elif use_deepcopy:
+        return CopyMethod.deepcopy
+    else:
+        return CopyMethod.assign
+
+
 def copy_with_method(obj: _T, method: CopyMethod) -> _T:
     match method:
         case CopyMethod.assign:

@@ -1,49 +1,45 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
 from inspect import Parameter, signature
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 from imgui_bundle import imgui
 
 from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument, ArgumentMapper
-from cvp.patterns.singleton import singleton
+from cvp.memory.copy import copy_method, copy_with_method
 from cvp.types.colors import RED_RGBA, RGBA
 from cvp.variables import MODULE_PATH_SEPARATOR, NOT_FOUND_INDEX
-
-
-class InputSignatureResult(NamedTuple):
-    pass
-
-
-@dataclass
-class InputSignatureOptions:
-    arguments: ArgumentMapper = field(default_factory=ArgumentMapper)
 
 
 class InputSignature:
     def __init__(
         self,
         label: str,
-        function: Callable,
-        options: Optional[InputSignatureOptions] = None,
+        function: Callable[..., Any],
+        arguments: Optional[ArgumentMapper] = None,
         error_color: Optional[RGBA] = None,
+        *,
+        use_copy=False,
+        use_deepcopy=False,
     ):
         self._label = label
-        self._function = function
-        self._signature = signature(function)
-        self._options = options if options else InputSignatureOptions()
         self._error_color = error_color if error_color else RED_RGBA
         self._separator = MODULE_PATH_SEPARATOR
+        self._copy_method = copy_method(use_copy=use_copy, use_deepcopy=use_deepcopy)
 
-        for key, param in self._signature.parameters.items():
-            if key not in self._options.arguments:
-                self._options.arguments[key] = Argument(param)
+        if arguments is None:
+            parameters = signature(function).parameters
+            arguments = ArgumentMapper.from_parameters(parameters)
+            for key, param in parameters.items():
+                if key not in arguments:
+                    arguments[key] = Argument(param)
+
+        self._arguments = arguments
 
     @property
-    def options(self):
-        return self._options
+    def arguments(self):
+        return self._arguments
 
     def value_key(self, name: str, parent: str) -> str:
         return f"{parent}{self._separator}{name}" if parent else name
@@ -154,29 +150,27 @@ class InputSignature:
         assert isinstance(current, int)
         return choices[current] if changed else value
 
-    def do_process(self) -> InputSignatureResult:
-        result = InputSignatureResult()
-        for key, argument in self._options.arguments.items():
+    def do_process(self) -> ArgumentMapper:
+        for key, argument in self._arguments.items():
             self.do_root_argument(argument)
-        return result
-
-
-@singleton
-class GlobalInputSignatureOptions(Dict[int, InputSignatureOptions]):
-    pass
+        return copy_with_method(self._arguments, self._copy_method)
 
 
 def input_signature(
     label: str,
-    function: Callable,
-    options: Optional[InputSignatureOptions] = None,
+    function: Callable[..., Any],
+    arguments: ArgumentMapper,
+    error_color: Optional[RGBA] = None,
+    *,
+    use_copy=False,
+    use_deepcopy=False,
 ):
-    if options is None:
-        global_options = GlobalInputSignatureOptions()
-        next_id = imgui.get_id(label)
-        options = global_options.get(next_id)
-        if options is None:
-            options = InputSignatureOptions()
-            global_options.__setitem__(next_id, options)
-
-    return InputSignature(label, function, options).do_process()
+    widget = InputSignature(
+        label=label,
+        function=function,
+        arguments=arguments,
+        error_color=error_color,
+        use_copy=use_copy,
+        use_deepcopy=use_deepcopy,
+    )
+    return widget.do_process()

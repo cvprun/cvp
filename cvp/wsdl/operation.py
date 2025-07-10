@@ -113,4 +113,4 @@ class WsdlOperationProxy(OperationProxy):
         return self._latest
 
     def call_with_arguments(self):
-        return self.__call__(**self._arguments.kwargs())
+        return self.__call__(**self._arguments.as_dict())

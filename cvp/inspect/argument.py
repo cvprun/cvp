@@ -7,6 +7,7 @@ from typing import (
     Any,
     Callable,
     Dict,
+    Mapping,
     Optional,
     Sequence,
     TypeVar,
@@ -117,8 +118,12 @@ class Argument:
 
 class ArgumentMapper(OrderedDict[str, Argument]):
     @classmethod
+    def from_parameters(cls, parameters: Mapping[str, Parameter]):
+        return cls(**{key: Argument(param) for key, param in parameters.items()})
+
+    @classmethod
     def from_signature(cls, sig: Signature):
-        return cls(**{key: Argument(param) for key, param in sig.parameters.items()})
+        return cls.from_parameters(sig.parameters)
 
     @classmethod
     def from_callable(cls, func: Callable):
@@ -132,5 +137,5 @@ class ArgumentMapper(OrderedDict[str, Argument]):
 
         return all(not a.is_empty_value for a in self.values())
 
-    def kwargs(self) -> Dict[str, Any]:
+    def as_dict(self) -> Dict[str, Any]:
         return {k: v.value for k, v in self.items()}

@@ -1,18 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from collections import OrderedDict
-from inspect import signature
 from io import StringIO
-from typing import Callable, Final, List, NamedTuple, NewType, Optional, Sequence
+from typing import Final, Optional
 
 from faker import Faker
-from faker.providers import BaseProvider
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FILE_QUESTION
 from cvp.context.context import Context
 from cvp.exceptions.traceback import traceback_exception_string
+from cvp.faker.providers import (
+    ApiInfo,
+    ProviderApi,
+    ProviderInfo,
+    ProviderName,
+    create_providers,
+    get_language_locale_codes,
+)
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.combo import combo
 from cvp.imgui.fit_size import FIT_HEIGHT, FIT_SIZE
@@ -25,56 +30,9 @@ from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.signature import input_signature
-from cvp.nodes.ntype import generate_node_path
+from cvp.inspect.bind import BindCallable
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
-
-ProviderName = NewType("ProviderName", str)
-ProviderApi = NewType("ProviderApi", str)
-
-
-class ProviderInfo(NamedTuple):
-    name: ProviderName
-    apis: List[ProviderApi]
-    provider: BaseProvider
-
-
-def _create_providers(faker: Faker) -> List[BaseProvider]:
-    return faker.providers
-
-
-def _create_providers_map(faker: Faker) -> OrderedDict[ProviderName, ProviderInfo]:
-    result = OrderedDict()
-    base_provider_key = set(dir(BaseProvider))
-    providers = _create_providers(faker)
-    providers.sort(key=lambda p: type(p).__module__)
-    for provider in providers:
-        assert isinstance(provider, BaseProvider)
-        module = type(provider).__module__
-        name = module.removeprefix("faker.providers.")
-        name = name.split(".")[0].capitalize()
-        name = name.replace("_", " ")
-        provider_name = ProviderName(name)
-        apis1 = set(dir(type(provider))) - base_provider_key
-        apis2 = filter(lambda x: callable(getattr(faker, x, None)), apis1)
-        apis = list(map(lambda x: ProviderApi(x), apis2))
-        apis.sort()
-        result[provider_name] = ProviderInfo(provider_name, apis, provider)
-    return result
-
-
-def _get_language_locale_codes() -> List[str]:
-    result = list()
-    for country, languages in BaseProvider.language_locale_codes.items():
-        assert isinstance(country, str)
-        if isinstance(languages, Sequence):
-            for lang in languages:
-                result.append(f"{country}_{lang}")
-        elif isinstance(languages, str):
-            result.append(f"{country}_{languages}")
-        else:
-            assert False, "Inaccessible section"
-    return result
 
 
 class FakerMode(BaseMode):
@@ -93,8 +51,8 @@ class FakerMode(BaseMode):
         super().__init__(context)
         self._faker = Faker(context.config.faker.locale)
         self._faker.seed_instance(context.config.faker.seed)
-        self._providers = _create_providers_map(self._faker)
-        self._locales = _get_language_locale_codes()
+        self._providers = create_providers(self._faker)
+        self._locales = get_language_locale_codes()
         self._output = str()
         self._error = None
 
@@ -147,7 +105,7 @@ class FakerMode(BaseMode):
                             if self.selected_submenu != str(provider_name):
                                 api_name = self.get_selected_api(provider_name)
                                 if not api_name or api_name not in provider.apis:
-                                    first_api_name = provider.apis[0]
+                                    first_api_name = next(iter(provider.apis.keys()))
                                     self.set_selected_api(provider_name, first_api_name)
                                 self._output = str()
                                 self._error = None
@@ -159,15 +117,19 @@ class FakerMode(BaseMode):
             if imgui.is_window_focused(CHILD_WINDOWS):
                 min_provider_index = 0
                 max_provider_index = len(provider_keys) - 1
+                next_provider_index = NOT_FOUND_INDEX
 
+                if imgui.is_key_pressed(imgui.Key.home, repeat=False):
+                    next_provider_index = min_provider_index
                 if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
-                    provider_index = max(min_provider_index, provider_index - 1)
-                    provider_name = provider_keys[provider_index]
-                    self.selected_submenu = str(provider_name)
-
+                    next_provider_index = max(min_provider_index, provider_index - 1)
                 if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
-                    provider_index = min(max_provider_index, provider_index + 1)
-                    provider_name = provider_keys[provider_index]
+                    next_provider_index = min(max_provider_index, provider_index + 1)
+                if imgui.is_key_pressed(imgui.Key.end, repeat=False):
+                    next_provider_index = max_provider_index
+
+                if next_provider_index != NOT_FOUND_INDEX:
+                    provider_name = provider_keys[next_provider_index]
                     self.selected_submenu = str(provider_name)
 
         imgui.same_line()
@@ -220,15 +182,19 @@ class FakerMode(BaseMode):
             if imgui.is_window_focused(CHILD_WINDOWS):
                 min_api_index = 0
                 max_api_index = len(provider.apis) - 1
+                next_api_index = NOT_FOUND_INDEX
 
+                if imgui.is_key_pressed(imgui.Key.home, repeat=False):
+                    next_api_index = min_api_index
                 if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
-                    api_index = max(min_api_index, api_index - 1)
-                    selected_api_name = provider.apis[api_index]
-                    self.set_selected_api(provider.name, selected_api_name)
-
+                    next_api_index = max(min_api_index, api_index - 1)
                 if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
-                    api_index = min(max_api_index, api_index + 1)
-                    selected_api_name = provider.apis[api_index]
+                    next_api_index = min(max_api_index, api_index + 1)
+                if imgui.is_key_pressed(imgui.Key.end, repeat=False):
+                    next_api_index = max_api_index
+
+                if next_api_index != NOT_FOUND_INDEX:
+                    selected_api_name = list(provider.apis.keys())[next_api_index]
                     self.set_selected_api(provider.name, selected_api_name)
 
             menu_window_width = imgui.get_window_width()
@@ -242,18 +208,16 @@ class FakerMode(BaseMode):
 
         with begin_child_context("API Main"):
             selected_api = self.get_selected_api(provider.name)
-            api_callable = getattr(self._faker, selected_api, None)
-            if api_callable is not None:
-                assert callable(api_callable)
-                self.do_api_process(api_callable)
+            if api := provider.apis.get(selected_api):
+                self.do_api_process(api)
             else:
                 text_centered("Please select a API")
 
-    def generate(self, api: Callable, *args, **kwargs) -> str:
+    def generate(self, func: BindCallable) -> str:
         buffer = StringIO()
         separator = self.config.escaped_separator
         for _ in range(self.config.repeat):
-            data = api(*args, **kwargs)
+            data = func()
             if isinstance(data, str):
                 buffer.write(data)
             else:
@@ -261,18 +225,24 @@ class FakerMode(BaseMode):
             buffer.write(separator)
         return buffer.getvalue()
 
-    def do_api_process(self, api: Callable) -> None:
-        imgui.text(f"API : {api.__name__}")
+    def do_api_process(self, api: ApiInfo) -> None:
+        imgui.text(f"API : {api.name}")
 
         if self.context.debug:
-            hovered_tooltip_text(str(signature(api)))
+            hovered_tooltip_text(str(api.signature))
 
-        api_path = generate_node_path(api)
-        input_signature(api_path, api)
+        input_signature(
+            label=api.path,
+            function=api.function,
+            arguments=api.arguments,
+            error_color=self.error_color,
+            use_copy=False,
+            use_deepcopy=False,
+        )
 
         if imgui.button("Generate"):
             try:
-                self._output = self.generate(api)
+                self._output = self.generate(api.bind())
                 self._error = None
             except BaseException as e:
                 self._output = str()
