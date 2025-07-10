@@ -29,7 +29,7 @@ from cvp.imgui.input_text import input_text
 from cvp.imgui.input_text_multiline import input_text_multiline
 from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
-from cvp.imgui.widgets.signature import input_signature
+from cvp.imgui.widgets.input_arguments import input_arguments
 from cvp.inspect.bind import BindCallable
 from cvp.types.override import override
 from cvp.variables import NOT_FOUND_INDEX
@@ -231,7 +231,7 @@ class FakerMode(BaseMode):
         if self.context.debug:
             hovered_tooltip_text(str(api.signature))
 
-        input_signature(
+        input_arguments(
             label=api.path,
             function=api.function,
             arguments=api.arguments,
