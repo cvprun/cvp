@@ -39,6 +39,7 @@ from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
+from cvp.terminal.manager import TerminalManager
 from cvp.watchdog.manager import WatchdogManager
 from cvp.wsdiscovery.manager import WsDiscoveryManager
 
@@ -159,6 +160,7 @@ class Context(ContextMixins):
             reload=True,
         )
         self._mediamtxs = MediamtxManager(self._home.mediamtx, reload=True)
+        self._terminals = TerminalManager(self._home.terminals, reload=True)
 
         self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
@@ -266,6 +268,10 @@ class Context(ContextMixins):
         self._mediamtxs.write_all_config_files()
         logger.info("Save all MediaMTX files")
 
+    def save_all_terminals(self) -> None:
+        self._terminals.write_all_config_files()
+        logger.info("Save all Terminal files")
+
     def save_all(self) -> None:
         self.save_config()
         self.save_all_scheduler()
@@ -279,6 +285,7 @@ class Context(ContextMixins):
         self.save_all_onvifs()
         self.save_all_medias()
         self.save_all_mediamtxs()
+        self.save_all_terminals()
 
     @property
     def home(self):
@@ -347,6 +354,10 @@ class Context(ContextMixins):
     @property
     def mediamtxs(self):
         return self._mediamtxs
+
+    @property
+    def terminals(self):
+        return self._terminals
 
     @property
     def supabase(self):
