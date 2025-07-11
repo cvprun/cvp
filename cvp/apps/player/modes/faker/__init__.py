@@ -129,8 +129,10 @@ class FakerMode(BaseMode):
                     next_provider_index = max_provider_index
 
                 if next_provider_index != NOT_FOUND_INDEX:
-                    provider_name = provider_keys[next_provider_index]
-                    self.selected_submenu = str(provider_name)
+                    next_provider_name = provider_keys[next_provider_index]
+                    self.selected_submenu = str(next_provider_name)
+                    self._output = str()
+                    self._error = None
 
         imgui.same_line()
 
@@ -194,8 +196,10 @@ class FakerMode(BaseMode):
                     next_api_index = max_api_index
 
                 if next_api_index != NOT_FOUND_INDEX:
-                    selected_api_name = list(provider.apis.keys())[next_api_index]
-                    self.set_selected_api(provider.name, selected_api_name)
+                    next_api_name = list(provider.apis.keys())[next_api_index]
+                    self.set_selected_api(provider.name, next_api_name)
+                    self._output = str()
+                    self._error = None
 
             menu_window_width = imgui.get_window_width()
 

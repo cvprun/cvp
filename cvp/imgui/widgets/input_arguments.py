@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import date, datetime, time
 from inspect import Parameter, signature
 from typing import (
     Any,
@@ -15,6 +16,8 @@ from typing import (
 
 from imgui_bundle import imgui
 
+from cvp.imgui.drag_date import drag_date
+from cvp.imgui.input_time import input_time
 from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument, ArgumentMapper
 from cvp.memory.copy import copy_flexible, copy_method, copy_with_method
@@ -84,6 +87,7 @@ class BaseInputArguments:
 
             union_types = list(type_args)
             assert 2 <= len(union_types)
+
             if 2 == len(union_types) and type(None) in union_types:
                 union_types.remove(type(None))
                 assert 1 == len(union_types)
@@ -91,6 +95,11 @@ class BaseInputArguments:
                 _, use_none = self.do_optional(cls, argument.get_value(None), parent)
                 imgui.same_line()
             else:
+                assert 2 <= len(union_types)
+                # _, use_none = self.do_union_types(cls, union_types, parent)
+                # imgui.same_line()
+                # for union_type in union_types:
+                #     pass
                 raise TypeError(f"Cannot deduce type from UNION: {union_types}")
 
         if not isinstance(cls, type):
@@ -108,6 +117,8 @@ class BaseInputArguments:
                 result = self.do_floating(name, argument.get_value(0.0), parent)
             elif issubclass(cls, str):
                 result = self.do_string(name, argument.get_value(str()), parent)
+            elif issubclass(cls, date):
+                result = self.do_date(name, argument.get_value(date.today()), parent)
             else:
                 raise TypeError(f"Cannot find handler for {cls}")
         finally:
@@ -168,6 +179,26 @@ class BaseInputArguments:
         changed, value = imgui.input_text(label, value)
         assert isinstance(changed, bool)
         assert isinstance(value, str)
+        return value
+
+    def do_date(self, name: str, value: Any, parent: str) -> date:
+        if value in (None, Parameter.empty):
+            value = date.today()
+        assert isinstance(value, date)
+        label, key = self.label_key(name, parent)
+        changed, value = drag_date(label, value)
+        assert isinstance(changed, bool)
+        assert isinstance(value, date)
+        return value
+
+    def do_time(self, name: str, value: Any, parent: str) -> time:
+        if value in (None, Parameter.empty):
+            value = datetime.now().time()
+        assert isinstance(value, time)
+        label, key = self.label_key(name, parent)
+        changed, value = input_time(label, value)
+        assert isinstance(changed, bool)
+        assert isinstance(value, time)
         return value
 
     def do_combo(
