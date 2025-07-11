@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date
+from datetime import time
 from typing import NamedTuple, Union
 
 from imgui_bundle import imgui
 
 from cvp.imgui.drag_int import drag_int
 from cvp.imgui.flags.slider import SliderFlags
-from cvp.variables import IMGUI_INPUT_DATE_SEPARATOR
+from cvp.variables import IMGUI_INPUT_TIME_SEPARATOR
 
 
-class InputDateResult(NamedTuple):
+class InputTimeResult(NamedTuple):
     changed: bool
-    value: date
+    value: time
 
     @classmethod
     def from_raw(cls, result):
@@ -21,16 +21,16 @@ class InputDateResult(NamedTuple):
         changed = result[0]
         value = result[1]
         assert isinstance(changed, bool)
-        assert isinstance(value, date)
+        assert isinstance(value, time)
         return cls(changed, value)
 
     def __bool__(self):
         return self.changed
 
 
-def calc_drag_date_field_width(separator=IMGUI_INPUT_DATE_SEPARATOR):
+def calc_drag_time_field_width(separator=IMGUI_INPUT_TIME_SEPARATOR):
     item_width = imgui.calc_item_width()
-    field_count = 3  # year, month, day
+    field_count = 3  # hour, minute, second
 
     inner_spacing = max(0.0, imgui.get_style().item_inner_spacing.x)
     separator_width = imgui.calc_text_size(separator).x + inner_spacing
@@ -40,14 +40,14 @@ def calc_drag_date_field_width(separator=IMGUI_INPUT_DATE_SEPARATOR):
     return (item_width - separator_total_width) / field_count
 
 
-def drag_date(
+def drag_time(
     label: str,
-    value: date,
+    value: time,
     flags: Union[SliderFlags, int] = 0,
-    separator=IMGUI_INPUT_DATE_SEPARATOR,
-    year_format="%04d",
-    month_format="%02d",
-    day_format="%02d",
+    separator=IMGUI_INPUT_TIME_SEPARATOR,
+    hour_format="%02d",
+    minute_format="%02d",
+    second_format="%02d",
     small_field_width=False,
     raise_errors=False,
 ):
@@ -60,25 +60,25 @@ def drag_date(
     double_inner_spacing = inner_spacing * 2.0
 
     if small_field_width:
-        year_text_width = imgui.calc_text_size("0000").x + double_inner_spacing
-        month_text_width = imgui.calc_text_size("00").x + double_inner_spacing
-        day_text_width = imgui.calc_text_size("00").x + double_inner_spacing
+        hour_text_width = imgui.calc_text_size("00").x + double_inner_spacing
+        minute_text_width = imgui.calc_text_size("00").x + double_inner_spacing
+        second_text_width = imgui.calc_text_size("00").x + double_inner_spacing
     else:
-        field_width = calc_drag_date_field_width(separator)
-        year_text_width = field_width
-        month_text_width = field_width
-        day_text_width = field_width
+        field_width = calc_drag_time_field_width(separator)
+        hour_text_width = field_width
+        minute_text_width = field_width
+        second_text_width = field_width
         del field_width
 
     imgui.push_id(label)
     try:
-        imgui.set_next_item_width(year_text_width)
-        year = drag_int(
-            label="##Date.Year",
-            value=value.year,
-            min_value=1,
-            max_value=9999,
-            fmt=year_format,
+        imgui.set_next_item_width(hour_text_width)
+        hour = drag_int(
+            label="##Time.Hour",
+            value=value.hour,
+            min_value=0,
+            max_value=23,
+            fmt=hour_format,
             flags=flags,
         )
 
@@ -86,13 +86,13 @@ def drag_date(
         imgui.text(separator)
         imgui.same_line(spacing=half_inner_spacing)
 
-        imgui.set_next_item_width(month_text_width)
-        month = drag_int(
-            label="##Date.Month",
-            value=value.month,
-            min_value=1,
-            max_value=12,
-            fmt=month_format,
+        imgui.set_next_item_width(minute_text_width)
+        minute = drag_int(
+            label="##Time.Minute",
+            value=value.minute,
+            min_value=0,
+            max_value=59,
+            fmt=minute_format,
             flags=flags,
         )
 
@@ -100,13 +100,13 @@ def drag_date(
         imgui.text(separator)
         imgui.same_line(spacing=half_inner_spacing)
 
-        imgui.set_next_item_width(day_text_width)
-        day = drag_int(
-            label="##Date.Day",
-            value=value.day,
-            min_value=1,
-            max_value=31,
-            fmt=day_format,
+        imgui.set_next_item_width(second_text_width)
+        second = drag_int(
+            label="##Time.Second",
+            value=value.second,
+            min_value=0,
+            max_value=59,
+            fmt=second_format,
             flags=flags,
         )
 
@@ -116,15 +116,15 @@ def drag_date(
     finally:
         imgui.pop_id()
 
-    changed = any((year[0], month[0], day[0]))
+    changed = any((hour[0], minute[0], second[0]))
     if changed:
         try:
-            assert 1 <= year[1] <= 9999
-            assert 1 <= month[1] <= 12
-            assert 1 <= day[1] <= 31
-            value = date(year[1], month[1], day[1])
+            assert 0 <= hour[1] <= 23
+            assert 0 <= minute[1] <= 59
+            assert 0 <= second[1] <= 59
+            value = time(hour[1], minute[1], second[1])
         except ValueError:
             if raise_errors:
                 raise
 
-    return InputDateResult.from_raw((changed, value))
+    return InputTimeResult.from_raw((changed, value))

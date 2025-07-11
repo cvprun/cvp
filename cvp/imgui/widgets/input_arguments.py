@@ -17,7 +17,7 @@ from typing import (
 from imgui_bundle import imgui
 
 from cvp.imgui.drag_date import drag_date
-from cvp.imgui.input_time import input_time
+from cvp.imgui.drag_time import drag_time
 from cvp.imgui.text_colored import text_colored
 from cvp.inspect.argument import Argument, ArgumentMapper
 from cvp.memory.copy import copy_flexible, copy_method, copy_with_method
@@ -196,7 +196,7 @@ class BaseInputArguments:
             value = datetime.now().time()
         assert isinstance(value, time)
         label, key = self.label_key(name, parent)
-        changed, value = input_time(label, value)
+        changed, value = drag_time(label, value)
         assert isinstance(changed, bool)
         assert isinstance(value, time)
         return value
