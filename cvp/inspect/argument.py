@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+from datetime import date, time
 from inspect import Parameter, Signature, signature
 from typing import (
     Annotated,
@@ -15,6 +16,7 @@ from typing import (
     get_origin,
 )
 
+from cvp.chrono.constants import MIDNIGHT_TIME, UNIX_EPOCH_START_DATE
 from cvp.types.annotations import AnnotatedAlias
 
 _ValueT = TypeVar("_ValueT")
@@ -68,6 +70,24 @@ class Argument:
                 return self.param.default
         else:
             return self.value
+
+    def get_bool(self, default=False) -> bool:
+        return self.get_value(default)
+
+    def get_int(self, default=0) -> int:
+        return self.get_value(default)
+
+    def get_float(self, default=0.0) -> float:
+        return self.get_value(default)
+
+    def get_str(self, default="") -> str:
+        return self.get_value(default)
+
+    def get_date(self, default=UNIX_EPOCH_START_DATE) -> date:
+        return self.get_value(default)
+
+    def get_time(self, default=MIDNIGHT_TIME) -> time:
+        return self.get_value(default)
 
     @property
     def is_empty_value(self):

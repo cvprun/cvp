@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from datetime import date, datetime, time
+from datetime import date, time
 from inspect import Parameter, signature
 from typing import (
     Any,
@@ -16,6 +16,7 @@ from typing import (
 
 from imgui_bundle import imgui
 
+from cvp.chrono.constants import MIDNIGHT_TIME, UNIX_EPOCH_START_DATE
 from cvp.imgui.drag_date import drag_date
 from cvp.imgui.drag_time import drag_time
 from cvp.imgui.text_colored import text_colored
@@ -110,15 +111,17 @@ class BaseInputArguments:
         imgui.begin_disabled(disabled=use_none)
         try:
             if issubclass(cls, bool):
-                result = self.do_boolean(name, argument.get_value(False), parent)
+                result = self.do_boolean(name, argument.get_bool(), parent)
             elif issubclass(cls, int):
-                result = self.do_integer(name, argument.get_value(0), parent)
+                result = self.do_integer(name, argument.get_int(), parent)
             elif issubclass(cls, float):
-                result = self.do_floating(name, argument.get_value(0.0), parent)
+                result = self.do_floating(name, argument.get_float(), parent)
             elif issubclass(cls, str):
-                result = self.do_string(name, argument.get_value(str()), parent)
+                result = self.do_string(name, argument.get_str(), parent)
             elif issubclass(cls, date):
-                result = self.do_date(name, argument.get_value(date.today()), parent)
+                result = self.do_date(name, argument.get_date(), parent)
+            elif issubclass(cls, time):
+                result = self.do_time(name, argument.get_time(), parent)
             else:
                 raise TypeError(f"Cannot find handler for {cls}")
         finally:
@@ -183,7 +186,7 @@ class BaseInputArguments:
 
     def do_date(self, name: str, value: Any, parent: str) -> date:
         if value in (None, Parameter.empty):
-            value = date.today()
+            value = UNIX_EPOCH_START_DATE
         assert isinstance(value, date)
         label, key = self.label_key(name, parent)
         changed, value = drag_date(label, value)
@@ -193,7 +196,7 @@ class BaseInputArguments:
 
     def do_time(self, name: str, value: Any, parent: str) -> time:
         if value in (None, Parameter.empty):
-            value = datetime.now().time()
+            value = MIDNIGHT_TIME
         assert isinstance(value, time)
         label, key = self.label_key(name, parent)
         changed, value = drag_time(label, value)
