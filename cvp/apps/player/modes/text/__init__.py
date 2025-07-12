@@ -44,6 +44,10 @@ class TextMode(BaseMode):
         self.editor.set_language_definition(self.python_lang)
         self.editor.set_palette(imgui_color_text_edit.TextEditor.get_dark_palette())
 
+    @property
+    def config(self):
+        return self.context.config.text
+
     def on_open_file(self, file: str) -> None:
         self.open_text_file(file)
 

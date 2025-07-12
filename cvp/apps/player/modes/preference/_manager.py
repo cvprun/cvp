@@ -25,6 +25,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.overlay import OverlayPreference
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
+    from cvp.apps.player.modes.preference.text import TextPreference
     from cvp.apps.player.modes.preference.toast import ToastPreference
 
     return (
@@ -43,6 +44,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         OverlayPreference,
         ResourcePreference,
         SupabasePreference,
+        TextPreference,
         ToastPreference,
     )
 
