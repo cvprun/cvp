@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from shutil import which
 from subprocess import check_output
 from typing import NamedTuple, Optional
+
+from cvp.variables import UNKNOWN_VERSION
 
 
 class FFmpegVersion(NamedTuple):
@@ -55,3 +58,13 @@ def inspect_version(ffmpeg="ffmpeg") -> FFmpegVersion:
     cmds = ffmpeg, "-hide_banner", "-version"
     output = check_output(cmds).decode("utf-8")
     return parse_version_output(output)
+
+
+def opt_major_version(ffmpeg="ffmpeg", default=UNKNOWN_VERSION) -> int:
+    try:
+        if ffmpeg_path := which(ffmpeg):
+            return inspect_version(ffmpeg_path).major
+    except:  # noqa
+        pass
+
+    return default

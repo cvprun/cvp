@@ -11,6 +11,7 @@ UNKNOWN_ERROR_CODE: Final[int] = -1
 NOT_FOUND_INDEX: Final[int] = -1
 UNKNOWN_TOTAL_SIZE: Final[int] = -1
 UNKNOWN_PID: Final[int] = -1
+UNKNOWN_VERSION: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
