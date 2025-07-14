@@ -4,7 +4,7 @@ from concurrent.futures import Future
 from typing import Callable, ParamSpec, TypeVar
 
 from cvp.concurrency.threading.runnable import ConcurrencyRunnable
-from cvp.context.mixins.protocol import ContextProtocol
+from cvp.context._protocol import ContextProtocol
 
 SubmitResultT = TypeVar("SubmitResultT")
 SubmitParamT = ParamSpec("SubmitParamT")

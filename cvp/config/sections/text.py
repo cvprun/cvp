@@ -5,4 +5,4 @@ from dataclasses import dataclass
 
 @dataclass
 class TextConfig:
-    pass
+    default_encoding: str = "utf-8"

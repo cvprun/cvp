@@ -38,7 +38,7 @@ class TextMode(BaseMode):
         self._popups = PopupList(self._open_file_popup)
 
         self.editor = imgui_color_text_edit.TextEditor()
-        # self.language = TextEditor.LanguageDefinition()
+        self.language = imgui_color_text_edit.TextEditor.LanguageDefinition()
         self.python_lang = imgui_color_text_edit.TextEditor.LanguageDefinition.python()
         self.editor.set_text("")
         self.editor.set_language_definition(self.python_lang)

@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from typing import Final, Optional, Type
+from typing import Optional, Type
 
 from imgui_bundle import imgui
 
 from cvp.config.sections.navigation import NavigationConfig, RecentItem
 from cvp.imgui.menu_item import menu_item
-
-CLEAR_RECENT_ITEMS_MENU_LABEL: Final[str] = "Clear recent items"
+from cvp.variables import STATIC_LABEL_CLEAR_RECENT_ITEMS_MENU
 
 
 def menu_recent_items(
@@ -18,7 +17,7 @@ def menu_recent_items(
     suffix=None,
     append_clear_menu=False,
     no_reversed=False,
-    clear_menu_label=CLEAR_RECENT_ITEMS_MENU_LABEL,
+    clear_menu_label=STATIC_LABEL_CLEAR_RECENT_ITEMS_MENU,
 ) -> Optional[RecentItem]:
     recent_items = config.get_recent_items(cls, suffix=suffix)
 

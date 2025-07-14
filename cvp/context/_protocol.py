@@ -21,6 +21,7 @@ from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.terminal.manager import TerminalManager
+from cvp.text.manager import TextManager
 from cvp.watchdog.manager import WatchdogManager
 from cvp.wsdiscovery.manager import WsDiscoveryManager
 
@@ -51,4 +52,5 @@ class ContextProtocol(Protocol):
     _medias: MediaManager
     _mediamtxs: MediamtxManager
     _terminals: TerminalManager
+    _texts: TextManager
     _supabase: Supabase

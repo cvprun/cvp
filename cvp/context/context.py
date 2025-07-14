@@ -10,8 +10,8 @@ from typing import Optional, Union
 from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
+from cvp.context._protocol import ContextProtocol
 from cvp.context.mixins import ContextMixins
-from cvp.context.mixins.protocol import ContextProtocol
 from cvp.download.manager import DownloadManager
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
 from cvp.flow.graph import FlowGraph
@@ -40,6 +40,7 @@ from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
 from cvp.terminal.manager import TerminalManager
+from cvp.text.manager import TextManager
 from cvp.watchdog.manager import WatchdogManager
 from cvp.wsdiscovery.manager import WsDiscoveryManager
 
@@ -161,6 +162,7 @@ class Context(ContextMixins):
         )
         self._mediamtxs = MediamtxManager(self._home.mediamtx, reload=True)
         self._terminals = TerminalManager(self._home.terminals, reload=True)
+        self._texts = TextManager(self._home.texts, reload=True)
 
         self._supabase = Supabase()
         if self.supabase_url and self.supabase_key:
@@ -272,6 +274,10 @@ class Context(ContextMixins):
         self._terminals.write_all_config_files()
         logger.info("Save all Terminal files")
 
+    def save_all_texts(self) -> None:
+        self._texts.write_all_config_files()
+        logger.info("Save all Text files")
+
     def save_all(self) -> None:
         self.save_config()
         self.save_all_scheduler()
@@ -286,6 +292,7 @@ class Context(ContextMixins):
         self.save_all_medias()
         self.save_all_mediamtxs()
         self.save_all_terminals()
+        self.save_all_texts()
 
     @property
     def home(self):
@@ -358,6 +365,10 @@ class Context(ContextMixins):
     @property
     def terminals(self):
         return self._terminals
+
+    @property
+    def texts(self):
+        return self._texts
 
     @property
     def supabase(self):

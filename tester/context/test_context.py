@@ -4,10 +4,9 @@ import os
 from tempfile import TemporaryDirectory
 from unittest import TestCase, main
 
-from cvp.context.context import Context
-
 # noinspection PyProtectedMember
-from cvp.context.mixins.protocol import ContextProtocol
+from cvp.context._protocol import ContextProtocol
+from cvp.context.context import Context
 from cvp.inspect.member import get_attribute_keys
 from cvp.logging.disable import disable_logging
 
