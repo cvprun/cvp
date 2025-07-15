@@ -12,6 +12,7 @@ NOT_FOUND_INDEX: Final[int] = -1
 UNKNOWN_TOTAL_SIZE: Final[int] = -1
 UNKNOWN_PID: Final[int] = -1
 UNKNOWN_VERSION: Final[int] = -1
+INFINITY_HEIGHT_IN_ITEMS: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 NODOC: Final[str] = ""
@@ -72,7 +73,8 @@ SLOW_CALLBACK_DURATION: Final[float] = 0.05
 SAFETY_FILE_SUFFIX_NEW: Final[str] = ".new.backup"
 SAFETY_FILE_SUFFIX_OLD: Final[str] = ".old.backup"
 
-STATIC_LABEL_CLEAR_RECENT_ITEMS_MENU: Final[str] = "Clear recent items"
+LABEL_CLEAR_RECENT_ITEMS: Final[str] = "Clear recent items"
+LABEL_FILTER: Final[str] = "Filter"
 
 CHAT_SQLITE_FILENAME: Final[str] = "chat.sqlite"
 CHAT_TITLE_NONAME: Final[str] = "[New chat]"
