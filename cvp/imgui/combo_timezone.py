@@ -3,7 +3,7 @@
 from typing import NamedTuple, Optional, Union
 from zoneinfo import ZoneInfo
 
-from cvp.chrono.timezones import ZONE_NAMES
+from cvp.chrono.timezones import UTC_OFFSETS, ZONE_NAMES
 from cvp.imgui.combo_with_filter import combo_with_filter
 from cvp.imgui.flags.combo import ComboFlags
 from cvp.imgui.flags.input_text import InputTextFlags
@@ -52,6 +52,7 @@ def combo_timezone(
         filter_flags=filter_flags,
         filter_hint=filter_hint,
         filter_ignore_case=True,
+        extra_hints=UTC_OFFSETS,
     )
 
     return ComboTimezoneResult(

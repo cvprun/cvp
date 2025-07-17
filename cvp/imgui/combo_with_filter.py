@@ -33,6 +33,7 @@ def combo_with_filter(
     filter_ignore_case=False,
     *,
     not_found_item_name: Optional[str] = None,
+    extra_hints: Optional[Sequence[str]] = None,
 ):
     if isinstance(flags, ComboFlags):
         flags = int(flags)
@@ -43,7 +44,7 @@ def combo_with_filter(
     else:
         preview_value = not_found_item_name if not_found_item_name else str()
 
-    changed = False
+    first_index = current
     filter_changed = False
     filter_key = filter_value
 
@@ -86,20 +87,35 @@ def combo_with_filter(
                     if item_key.find(filter_key) == NOT_FOUND_INDEX:
                         continue
 
-                is_selected = current == i
-                if imgui.selectable(item, is_selected)[0]:
-                    changed = True
+                selected = current == i
+                if imgui.selectable(item, selected)[0]:
                     current = i
+
+                if extra_hints and 0 <= i < len(extra_hints):
+                    imgui.same_line()
+                    imgui.text_disabled(extra_hints[i])
 
                 # Set the initial focus when opening the combo
                 # (scrolling + keyboard navigation focus)
-                if is_selected:
+                if selected:
                     imgui.set_item_default_focus()
+
+            min_item_index = 0
+            max_item_index = len(items) - 1
+
+            if imgui.is_key_pressed(imgui.Key.home, repeat=False):
+                current = min_item_index
+            if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
+                current = max(min_item_index, current - 1)
+            if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
+                current = min(max_item_index, current + 1)
+            if imgui.is_key_pressed(imgui.Key.end, repeat=False):
+                current = max_item_index
         finally:
             imgui.end_combo()
 
     return ComboWithFilterResult(
-        changed=changed,
+        changed=current != first_index,
         value=current,
         item=items[current] if 0 <= current < len(items) else None,
         filter_changed=filter_changed,
