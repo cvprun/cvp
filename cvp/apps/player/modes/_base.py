@@ -143,3 +143,11 @@ class BaseMode(ModeInterface, BaseModeProtocol):
 
     def begin_mode_context(self):
         return begin_mode_context(type(self).__name__)
+
+    def run_with_single_mode(self):
+        imgui.begin_main_menu_bar()
+        try:
+            self.on_main_menu()
+        finally:
+            imgui.end_main_menu_bar()
+        self.on_process()

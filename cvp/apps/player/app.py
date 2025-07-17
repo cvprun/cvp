@@ -320,10 +320,12 @@ class PlayerApplication:
             with self._profiler:
                 for event in pygame.event.get():
                     self.on_event(event)
+
                 for msg in self._context.msgs.pull_nowait():
                     self.on_msg(msg)
 
                 self.on_keyboard(get_pressed())
+
                 self.renderer.do_tick()
                 self.on_frame()
 

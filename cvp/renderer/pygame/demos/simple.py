@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from os import environ
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 
 class SimpleDemoInterface(ABC):
@@ -23,6 +23,7 @@ class SimpleDemoBase(SimpleDemoInterface):
         force_egl: Optional[bool] = True,
         use_accelerate: Optional[bool] = False,
         init_callback: Optional[Callable[[], None]] = None,
+        event_callback: Optional[Callable[[Any], bool]] = None,
     ) -> None:
         if force_egl is not None:
             environ["SDL_VIDEO_X11_FORCE_EGL"] = "1" if force_egl else "0"
@@ -31,6 +32,7 @@ class SimpleDemoBase(SimpleDemoInterface):
 
         self._frame_callback = frame_callback
         self._init_callback = init_callback
+        self._event_callback = event_callback
         self._done = False
 
     @property
@@ -73,7 +75,8 @@ class SimpleDemoBase(SimpleDemoInterface):
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self._done = True
-                    renderer.do_event(event)
+                    if not self.on_event(event):
+                        renderer.do_event(event)
 
                 renderer.do_tick()
                 imgui.new_frame()
@@ -88,6 +91,11 @@ class SimpleDemoBase(SimpleDemoInterface):
             del renderer
             imgui.destroy_context()
             pygame.quit()
+
+    def on_event(self, event: Any) -> bool:
+        if self._event_callback is not None:
+            return self._event_callback(event)
+        return False
 
     def on_init(self) -> None:
         if self._init_callback is not None:
@@ -104,11 +112,13 @@ def run_simple_demo(
     force_egl: Optional[bool] = False,
     use_accelerate: Optional[bool] = False,
     init_callback: Optional[Callable[[], None]] = None,
+    event_callback: Optional[Callable[[Any], bool]] = None,
 ) -> None:
     demo = SimpleDemoBase(
         frame_callback,
         force_egl=force_egl,
         use_accelerate=use_accelerate,
         init_callback=init_callback,
+        event_callback=event_callback,
     )
     demo.run()
