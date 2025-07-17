@@ -92,14 +92,14 @@ class SimpleDemoBase(SimpleDemoInterface):
             imgui.destroy_context()
             pygame.quit()
 
+    def on_init(self) -> None:
+        if self._init_callback is not None:
+            self._init_callback()
+
     def on_event(self, event: Any) -> bool:
         if self._event_callback is not None:
             return self._event_callback(event)
         return False
-
-    def on_init(self) -> None:
-        if self._init_callback is not None:
-            self._init_callback()
 
     def on_frame(self) -> None:
         if self._frame_callback is not None:
