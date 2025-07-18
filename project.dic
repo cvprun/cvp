@@ -180,6 +180,7 @@ multiband
 mustlock
 muxing
 namehint
+namereplace
 nanum
 navyblue
 nieun
@@ -279,6 +280,8 @@ subfile
 subpath
 subpopup
 surfaceable
+surrogateescape
+surrogatepass
 svga
 sxga
 sysreq

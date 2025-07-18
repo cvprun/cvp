@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass, field
-from datetime import datetime
+from dataclasses import dataclass
+from encodings import normalize_encoding
 
-
-def _local_tzname() -> str:
-    name = datetime.now().astimezone().tzname()
-    assert name is not None
-    return name
+from cvp.encoding.errors import CodecErrorHandling
 
 
 @dataclass
 class TextConfig:
     default_encoding: str = "utf-8"
-    default_timezone: str = field(default_factory=lambda: _local_tzname())
+    default_error_handling: str = "strict"
+
+    @property
+    def normalize_default_encoding(self) -> str:
+        return normalize_encoding(self.default_encoding)
+
+    @property
+    def default_codec_error_handling(self) -> CodecErrorHandling:
+        try:
+            return CodecErrorHandling(self.default_error_handling)
+        except:  # noqa
+            return CodecErrorHandling.strict
