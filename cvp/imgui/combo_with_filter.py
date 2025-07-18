@@ -23,7 +23,7 @@ class ComboWithFilterResult(NamedTuple):
 
 def combo_with_filter(
     label: str,
-    current: int,
+    value: int,
     items: Sequence[str],
     height_in_items: Optional[int] = None,
     flags: Union[ComboFlags, int] = 0,
@@ -39,14 +39,13 @@ def combo_with_filter(
         flags = int(flags)
     assert isinstance(flags, int)
 
-    if 0 <= current < len(items):
-        preview_value = items[current]
+    if 0 <= value < len(items):
+        preview_value = items[value]
     else:
         preview_value = not_found_item_name if not_found_item_name else str()
 
-    first_index = current
+    initial_value = value
     filter_changed = False
-    filter_key = filter_value
 
     # Set the combo popup height according to height_in_items
     if height_in_items is not None:
@@ -64,20 +63,22 @@ def combo_with_filter(
     if imgui.begin_combo(label, preview_value, flags):
         try:
             if filter_value is not None:
+                if isinstance(filter_flags, InputTextFlags):
+                    filter_flags = int(filter_flags)
+                assert isinstance(filter_flags, int)
+
                 imgui.set_next_item_width(FIT_WIDTH)
-                filter_result = imgui.input_text_with_hint(
+                filter_changed, filter_value = imgui.input_text_with_hint(
                     "##Filter",
                     filter_hint,
                     filter_value,
                     filter_flags,
                 )
-                filter_changed = filter_result[0]
-                filter_value = filter_result[1]
 
-                if filter_ignore_case:
-                    filter_key = filter_value.lower()
-                else:
-                    filter_key = filter_value
+            if filter_value and filter_ignore_case:
+                filter_key = filter_value.lower()
+            else:
+                filter_key = filter_value or str()
 
             for i, item in enumerate(items):
                 assert isinstance(item, str)
@@ -87,9 +88,9 @@ def combo_with_filter(
                     if item_key.find(filter_key) == NOT_FOUND_INDEX:
                         continue
 
-                selected = current == i
+                selected = value == i
                 if imgui.selectable(item, selected)[0]:
-                    current = i
+                    value = i
 
                 if extra_hints and 0 <= i < len(extra_hints):
                     imgui.same_line()
@@ -104,20 +105,20 @@ def combo_with_filter(
             max_item_index = len(items) - 1
 
             if imgui.is_key_pressed(imgui.Key.home, repeat=False):
-                current = min_item_index
+                value = min_item_index
             if imgui.is_key_pressed(imgui.Key.up_arrow, repeat=True):
-                current = max(min_item_index, current - 1)
+                value = max(min_item_index, value - 1)
             if imgui.is_key_pressed(imgui.Key.down_arrow, repeat=True):
-                current = min(max_item_index, current + 1)
+                value = min(max_item_index, value + 1)
             if imgui.is_key_pressed(imgui.Key.end, repeat=False):
-                current = max_item_index
+                value = max_item_index
         finally:
             imgui.end_combo()
 
     return ComboWithFilterResult(
-        changed=current != first_index,
-        value=current,
-        item=items[current] if 0 <= current < len(items) else None,
+        changed=value != initial_value,
+        value=value,
+        item=items[value] if 0 <= value < len(items) else None,
         filter_changed=filter_changed,
         filter_value=filter_value,
     )

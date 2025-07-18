@@ -31,7 +31,7 @@ class ZoneTuple(NamedTuple):
 
 
 @lru_cache
-def local_tzinfo_tuple() -> ZoneTuple:
+def local_tzinfo() -> ZoneTuple:
     now = datetime.now().astimezone()
     name = now.tzname()
     info = now.tzinfo
@@ -40,11 +40,12 @@ def local_tzinfo_tuple() -> ZoneTuple:
     return ZoneTuple(name, info)
 
 
-def create_tzinfos() -> ImmutableList[ZoneTuple]:
+@lru_cache
+def _create_tzinfos() -> ImmutableList[ZoneTuple]:
     zone_names = available_timezones()
     zone_infos: List[ZoneTuple] = [ZoneTuple(z, ZoneInfo(z)) for z in zone_names]
 
-    local_info = local_tzinfo_tuple()
+    local_info = local_tzinfo()
     if local_info.name not in zone_names:
         zone_infos.append(local_info)
 
@@ -52,12 +53,12 @@ def create_tzinfos() -> ImmutableList[ZoneTuple]:
     return ImmutableList(sorted_infos)
 
 
-def create_tzinfo_map(tzinfos: Iterable[ZoneTuple]) -> MappingProxyType[str, tzinfo]:
+def mapping_tzinfos(tzinfos: Iterable[ZoneTuple]) -> MappingProxyType[str, tzinfo]:
     return MappingProxyType({tz.name: tz.info for tz in tzinfos})
 
 
-TZINFOS: Final[ImmutableList[ZoneTuple]] = create_tzinfos()
-TZINFO_MAP: Final[MappingProxyType[str, tzinfo]] = create_tzinfo_map(TZINFOS)
+TZINFOS: Final[ImmutableList[ZoneTuple]] = _create_tzinfos()
+TZINFO_MAP: Final[MappingProxyType[str, tzinfo]] = mapping_tzinfos(TZINFOS)
 ZONE_NAMES: Final[ImmutableList[str]] = ImmutableList(tz.name for tz in TZINFOS)
 ZONE_INFOS: Final[ImmutableList[tzinfo]] = ImmutableList(tz.info for tz in TZINFOS)
 UTC_OFFSETS: Final[ImmutableList[str]] = ImmutableList(tz.utc_offset for tz in TZINFOS)

@@ -2,20 +2,25 @@
 
 import encodings
 from functools import lru_cache
-from typing import Dict, Final, FrozenSet, Set
+from typing import Final, Mapping
+
+from cvp.containers.immutable_list import ImmutableList
 
 _DEFAULT_TEST_TEXT: Final[str] = "Hello, World"
 
 
 @lru_cache
-def _encodings_aliases() -> Dict[str, str]:
+def _encodings_aliases() -> Mapping[str, str]:
     return encodings.aliases.aliases
 
 
-def _create_encodings() -> Set[str]:
+@lru_cache
+def _create_encodings() -> ImmutableList[str]:
     keys = list(_encodings_aliases().keys())
     values = list(_encodings_aliases().values())
-    return set(keys + values)
+    merged = list(set(keys + values))
+    merged.sort()
+    return ImmutableList(merged)
 
 
 def _is_text_encoding(encoding_name: str, test_text=_DEFAULT_TEST_TEXT) -> bool:
@@ -35,17 +40,23 @@ def _is_binary_encoding(encoding_name: str, test_text=_DEFAULT_TEST_TEXT) -> boo
     return not _is_text_encoding(encoding_name, test_text)
 
 
-def _create_text_encodings() -> Set[str]:
-    return set(filter(_is_text_encoding, _create_encodings()))
+@lru_cache
+def _create_text_encodings() -> ImmutableList[str]:
+    items = list(filter(_is_text_encoding, _create_encodings()))
+    items.sort()
+    return ImmutableList(items)
 
 
-def _create_binary_encodings() -> Set[str]:
-    return set(filter(_is_binary_encoding, _create_encodings()))
+@lru_cache
+def _create_binary_encodings() -> ImmutableList[str]:
+    items = list(filter(_is_binary_encoding, _create_encodings()))
+    items.sort()
+    return ImmutableList(items)
 
 
-ENCODINGS: Final[FrozenSet[str]] = frozenset(_create_encodings())
-TEXT_ENCODINGS: Final[FrozenSet[str]] = frozenset(_create_text_encodings())
-BINARY_ENCODINGS: Final[FrozenSet[str]] = frozenset(_create_binary_encodings())
+ENCODINGS: Final[ImmutableList[str]] = _create_encodings()
+TEXT_ENCODINGS: Final[ImmutableList[str]] = _create_text_encodings()
+BINARY_ENCODINGS: Final[ImmutableList[str]] = _create_binary_encodings()
 
 
 if __name__ == "__main__":

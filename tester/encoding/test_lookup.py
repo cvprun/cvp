@@ -20,7 +20,7 @@ class LookupTestCase(TestCase):
 
     def test_merged_encodings(self):
         merged_encodings = set(list(BINARY_ENCODINGS) + list(TEXT_ENCODINGS))
-        self.assertSetEqual(ENCODINGS, merged_encodings)
+        self.assertSetEqual(set(ENCODINGS), merged_encodings)
 
 
 if __name__ == "__main__":

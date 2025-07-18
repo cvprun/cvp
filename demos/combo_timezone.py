@@ -4,33 +4,29 @@ from datetime import datetime
 
 from imgui_bundle import imgui
 
-from cvp.imgui.combo_timezone import combo_timezone
+from cvp.chrono.timezones import local_tzinfo
+from cvp.imgui.combo_timezone import TZINFO_MAP, combo_timezone
 from cvp.renderer.pygame.demos.simple import run_simple_demo
 
 
 class OnFrame:
     def __init__(self):
-        self._current = 0
-        self._datetime = datetime.now().astimezone()
+        self._value = local_tzinfo().name
         self._filter = str()
 
     def __call__(self):
         if imgui.button("Now"):
-            self._datetime = datetime.now().astimezone()
+            self._value = local_tzinfo().name
 
-        tzname = self._datetime.tzname()
-        imgui.text(f"TZNAME: {tzname}")
-
-        offset = self._datetime.utcoffset()
+        offset = datetime.now(tz=TZINFO_MAP[self._value]).utcoffset()
         imgui.text(f"OFFSET: {offset}")
 
         if result := combo_timezone(
-            "Timezone",
-            self._current,
-            20,
+            label="Timezone",
+            value=self._value,
             filter_value=self._filter,
         ):
-            self._current = result.value
+            self._value = result.tzname
             self._filter = result.filter_value
 
 

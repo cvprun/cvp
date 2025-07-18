@@ -49,7 +49,7 @@ class BinaryMode(BaseMode):
     def __init__(self, context: Context):
         super().__init__(context)
         self._methods = [str(m) for m in BinaryToText]
-        self._encodings = list(ENCODINGS - set(self._methods))
+        self._encodings = list(set(ENCODINGS) - set(self._methods))
         self._encodings.sort()
 
         self._filter = str()
