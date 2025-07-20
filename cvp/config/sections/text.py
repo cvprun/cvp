@@ -1,23 +1,23 @@
 # -*- coding: utf-8 -*-
 
+import encodings
 from dataclasses import dataclass
-from encodings import normalize_encoding
 
 from cvp.encoding.errors import CodecErrorHandling
 
 
 @dataclass
 class TextConfig:
-    default_encoding: str = "utf-8"
-    default_error_handling: str = "strict"
+    encoding: str = "utf-8"
+    errors: str = "strict"
 
     @property
-    def normalize_default_encoding(self) -> str:
-        return normalize_encoding(self.default_encoding)
+    def normalize_encoding(self) -> str:
+        return encodings.normalize_encoding(self.encoding)
 
     @property
-    def default_codec_error_handling(self) -> CodecErrorHandling:
+    def codec_error_handling(self) -> CodecErrorHandling:
         try:
-            return CodecErrorHandling(self.default_error_handling)
+            return CodecErrorHandling(self.errors)
         except:  # noqa
             return CodecErrorHandling.strict

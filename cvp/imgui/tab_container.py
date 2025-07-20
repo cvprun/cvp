@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
-from typing import Callable, Iterable, List, Optional, Tuple, Union
+from dataclasses import dataclass, field
+from typing import Callable, Iterable, List, Optional, Sequence, Tuple, Union
 
 from imgui_bundle import imgui
 
@@ -13,7 +13,7 @@ from cvp.inspect.bind import force_bind
 
 @dataclass
 class TabItem:
-    name: str
+    name: str = field(default_factory=str)
     callback: Optional[Callable] = None
     opened: Optional[bool] = None
     flags: Union[TabItemFlags, int] = 0
@@ -24,7 +24,8 @@ TabItemLike = Union[
     str,
     Tuple[str],
     Tuple[str, Callable],
-    Tuple[str, Callable, bool],
+    Tuple[str, Callable, Optional[bool]],
+    Tuple[str, Callable, Optional[bool], int],
 ]
 
 
@@ -36,11 +37,13 @@ def normalize_tab_items(*items: TabItemLike) -> List[TabItem]:
             result.append(item)
         elif isinstance(item, str):
             result.append(TabItem(item))
-        elif isinstance(item, (tuple, list)):
+        elif isinstance(item, Sequence):
             name = str(item[0]) if 1 <= len(item) else str()
             callback = item[1] if 2 <= len(item) else None
-            opened = item[2] if 3 <= len(item) else None
-            result.append(TabItem(name, callback, opened))
+            assert callback is None or callable(callback)
+            opened = bool(item[2]) if 3 <= len(item) else None
+            flags = int(item[3]) if 4 <= len(item) else 0
+            result.append(TabItem(name, callback, opened, flags))
         else:
             raise ValueError(f"Invalid tab item type: '{type(item).__name__}'")
 

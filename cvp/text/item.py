@@ -11,6 +11,8 @@ TextKey = NewType("TextKey", str)
 class TextItem:
     uuid: str = field(default_factory=lambda: str(uuid4()))
     path: str = field(default_factory=str)
+    encoding: str = "utf-8"
+    errors: str = "strict"
 
     @property
     def key(self):

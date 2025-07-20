@@ -50,7 +50,7 @@ def get_field_name(cls: Union[_T, Type[_T]]) -> Type[_T]:
     if not isinstance(cls, type):
         cls = type(cls)  # type: ignore[assignment]
 
-    names = {f.name: f.name for f in fields(cls)}
+    names = {f.name: f.name for f in fields(cls)}  # type: ignore[arg-type]
 
     # noinspection PyTypeChecker
     return Namespace(**names)  # type: ignore[return-value]

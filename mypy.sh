@@ -30,4 +30,5 @@ print_message "mypy ${ARGS[*]}"
     "$ROOT_DIR/cvp/" \
     "$ROOT_DIR/demos/" \
     "$ROOT_DIR/tester/" \
-    "$ROOT_DIR/setup.py"
+    "$ROOT_DIR/setup.py" \
+    "$@"
