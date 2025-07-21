@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Tuple
+from pathlib import Path
+from typing import Optional, Tuple, Union
 from uuid import uuid4
 
 from cvp.resources.manager.manager import ResourceManager
@@ -29,6 +30,10 @@ class TextManager(ResourceManager[TextKey, TextItem]):
         *,
         uuid: Optional[str] = None,
         path: Optional[str] = None,
+        encoding="utf-8",
+        errors="strict",
+        opened=True,
+        flags=0,
     ) -> Tuple[TextKey, TextItem]:
         if not uuid:
             uuid = str(uuid4())
@@ -38,8 +43,27 @@ class TextManager(ResourceManager[TextKey, TextItem]):
             path = str()
         assert isinstance(path, str)
 
-        item = TextItem(uuid=uuid, path=path)
+        item = TextItem(
+            uuid=uuid,
+            path=path,
+            encoding=encoding,
+            errors=errors,
+            opened=opened,
+            flags=flags,
+        )
         assert uuid == str(item.key)
 
         self.add(item.key, item)
         return item.key, item
+
+    def find_with_path(self, path: Union[str, Path]):
+        if not isinstance(path, Path):
+            path = Path(path)
+        assert isinstance(path, Path)
+        path = path.resolve()
+
+        for item in self.values():
+            if Path(item.path).resolve() == path:
+                return item
+
+        raise ValueError("No item found with the given path")

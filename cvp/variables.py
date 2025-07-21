@@ -99,6 +99,7 @@ JOB_NONAME: Final[str] = "[New Job]"
 SERVICE_NONAME: Final[str] = "[New Service]"
 WATCHDOG_NONAME: Final[str] = "[New Watchdog]"
 MEDIAMTX_NONAME: Final[str] = "[New MediaMTX]"
+TEXT_NONAME: Final[str] = "[New Text]"
 
 SUPABASE_ADDRESS: Final[str] = "http://localhost:8000/"
 

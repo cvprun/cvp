@@ -10,6 +10,7 @@ from pygame.key import ScancodeWrapper
 from cvp.apps.player.modes.interface import ModeInterface
 from cvp.context.context import Context
 from cvp.imgui.begin_mode import begin_mode_context
+from cvp.imgui.menu_recent_items import menu_recent_items
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.msgs.msg import Msg
 from cvp.types.override import override
@@ -136,6 +137,19 @@ class BaseMode(ModeInterface, BaseModeProtocol):
             value,
             accessed_at,
             suffix=suffix,
+        )
+
+    def menu_recent_items(
+        self,
+        label="Recent items",
+        clear_menu_label="Clear recent items",
+    ):
+        return menu_recent_items(
+            label=label,
+            config=self.context.config.navigation,
+            cls=type(self),
+            append_clear_menu=True,
+            clear_menu_label=clear_menu_label,
         )
 
     def clear_recent_items(self, *, suffix=None) -> None:
