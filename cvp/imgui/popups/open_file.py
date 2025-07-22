@@ -2,6 +2,7 @@
 
 import os
 from enum import IntFlag, auto, unique
+from functools import reduce
 from os import PathLike
 from pathlib import Path
 from shutil import rmtree
@@ -38,6 +39,10 @@ class _OpenFilePopupMode(IntFlag):
     overwrite_popup = auto()
 
 
+def merge_open_file_popup_modes(*modes: _OpenFilePopupMode) -> _OpenFilePopupMode:
+    return reduce(lambda x, y: x | y, modes)
+
+
 class OpenFilePopup(PopupBase[str]):
     __cvp_popup_min_width__ = 520
     __cvp_popup_min_height__ = 420
@@ -50,8 +55,14 @@ class OpenFilePopup(PopupBase[str]):
     SHOW_HIDDEN = _OpenFilePopupMode.show_hidden
     OVERWRITE_POPUP = _OpenFilePopupMode.overwrite_popup
 
-    SELECT_FILE_AND_DIRECTORY = (
-        _OpenFilePopupMode.select_file | _OpenFilePopupMode.select_directory
+    SELECT_FILE_AND_DIRECTORY = merge_open_file_popup_modes(
+        _OpenFilePopupMode.select_file,
+        _OpenFilePopupMode.select_directory,
+    )
+
+    SAVE_FILE = merge_open_file_popup_modes(
+        _OpenFilePopupMode.input_filename,
+        _OpenFilePopupMode.overwrite_popup,
     )
 
     def __init__(

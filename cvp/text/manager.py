@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Set, Tuple, Union
 from uuid import uuid4
 
 from cvp.resources.manager.manager import ResourceManager
@@ -32,8 +32,6 @@ class TextManager(ResourceManager[TextKey, TextItem]):
         path: Optional[str] = None,
         encoding="utf-8",
         errors="strict",
-        opened=True,
-        flags=0,
     ) -> Tuple[TextKey, TextItem]:
         if not uuid:
             uuid = str(uuid4())
@@ -48,8 +46,6 @@ class TextManager(ResourceManager[TextKey, TextItem]):
             path=path,
             encoding=encoding,
             errors=errors,
-            opened=opened,
-            flags=flags,
         )
         assert uuid == str(item.key)
 
@@ -62,8 +58,11 @@ class TextManager(ResourceManager[TextKey, TextItem]):
         assert isinstance(path, Path)
         path = path.resolve()
 
+        result = list()
         for item in self.values():
             if Path(item.path).resolve() == path:
-                return item
+                result.append(item)
+        return result
 
-        raise ValueError("No item found with the given path")
+    def unique_paths(self) -> Set[str]:
+        return set(item.path for item in self.values())

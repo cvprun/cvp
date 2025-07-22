@@ -18,9 +18,6 @@ class TextItem:
     encoding: str = "utf-8"
     errors: str = "strict"
 
-    opened: bool = True
-    flags: int = 0
-
     @property
     def key(self):
         return TextKey(self.uuid)
@@ -28,6 +25,10 @@ class TextItem:
     @key.setter
     def key(self, value: TextKey) -> None:
         self.uuid = str(value)
+
+    @property
+    def label(self):
+        return self.name + "##" + self.uuid
 
     @property
     def is_memory(self) -> bool:

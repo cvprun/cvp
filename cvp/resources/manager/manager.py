@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
-from typing import Dict, List, Type, TypeVar
+from typing import Dict, Iterable, List, Optional, Type, TypeVar
 
 from type_serialize import deserialize, serialize
 
@@ -107,3 +107,14 @@ class ResourceManager(Dict[KeyT, ConfigT]):
     def remove_all(self) -> None:
         for key in list(self.keys()):
             self.remove(key)
+
+    def ordered_values(self, order: Optional[Iterable[KeyT]] = None) -> List[ConfigT]:
+        result = list()
+        remain_items = self.copy()
+        for key in order or ():
+            try:
+                result.append(remain_items.pop(key))
+            except KeyError:
+                pass
+        result.extend(remain_items.values())
+        return result
