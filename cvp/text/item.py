@@ -18,6 +18,9 @@ class TextItem:
     encoding: str = "utf-8"
     errors: str = "strict"
 
+    language: str = field(default_factory=str)
+    palette: str = field(default_factory=str)
+
     @property
     def key(self):
         return TextKey(self.uuid)

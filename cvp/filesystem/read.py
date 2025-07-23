@@ -21,6 +21,11 @@ def read_progressive(
     if logger is not None:
         logger.info(f"Starting progressive read of file: '{path}'")
 
+    if not os.path.isfile(path):
+        if logger is not None:
+            logger.debug(f"File does not exist: '{path}'")
+        return str()
+
     total_size = os.path.getsize(path)
 
     if logger is not None:

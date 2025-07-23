@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 from collections import deque
 from typing import Deque, Dict, Final, NamedTuple, Optional
 
@@ -8,7 +9,6 @@ from pygame import DROPFILE
 from pygame.event import Event
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.text.editor import TextEditor
 from cvp.assets.fonts.mdi import FILE_DOCUMENT
 from cvp.concurrency.threading.progress_value import ProgressValue
 from cvp.context.context import Context
@@ -25,6 +25,7 @@ from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
+from cvp.imgui.widgets.text_editor import TextEditor
 from cvp.logging.loggers import logger
 from cvp.text.item import TextItem, TextKey
 from cvp.types.override import override
@@ -35,6 +36,11 @@ class _TextOpenResult(NamedTuple):
     encoding: str
     errors: str
     text: str
+
+
+class _PendingItem(NamedTuple):
+    path: str
+    key: Optional[TextKey] = None
 
 
 class TextMode(BaseMode):
@@ -85,8 +91,11 @@ class TextMode(BaseMode):
         self._current_key = None
 
         self._open_file_queue = deque()
-        for text_path in context.texts.unique_paths():
-            self._open_file_queue.append(text_path)
+        for key, item in context.texts.items():
+            if os.path.isfile(item.path):
+                self._open_file_queue.append(item.path)
+            else:
+                self._editors[key] = TextEditor(item)
 
     @property
     def config(self):
@@ -109,6 +118,13 @@ class TextMode(BaseMode):
         if self._current_key is None:
             return None
         return self.manager.get(self._current_key, None)
+
+    @property
+    def selected_editor(self):
+        if text := self.selected_text:
+            return self._editors.get(text.key, None)
+        else:
+            return None
 
     def on_open_file(self, file: str) -> None:
         self.open_text_file(file)
@@ -165,10 +181,21 @@ class TextMode(BaseMode):
         if self._open_runner.running:
             value, limit, _ = self._open_progress.get()
             imgui.text(f"Opening {value}/{limit} ...")
+            return
 
         if self._open_runner.error is not None:
             error_message = str(self._open_runner.error)
             imgui.text_colored(self.error_color, error_message)
+            return
+
+        editor = self.selected_editor
+        if editor is None:
+            return
+
+        line = editor.line
+        column = editor.column
+        imgui.text(f"Ln {line}, Col {column}")
+        imgui.separator()
 
     @override
     def on_event(self, event: Event) -> bool:
@@ -215,8 +242,36 @@ class TextMode(BaseMode):
     def on_edit_menu(self) -> None:
         self.do_disabled_edit_menu()
 
+    @staticmethod
+    def on_disabled_settings_menu() -> None:
+        menu_item("Palette", enabled=False)
+        menu_item("Language", enabled=False)
+
+    @staticmethod
+    def on_enabled_settings_menu(text: TextEditor) -> None:
+        if imgui.begin_menu("Palette"):
+            try:
+                for palette_name in TextEditor.PALETTE_MAP.keys():
+                    selected_palette = palette_name == text.palette_name
+                    if menu_item(palette_name, selected=selected_palette):
+                        text.palette_name = palette_name
+            finally:
+                imgui.end_menu()
+
+        if imgui.begin_menu("Language"):
+            try:
+                for language_name in TextEditor.LANGUAGE_MAP.keys():
+                    selected_language = language_name == text.language_name
+                    if menu_item(language_name, selected=selected_language):
+                        text.language_name = language_name
+            finally:
+                imgui.end_menu()
+
     def on_settings_menu(self) -> None:
-        pass
+        if editor := self.selected_editor:
+            self.on_enabled_settings_menu(editor)
+        else:
+            self.on_disabled_settings_menu()
 
     def on_tabs_menu(self) -> None:
         for item in self.ordered_texts:
@@ -266,12 +321,12 @@ class TextMode(BaseMode):
 
     def add_editor(self, item: TextItem, content: str, *, no_select=False) -> None:
         text_editor = self._editors.get(item.key)
+
         if text_editor is None:
-            text_editor = TextEditor(item)
+            text_editor = TextEditor(item, content)
             self._editors[item.key] = text_editor
 
         assert isinstance(text_editor, TextEditor)
-        text_editor.set_text(content)
 
         if not no_select:
             self._force_select = item.key
@@ -297,7 +352,7 @@ class TextMode(BaseMode):
                         self._current_key = item.key
                         try:
                             if text_editor := self._editors.get(item.key):
-                                text_editor.do_process()
+                                text_editor.render()
                         finally:
                             end_tab_item()
 
