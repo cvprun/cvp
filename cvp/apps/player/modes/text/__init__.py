@@ -68,7 +68,7 @@ class TextMode(BaseMode):
         )
         self._save_as_file_popup = OpenFilePopup(
             title="Save as ...",
-            target=self.on_save_file,
+            target=self.on_save_as_file,
             mode=OpenFilePopup.SAVE_FILE,
         )
         self._open_runner = context.create_thread_runner(self.on_open_runner)
@@ -130,7 +130,16 @@ class TextMode(BaseMode):
         self.open_text_file(file)
 
     def on_save_file(self, file: str) -> None:
-        self.save_text_file(file)
+        editor = self.selected_editor
+        assert editor is not None
+        self.save_text_file(file, editor.encoded_text)
+        editor.path = file
+        editor.commit()
+
+    def on_save_as_file(self, file: str) -> None:
+        editor = self.selected_editor
+        assert editor is not None
+        self.save_text_file(file, editor.encoded_text)
 
     def on_open_runner(self, path: str, encoding: str, errors: str) -> _TextOpenResult:
         text = read_progressive(
@@ -152,8 +161,11 @@ class TextMode(BaseMode):
             logger.exception(e)
             self.context.toast_error(f"Text file open failed: '{e}'")
 
-    def save_text_file(self, path: str) -> None:
-        pass
+    def save_text_file(self, file: str, data: bytes) -> None:
+        with open(file, "wb+") as f:
+            f.write(data)
+            # TODO: use progress value ...
+        self._context.toast_info(f"Save file: '{file}' ({len(data)}bytes)")
 
     def close_text(self, key: TextKey) -> None:
         self.manager.remove(key)
@@ -192,10 +204,25 @@ class TextMode(BaseMode):
         if editor is None:
             return
 
+        assert isinstance(editor, TextEditor)
+
+        imgui.text(editor.encoding)
+        imgui.separator()
+
+        imgui.text(editor.errors)
+        imgui.separator()
+
+        imgui.text(editor.language_name)
+        imgui.separator()
+
         line = editor.line
         column = editor.column
         imgui.text(f"Ln {line}, Col {column}")
         imgui.separator()
+
+        if editor.readonly:
+            imgui.text("Read Only")
+            imgui.separator()
 
     @override
     def on_event(self, event: Event) -> bool:
@@ -206,7 +233,10 @@ class TextMode(BaseMode):
 
     def on_file_menu(self) -> None:
         is_opening = self._open_runner.running
-        is_selected_text = self.selected_text is not None
+        editor = self.selected_editor
+        is_selected = editor is not None
+        is_modified = editor.modified if editor is not None else False
+        has_path = editor.has_path if editor is not None else False
 
         if menu_item("New file", shortcut="Ctrl+N"):
             self.add_new_text()
@@ -214,16 +244,25 @@ class TextMode(BaseMode):
             if self._open_runner.running:
                 raise ValueError("Open runner is already running")
             self._open_file_popup.show()
+
         if recent_item := self.menu_recent_items():
             self.open_text_file(recent_item.value)
 
-        if menu_item("Save", shortcut="Ctrl+S", enabled=is_selected_text):
-            self._save_file_popup.show()
-        if menu_item("Save as ...", enabled=is_selected_text):
+        imgui.separator()
+        if has_path:
+            assert editor is not None
+            if menu_item("Save", shortcut="Ctrl+S", enabled=is_modified):
+                self.save_text_file(editor.path, editor.encoded_text)
+                editor.commit()
+        else:
+            if menu_item("Save", shortcut="Ctrl+S", enabled=is_selected):
+                self._save_file_popup.show()
+
+        if menu_item("Save as ...", shortcut="Ctrl+Shift+S", enabled=is_selected):
             self._save_as_file_popup.show()
 
         imgui.separator()
-        if menu_item("Close file", enabled=is_selected_text):
+        if menu_item("Close file", shortcut="Ctrl+W", enabled=is_selected):
             if self._current_key is not None:
                 self.close_text(self._current_key)
 
@@ -239,43 +278,83 @@ class TextMode(BaseMode):
         imgui.separator()
         menu_item("Select all", shortcut="Ctrl+A", enabled=False)
 
+    @staticmethod
+    def do_enabled_edit_menu(editor: TextEditor) -> None:
+        if menu_item("Undo", shortcut="Ctrl+Z", enabled=editor.can_undo()):
+            editor.undo()
+        if menu_item("Redo", shortcut="Ctrl+Y", enabled=editor.can_redo()):
+            editor.redo()
+
+        imgui.separator()
+        if menu_item("Cut", shortcut="Ctrl+X", enabled=editor.has_selection):
+            editor.cut()
+        if menu_item("Copy", shortcut="Ctrl+C", enabled=editor.has_selection):
+            editor.copy()
+        if menu_item("Paste", shortcut="Ctrl+V"):
+            editor.paste()
+        if menu_item("Delete", shortcut="Del", enabled=editor.has_selection):
+            editor.delete()
+
+        imgui.separator()
+        if menu_item("Select all", shortcut="Ctrl+A"):
+            editor.select_all()
+
     def on_edit_menu(self) -> None:
-        self.do_disabled_edit_menu()
+        if editor := self.selected_editor:
+            self.do_enabled_edit_menu(editor)
+        else:
+            self.do_disabled_edit_menu()
 
     @staticmethod
-    def on_disabled_settings_menu() -> None:
+    def do_disabled_settings_menu() -> None:
+        menu_item("Show tabs", enabled=False)
+        menu_item("Show whitespaces", enabled=False)
+        imgui.separator()
         menu_item("Palette", enabled=False)
         menu_item("Language", enabled=False)
 
     @staticmethod
-    def on_enabled_settings_menu(text: TextEditor) -> None:
+    def do_enabled_settings_menu(editor: TextEditor) -> None:
+        show_tabs = editor.show_tabs
+        show_whitespaces = editor.show_whitespaces
+
+        if menu_item("Show tabs", selected=show_tabs):
+            editor.show_tabs = not show_tabs
+        if menu_item("Show whitespaces", selected=show_whitespaces):
+            editor.show_whitespaces = not show_whitespaces
+
+        imgui.separator()
         if imgui.begin_menu("Palette"):
             try:
                 for palette_name in TextEditor.PALETTE_MAP.keys():
-                    selected_palette = palette_name == text.palette_name
+                    selected_palette = palette_name == editor.palette_name
                     if menu_item(palette_name, selected=selected_palette):
-                        text.palette_name = palette_name
+                        editor.palette_name = palette_name
             finally:
                 imgui.end_menu()
 
         if imgui.begin_menu("Language"):
             try:
                 for language_name in TextEditor.LANGUAGE_MAP.keys():
-                    selected_language = language_name == text.language_name
+                    selected_language = language_name == editor.language_name
                     if menu_item(language_name, selected=selected_language):
-                        text.language_name = language_name
+                        editor.language_name = language_name
             finally:
                 imgui.end_menu()
 
     def on_settings_menu(self) -> None:
         if editor := self.selected_editor:
-            self.on_enabled_settings_menu(editor)
+            self.do_enabled_settings_menu(editor)
         else:
-            self.on_disabled_settings_menu()
+            self.do_disabled_settings_menu()
 
     def on_tabs_menu(self) -> None:
         for item in self.ordered_texts:
-            if menu_item(item.label):
+            text_editor = self._editors.get(item.key, None)
+            modified = text_editor.modified if text_editor else False
+            label = item.get_label(modified)
+
+            if menu_item(label):
                 self._force_select = item.key
                 item.opened = True
 
@@ -305,6 +384,7 @@ class TextMode(BaseMode):
         encoding = result.encoding
         errors = result.errors
         text = result.text
+        readonly = not os.access(path, os.W_OK)
 
         self.add_recent_item(path)
 
@@ -312,14 +392,21 @@ class TextMode(BaseMode):
             for text_item in text_items:
                 text_item.encoding = encoding
                 text_item.errors = errors
-                self.add_editor(text_item, text)
+                self.add_editor(text_item, text, readonly=readonly)
         else:
             _, text_item = self.add_new_text(path)
-            self.add_editor(text_item, text)
+            self.add_editor(text_item, text, readonly=readonly)
 
         self._open_runner.clear()
 
-    def add_editor(self, item: TextItem, content: str, *, no_select=False) -> None:
+    def add_editor(
+        self,
+        item: TextItem,
+        content: str,
+        *,
+        no_select=False,
+        readonly=False,
+    ) -> None:
         text_editor = self._editors.get(item.key)
 
         if text_editor is None:
@@ -330,6 +417,8 @@ class TextMode(BaseMode):
 
         if not no_select:
             self._force_select = item.key
+
+        text_editor.readonly = readonly
 
     def do_editor_tabs(self) -> None:
         if imgui.begin_tab_bar("EditorTab", self.TAB_FLAGS):
@@ -343,7 +432,10 @@ class TextMode(BaseMode):
                         flags |= SET_SELECTED
                         self._force_select = None
 
-                    tab_result = begin_tab_item(item.label, opened=True, flags=flags)
+                    text_editor = self._editors.get(item.key, None)
+                    modified = text_editor.modified if text_editor else False
+                    label = item.get_label(modified)
+                    tab_result = begin_tab_item(label, opened=True, flags=flags)
 
                     if not tab_result.opened_state:
                         remove_keys.append(item.key)
@@ -351,8 +443,8 @@ class TextMode(BaseMode):
                     if tab_result.selected:
                         self._current_key = item.key
                         try:
-                            if text_editor := self._editors.get(item.key):
-                                text_editor.render()
+                            if text_editor is not None:
+                                text_editor.do_process()
                         finally:
                             end_tab_item()
 

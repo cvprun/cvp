@@ -21,6 +21,9 @@ class TextItem:
     language: str = field(default_factory=str)
     palette: str = field(default_factory=str)
 
+    show_tabs: bool = True
+    show_whitespaces: bool = True
+
     @property
     def key(self):
         return TextKey(self.uuid)
@@ -28,10 +31,6 @@ class TextItem:
     @key.setter
     def key(self, value: TextKey) -> None:
         self.uuid = str(value)
-
-    @property
-    def label(self):
-        return self.name + "##" + self.uuid
 
     @property
     def is_memory(self) -> bool:
@@ -43,3 +42,6 @@ class TextItem:
             return os.path.basename(self.path)
         else:
             return TEXT_NONAME
+
+    def get_label(self, modified=False):
+        return self.name + (" (*)" if modified else "") + "###" + self.uuid

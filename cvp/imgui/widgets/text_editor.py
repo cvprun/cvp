@@ -110,6 +110,18 @@ class TextEditor:
         self._initial_text = text
 
     @property
+    def encoding(self) -> str:
+        return self._item.encoding
+
+    @property
+    def errors(self) -> str:
+        return self._item.errors
+
+    @property
+    def label(self) -> str:
+        return self._item.get_label(modified=self.modified)
+
+    @property
     def text(self) -> str:
         return self._editor.get_text()
 
@@ -118,8 +130,33 @@ class TextEditor:
         self._editor.set_text(text)
 
     @property
+    def has_path(self) -> bool:
+        return bool(self._item.path)
+
+    @property
+    def path(self) -> str:
+        return self._item.path
+
+    @path.setter
+    def path(self, value: str) -> None:
+        self._item.path = value
+
+    @property
+    def uuid(self) -> str:
+        return self._item.uuid
+
+    @property
+    def encoded_text(self) -> bytes:
+        return self.text.encode(self.encoding, self.errors)
+
+    @property
     def modified(self) -> bool:
-        return self._editor.is_text_changed()
+        return self._modified
+
+    def commit(self) -> None:
+        self._initial_text = self._editor.get_text()
+        self._modified = False
+        self._editor.set_text(self._initial_text)
 
     @property
     def show_tabs(self) -> bool:
@@ -138,11 +175,11 @@ class TextEditor:
         self._editor.set_show_whitespaces(value)
 
     @property
-    def read_only(self) -> bool:
+    def readonly(self) -> bool:
         return self._editor.is_read_only()
 
-    @read_only.setter
-    def read_only(self, value: bool) -> None:
+    @readonly.setter
+    def readonly(self, value: bool) -> None:
         self._editor.set_read_only(value)
 
     @property
@@ -153,6 +190,37 @@ class TextEditor:
     def column(self) -> int:
         return self._editor.get_cursor_position().m_column
 
+    def can_undo(self) -> bool:
+        return self._editor.can_undo()
+
+    def can_redo(self) -> bool:
+        return self._editor.can_redo()
+
+    def undo(self, steps=1) -> None:
+        self._editor.undo(steps)
+
+    def redo(self, steps=1) -> None:
+        self._editor.redo(steps)
+
+    def copy(self) -> None:
+        self._editor.copy()
+
+    def cut(self) -> None:
+        self._editor.cut()
+
+    def paste(self) -> None:
+        self._editor.paste()
+
+    def delete(self, word_mode=False) -> None:
+        self._editor.delete(word_mode)
+
+    @property
+    def has_selection(self) -> bool:
+        return self._editor.has_selection()
+
+    def select_all(self) -> None:
+        self._editor.select_all()
+
     def render(
         self,
         title: Optional[str] = None,
@@ -161,6 +229,15 @@ class TextEditor:
         border=False,
     ) -> bool:
         if title is None:
-            title = type(self).__name__
+            if self.uuid:
+                title = type(self).__name__ + "###" + self.uuid
+            else:
+                title = type(self).__name__
         assert isinstance(title, str)
         return self._editor.render(title, parent_is_focused, size, border)
+
+    def do_process(self) -> None:
+        if not self._modified:
+            if self._editor.is_text_changed():
+                self._modified = self._initial_text != self._editor.get_text()
+        self.render()
