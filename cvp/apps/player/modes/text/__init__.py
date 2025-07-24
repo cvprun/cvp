@@ -7,6 +7,7 @@ from typing import Deque, Dict, Final, NamedTuple, Optional
 from imgui_bundle import imgui
 from pygame import DROPFILE
 from pygame.event import Event
+from pygame.key import ScancodeWrapper
 
 from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import FILE_DOCUMENT
@@ -25,6 +26,7 @@ from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
+from cvp.imgui.widgets.shortcut_registry import ShortcutRegistry
 from cvp.imgui.widgets.text_editor import TextEditor
 from cvp.logging.loggers import logger
 from cvp.text.item import TextItem, TextKey
@@ -86,6 +88,13 @@ class TextMode(BaseMode):
             self._save_as_file_popup,
         )
 
+        self._shortcuts = ShortcutRegistry()
+        self._shortcuts.make("New", self.on_shortcut_new).only_ctrl.n()
+        self._shortcuts.make("Open", self.on_shortcut_open).only_ctrl.o()
+        self._shortcuts.make("Save", self.on_shortcut_save).only_ctrl.s()
+        self._shortcuts.make("SaveAs", self.on_shortcut_save_as).only_shift_ctrl.s()
+        self._shortcuts.make("Close", self.on_shortcut_close).only_ctrl.w()
+
         self._editors = dict()
         self._force_select = None
         self._current_key = None
@@ -96,6 +105,40 @@ class TextMode(BaseMode):
                 self._open_file_queue.append(item.path)
             else:
                 self._editors[key] = TextEditor(item)
+
+    def on_shortcut_new(self) -> None:
+        self.add_new_text()
+
+    def on_shortcut_open(self) -> None:
+        if not self._open_runner.running:
+            self._open_file_popup.show()
+
+    def on_shortcut_save(self) -> None:
+        editor = self.selected_editor
+        is_selected = editor is not None
+        is_modified = editor.modified if editor is not None else False
+        has_path = editor.has_path if editor is not None else False
+
+        if has_path:
+            if is_modified:
+                assert editor is not None
+                self.save_text_file(editor.path, editor.encoded_text)
+                editor.commit()
+            else:
+                pass
+        else:
+            if is_selected:
+                self._save_file_popup.show()
+            else:
+                pass
+
+    def on_shortcut_save_as(self) -> None:
+        if self._current_key is not None:
+            self._save_as_file_popup.show()
+
+    def on_shortcut_close(self) -> None:
+        if self._current_key is not None:
+            self.close_text(self._current_key)
 
     @property
     def config(self):
@@ -231,6 +274,10 @@ class TextMode(BaseMode):
             return True
         return False
 
+    @override
+    def on_keyboard(self, keys: ScancodeWrapper) -> None:
+        self._shortcuts.do_process()
+
     def on_file_menu(self) -> None:
         is_opening = self._open_runner.running
         editor = self.selected_editor
@@ -241,8 +288,6 @@ class TextMode(BaseMode):
         if menu_item("New file", shortcut="Ctrl+N"):
             self.add_new_text()
         if menu_item("Open file ...", shortcut="Ctrl+O", enabled=not is_opening):
-            if self._open_runner.running:
-                raise ValueError("Open runner is already running")
             self._open_file_popup.show()
 
         if recent_item := self.menu_recent_items():
@@ -263,8 +308,9 @@ class TextMode(BaseMode):
 
         imgui.separator()
         if menu_item("Close file", shortcut="Ctrl+W", enabled=is_selected):
-            if self._current_key is not None:
-                self.close_text(self._current_key)
+            current_key = self._current_key
+            assert current_key is not None
+            self.close_text(current_key)
 
     @staticmethod
     def do_disabled_edit_menu() -> None:

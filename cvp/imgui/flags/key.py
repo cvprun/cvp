@@ -55,16 +55,16 @@ class KeyFlags(IntFlag):
     right_super = imgui.Key.right_super.value
     menu = imgui.Key.menu.value
 
-    _0 = IMGUI_KEY_0
-    _1 = IMGUI_KEY_1
-    _2 = IMGUI_KEY_2
-    _3 = IMGUI_KEY_3
-    _4 = IMGUI_KEY_4
-    _5 = IMGUI_KEY_5
-    _6 = IMGUI_KEY_6
-    _7 = IMGUI_KEY_7
-    _8 = IMGUI_KEY_8
-    _9 = IMGUI_KEY_9
+    n0 = IMGUI_KEY_0
+    n1 = IMGUI_KEY_1
+    n2 = IMGUI_KEY_2
+    n3 = IMGUI_KEY_3
+    n4 = IMGUI_KEY_4
+    n5 = IMGUI_KEY_5
+    n6 = IMGUI_KEY_6
+    n7 = IMGUI_KEY_7
+    n8 = IMGUI_KEY_8
+    n9 = IMGUI_KEY_9
 
     a = imgui.Key.a.value
     b = imgui.Key.b.value
@@ -92,6 +92,7 @@ class KeyFlags(IntFlag):
     x = imgui.Key.x.value
     y = imgui.Key.y.value
     z = imgui.Key.z.value
+
     f1 = imgui.Key.f1.value
     f2 = imgui.Key.f2.value
     f3 = imgui.Key.f3.value
@@ -116,6 +117,7 @@ class KeyFlags(IntFlag):
     f22 = imgui.Key.f22.value
     f23 = imgui.Key.f23.value
     f24 = imgui.Key.f24.value
+
     apostrophe = imgui.Key.apostrophe.value
     comma = imgui.Key.comma.value
     minus = imgui.Key.minus.value
@@ -132,6 +134,7 @@ class KeyFlags(IntFlag):
     num_lock = imgui.Key.num_lock.value
     print_screen = imgui.Key.print_screen.value
     pause = imgui.Key.pause.value
+
     keypad0 = imgui.Key.keypad0.value
     keypad1 = imgui.Key.keypad1.value
     keypad2 = imgui.Key.keypad2.value
@@ -229,26 +232,16 @@ RIGHT_ALT: Final[int] = int(KeyFlags.right_alt)
 RIGHT_SUPER: Final[int] = int(KeyFlags.right_super)
 MENU: Final[int] = int(KeyFlags.menu)
 
-# noinspection PyProtectedMember
-K_0: Final[int] = int(KeyFlags._0)
-# noinspection PyProtectedMember
-K_1: Final[int] = int(KeyFlags._1)
-# noinspection PyProtectedMember
-K_2: Final[int] = int(KeyFlags._2)
-# noinspection PyProtectedMember
-K_3: Final[int] = int(KeyFlags._3)
-# noinspection PyProtectedMember
-K_4: Final[int] = int(KeyFlags._4)
-# noinspection PyProtectedMember
-K_5: Final[int] = int(KeyFlags._5)
-# noinspection PyProtectedMember
-K_6: Final[int] = int(KeyFlags._6)
-# noinspection PyProtectedMember
-K_7: Final[int] = int(KeyFlags._7)
-# noinspection PyProtectedMember
-K_8: Final[int] = int(KeyFlags._8)
-# noinspection PyProtectedMember
-K_9: Final[int] = int(KeyFlags._9)
+N0: Final[int] = int(KeyFlags.n0)
+N1: Final[int] = int(KeyFlags.n1)
+N2: Final[int] = int(KeyFlags.n2)
+N3: Final[int] = int(KeyFlags.n3)
+N4: Final[int] = int(KeyFlags.n4)
+N5: Final[int] = int(KeyFlags.n5)
+N6: Final[int] = int(KeyFlags.n6)
+N7: Final[int] = int(KeyFlags.n7)
+N8: Final[int] = int(KeyFlags.n8)
+N9: Final[int] = int(KeyFlags.n9)
 
 A: Final[int] = int(KeyFlags.a)
 B: Final[int] = int(KeyFlags.b)
@@ -276,6 +269,7 @@ W: Final[int] = int(KeyFlags.w)
 X: Final[int] = int(KeyFlags.x)
 Y: Final[int] = int(KeyFlags.y)
 Z: Final[int] = int(KeyFlags.z)
+
 F1: Final[int] = int(KeyFlags.f1)
 F2: Final[int] = int(KeyFlags.f2)
 F3: Final[int] = int(KeyFlags.f3)
@@ -300,6 +294,7 @@ F21: Final[int] = int(KeyFlags.f21)
 F22: Final[int] = int(KeyFlags.f22)
 F23: Final[int] = int(KeyFlags.f23)
 F24: Final[int] = int(KeyFlags.f24)
+
 APOSTROPHE: Final[int] = int(KeyFlags.apostrophe)
 COMMA: Final[int] = int(KeyFlags.comma)
 MINUS: Final[int] = int(KeyFlags.minus)
@@ -316,6 +311,7 @@ SCROLL_LOCK: Final[int] = int(KeyFlags.scroll_lock)
 NUM_LOCK: Final[int] = int(KeyFlags.num_lock)
 PRINT_SCREEN: Final[int] = int(KeyFlags.print_screen)
 PAUSE: Final[int] = int(KeyFlags.pause)
+
 KEYPAD0: Final[int] = int(KeyFlags.keypad0)
 KEYPAD1: Final[int] = int(KeyFlags.keypad1)
 KEYPAD2: Final[int] = int(KeyFlags.keypad2)
@@ -333,8 +329,10 @@ KEYPAD_SUBTRACT: Final[int] = int(KeyFlags.keypad_subtract)
 KEYPAD_ADD: Final[int] = int(KeyFlags.keypad_add)
 KEYPAD_ENTER: Final[int] = int(KeyFlags.keypad_enter)
 KEYPAD_EQUAL: Final[int] = int(KeyFlags.keypad_equal)
+
 APP_BACK: Final[int] = int(KeyFlags.app_back)
 APP_FORWARD: Final[int] = int(KeyFlags.app_forward)
+
 GAMEPAD_START: Final[int] = int(KeyFlags.gamepad_start)
 GAMEPAD_BACK: Final[int] = int(KeyFlags.gamepad_back)
 GAMEPAD_FACE_LEFT: Final[int] = int(KeyFlags.gamepad_face_left)
@@ -359,6 +357,7 @@ GAMEPAD_R_STICK_LEFT: Final[int] = int(KeyFlags.gamepad_r_stick_left)
 GAMEPAD_R_STICK_RIGHT: Final[int] = int(KeyFlags.gamepad_r_stick_right)
 GAMEPAD_R_STICK_UP: Final[int] = int(KeyFlags.gamepad_r_stick_up)
 GAMEPAD_R_STICK_DOWN: Final[int] = int(KeyFlags.gamepad_r_stick_down)
+
 MOUSE_LEFT: Final[int] = int(KeyFlags.mouse_left)
 MOUSE_RIGHT: Final[int] = int(KeyFlags.mouse_right)
 MOUSE_MIDDLE: Final[int] = int(KeyFlags.mouse_middle)
@@ -366,11 +365,14 @@ MOUSE_X1: Final[int] = int(KeyFlags.mouse_x1)
 MOUSE_X2: Final[int] = int(KeyFlags.mouse_x2)
 MOUSE_WHEEL_X: Final[int] = int(KeyFlags.mouse_wheel_x)
 MOUSE_WHEEL_Y: Final[int] = int(KeyFlags.mouse_wheel_y)
+
 RESERVED_FOR_MOD_CTRL: Final[int] = int(KeyFlags.reserved_for_mod_ctrl)
 RESERVED_FOR_MOD_SHIFT: Final[int] = int(KeyFlags.reserved_for_mod_shift)
 RESERVED_FOR_MOD_ALT: Final[int] = int(KeyFlags.reserved_for_mod_alt)
 RESERVED_FOR_MOD_SUPER: Final[int] = int(KeyFlags.reserved_for_mod_super)
+
 NAMED_KEY_END: Final[int] = int(KeyFlags.named_key_end)
+
 MOD_NONE: Final[int] = int(KeyFlags.mod_none)
 MOD_CTRL: Final[int] = int(KeyFlags.mod_ctrl)
 MOD_SHIFT: Final[int] = int(KeyFlags.mod_shift)
@@ -381,3 +383,39 @@ MOD_MASK_: Final[int] = int(KeyFlags.mod_mask_)
 
 def merge_key_flags(*flags: Union[KeyFlags, int]) -> int:
     return int(reduce(lambda x, y: x | y, flags))
+
+
+KeyLike = Union[KeyFlags, imgui.Key, int]
+
+
+def cast_key_flags(key: KeyLike) -> KeyFlags:
+    if isinstance(key, KeyFlags):
+        return key
+    elif isinstance(key, imgui.Key):
+        return KeyFlags(key.value)
+    elif isinstance(key, int):
+        return KeyFlags(key)
+    else:
+        raise TypeError(f"Unsupported key type: {type(key).__name__}")
+
+
+def cast_imgui_key(key: KeyLike) -> imgui.Key:
+    if isinstance(key, KeyFlags):
+        return imgui.Key(key.value)
+    elif isinstance(key, imgui.Key):
+        return key
+    elif isinstance(key, int):
+        return imgui.Key(key)
+    else:
+        raise TypeError(f"Unsupported key type: {type(key).__name__}")
+
+
+def cast_int_key(key: KeyLike) -> int:
+    if isinstance(key, KeyFlags):
+        return int(key)
+    elif isinstance(key, imgui.Key):
+        return int(key.value)
+    elif isinstance(key, int):
+        return key
+    else:
+        raise TypeError(f"Unsupported key type: {type(key).__name__}")

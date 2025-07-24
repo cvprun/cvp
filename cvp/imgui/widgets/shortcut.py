@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from functools import reduce
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 from imgui_bundle import imgui
 
-from cvp.imgui.flags.key import KeyFlags
+from cvp.imgui.flags.key import KeyFlags, KeyLike
 from cvp.imgui.keys.utils import alt_down, ctrl_down, shift_down, super_down
 
 
 class Shortcut:
     def __init__(
         self,
-        key: Union[KeyFlags, imgui.Key, int],
+        key: KeyLike,
         shift: Optional[bool] = None,
         ctrl: Optional[bool] = None,
         alt: Optional[bool] = None,
