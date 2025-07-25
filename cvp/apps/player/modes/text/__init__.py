@@ -24,6 +24,7 @@ from cvp.imgui.flags.tab_bar import (
 from cvp.imgui.flags.tab_item import SET_SELECTED, TRAILING
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
+from cvp.imgui.popups.confirm_buttons import ConfirmButtonsPopup
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.widgets.shortcut_registry import ShortcutRegistry
@@ -53,7 +54,9 @@ class TextMode(BaseMode):
 
     _editors: Dict[TextKey, TextEditor]
     _force_select: Optional[TextKey]
+    _force_focus: Optional[TextKey]
     _current_key: Optional[TextKey]
+    _close_key_after_save_file: Optional[TextKey]
     _open_file_queue: Deque[str]
 
     def __init__(self, context: Context):
@@ -67,11 +70,19 @@ class TextMode(BaseMode):
             title="Save file",
             target=self.on_save_file,
             mode=OpenFilePopup.SAVE_FILE,
+            ok_button_label="Save",
         )
         self._save_as_file_popup = OpenFilePopup(
             title="Save as ...",
             target=self.on_save_as_file,
             mode=OpenFilePopup.SAVE_FILE,
+            ok_button_label="Save",
+        )
+        self._save_changes_alert = ConfirmButtonsPopup(
+            title="Save changes to document before closing?",
+            label="If you don't save, all changes will be permanently removed.",
+            button_labels=("Close without saving", "Cancel", "Save"),
+            target=self.on_save_changes,
         )
         self._open_runner = context.create_thread_runner(self.on_open_runner)
         self._open_progress = ProgressValue()
@@ -86,18 +97,21 @@ class TextMode(BaseMode):
             self._open_file_popup,
             self._save_file_popup,
             self._save_as_file_popup,
+            self._save_changes_alert,
         )
 
         self._shortcuts = ShortcutRegistry()
-        self._shortcuts.make("New", self.on_shortcut_new).only_ctrl.n()
-        self._shortcuts.make("Open", self.on_shortcut_open).only_ctrl.o()
-        self._shortcuts.make("Save", self.on_shortcut_save).only_ctrl.s()
-        self._shortcuts.make("SaveAs", self.on_shortcut_save_as).only_shift_ctrl.s()
-        self._shortcuts.make("Close", self.on_shortcut_close).only_ctrl.w()
+        self._shortcuts.build("New", self.on_shortcut_new).only_ctrl.n()
+        self._shortcuts.build("Open", self.on_shortcut_open).only_ctrl.o()
+        self._shortcuts.build("Save", self.on_shortcut_save).only_ctrl.s()
+        self._shortcuts.build("SaveAs", self.on_shortcut_save_as).only_shift_ctrl.s()
+        self._shortcuts.build("Close", self.on_shortcut_close).only_ctrl.w()
 
         self._editors = dict()
         self._force_select = None
+        self._force_focus = None
         self._current_key = None
+        self._close_key_after_save_file = None
 
         self._open_file_queue = deque()
         for key, item in context.texts.items():
@@ -107,38 +121,53 @@ class TextMode(BaseMode):
                 self._editors[key] = TextEditor(item)
 
     def on_shortcut_new(self) -> None:
-        self.add_new_text()
+        _, new_text_item = self.add_new_text()
+        self.add_editor(new_text_item)
 
     def on_shortcut_open(self) -> None:
         if not self._open_runner.running:
             self._open_file_popup.show()
 
     def on_shortcut_save(self) -> None:
-        editor = self.selected_editor
-        is_selected = editor is not None
-        is_modified = editor.modified if editor is not None else False
-        has_path = editor.has_path if editor is not None else False
-
-        if has_path:
-            if is_modified:
-                assert editor is not None
-                self.save_text_file(editor.path, editor.encoded_text)
-                editor.commit()
-            else:
-                pass
-        else:
-            if is_selected:
-                self._save_file_popup.show()
-            else:
-                pass
+        self.do_save_with_current_editor()
 
     def on_shortcut_save_as(self) -> None:
         if self._current_key is not None:
             self._save_as_file_popup.show()
 
     def on_shortcut_close(self) -> None:
-        if self._current_key is not None:
-            self.close_text(self._current_key)
+        editor = self.selected_editor
+        if editor is not None:
+            if editor.modified:
+                self._save_changes_alert.show()
+            else:
+                self.close_text(editor.key)
+
+    def do_save_with_current_editor(self, *, close_editor=False) -> None:
+        editor = self.selected_editor
+        is_selected = editor is not None
+        is_modified = editor.modified if editor is not None else False
+        has_path = editor.has_path if editor is not None else False
+
+        if has_path:
+            assert editor is not None
+
+            if is_modified:
+                self.save_text_file(editor.path, editor.encoded_text)
+                editor.commit()
+
+            if close_editor:
+                self.close_text(editor.key)
+        else:
+            if is_selected:
+                assert editor is not None
+
+                self._save_file_popup.show()
+
+                if close_editor:
+                    self._close_key_after_save_file = editor.key
+            else:
+                pass
 
     @property
     def config(self):
@@ -179,10 +208,31 @@ class TextMode(BaseMode):
         editor.path = file
         editor.commit()
 
+        if self._close_key_after_save_file is not None:
+            self.close_text(self._close_key_after_save_file)
+            self._close_key_after_save_file = None
+
     def on_save_as_file(self, file: str) -> None:
         editor = self.selected_editor
         assert editor is not None
         self.save_text_file(file, editor.encoded_text)
+
+    def on_save_changes(self, index: int) -> None:
+        _close_index = 0  # Close without saving
+        _cancel_index = 1  # Cancel
+        _save_index = 2  # Save
+        assert index in (_close_index, _cancel_index, _save_index)
+
+        if index == _close_index:
+            text = self.selected_text
+            assert text is not None
+            self.close_text(text.key)
+            return
+        elif index == _cancel_index:
+            return
+        else:
+            assert index == _save_index
+            self.do_save_with_current_editor(close_editor=True)
 
     def on_open_runner(self, path: str, encoding: str, errors: str) -> _TextOpenResult:
         text = read_progressive(
@@ -249,13 +299,13 @@ class TextMode(BaseMode):
 
         assert isinstance(editor, TextEditor)
 
-        imgui.text(editor.encoding)
+        imgui.text(editor.encoding.upper().replace("_", "-"))
         imgui.separator()
 
-        imgui.text(editor.errors)
+        imgui.text(editor.errors.capitalize())
         imgui.separator()
 
-        imgui.text(editor.language_name)
+        imgui.text(editor.language_name.capitalize())
         imgui.separator()
 
         line = editor.line
@@ -286,7 +336,8 @@ class TextMode(BaseMode):
         has_path = editor.has_path if editor is not None else False
 
         if menu_item("New file", shortcut="Ctrl+N"):
-            self.add_new_text()
+            _, new_text_item = self.add_new_text()
+            self.add_editor(new_text_item)
         if menu_item("Open file ...", shortcut="Ctrl+O", enabled=not is_opening):
             self._open_file_popup.show()
 
@@ -308,9 +359,11 @@ class TextMode(BaseMode):
 
         imgui.separator()
         if menu_item("Close file", shortcut="Ctrl+W", enabled=is_selected):
-            current_key = self._current_key
-            assert current_key is not None
-            self.close_text(current_key)
+            assert editor is not None
+            if editor.modified:
+                self._save_changes_alert.show()
+            else:
+                self.close_text(editor.key)
 
     @staticmethod
     def do_disabled_edit_menu() -> None:
@@ -355,6 +408,7 @@ class TextMode(BaseMode):
     def do_disabled_settings_menu() -> None:
         menu_item("Show tabs", enabled=False)
         menu_item("Show whitespaces", enabled=False)
+        menu_item("Readonly", enabled=False)
         imgui.separator()
         menu_item("Palette", enabled=False)
         menu_item("Language", enabled=False)
@@ -363,11 +417,14 @@ class TextMode(BaseMode):
     def do_enabled_settings_menu(editor: TextEditor) -> None:
         show_tabs = editor.show_tabs
         show_whitespaces = editor.show_whitespaces
+        readonly = editor.readonly
 
         if menu_item("Show tabs", selected=show_tabs):
             editor.show_tabs = not show_tabs
         if menu_item("Show whitespaces", selected=show_whitespaces):
             editor.show_whitespaces = not show_whitespaces
+        if menu_item("Readonly", selected=readonly):
+            editor.readonly = not readonly
 
         imgui.separator()
         if imgui.begin_menu("Palette"):
@@ -448,7 +505,7 @@ class TextMode(BaseMode):
     def add_editor(
         self,
         item: TextItem,
-        content: str,
+        content: Optional[str] = None,
         *,
         no_select=False,
         readonly=False,
@@ -495,9 +552,18 @@ class TextMode(BaseMode):
                             end_tab_item()
 
                 if imgui.tab_item_button("+", TRAILING):
-                    self.add_new_text()
+                    _, new_text_item = self.add_new_text()
+                    self.add_editor(new_text_item)
             finally:
                 imgui.end_tab_bar()
 
-                for remove_key in remove_keys:
-                    self.close_text(remove_key)
+                assert len(remove_keys) in (0, 1)
+                if remove_keys:
+                    remove_key = remove_keys.pop()
+                    assert not remove_keys
+
+                    editor = self._editors.get(remove_key, None)
+                    if editor is not None and editor.modified:
+                        self._save_changes_alert.show()
+                    else:
+                        self.close_text(remove_key)

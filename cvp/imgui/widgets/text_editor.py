@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import os
 from functools import lru_cache
 from types import MappingProxyType
 from typing import Final, Optional
 
 from imgui_bundle import imgui, imgui_color_text_edit
 
-from cvp.text.item import TextItem
+from cvp.text.item import TextItem, TextKey
 
 
 def _create_palette_map():
@@ -54,8 +55,10 @@ class TextEditor:
     def __init__(self, item: TextItem, text: Optional[str] = None):
         self._item = item
         self._editor = imgui_color_text_edit.TextEditor()
-        self._editor.set_language_definition(self._get_language(self._item.language))
-        self._editor.set_palette(self._get_palette(self._item.palette))
+        self._editor.set_language_definition(self._get_language(item.language))
+        self._editor.set_palette(self._get_palette(item.palette))
+        self._editor.set_tab_size(item.tab_size)
+        self._editor.set_read_only(item.read_only)
 
         if text is None:
             text = str()
@@ -81,7 +84,9 @@ class TextEditor:
 
     @property
     def language_name(self) -> str:
-        return self._editor.get_language_definition_name()
+        value = self._editor.get_language_definition_name()
+        self._item.language = value
+        return value
 
     @language_name.setter
     def language_name(self, value: str) -> None:
@@ -146,6 +151,10 @@ class TextEditor:
         return self._item.uuid
 
     @property
+    def key(self) -> TextKey:
+        return self._item.key
+
+    @property
     def encoded_text(self) -> bytes:
         return self.text.encode(self.encoding, self.errors)
 
@@ -159,28 +168,56 @@ class TextEditor:
         self._editor.set_text(self._initial_text)
 
     @property
+    def tab_size(self) -> int:
+        value = self._editor.get_tab_size()
+        self._item.tab_size = value
+        return value
+
+    @tab_size.setter
+    def tab_size(self, value: int) -> None:
+        self._editor.set_tab_size(value)
+        self._item.tab_size = value
+
+    @property
     def show_tabs(self) -> bool:
-        return self._editor.is_showing_short_tab_glyphs()
+        value = self._editor.is_showing_short_tab_glyphs()
+        self._item.show_tabs = value
+        return value
 
     @show_tabs.setter
     def show_tabs(self, value: bool) -> None:
         self._editor.set_show_short_tab_glyphs(value)
+        self._item.show_tabs = value
 
     @property
     def show_whitespaces(self) -> bool:
-        return self._editor.is_showing_whitespaces()
+        value = self._editor.is_showing_whitespaces()
+        self._item.show_whitespaces = value
+        return value
 
     @show_whitespaces.setter
     def show_whitespaces(self, value: bool) -> None:
         self._editor.set_show_whitespaces(value)
+        self._item.show_whitespaces = value
 
     @property
     def readonly(self) -> bool:
-        return self._editor.is_read_only()
+        value = self._editor.is_read_only()
+        self._item.read_only = value
+        return value
 
     @readonly.setter
     def readonly(self, value: bool) -> None:
         self._editor.set_read_only(value)
+        self._item.read_only = value
+
+    @property
+    def writable_access(self) -> bool:
+        return os.access(self.path, os.W_OK)
+
+    @property
+    def readable_access(self) -> bool:
+        return os.access(self.path, os.R_OK)
 
     @property
     def line(self) -> int:
@@ -189,6 +226,10 @@ class TextEditor:
     @property
     def column(self) -> int:
         return self._editor.get_cursor_position().m_column
+
+    @property
+    def undo_index(self) -> int:
+        return self._editor.get_undo_index()
 
     def can_undo(self) -> bool:
         return self._editor.can_undo()
@@ -236,8 +277,16 @@ class TextEditor:
         assert isinstance(title, str)
         return self._editor.render(title, parent_is_focused, size, border)
 
+    def update_modifier(self, *, force=False) -> None:
+        if self._modified and not force:
+            if 0 == self.undo_index:
+                self._modified = False
+            else:
+                return
+
+        if self._editor.is_text_changed():
+            self._modified = self._initial_text != self._editor.get_text()
+
     def do_process(self) -> None:
-        if not self._modified:
-            if self._editor.is_text_changed():
-                self._modified = self._initial_text != self._editor.get_text()
+        self.update_modifier()
         self.render()

@@ -24,6 +24,9 @@ class TextItem:
     show_tabs: bool = True
     show_whitespaces: bool = True
 
+    tab_size: int = 4
+    read_only: bool = False
+
     @property
     def key(self):
         return TextKey(self.uuid)

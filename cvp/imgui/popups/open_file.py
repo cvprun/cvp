@@ -73,6 +73,9 @@ class OpenFilePopup(PopupBase[str]):
         *,
         mode=Mode.select_file,
         error_color=RED_RGBA,
+        ok_button_label="Open",
+        cancel_button_label="Cancel",
+        ok_dir_button_label="Select Current Location",
         target: Optional[Callable[[str], None]] = None,
         oneshot: Optional[bool] = None,
         identifier: Optional[str] = None,
@@ -100,6 +103,9 @@ class OpenFilePopup(PopupBase[str]):
         self._mode = mode
         self._error_color = error_color
         self._propagate_overwrite_result = False
+        self._ok_button_label = ok_button_label
+        self._cancel_button_label = cancel_button_label
+        self._ok_dir_button_label = ok_dir_button_label
 
         self._create_directory_popup = InputTextPopup(
             title="New Directory",
@@ -467,18 +473,21 @@ class OpenFilePopup(PopupBase[str]):
             pressed_enter_key = imgui.is_key_pressed(imgui.Key.enter)
             pressed_escape_key = imgui.is_key_pressed(imgui.Key.escape)
 
-        if button("Cancel"):
+        if button(self._cancel_button_label):
             self.close()
             return None
 
         imgui.same_line()
-        if self.button_select(pressed_enter_key=pressed_enter_key):
+        if self.button_select(
+            label=self._ok_button_label,
+            pressed_enter_key=pressed_enter_key,
+        ):
             self.close()
             return self._selected_item
 
         if self.select_directory_flag:
             imgui.same_line()
-            if button("Select Current Location"):
+            if button(self._ok_dir_button_label):
                 self.close()
                 return self._current_dir
             hovered_tooltip_text("Click to open the current location directory")

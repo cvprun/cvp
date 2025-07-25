@@ -25,7 +25,7 @@ class ShortcutRegistry(Dict[str, Shortcut]):
             self._registry[item.label] = item
             return item
 
-    def make(self, label: str, callback: Optional[Callable[[], None]] = None):
+    def build(self, label: str, callback: Optional[Callable[[], None]] = None):
         return self._Builder(self, label, callback)
 
     def do_process(self) -> bool:
