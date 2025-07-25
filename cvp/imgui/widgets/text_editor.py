@@ -55,10 +55,15 @@ class TextEditor:
     def __init__(self, item: TextItem, text: Optional[str] = None):
         self._item = item
         self._editor = imgui_color_text_edit.TextEditor()
+
         self._editor.set_language_definition(self._get_language(item.language))
         self._editor.set_palette(self._get_palette(item.palette))
+
+        self._editor.set_show_short_tab_glyphs(item.show_tabs)
+        self._editor.set_show_whitespaces(item.show_whitespaces)
         self._editor.set_tab_size(item.tab_size)
-        self._editor.set_read_only(item.read_only)
+        self._editor.set_read_only(item.readonly)
+        self._editor.set_colorizer_enable(item.coloring)
 
         if text is None:
             text = str()
@@ -203,13 +208,24 @@ class TextEditor:
     @property
     def readonly(self) -> bool:
         value = self._editor.is_read_only()
-        self._item.read_only = value
+        self._item.readonly = value
         return value
 
     @readonly.setter
     def readonly(self, value: bool) -> None:
         self._editor.set_read_only(value)
-        self._item.read_only = value
+        self._item.readonly = value
+
+    @property
+    def coloring(self) -> bool:
+        value = self._editor.is_colorizer_enabled()
+        self._item.coloring = value
+        return value
+
+    @coloring.setter
+    def coloring(self, value: bool) -> None:
+        self._editor.set_colorizer_enable(value)
+        self._item.coloring = value
 
     @property
     def writable_access(self) -> bool:

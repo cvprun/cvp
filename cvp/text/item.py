@@ -25,7 +25,8 @@ class TextItem:
     show_whitespaces: bool = True
 
     tab_size: int = 4
-    read_only: bool = False
+    readonly: bool = False
+    coloring: bool = False
 
     @property
     def key(self):

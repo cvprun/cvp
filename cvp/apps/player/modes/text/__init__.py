@@ -52,11 +52,12 @@ class TextMode(BaseMode):
 
     TAB_FLAGS: Final[int] = REORDERABLE | AUTO_SELECT_NEW_TABS | FITTING_POLICY_SCROLL
 
-    _editors: Dict[TextKey, TextEditor]
     _force_select: Optional[TextKey]
     _force_focus: Optional[TextKey]
     _current_key: Optional[TextKey]
-    _close_key_after_save_file: Optional[TextKey]
+    _pending_close: Optional[TextKey]
+
+    _editors: Dict[TextKey, TextEditor]
     _open_file_queue: Deque[str]
 
     def __init__(self, context: Context):
@@ -84,6 +85,13 @@ class TextMode(BaseMode):
             button_labels=("Close without saving", "Cancel", "Save"),
             target=self.on_save_changes,
         )
+        self._popups = PopupList(
+            self._open_file_popup,
+            self._save_file_popup,
+            self._save_as_file_popup,
+            self._save_changes_alert,
+        )
+
         self._open_runner = context.create_thread_runner(self.on_open_runner)
         self._open_progress = ProgressValue()
 
@@ -91,13 +99,7 @@ class TextMode(BaseMode):
             ("File", self.on_file_menu),
             ("Edit", self.on_edit_menu),
             ("Settings", self.on_settings_menu),
-            ("Tabs", self.on_tabs_menu),
-        )
-        self._popups = PopupList(
-            self._open_file_popup,
-            self._save_file_popup,
-            self._save_as_file_popup,
-            self._save_changes_alert,
+            ("View", self.on_view_menu),
         )
 
         self._shortcuts = ShortcutRegistry()
@@ -107,13 +109,14 @@ class TextMode(BaseMode):
         self._shortcuts.build("SaveAs", self.on_shortcut_save_as).only_shift_ctrl.s()
         self._shortcuts.build("Close", self.on_shortcut_close).only_ctrl.w()
 
-        self._editors = dict()
         self._force_select = None
         self._force_focus = None
         self._current_key = None
-        self._close_key_after_save_file = None
+        self._pending_close = None
 
+        self._editors = dict()
         self._open_file_queue = deque()
+
         for key, item in context.texts.items():
             if os.path.isfile(item.path):
                 self._open_file_queue.append(item.path)
@@ -158,16 +161,14 @@ class TextMode(BaseMode):
 
             if close_editor:
                 self.close_text(editor.key)
-        else:
-            if is_selected:
-                assert editor is not None
+        elif is_selected:
+            # New empty text file
+            assert editor is not None
 
-                self._save_file_popup.show()
+            self._save_file_popup.show()
 
-                if close_editor:
-                    self._close_key_after_save_file = editor.key
-            else:
-                pass
+            if close_editor:
+                self._pending_close = editor.key
 
     @property
     def config(self):
@@ -208,9 +209,9 @@ class TextMode(BaseMode):
         editor.path = file
         editor.commit()
 
-        if self._close_key_after_save_file is not None:
-            self.close_text(self._close_key_after_save_file)
-            self._close_key_after_save_file = None
+        if self._pending_close is not None:
+            self.close_text(self._pending_close)
+            self._pending_close = None
 
     def on_save_as_file(self, file: str) -> None:
         editor = self.selected_editor
@@ -418,6 +419,7 @@ class TextMode(BaseMode):
         show_tabs = editor.show_tabs
         show_whitespaces = editor.show_whitespaces
         readonly = editor.readonly
+        coloring = editor.coloring
 
         if menu_item("Show tabs", selected=show_tabs):
             editor.show_tabs = not show_tabs
@@ -425,8 +427,21 @@ class TextMode(BaseMode):
             editor.show_whitespaces = not show_whitespaces
         if menu_item("Readonly", selected=readonly):
             editor.readonly = not readonly
+        if menu_item("Coloring", selected=coloring):
+            editor.coloring = not coloring
 
         imgui.separator()
+
+        if imgui.begin_menu("Tab Size"):
+            tab_size = editor.tab_size
+            try:
+                for i in (1, 2, 4, 8):
+                    selected_tab_size = i == tab_size
+                    if menu_item(str(i), selected=selected_tab_size):
+                        editor.tab_size = i
+            finally:
+                imgui.end_menu()
+
         if imgui.begin_menu("Palette"):
             try:
                 for palette_name in TextEditor.PALETTE_MAP.keys():
@@ -451,8 +466,13 @@ class TextMode(BaseMode):
         else:
             self.do_disabled_settings_menu()
 
-    def on_tabs_menu(self) -> None:
-        for item in self.ordered_texts:
+    def on_view_menu(self) -> None:
+        ordered_texts = self.ordered_texts
+        if not ordered_texts:
+            imgui.separator_text("[EMPTY]")
+            return
+
+        for item in ordered_texts:
             text_editor = self._editors.get(item.key, None)
             modified = text_editor.modified if text_editor else False
             label = item.get_label(modified)
