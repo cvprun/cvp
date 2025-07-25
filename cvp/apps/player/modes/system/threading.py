@@ -5,17 +5,16 @@ from typing import Final
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.system._base import BaseSystem
 from cvp.assets.fonts.mdi import MULTICAST
 from cvp.context.context import Context
-from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags.table import BORDERS, ROW_BG
 from cvp.types.override import override
 
 
-class ThreadingMode(BaseMode):
-    __cvp_mode_name__ = "Threading"
-    __cvp_mode_icon__ = MULTICAST
+class ThreadingSystem(BaseSystem):
+    __cvp_menu_name__ = "Threading"
+    __cvp_menu_icon__ = MULTICAST
 
     _TABLE_COLUMNS: Final[int] = 4
     _TABLE_FLAGS: Final[int] = BORDERS | ROW_BG
@@ -25,11 +24,9 @@ class ThreadingMode(BaseMode):
 
     @override
     def on_process(self) -> None:
-        with self.begin_mode_context():
-            with begin_child_context("Main"):
-                imgui.text("Thread Monitoring")
-                imgui.separator()
-                self.do_child_process()
+        imgui.text("Thread Monitoring")
+        imgui.separator()
+        self.do_child_process()
 
     def do_child_process(self) -> None:
         if imgui.begin_table("Table", self._TABLE_COLUMNS, self._TABLE_FLAGS):

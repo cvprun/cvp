@@ -12,8 +12,9 @@ from cvp.context.context import Context
 def create_system_widget_types() -> Sequence[Type[BaseSystem]]:
     from cvp.apps.player.modes.system.about import AboutSystem
     from cvp.apps.player.modes.system.processes import ProcessesSystem
+    from cvp.apps.player.modes.system.threading import ThreadingSystem
 
-    return AboutSystem, ProcessesSystem
+    return AboutSystem, ProcessesSystem, ThreadingSystem
 
 
 def create_system_widgets(context: Context):

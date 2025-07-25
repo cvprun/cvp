@@ -46,7 +46,6 @@ class ModeManager:
         from cvp.apps.player.modes.tail import TailMode
         from cvp.apps.player.modes.terminal import TerminalMode
         from cvp.apps.player.modes.text import TextMode
-        from cvp.apps.player.modes.threading import ThreadingMode
         from cvp.apps.player.modes.timezone import TimeZoneMode
         from cvp.apps.player.modes.tracker import ObjectTrackerMode
         from cvp.apps.player.modes.video import VideoMode
@@ -89,7 +88,6 @@ class ModeManager:
         self.terminal_mode = TerminalMode(context)
         self.tetrix_mode = TetrixMode(context)
         self.text_mode = TextMode(context)
-        self.threading_mode = ThreadingMode(context)
         self.timezone_mode = TimeZoneMode(context)
         self.video_mode = VideoMode(context)
         self.watchdog_mode = WatchdogMode(context)
@@ -132,7 +130,6 @@ class ModeManager:
             self.tail_mode,
             self.terminal_mode,
             self.text_mode,
-            self.threading_mode,
             self.timezone_mode,
             self.watchdog_mode,
             self.wsdiscovery_mode,
