@@ -42,20 +42,20 @@ class ProcessesMode(BaseMode):
         self._states = query_all_process_states()
         self._sort_specs = list()
         self._error = None
-        self._interval = 1.0
         self._latest_time = 0.0
         self._headers = list(PROCESS_STATE_TITLES.items())
+
+    @property
+    def config(self):
+        return self.context.config.process
+
+    @property
+    def update_interval(self):
+        return self.config.update_interval
 
     @staticmethod
     def on_query_all_process_states():
         return query_all_process_states()
-
-    @property
-    def error_color(self):
-        return self.context.config.appearance.error_color
-
-    def text_error(self, text: str) -> None:
-        imgui.text_colored(self.error_color, text)
 
     @override
     def on_process(self) -> None:
@@ -75,7 +75,7 @@ class ProcessesMode(BaseMode):
             assert self._runner.error is None
 
             current = time()
-            if self._interval <= current - self._latest_time:
+            if self.update_interval <= current - self._latest_time:
                 self._latest_time = current
                 self._runner()
 

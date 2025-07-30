@@ -23,6 +23,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.logging import LoggingPreference
     from cvp.apps.player.modes.preference.ollama import OllamaPreference
     from cvp.apps.player.modes.preference.overlay import OverlayPreference
+    from cvp.apps.player.modes.preference.process import ProcessPreference
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
     from cvp.apps.player.modes.preference.text import TextPreference
@@ -42,6 +43,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         LoggingPreference,
         OllamaPreference,
         OverlayPreference,
+        ProcessPreference,
         ResourcePreference,
         SupabasePreference,
         TextPreference,
