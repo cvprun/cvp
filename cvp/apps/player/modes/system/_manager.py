@@ -11,10 +11,9 @@ from cvp.context.context import Context
 @lru_cache
 def create_system_widget_types() -> Sequence[Type[BaseSystem]]:
     from cvp.apps.player.modes.system.about import AboutSystem
-    from cvp.apps.player.modes.system.processes import ProcessesSystem
     from cvp.apps.player.modes.system.threading import ThreadingSystem
 
-    return AboutSystem, ProcessesSystem, ThreadingSystem
+    return AboutSystem, ThreadingSystem
 
 
 def create_system_widgets(context: Context):

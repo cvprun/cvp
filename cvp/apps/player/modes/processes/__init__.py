@@ -5,18 +5,19 @@ from typing import Final, List, Optional
 
 from imgui_bundle import imgui
 
-from cvp.apps.player.modes.system._base import BaseSystem
+from cvp.apps.player.modes._base import BaseMode
 from cvp.assets.fonts.mdi import APPLICATION
 from cvp.context.context import Context
+from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.flags import table
 from cvp.imgui.table_sort_specs import SortDirection, TableSortSpec, sort_specs_by_order
 from cvp.psutil.process.state import PROCESS_STATE_TITLES, query_all_process_states
 from cvp.types.override import override
 
 
-class ProcessesSystem(BaseSystem):
-    __cvp_menu_name__ = "Processes"
-    __cvp_menu_icon__ = APPLICATION
+class ProcessesMode(BaseMode):
+    __cvp_mode_name__ = "Processes"
+    __cvp_mode_icon__ = APPLICATION
 
     _TABLE_FLAGS: Final[int] = table.merge_table_flags(
         table.RESIZABLE,
@@ -58,6 +59,11 @@ class ProcessesSystem(BaseSystem):
 
     @override
     def on_process(self) -> None:
+        with self.begin_mode_context():
+            with begin_child_context("Main"):
+                self.on_child_process()
+
+    def on_child_process(self) -> None:
         if not self._runner.running:
             if self._runner.future is not None:
                 self._states = self._runner.result or dict()

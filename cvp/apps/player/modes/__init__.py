@@ -37,6 +37,7 @@ class ModeManager:
         from cvp.apps.player.modes.medias import MediasMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
+        from cvp.apps.player.modes.processes import ProcessesMode
         from cvp.apps.player.modes.qrcode import QrCodeMode
         from cvp.apps.player.modes.scheduler import SchedulerMode
         from cvp.apps.player.modes.services import ServicesMode
@@ -78,6 +79,7 @@ class ModeManager:
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
+        self.processes_mode = ProcessesMode(context)
         self.qrcode_mode = QrCodeMode(context)
         self.scheduler_mode = SchedulerMode(context)
         self.services_mode = ServicesMode(context)
@@ -121,6 +123,7 @@ class ModeManager:
             self.medias_mode,
             self.object_tracker_mode,
             self.onvif_mode,
+            self.processes_mode,
             self.qrcode_mode,
             self.scheduler_mode,
             self.services_mode,
