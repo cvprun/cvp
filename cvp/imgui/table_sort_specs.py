@@ -16,6 +16,7 @@ class TableSortSpec(NamedTuple):
     column: int
     order: int
     direction: SortDirection
+    user_id: int
 
 
 def sort_specs_by_order(
@@ -27,7 +28,6 @@ def sort_specs_by_order(
 
     for spec_index in range(sort_specs.specs_count):
         spec = sort_specs.get_specs(spec_index)
-        assert spec.column_index == spec.column_user_id
 
         if spec.sort_direction == imgui.SortDirection.ascending:
             direction = SortDirection.ascending
@@ -36,7 +36,12 @@ def sort_specs_by_order(
         else:
             assert False, "Inaccessible sort direction"
 
-        item = TableSortSpec(spec.column_index, spec.sort_order, direction)
+        item = TableSortSpec(
+            spec.column_index,
+            spec.sort_order,
+            direction,
+            spec.column_user_id,
+        )
         result.append(item)
 
     result.sort(key=lambda x: x.order, reverse=reverse)

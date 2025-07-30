@@ -1,19 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from time import time
-from typing import Dict, Optional
+from typing import Final, List, Optional
 
 from imgui_bundle import imgui
 
 from cvp.apps.player.modes.system._base import BaseSystem
 from cvp.assets.fonts.mdi import APPLICATION
 from cvp.context.context import Context
-from cvp.imgui.flags.table import DEFAULT_TABLE_FLAGS
-from cvp.psutil.process.state import (
-    PROCESS_STATE_TITLES,
-    ProcessState,
-    query_all_process_states,
-)
+from cvp.imgui.flags import table
+from cvp.imgui.table_sort_specs import SortDirection, TableSortSpec, sort_specs_by_order
+from cvp.psutil.process.state import PROCESS_STATE_TITLES, query_all_process_states
 from cvp.types.override import override
 
 
@@ -21,16 +18,32 @@ class ProcessesSystem(BaseSystem):
     __cvp_menu_name__ = "Processes"
     __cvp_menu_icon__ = APPLICATION
 
-    _states: Dict[int, ProcessState]
+    _TABLE_FLAGS: Final[int] = table.merge_table_flags(
+        table.RESIZABLE,
+        table.REORDERABLE,
+        table.HIDEABLE,
+        table.SORTABLE,
+        table.ROW_BG,
+        table.BORDERS_OUTER,
+        table.BORDERS_V,
+        table.NO_BORDERS_IN_BODY,
+        table.SCROLL_Y,
+        table.BORDERS,
+        table.SORT_TRISTATE,
+    )
+
+    _sort_specs: List[TableSortSpec]
     _error: Optional[BaseException]
 
     def __init__(self, context: Context):
         super().__init__(context)
         self._runner = context.create_thread_runner(self.on_query_all_process_states)
-        self._states = dict()
+        self._states = query_all_process_states()
+        self._sort_specs = list()
         self._error = None
         self._interval = 1.0
         self._latest_time = 0.0
+        self._headers = list(PROCESS_STATE_TITLES.items())
 
     @staticmethod
     def on_query_all_process_states():
@@ -66,29 +79,37 @@ class ProcessesSystem(BaseSystem):
         self.do_processes_table()
 
     def do_processes_table(self) -> None:
-        if imgui.begin_table("Table", len(PROCESS_STATE_TITLES), DEFAULT_TABLE_FLAGS):
+        if imgui.begin_table("Table", len(self._headers), self._TABLE_FLAGS):
             try:
-                for header in PROCESS_STATE_TITLES.values():
-                    imgui.table_setup_column(header)
+                for _, header_title in self._headers:
+                    imgui.table_setup_column(header_title)
+
+                imgui.table_setup_scroll_freeze(0, 1)
                 imgui.table_headers_row()
 
-                # sort_specs = imgui.table_get_sort_specs()
-                # if sort_specs:
-                #     _U = 0  # user_selected_column_index
-                #     column_index = sort_specs.get_specs(_U).column_index
-                #     sort_order = sort_specs.get_specs(_U).sort_order
-                #     sort_direction = sort_specs.get_specs(_U).sort_direction
-                #     if sort_direction == imgui.SortDirection.ascending:
-                #         pass
-                #     elif sort_direction == imgui.SortDirection.descending:
-                #         pass
-                #     else:
-                #         assert sort_direction == imgui.SortDirection.none
+                sort_specs = imgui.table_get_sort_specs()
+                if sort_specs.specs_dirty:
+                    self._sort_specs = sort_specs_by_order(sort_specs)
+                    sort_specs.specs_dirty = False
 
-                for proc in self._states.values():
-                    imgui.table_next_row()
-                    for i, key in enumerate(PROCESS_STATE_TITLES.keys()):
-                        imgui.table_set_column_index(i)
-                        imgui.text(str(getattr(proc, key)))
+                states = list(self._states.values())
+                assert len(self._sort_specs) in (0, 1)
+                if self._sort_specs:
+                    sort_spec = self._sort_specs[0]
+                    header_key, _ = self._headers[sort_spec.column]
+                    ascending = sort_spec.direction == SortDirection.ascending
+                    states.sort(key=lambda x: getattr(x, header_key), reverse=ascending)
+
+                clipper = imgui.ListClipper()
+                clipper.begin(len(states))
+                while clipper.step():
+                    for i in range(clipper.display_start, clipper.display_end):
+                        proc = states[i]
+
+                        imgui.table_next_row()
+                        for header_index, header in enumerate(self._headers):
+                            header_key, _ = header
+                            imgui.table_set_column_index(header_index)
+                            imgui.text(str(getattr(proc, header_key)))
             finally:
                 imgui.end_table()

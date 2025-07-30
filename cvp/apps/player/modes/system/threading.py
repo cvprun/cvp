@@ -73,9 +73,6 @@ class ThreadingSystem(BaseSystem):
 
     @override
     def on_process(self) -> None:
-        imgui.text("Thread Monitoring")
-        imgui.separator()
-
         if imgui.begin_table("Table", len(self._headers), self._TABLE_FLAGS):
             try:
                 for i, header in enumerate(self._headers):
@@ -118,7 +115,10 @@ class ThreadingSystem(BaseSystem):
                         imgui.text(thread.name)
 
                         imgui.table_next_column()
-                        imgui.text(str(thread.is_alive()))
+                        if thread.is_alive():
+                            imgui.text_colored(self.context.success_color, "Alive")
+                        else:
+                            imgui.text_colored(self.context.error_color, "Dead")
 
                         imgui.table_next_column()
                         imgui.text(str(thread.daemon))
