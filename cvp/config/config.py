@@ -33,6 +33,7 @@ from cvp.config.sections.scheduler import SchedulerConfig
 from cvp.config.sections.sockmap import SockmapConfig
 from cvp.config.sections.stitching import StitchingConfig
 from cvp.config.sections.supabase import SupabaseConfig
+from cvp.config.sections.tail import TailConfig
 from cvp.config.sections.terminal import TerminalConfig
 from cvp.config.sections.text import TextConfig
 from cvp.config.sections.toast import ToastConfig
@@ -67,6 +68,7 @@ class Config:
     process: ProcessConfig = field(default_factory=ProcessConfig)
     sockmap: SockmapConfig = field(default_factory=SockmapConfig)
     server: SupabaseConfig = field(default_factory=SupabaseConfig)
+    tail: TailConfig = field(default_factory=TailConfig)
     terminal: TerminalConfig = field(default_factory=TerminalConfig)
     text: TextConfig = field(default_factory=TextConfig)
     scheduler: SchedulerConfig = field(default_factory=SchedulerConfig)
