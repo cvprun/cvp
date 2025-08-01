@@ -5,21 +5,33 @@ from typing import Optional, Union
 
 from cvp.buffers.lines import LinesBuffer
 from cvp.types.override import override
+from cvp.variables import (
+    DEFAULT_STRING_ENCODING,
+    DEFAULT_STRING_ERRORS,
+    DEFAULT_STRING_LINE_CONTINUATION_CHARACTER,
+    DEFAULT_STRING_NEWLINE,
+)
 
 
 class StreamBuffer(LinesBuffer):
     def __init__(
         self,
         path: Union[str, PathLike[str]],
-        encoding="utf-8",
+        encoding=DEFAULT_STRING_ENCODING,
+        errors=DEFAULT_STRING_ERRORS,
         maxsize: Optional[int] = None,
         newline_size: Optional[int] = None,
+        newline=DEFAULT_STRING_NEWLINE,
+        line_continuation_character=DEFAULT_STRING_LINE_CONTINUATION_CHARACTER,
     ):
         super().__init__(
             path=path,
             encoding=encoding,
+            errors=errors,
             maxsize=maxsize,
             newline_size=newline_size,
+            newline=newline,
+            line_continuation_character=line_continuation_character,
         )
         self.writable = open(path, "wb")
         try:
@@ -40,33 +52,53 @@ class StreamBuffer(LinesBuffer):
 
 
 class StreamBufferPair:
-    stdout: Optional[StreamBuffer]
-    stderr: Optional[StreamBuffer]
-
     def __init__(
         self,
+        stdout: Optional[StreamBuffer] = None,
+        stderr: Optional[StreamBuffer] = None,
+    ):
+        self.stdout = stdout
+        self.stderr = stderr
+
+    @classmethod
+    def from_args(
+        cls,
         stdout: Optional[Union[str, PathLike[str]]] = None,
         stderr: Optional[Union[str, PathLike[str]]] = None,
-        encoding="utf-8",
+        encoding=DEFAULT_STRING_ENCODING,
+        errors=DEFAULT_STRING_ERRORS,
         maxsize: Optional[int] = None,
         newline_size: Optional[int] = None,
+        newline=DEFAULT_STRING_NEWLINE,
+        line_continuation_character=DEFAULT_STRING_LINE_CONTINUATION_CHARACTER,
     ):
-        self.stdout = None
-        self.stderr = None
-        if stdout is not None:
-            self.stdout = StreamBuffer(
+        if stdout:
+            stdout_buffer = StreamBuffer(
                 path=stdout,
                 encoding=encoding,
+                errors=errors,
                 maxsize=maxsize,
                 newline_size=newline_size,
+                newline=newline,
+                line_continuation_character=line_continuation_character,
             )
-        if stderr is not None:
-            self.stderr = StreamBuffer(
+        else:
+            stdout_buffer = None
+
+        if stderr:
+            stderr_buffer = StreamBuffer(
                 path=stderr,
                 encoding=encoding,
+                errors=errors,
                 maxsize=maxsize,
                 newline_size=newline_size,
+                newline=newline,
+                line_continuation_character=line_continuation_character,
             )
+        else:
+            stderr_buffer = None
+
+        return cls(stdout_buffer, stderr_buffer)
 
     def close(self):
         if self.stdout is not None:

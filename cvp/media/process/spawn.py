@@ -7,6 +7,7 @@ from cvp.media.process.frame import FrameReaderProcess, FrameShape
 from cvp.process.stream import StreamBufferPair
 from cvp.variables import (
     STREAM_LOGGING_ENCODING,
+    STREAM_LOGGING_ERRORS,
     STREAM_LOGGING_MAXSIZE,
     STREAM_LOGGING_NEWLINE_SIZE,
 )
@@ -21,16 +22,18 @@ def spawn_frame_reader_process(
     env: Optional[Union[Mapping[str, str], Mapping[bytes, bytes]]] = None,
     start_thread=True,
     logging_encoding=STREAM_LOGGING_ENCODING,
+    logging_errors=STREAM_LOGGING_ERRORS,
     logging_maxsize=STREAM_LOGGING_MAXSIZE,
     logging_newline_size=STREAM_LOGGING_NEWLINE_SIZE,
 ):
     working_dir = stderr_path.parent
     working_dir.mkdir(parents=True, exist_ok=True)
 
-    stream_buffers = StreamBufferPair(
+    stream_buffers = StreamBufferPair.from_args(
         stdout=None,
         stderr=stderr_path,
         encoding=logging_encoding,
+        errors=logging_errors,
         maxsize=logging_maxsize,
         newline_size=logging_newline_size,
     )

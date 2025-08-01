@@ -25,6 +25,7 @@ COMMA: Final[str] = ","
 DEFAULT_STRING_ENCODING: Final[str] = "utf-8"
 DEFAULT_STRING_ERRORS: Final[str] = "strict"
 DEFAULT_STRING_NEWLINE: Final[str] = "\n"
+DEFAULT_STRING_LINE_CONTINUATION_CHARACTER: Final[str] = "\\"
 
 STDIN_FILE_HANDLE: Final[int] = 0
 STDOUT_FILE_HANDLE: Final[int] = 1
@@ -133,6 +134,7 @@ FFPROBE_EXECUTABLE_FILENAME: Final[str] = "ffprobe"
 
 STREAM_LOGGING_MAXSIZE: Final[int] = 65536
 STREAM_LOGGING_ENCODING: Final[str] = "utf-8"
+STREAM_LOGGING_ERRORS: Final[str] = "strict"
 STREAM_LOGGING_NEWLINE_SIZE: Final[int] = 88
 
 WSD_INVALID_INSTANCE_ID: Final[int] = -1

@@ -73,6 +73,10 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
         return self.ffmpeg_config.logging_encoding
 
     @property
+    def logging_errors(self) -> str:
+        return self.ffmpeg_config.logging_errors
+
+    @property
     def logging_newline_size(self) -> int:
         return self.ffmpeg_config.logging_newline_size
 
@@ -144,6 +148,7 @@ class MediaManager(ResourceManager[MediaKey, MediaConfig]):
             env=env,
             start_thread=start_thread,
             logging_encoding=self.logging_encoding,
+            logging_errors=self.logging_errors,
             logging_maxsize=self.logging_maxsize,
             logging_newline_size=self.logging_newline_size,
         )

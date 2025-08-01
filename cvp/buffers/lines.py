@@ -5,10 +5,17 @@ from abc import ABC, abstractmethod
 from collections import deque
 from io import StringIO
 from os import PathLike
+from pathlib import Path
 from typing import BinaryIO, Deque, Optional, Union
 from weakref import finalize
 
 from cvp.types.override import override
+from cvp.variables import (
+    DEFAULT_STRING_ENCODING,
+    DEFAULT_STRING_ERRORS,
+    DEFAULT_STRING_LINE_CONTINUATION_CHARACTER,
+    DEFAULT_STRING_NEWLINE,
+)
 
 
 def open_file(path: Union[str, PathLike[str]]):
@@ -38,19 +45,37 @@ class LinesBase(LinesInterface, ABC):
     _file: Optional[BinaryIO]
     _finalizer: Optional[finalize]
 
-    def __init__(self, path: Union[str, PathLike[str]], encoding="utf-8"):
-        self._path = path
+    def __init__(
+        self,
+        path: Union[str, PathLike[str]],
+        encoding=DEFAULT_STRING_ENCODING,
+        errors=DEFAULT_STRING_ERRORS,
+    ):
+        self._path = Path(path)
         self._encoding = encoding
+        self._errors = errors
         self._cursor = 0
         self._file = None
         self._finalizer = None
 
     @property
-    def path(self):
+    def path(self) -> Path:
         return self._path
 
     @property
-    def cursor(self):
+    def pathname(self) -> str:
+        return str(self._path)
+
+    @property
+    def encoding(self) -> str:
+        return self._encoding
+
+    @property
+    def errors(self) -> str:
+        return self._errors
+
+    @property
+    def cursor(self) -> int:
         return self._cursor
 
     @property
@@ -78,14 +103,11 @@ class LinesBase(LinesInterface, ABC):
 
     def get_filesize(self) -> int:
         if not os.path.isfile(self._path):
-            raise FileNotFoundError(f"Not found regular file: '{self._path}'")
+            raise FileNotFoundError(f"Not found regular file: '{self.pathname}'")
         if not os.access(self._path, os.R_OK):
-            raise PermissionError(f"Not readable file: '{self._path}'")
+            raise PermissionError(f"Not readable file: '{self.pathname}'")
 
-        try:
-            return os.path.getsize(self._path)
-        except:  # noqa
-            return 0
+        return os.path.getsize(self._path)
 
     def update_safe(self) -> int:
         size = self.get_filesize()
@@ -114,7 +136,7 @@ class LinesBase(LinesInterface, ABC):
         assert 0 < size
         assert self._file is not None
         data = self._file.read(size)
-        self.write(str(data, encoding=self._encoding))
+        self.write(str(data, encoding=self._encoding, errors=self._errors))
         self._cursor = index
         return size
 
@@ -130,18 +152,19 @@ class LinesBuffer(LinesBase):
     def __init__(
         self,
         path: Union[str, PathLike[str]],
-        encoding="utf-8",
+        encoding=DEFAULT_STRING_ENCODING,
+        errors=DEFAULT_STRING_ERRORS,
         maxsize: Optional[int] = None,
         newline_size: Optional[int] = None,
-        separator="\n",
-        zero_width_space="\\",
+        newline=DEFAULT_STRING_NEWLINE,
+        line_continuation_character=DEFAULT_STRING_LINE_CONTINUATION_CHARACTER,
     ):
-        super().__init__(path, encoding)
+        super().__init__(path=path, encoding=encoding, errors=errors)
         self._buffer = str()
         self._maxsize = maxsize
         self._newline_size = newline_size
-        self._separator = separator
-        self._zero_width_space = zero_width_space
+        self._newline = newline
+        self._line_continuation_character = line_continuation_character
 
     @staticmethod
     def merge(buffer: str, text: str, maxsize: Optional[int] = None) -> str:
@@ -158,7 +181,7 @@ class LinesBuffer(LinesBase):
 
     @property
     def pseudo_suffix(self) -> str:
-        return self._zero_width_space + self._separator
+        return self._line_continuation_character + self._newline
 
     def enqueue_text(self, text: str):
         self._buffer = self.merge(self._buffer, text, self._maxsize)
@@ -176,7 +199,7 @@ class LinesBuffer(LinesBase):
             self.enqueue_text(text)
             return
 
-        last_line_begin = self._buffer.rfind(self._separator)
+        last_line_begin = self._buffer.rfind(self._newline)
         if last_line_begin == -1:
             last_line_size = len(self._buffer)
         else:
@@ -189,7 +212,7 @@ class LinesBuffer(LinesBase):
             self.enqueue_text(text)
             return
 
-        newline_text_index = text.find(self._separator)
+        newline_text_index = text.find(self._newline)
         if newline_text_index == -1:
             text1 = text[:remain_line_size] + self.pseudo_suffix
             text2 = text[remain_line_size:]
@@ -218,14 +241,15 @@ class LinesDeque(LinesBase):
     def __init__(
         self,
         path: Union[str, PathLike[str]],
-        encoding="utf-8",
+        encoding=DEFAULT_STRING_ENCODING,
+        errors=DEFAULT_STRING_ERRORS,
         maxlen: Optional[int] = None,
-        separator="\n",
+        newline=DEFAULT_STRING_NEWLINE,
     ):
-        super().__init__(path, encoding)
+        super().__init__(path=path, encoding=encoding, errors=errors)
         self._lines = deque(maxlen=maxlen)
         self._lines.append(str())
-        self._separator = separator
+        self._newline = newline
 
     @property
     def lines(self):
@@ -242,7 +266,7 @@ class LinesDeque(LinesBase):
         buffer = StringIO()
         buffer.write(self._lines[0])
         for i in range(1, len(self._lines)):
-            buffer.write(self._separator)
+            buffer.write(self._newline)
             buffer.write(self._lines[i])
         return buffer.getvalue()
 
@@ -251,7 +275,7 @@ class LinesDeque(LinesBase):
         if not text:
             return
 
-        index = text.find(self._separator)
+        index = text.find(self._newline)
         if index >= 0:
             self._lines[-1] += text[0:index]
 
