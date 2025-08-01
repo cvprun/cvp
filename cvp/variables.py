@@ -22,6 +22,10 @@ HEXADECIMAL: Final[int] = 16
 NEWLINE: Final[str] = "\n"
 COMMA: Final[str] = ","
 
+DEFAULT_STRING_ENCODING: Final[str] = "utf-8"
+DEFAULT_STRING_ERRORS: Final[str] = "strict"
+DEFAULT_STRING_NEWLINE: Final[str] = "\n"
+
 STDIN_FILE_HANDLE: Final[int] = 0
 STDOUT_FILE_HANDLE: Final[int] = 1
 STDERR_FILE_HANDLE: Final[int] = 2

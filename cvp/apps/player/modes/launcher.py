@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Optional
+from argparse import ArgumentParser, Namespace
+from typing import Any, Final, List, Optional
 
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import get_pressed
 
 from cvp.apps.player.modes.interface import ModeInterface
+from cvp.arguments import add_opengl_arguments
 from cvp.context.context import Context
 from cvp.imgui.begin_main_menu_bar import begin_main_menu_bar_context
 from cvp.imgui.begin_main_status_bar import begin_main_status_bar_context
@@ -16,6 +18,9 @@ from cvp.types.override import override
 
 
 class ModeLauncher(SimpleDemoBase):
+    DEFAULT_FONT_NAME: Final[str] = "Default"
+    DEFAULT_FONT_SIZE: Final[int] = 12
+
     def __init__(
         self,
         mode: ModeInterface,
@@ -23,8 +28,8 @@ class ModeLauncher(SimpleDemoBase):
         *,
         force_egl: Optional[bool] = True,
         use_accelerate: Optional[bool] = False,
-        font_name="Default",
-        font_size=12,
+        font_name=DEFAULT_FONT_NAME,
+        font_size=DEFAULT_FONT_SIZE,
     ):
         if context is None:
             context = getattr(mode, "context", None)
@@ -39,6 +44,45 @@ class ModeLauncher(SimpleDemoBase):
         self._context = context
         self._font_name = font_name
         self._font_size = font_size
+
+    @classmethod
+    def from_args(
+        cls,
+        mode: ModeInterface,
+        cmdline: Optional[List[str]] = None,
+        namespace: Optional[Namespace] = None,
+    ):
+        parser = ArgumentParser()
+        add_opengl_arguments(parser)
+
+        parser.add_argument(
+            "--font-name",
+            type=str,
+            default=cls.DEFAULT_FONT_NAME,
+            metavar="{name}",
+            help=f"Default font name (default: '{cls.DEFAULT_FONT_NAME}')",
+        )
+        parser.add_argument(
+            "--font-size",
+            type=int,
+            default=cls.DEFAULT_FONT_SIZE,
+            metavar="{pt}",
+            help=f"Default font size (default: '{cls.DEFAULT_FONT_SIZE}')",
+        )
+
+        args = parser.parse_known_args(cmdline, namespace)[0]
+        assert isinstance(args.force_egl, bool)
+        assert isinstance(args.use_accelerate, bool)
+        assert isinstance(args.font_name, str)
+        assert isinstance(args.font_size, int)
+
+        return cls(
+            mode,
+            force_egl=args.force_egl,
+            use_accelerate=args.use_accelerate,
+            font_name=args.font_name,
+            font_size=args.font_size,
+        )
 
     @override
     def on_init(self) -> None:

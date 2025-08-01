@@ -10,6 +10,7 @@ from cvp.types.override import override
 class DatasetsMode(BaseMode):
     __cvp_mode_name__ = "Datasets"
     __cvp_mode_icon__ = DATABASE
+    __cvp_mode_show__ = False
 
     def __init__(self, context: Context):
         super().__init__(context)

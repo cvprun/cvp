@@ -19,6 +19,8 @@ from cvp.system.environ_keys import (
     CVP_SIMPLE_LOGGING,
     CVP_USE_UVLOOP,
     CVP_VERBOSE,
+    PYOPENGL_USE_ACCELERATE,
+    SDL_VIDEO_X11_FORCE_EGL,
 )
 from cvp.variables import CVP_HOME_DIRNAME, DOTENV_LOCAL_FILENAME, LOGGING_STEP
 
@@ -78,6 +80,21 @@ def add_dotenv_arguments(parser: ArgumentParser) -> None:
         default=get_eval(CVP_DOTENV_PATH, join(getcwd(), DOTENV_LOCAL_FILENAME)),
         metavar="file",
         help=f"Specifies the dot-env file (default: '{DOTENV_LOCAL_FILENAME}')",
+    )
+
+
+def add_opengl_arguments(parser: ArgumentParser) -> None:
+    parser.add_argument(
+        "--force-egl",
+        action="store_true",
+        default=get_eval(SDL_VIDEO_X11_FORCE_EGL, False),
+        help="A variable controlling whether X11 should use GLX or EGL by default",
+    )
+    parser.add_argument(
+        "--use-accelerate",
+        action="store_true",
+        default=get_eval(PYOPENGL_USE_ACCELERATE, False),
+        help="Enable PyOpenGL hardware acceleration for improved rendering performance",
     )
 
 

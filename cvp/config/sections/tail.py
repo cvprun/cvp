@@ -1,25 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import encodings
 from dataclasses import dataclass
+from typing import Optional
 
-from cvp.encoding.errors import CodecErrorHandling
+from cvp.encoding.config import EncodingConfig
+from cvp.units.byte import BYTES_1KB
 from cvp.variables import INFINITE
 
 
 @dataclass
-class TailConfig:
-    encoding: str = "utf-8"
-    errors: str = "strict"
-    lines: int = INFINITE
+class TailConfig(EncodingConfig):
+    newline: str = "\n"
+
+    max_buffer_lines: int = INFINITE
+    """
+    Maximum number of lines to keep in the buffer.
+    """
+
+    initial_read_bytes: int = 4 * BYTES_1KB
+    """
+    Number of bytes to read from the end of the file when opening for the first time.
+    """
 
     @property
-    def normalize_encoding(self) -> str:
-        return encodings.normalize_encoding(self.encoding)
-
-    @property
-    def codec_error_handling(self) -> CodecErrorHandling:
-        try:
-            return CodecErrorHandling(self.errors)
-        except:  # noqa
-            return CodecErrorHandling.strict
+    def maxlen(self) -> Optional[int]:
+        """
+        Property for `collections.deque` constructor argument (for maxlen)
+        """
+        if self.max_buffer_lines == INFINITE:
+            return None
+        else:
+            return self.max_buffer_lines

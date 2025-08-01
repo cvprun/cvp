@@ -5,4 +5,4 @@ from cvp.apps.player.modes.text import TextMode
 from cvp.context.temp import TempContext
 
 if __name__ == "__main__":
-    ModeLauncher(TextMode(TempContext()), force_egl=True, use_accelerate=True).run()
+    ModeLauncher.from_args(TextMode(TempContext())).run()

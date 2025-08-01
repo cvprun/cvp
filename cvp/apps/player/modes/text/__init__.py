@@ -469,7 +469,7 @@ class TextMode(BaseMode):
     def on_view_menu(self) -> None:
         ordered_texts = self.ordered_texts
         if not ordered_texts:
-            imgui.separator_text("[EMPTY]")
+            menu_item("[EMPTY]", enabled=False)
             return
 
         for item in ordered_texts:
