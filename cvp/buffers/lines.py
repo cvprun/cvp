@@ -6,7 +6,7 @@ from collections import deque
 from io import StringIO
 from os import PathLike
 from pathlib import Path
-from typing import BinaryIO, Deque, Optional, Union
+from typing import BinaryIO, Deque, Iterable, Optional, Union
 from weakref import finalize
 
 from cvp.types.override import override
@@ -245,10 +245,10 @@ class LinesDeque(LinesBase):
         errors=DEFAULT_STRING_ERRORS,
         maxlen: Optional[int] = None,
         newline=DEFAULT_STRING_NEWLINE,
+        initial_lines: Optional[Iterable[str]] = None,
     ):
         super().__init__(path=path, encoding=encoding, errors=errors)
-        self._lines = deque(maxlen=maxlen)
-        self._lines.append(str())
+        self._lines = deque(initial_lines or (), maxlen=maxlen)
         self._newline = newline
 
     @property
@@ -276,12 +276,19 @@ class LinesDeque(LinesBase):
             return
 
         index = text.find(self._newline)
-        if index >= 0:
-            self._lines[-1] += text[0:index]
+        if 0 <= index:
+            prefix = text[0:index]
+            if self._lines:
+                self._lines[-1] += prefix
+            else:
+                self._lines.append(prefix)
 
             next_begin = index + 1
             self._lines.append(str())
             self.write(text[next_begin:])
         else:
             assert index == -1
-            self._lines[-1] += text
+            if self._lines:
+                self._lines[-1] += text
+            else:
+                self._lines.append(text)

@@ -5,12 +5,12 @@ from typing import Optional
 
 from cvp.encoding.config import EncodingConfig
 from cvp.units.byte import BYTES_1KB
-from cvp.variables import INFINITE
+from cvp.variables import DEFAULT_STRING_NEWLINE, INFINITE
 
 
 @dataclass
 class TailConfig(EncodingConfig):
-    newline: str = "\n"
+    newline: str = DEFAULT_STRING_NEWLINE
 
     max_buffer_lines: int = INFINITE
     """
