@@ -22,7 +22,7 @@ from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
-from cvp.imgui.widgets.terminal_canvas import TerminalCanvas, TerminalCanvasOptions
+from cvp.imgui.widgets.terminal_canvas import TerminalCanvas
 from cvp.logging.loggers import logger
 from cvp.types.override import override
 
@@ -67,11 +67,7 @@ class TailMode(BaseMode):
             raise Exception(f"File already opened: '{file}'")
 
         try:
-            options = TerminalCanvasOptions(
-                lines=self.config.max_buffer_lines,
-                autoscroll=True,
-            )
-            self._terminals[file] = TerminalCanvas(file, None, options)
+            self._terminals[file] = TerminalCanvas(file)
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file open failed: '{e}'", logger)
@@ -153,7 +149,7 @@ class TailMode(BaseMode):
                     if tab_result.selected:
                         self.selected_submenu = file
                         try:
-                            terminal.do_process()
+                            terminal.do_process(list())
                         finally:
                             end_tab_item()
 
