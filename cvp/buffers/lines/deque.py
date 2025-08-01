@@ -39,15 +39,18 @@ class LinesDeque(LinesBase):
     def getvalue(self) -> str:
         if len(self._lines) == 0:
             return str()
+
         if len(self._lines) == 1:
             return self._lines[0]
 
         assert len(self._lines) >= 2
         buffer = StringIO()
         buffer.write(self._lines[0])
+
         for i in range(1, len(self._lines)):
             buffer.write(self._newline)
             buffer.write(self._lines[i])
+
         return buffer.getvalue()
 
     @override
@@ -57,15 +60,17 @@ class LinesDeque(LinesBase):
 
         index = text.find(self._newline)
         if 0 <= index:
-            prefix = text[0:index]
+            prefix_text = text[:index]
             if self._lines:
-                self._lines[-1] += prefix
+                self._lines[-1] += prefix_text
             else:
-                self._lines.append(prefix)
+                self._lines.append(prefix_text)
 
-            next_begin = index + 1
-            self._lines.append(str())
-            self.write(text[next_begin:])
+            self._lines.append(str())  # Add empty text at the newline position
+
+            remain_begin = index + len(self._newline)
+            remain_text = text[remain_begin:]
+            self.write(remain_text)
         else:
             assert index == -1
             if self._lines:
