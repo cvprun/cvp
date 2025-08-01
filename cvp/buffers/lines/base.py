@@ -2,13 +2,12 @@
 
 import os
 from abc import ABC
-from os import PathLike
-from pathlib import Path
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO, Optional
 from weakref import finalize
 
 from cvp.buffers.lines.interface import LinesInterface
 from cvp.buffers.lines.utils import close_binary_io, open_file_with_readonly_binary
+from cvp.paths.types import PathLike
 from cvp.variables import DEFAULT_STRING_ENCODING, DEFAULT_STRING_ERRORS
 
 
@@ -18,18 +17,18 @@ class LinesBase(LinesInterface, ABC):
 
     def __init__(
         self,
-        path: Union[str, PathLike[str]],
+        path: PathLike,
         encoding=DEFAULT_STRING_ENCODING,
         errors=DEFAULT_STRING_ERRORS,
     ):
-        self._path = Path(path)
+        self._path = path
         self._encoding = encoding
         self._errors = errors
         self._file = None
         self._finalizer = None
 
     @property
-    def path(self) -> Path:
+    def path(self):
         return self._path
 
     @property
@@ -49,7 +48,7 @@ class LinesBase(LinesInterface, ABC):
         if self._file is not None:
             return self._file.closed
         else:
-            return False
+            return True
 
     @property
     def file(self) -> BinaryIO:

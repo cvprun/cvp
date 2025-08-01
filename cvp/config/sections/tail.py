@@ -11,6 +11,7 @@ from cvp.variables import DEFAULT_STRING_NEWLINE, INFINITE
 @dataclass
 class TailConfig(EncodingConfig):
     newline: str = DEFAULT_STRING_NEWLINE
+    autoscroll: bool = True
 
     max_buffer_lines: int = INFINITE
     """

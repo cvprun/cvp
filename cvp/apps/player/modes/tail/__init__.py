@@ -8,6 +8,7 @@ from pygame import DROPFILE
 from pygame.event import Event
 
 from cvp.apps.player.modes._base import BaseMode
+from cvp.apps.player.modes.tail.canvas import TailCanvas
 from cvp.assets.fonts.mdi import FILE_EYE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
@@ -34,7 +35,7 @@ class TailMode(BaseMode):
     TAB_FLAGS: Final[int] = REORDERABLE | AUTO_SELECT_NEW_TABS | FITTING_POLICY_SCROLL
 
     _force_select: Optional[str]
-    _terminals: Dict[str, TerminalCanvas]
+    _tails: Dict[str, TailCanvas]
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -45,7 +46,7 @@ class TailMode(BaseMode):
             ("View", self.on_view_menu),
         )
         self._force_select = None
-        self._terminals = dict()
+        self._tails = dict()
 
     @property
     def config(self):
@@ -53,7 +54,10 @@ class TailMode(BaseMode):
 
     @property
     def selected_terminal(self) -> Optional[TerminalCanvas]:
-        return self._terminals.get(self.selected_submenu)
+        if tail := self._tails.get(self.selected_submenu):
+            return tail.canvas
+        else:
+            return None
 
     @staticmethod
     def file_label(file: str) -> str:
@@ -63,18 +67,18 @@ class TailMode(BaseMode):
         self.open_text_file(file)
 
     def open_text_file(self, file: str) -> None:
-        if file in self._terminals:
+        if file in self._tails:
             raise Exception(f"File already opened: '{file}'")
 
         try:
-            self._terminals[file] = TerminalCanvas(file)
+            self._tails[file] = TailCanvas.from_config(file, self.config)
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file open failed: '{e}'", logger)
 
     def close_text_file(self, file: str) -> None:
         try:
-            self._terminals.pop(file)
+            self._tails.pop(file)
             logger.info(f"File closed successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file close failed: '{e}'", logger)
@@ -105,15 +109,15 @@ class TailMode(BaseMode):
         imgui.separator()
 
         selected_file = self.selected_submenu
-        if menu_item("Close file", enabled=selected_file in self._terminals):
+        if menu_item("Close file", enabled=selected_file in self._tails):
             self.close_text_file(selected_file)
 
     def on_view_menu(self) -> None:
-        if not self._terminals:
+        if not self._tails:
             menu_item("[EMPTY]", enabled=False)
             return
 
-        for file in self._terminals.keys():
+        for file in self._tails.keys():
             if menu_item(self.file_label(file)):
                 self._force_select = file
 
@@ -133,7 +137,7 @@ class TailMode(BaseMode):
         if imgui.begin_tab_bar("TerminalTab", self.TAB_FLAGS):
             remove_keys = list()
             try:
-                for file, terminal in self._terminals.items():
+                for file, terminal in self._tails.items():
                     flags = 0
 
                     if self._force_select == file:
@@ -149,7 +153,7 @@ class TailMode(BaseMode):
                     if tab_result.selected:
                         self.selected_submenu = file
                         try:
-                            terminal.do_process(list())
+                            terminal.do_process()
                         finally:
                             end_tab_item()
 
