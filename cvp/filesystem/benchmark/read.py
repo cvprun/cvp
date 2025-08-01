@@ -5,7 +5,7 @@ from statistics import mean, stdev
 from time import perf_counter
 from typing import NamedTuple
 
-from cvp.filesystem.types import PathLike
+from cvp.paths.types import PathLike
 from cvp.units.byte import BYTES_1MB
 
 

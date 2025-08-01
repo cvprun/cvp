@@ -5,7 +5,7 @@ from typing import Final, Optional
 
 from psutil import virtual_memory
 
-from cvp.filesystem.types import PathLike
+from cvp.paths.types import PathLike
 from cvp.units import byte
 
 SMALL_FILE_SIZE_THRESHOLD: Final[int] = byte.BYTES_1MB

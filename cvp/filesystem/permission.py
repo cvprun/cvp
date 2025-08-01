@@ -3,7 +3,7 @@
 import os
 import stat
 
-from cvp.filesystem.types import PathLike
+from cvp.paths.types import PathLike
 
 
 def change_readable(path: PathLike):
