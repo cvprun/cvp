@@ -2,35 +2,23 @@
 
 from imgui_bundle import imgui
 
-from cvp.imgui.fonts.defaults import add_mixed_font
 from cvp.imgui.popups.open_file import OpenFilePopup
-from cvp.renderer.pygame.demos.simple import SimpleDemoBase
-from cvp.types.override import override
+from cvp.renderer.pygame.demos.simple import run_simple_demo
 
 
-class OpenFilePopupDemo(SimpleDemoBase):
-    def __init__(self, font_name="Default", font_size=12):
-        super().__init__(force_egl=True, use_accelerate=True)
+class OnFrame:
+    def __init__(self):
+        self._selected = str()
         self._browser = OpenFilePopup(
             OpenFilePopup.__name__,
             target=self.on_selected,
             mode=OpenFilePopup.Mode.select_file | OpenFilePopup.Mode.select_directory,
         )
 
-        self._selected = str()
-        self._font_name = font_name
-        self._font_size = font_size
-
     def on_selected(self, file: str) -> None:
         self._selected = file
 
-    @override
-    def on_init(self) -> None:
-        imgui.get_io().fonts.clear()
-        add_mixed_font(self._font_name, self._font_size)
-
-    @override
-    def on_frame(self) -> None:
+    def __call__(self) -> None:
         imgui.begin(type(self).__name__)
 
         imgui.text("Selected file:")
@@ -67,4 +55,4 @@ class OpenFilePopupDemo(SimpleDemoBase):
 
 
 if __name__ == "__main__":
-    OpenFilePopupDemo().run()
+    run_simple_demo(OnFrame())

@@ -12,4 +12,4 @@ def on_frame() -> None:
 
 
 if __name__ == "__main__":
-    run_simple_demo(on_frame, force_egl=True, use_accelerate=False)
+    run_simple_demo(on_frame)

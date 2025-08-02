@@ -2,26 +2,15 @@
 
 from imgui_bundle import imgui
 
-from cvp.imgui.fonts.defaults import add_mixed_font
 from cvp.imgui.widgets.table_mutable_sequence import table_mutable_sequence
-from cvp.renderer.pygame.demos.simple import SimpleDemoBase
-from cvp.types.override import override
+from cvp.renderer.pygame.demos.simple import run_simple_demo
 
 
-class TableMutableSequenceDemo(SimpleDemoBase):
-    def __init__(self, font_name="Default", font_size=12):
-        super().__init__(force_egl=True, use_accelerate=True)
+class OnFrame:
+    def __init__(self):
         self._items = list()
-        self._font_name = font_name
-        self._font_size = font_size
 
-    @override
-    def on_init(self) -> None:
-        imgui.get_io().fonts.clear()
-        add_mixed_font(self._font_name, self._font_size)
-
-    @override
-    def on_frame(self) -> None:
+    def __call__(self) -> None:
         imgui.set_next_window_size((400, 0))
         imgui.begin(type(self).__name__)
         table_mutable_sequence(
@@ -35,4 +24,4 @@ class TableMutableSequenceDemo(SimpleDemoBase):
 
 
 if __name__ == "__main__":
-    TableMutableSequenceDemo().run()
+    run_simple_demo(OnFrame())

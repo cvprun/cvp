@@ -31,4 +31,4 @@ class OnFrame:
 
 
 if __name__ == "__main__":
-    run_simple_demo(OnFrame(), force_egl=True, use_accelerate=False)
+    run_simple_demo(OnFrame())

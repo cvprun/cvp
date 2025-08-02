@@ -4,7 +4,7 @@ from argparse import REMAINDER, ArgumentParser, Namespace, RawDescriptionHelpFor
 from functools import lru_cache
 from os import R_OK, access, getcwd
 from os.path import expanduser, isfile, join
-from typing import Final, List, Optional, Sequence
+from typing import Final, List, NamedTuple, Optional, Sequence
 
 from cvp.logging.logging import SEVERITIES, SEVERITY_NAME_INFO
 from cvp.system.environ import get_typed_environ_value as get_eval
@@ -96,31 +96,94 @@ def add_dotenv_arguments(parser: ArgumentParser) -> None:
     )
 
 
-def add_graphic_arguments(parser: ArgumentParser) -> None:
-    parser.add_argument(
+def add_opengl_arguments(parser: ArgumentParser) -> None:
+
+    def _default_force_egl(_enable_value: str) -> bool:
+        return get_eval(SDL_VIDEO_X11_FORCE_EGL) == _enable_value
+
+    def _default_use_accelerate(_enable_value: str) -> bool:
+        return get_eval(PYOPENGL_USE_ACCELERATE) == _enable_value
+
+    x11_group = parser.add_mutually_exclusive_group()
+    x11_group.add_argument(
         "--force-egl",
         action="store_true",
-        default=get_eval(SDL_VIDEO_X11_FORCE_EGL, False),
-        help="A variable controlling whether X11 should use GLX or EGL by default",
+        default=_default_force_egl("1"),
+        help="Force X11 to use EGL by default",
     )
-    parser.add_argument(
-        "--use-accelerate",
+    x11_group.add_argument(
+        "--force-glx",
         action="store_true",
-        default=get_eval(PYOPENGL_USE_ACCELERATE, False),
-        help="Enable PyOpenGL hardware acceleration for improved rendering performance",
+        default=_default_force_egl("0"),
+        help="Force X11 to use GLX by default",
     )
+
+    accelerate_group = parser.add_mutually_exclusive_group()
+    accelerate_group.add_argument(
+        "--enable-accelerate",
+        action="store_true",
+        default=_default_use_accelerate("1"),
+        help="Enable PyOpenGL hardware acceleration",
+    )
+    accelerate_group.add_argument(
+        "--disable-accelerate",
+        action="store_true",
+        default=_default_use_accelerate("0"),
+        help="Disable PyOpenGL hardware acceleration",
+    )
+
+
+def get_opengl_config(args: Namespace):
+    assert isinstance(args.force_egl, bool)
+    assert isinstance(args.force_glx, bool)
+    assert isinstance(args.enable_accelerate, bool)
+    assert isinstance(args.disable_accelerate, bool)
+
+    if args.force_egl:
+        assert not args.force_glx
+        force_egl = True
+    elif args.force_glx:
+        assert not args.force_egl
+        force_egl = False
+    else:
+        assert not args.force_glx
+        assert not args.force_egl
+        force_egl = None
+
+    if args.enable_accelerate:
+        assert not args.disable_accelerate
+        use_accelerate = True
+    elif args.disable_accelerate:
+        assert not args.enable_accelerate
+        use_accelerate = False
+    else:
+        assert not args.enable_accelerate
+        assert not args.disable_accelerate
+        use_accelerate = None
+
+    class _OpenglConfig(NamedTuple):
+        force_egl: Optional[bool]
+        use_accelerate: Optional[bool]
+
+    return _OpenglConfig(force_egl, use_accelerate)
 
 
 def add_font_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
-        "--font-name",
+        "--no-default-font",
+        action="store_true",
+        default=False,
+        help="Do not initialize default font",
+    )
+    parser.add_argument(
+        "--default-font-name",
         type=str,
         default=FONT_NAME,
         metavar="{name}",
         help=f"Default font name (default: '{FONT_NAME}')",
     )
     parser.add_argument(
-        "--font-size",
+        "--default-font-size",
         type=int,
         default=FONT_SIZE,
         metavar="{pt}",
@@ -232,34 +295,7 @@ def add_tester_parser(subparsers) -> None:
         epilog=CMD_TESTER_EPILOG,
     )
     assert isinstance(parser, ArgumentParser)
-
-    x11_group = parser.add_mutually_exclusive_group()
-    x11_group.add_argument(
-        "--use-egl",
-        action="store_true",
-        default=False,
-        help="Use EGL for X11",
-    )
-    x11_group.add_argument(
-        "--use-glx",
-        action="store_true",
-        default=False,
-        help="Use GLX for X11",
-    )
-
-    accel_group = parser.add_mutually_exclusive_group()
-    accel_group.add_argument(
-        "--use-accelerate",
-        action="store_true",
-        default=False,
-        help="Enable PyOpenGL hardware acceleration",
-    )
-    accel_group.add_argument(
-        "--no-accelerate",
-        action="store_true",
-        default=False,
-        help="Disable PyOpenGL hardware acceleration",
-    )
+    add_opengl_arguments(parser)
 
 
 def default_argument_parser() -> ArgumentParser:
