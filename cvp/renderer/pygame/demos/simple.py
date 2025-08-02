@@ -20,20 +20,40 @@ class SimpleDemoBase(SimpleDemoInterface):
         self,
         frame_callback: Optional[Callable[[], None]] = None,
         *,
-        force_egl: Optional[bool] = True,
-        use_accelerate: Optional[bool] = False,
+        force_egl: Optional[bool] = None,
+        use_accelerate: Optional[bool] = None,
+        pygame_hide_support_prompt: Optional[bool] = None,
         init_callback: Optional[Callable[[], None]] = None,
         event_callback: Optional[Callable[[Any], bool]] = None,
+        hidden=False,
+        minimize=False,
+        force_exit_before_flip=False,
     ) -> None:
+        from cvp.system.environ_keys import (
+            PYGAME_HIDE_SUPPORT_PROMPT,
+            PYOPENGL_USE_ACCELERATE,
+            SDL_VIDEO_X11_FORCE_EGL,
+        )
+
         if force_egl is not None:
-            environ["SDL_VIDEO_X11_FORCE_EGL"] = "1" if force_egl else "0"
+            environ[SDL_VIDEO_X11_FORCE_EGL] = "1" if force_egl else "0"
         if use_accelerate is not None:
-            environ["PYOPENGL_USE_ACCELERATE"] = "1" if use_accelerate else "0"
+            environ[PYOPENGL_USE_ACCELERATE] = "1" if use_accelerate else "0"
+        if pygame_hide_support_prompt is not None:
+            environ[PYGAME_HIDE_SUPPORT_PROMPT] = "1" if use_accelerate else "0"
 
         self._frame_callback = frame_callback
         self._init_callback = init_callback
         self._event_callback = event_callback
         self._done = False
+
+        self._hidden = hidden
+        self._minimize = minimize
+
+        self._force_exit_before_flip = force_exit_before_flip
+        """
+        The flag variable to force exit just before `pygame.display.flip()` is called.
+        """
 
     @property
     def done(self) -> bool:
@@ -48,17 +68,18 @@ class SimpleDemoBase(SimpleDemoInterface):
         from imgui_bundle import imgui
         from OpenGL import GL
 
-        from cvp.gl.accelerate import load_accelerate
         from cvp.renderer.pygame.renderer import PygameRenderer
-
-        load_accelerate()
 
         pygame.init()
 
         info = pygame.display.Info()
         size = info.current_w, info.current_h
         flags = pygame.DOUBLEBUF | pygame.OPENGL | pygame.RESIZABLE
+        if self._hidden:
+            flags |= pygame.HIDDEN
         pygame.display.set_mode(size, flags)
+        if self._minimize:
+            pygame.display.iconify()
 
         imgui.create_context()
         io = imgui.get_io()
@@ -86,6 +107,8 @@ class SimpleDemoBase(SimpleDemoInterface):
                 finally:
                     imgui.render()
                     renderer.render(imgui.get_draw_data())
+                    if self._force_exit_before_flip:
+                        return
                     pygame.display.flip()
         finally:
             del renderer

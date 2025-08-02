@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
 
 from argparse import ArgumentParser, Namespace
-from typing import Any, Final, List, Optional
+from typing import Any, List, Optional
 
 from imgui_bundle import imgui
 from pygame.event import Event
 from pygame.key import get_pressed
 
 from cvp.apps.player.modes.interface import ModeInterface
-from cvp.arguments import add_opengl_arguments
+from cvp.arguments import add_font_arguments, add_graphic_arguments
 from cvp.context.context import Context
 from cvp.imgui.begin_main_menu_bar import begin_main_menu_bar_context
 from cvp.imgui.begin_main_status_bar import begin_main_status_bar_context
 from cvp.imgui.fonts.defaults import add_mixed_font
 from cvp.renderer.pygame.demos.simple import SimpleDemoBase
 from cvp.types.override import override
+from cvp.variables import FONT_NAME, FONT_SIZE
 
 
 class ModeLauncher(SimpleDemoBase):
-    DEFAULT_FONT_NAME: Final[str] = "Default"
-    DEFAULT_FONT_SIZE: Final[int] = 12
-
     def __init__(
         self,
         mode: ModeInterface,
@@ -28,8 +26,8 @@ class ModeLauncher(SimpleDemoBase):
         *,
         force_egl: Optional[bool] = True,
         use_accelerate: Optional[bool] = False,
-        font_name=DEFAULT_FONT_NAME,
-        font_size=DEFAULT_FONT_SIZE,
+        font_name=FONT_NAME,
+        font_size=FONT_SIZE,
     ):
         if context is None:
             context = getattr(mode, "context", None)
@@ -53,22 +51,8 @@ class ModeLauncher(SimpleDemoBase):
         namespace: Optional[Namespace] = None,
     ):
         parser = ArgumentParser()
-        add_opengl_arguments(parser)
-
-        parser.add_argument(
-            "--font-name",
-            type=str,
-            default=cls.DEFAULT_FONT_NAME,
-            metavar="{name}",
-            help=f"Default font name (default: '{cls.DEFAULT_FONT_NAME}')",
-        )
-        parser.add_argument(
-            "--font-size",
-            type=int,
-            default=cls.DEFAULT_FONT_SIZE,
-            metavar="{pt}",
-            help=f"Default font size (default: '{cls.DEFAULT_FONT_SIZE}')",
-        )
+        add_graphic_arguments(parser)
+        add_font_arguments(parser)
 
         args = parser.parse_known_args(cmdline, namespace)[0]
         assert isinstance(args.force_egl, bool)

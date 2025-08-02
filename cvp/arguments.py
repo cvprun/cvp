@@ -22,7 +22,13 @@ from cvp.system.environ_keys import (
     PYOPENGL_USE_ACCELERATE,
     SDL_VIDEO_X11_FORCE_EGL,
 )
-from cvp.variables import CVP_HOME_DIRNAME, DOTENV_LOCAL_FILENAME, LOGGING_STEP
+from cvp.variables import (
+    CVP_HOME_DIRNAME,
+    DOTENV_LOCAL_FILENAME,
+    FONT_NAME,
+    FONT_SIZE,
+    LOGGING_STEP,
+)
 
 PROG: Final[str] = "cvp"
 DESCRIPTION: Final[str] = "Computer Vision Player"
@@ -49,7 +55,14 @@ Simply usage:
   {PROG} {CMD_AGENT}
 """
 
-CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT
+CMD_TESTER: Final[str] = "tester"
+CMD_TESTER_HELP: Final[str] = "Configuration tester"
+CMD_TESTER_EPILOG = f"""
+Simply usage:
+  {PROG} {CMD_TESTER}
+"""
+
+CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT, CMD_TESTER
 DEFAULT_CMD: Final[str] = CMD_PLAYER
 
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
@@ -83,7 +96,7 @@ def add_dotenv_arguments(parser: ArgumentParser) -> None:
     )
 
 
-def add_opengl_arguments(parser: ArgumentParser) -> None:
+def add_graphic_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--force-egl",
         action="store_true",
@@ -95,6 +108,23 @@ def add_opengl_arguments(parser: ArgumentParser) -> None:
         action="store_true",
         default=get_eval(PYOPENGL_USE_ACCELERATE, False),
         help="Enable PyOpenGL hardware acceleration for improved rendering performance",
+    )
+
+
+def add_font_arguments(parser: ArgumentParser) -> None:
+    parser.add_argument(
+        "--font-name",
+        type=str,
+        default=FONT_NAME,
+        metavar="{name}",
+        help=f"Default font name (default: '{FONT_NAME}')",
+    )
+    parser.add_argument(
+        "--font-size",
+        type=int,
+        default=FONT_SIZE,
+        metavar="{pt}",
+        help=f"Default font size (default: '{FONT_SIZE}')",
     )
 
 
@@ -193,6 +223,45 @@ def add_agent_parser(subparsers) -> None:
     assert isinstance(parser, ArgumentParser)
 
 
+def add_tester_parser(subparsers) -> None:
+    # noinspection SpellCheckingInspection
+    parser = subparsers.add_parser(
+        name=CMD_TESTER,
+        help=CMD_TESTER_HELP,
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=CMD_TESTER_EPILOG,
+    )
+    assert isinstance(parser, ArgumentParser)
+
+    x11_group = parser.add_mutually_exclusive_group()
+    x11_group.add_argument(
+        "--use-egl",
+        action="store_true",
+        default=False,
+        help="Use EGL for X11",
+    )
+    x11_group.add_argument(
+        "--use-glx",
+        action="store_true",
+        default=False,
+        help="Use GLX for X11",
+    )
+
+    accel_group = parser.add_mutually_exclusive_group()
+    accel_group.add_argument(
+        "--use-accelerate",
+        action="store_true",
+        default=False,
+        help="Enable PyOpenGL hardware acceleration",
+    )
+    accel_group.add_argument(
+        "--no-accelerate",
+        action="store_true",
+        default=False,
+        help="Disable PyOpenGL hardware acceleration",
+    )
+
+
 def default_argument_parser() -> ArgumentParser:
     parser = ArgumentParser(
         prog=PROG,
@@ -221,6 +290,7 @@ def default_argument_parser() -> ArgumentParser:
     add_player_parser(subparsers)
     add_worker_parser(subparsers)
     add_agent_parser(subparsers)
+    add_tester_parser(subparsers)
 
     return parser
 
