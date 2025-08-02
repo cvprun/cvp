@@ -69,6 +69,7 @@ class SimpleDemoBase:
 
         parser.add_argument("--hidden", action="store_true", default=False)
         parser.add_argument("--minimize", action="store_true", default=False)
+        parser.add_argument("--disable-auto-config", action="store_true", default=False)
 
         args = parser.parse_known_args(cmdline, namespace)[0]
 
@@ -83,8 +84,18 @@ class SimpleDemoBase:
 
         assert isinstance(args.hidden, bool)
         assert isinstance(args.minimize, bool)
+        assert isinstance(args.disable_auto_config, bool)
 
-        opengl_config = get_opengl_config(args)
+        if not args.disable_auto_config:
+            from cvp.apps.tester.fetch import fetch_best_opengl_config_from_subprocess
+
+            opengl_config = fetch_best_opengl_config_from_subprocess()
+            force_egl = opengl_config.force_egl
+            use_accelerate = opengl_config.use_accelerate
+        else:
+            opengl_config = get_opengl_config(args)
+            force_egl = opengl_config.force_egl
+            use_accelerate = opengl_config.use_accelerate
 
         class _DemoArguments(Namespace):
             force_egl: Optional[bool]
@@ -96,8 +107,8 @@ class SimpleDemoBase:
             minimize: bool
 
         return _DemoArguments(
-            force_egl=opengl_config.force_egl,
-            use_accelerate=opengl_config.use_accelerate,
+            force_egl=force_egl,
+            use_accelerate=use_accelerate,
             no_default_font=args.no_default_font,
             default_font_name=args.default_font_name,
             default_font_size=args.default_font_size,
