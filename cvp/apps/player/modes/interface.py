@@ -10,6 +10,10 @@ from cvp.msgs.msg import Msg
 
 
 class ModeInterface(ABC):
+    @abstractmethod
+    def __init__(self, __context):
+        raise NotImplementedError
+
     @classmethod
     @abstractmethod
     def get_mode_name(cls) -> str:

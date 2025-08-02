@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from argparse import ArgumentParser, Namespace
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Type
 
 from imgui_bundle import imgui
 from pygame.event import Event
@@ -10,6 +10,7 @@ from pygame.key import get_pressed
 from cvp.apps.player.modes.interface import ModeInterface
 from cvp.arguments import add_font_arguments, add_graphic_arguments
 from cvp.context.context import Context
+from cvp.context.temp import TempContext
 from cvp.imgui.begin_main_menu_bar import begin_main_menu_bar_context
 from cvp.imgui.begin_main_status_bar import begin_main_status_bar_context
 from cvp.imgui.fonts.defaults import add_mixed_font
@@ -95,3 +96,12 @@ class ModeLauncher(SimpleDemoBase):
                 self._mode.on_status_menu()
 
         self._mode.on_process()
+
+
+def launch_mode(cls: Type[ModeInterface], context: Optional[Context] = None) -> None:
+    if context is None:
+        context = TempContext()
+    assert isinstance(context, Context)
+    mode = cls(context)
+    launcher = ModeLauncher.from_args(mode)
+    launcher.run()
