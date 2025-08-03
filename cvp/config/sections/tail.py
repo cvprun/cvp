@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import Optional
 
 from cvp.encoding.config import EncodingConfig
-from cvp.units.byte import BYTES_1KB
 from cvp.variables import DEFAULT_STRING_NEWLINE, INFINITE
 
 
@@ -18,11 +17,6 @@ class TailConfig(EncodingConfig):
     Maximum number of lines to keep in the buffer.
     """
 
-    initial_read_bytes: int = 4 * BYTES_1KB
-    """
-    Number of bytes to read from the end of the file when opening for the first time.
-    """
-
     @property
     def maxlen(self) -> Optional[int]:
         """
@@ -32,3 +26,6 @@ class TailConfig(EncodingConfig):
             return None
         else:
             return self.max_buffer_lines
+
+    def set_infinite_lines(self) -> None:
+        self.max_buffer_lines = INFINITE

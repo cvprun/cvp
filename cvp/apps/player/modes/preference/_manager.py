@@ -26,6 +26,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
     from cvp.apps.player.modes.preference.process import ProcessPreference
     from cvp.apps.player.modes.preference.resource import ResourcePreference
     from cvp.apps.player.modes.preference.supabase import SupabasePreference
+    from cvp.apps.player.modes.preference.tail import TailPreference
     from cvp.apps.player.modes.preference.text import TextPreference
     from cvp.apps.player.modes.preference.toast import ToastPreference
 
@@ -46,6 +47,7 @@ def create_preference_widget_types() -> Sequence[Type[BasePreference]]:
         ProcessPreference,
         ResourcePreference,
         SupabasePreference,
+        TailPreference,
         TextPreference,
         ToastPreference,
     )

@@ -18,12 +18,12 @@ from cvp.imgui.flags.tab_bar import (
     FITTING_POLICY_SCROLL,
     REORDERABLE,
 )
-from cvp.imgui.flags.tab_item import SET_SELECTED, TRAILING
+from cvp.imgui.flags.tab_item import SET_SELECTED
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
-from cvp.imgui.widgets.terminal_canvas import TerminalCanvas
+from cvp.imgui.text_centered import text_centered
 from cvp.logging.loggers import logger
 from cvp.types.override import override
 
@@ -54,11 +54,14 @@ class TailMode(BaseMode):
         return self.context.config.tail
 
     @property
-    def selected_terminal(self) -> Optional[TerminalCanvas]:
-        if tail := self._tails.get(self.selected_submenu):
-            return tail.canvas
-        else:
+    def selected_tail(self) -> Optional[TailCanvas]:
+        if not self._tails:
             return None
+        elif 1 == len(self._tails):
+            return next(iter(self._tails.values()))
+        else:
+            assert 2 <= len(self._tails)
+            return self._tails.get(self.selected_submenu, None)
 
     @staticmethod
     def file_label(file: str) -> str:
@@ -73,6 +76,7 @@ class TailMode(BaseMode):
 
         try:
             self._tails[file] = TailCanvas.from_config(file, self.config)
+            self.add_recent_item(file)
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file open failed: '{e}'", logger)
@@ -109,24 +113,24 @@ class TailMode(BaseMode):
 
         imgui.separator()
 
-        selected_file = self.selected_submenu
-        if menu_item("Close file", enabled=selected_file in self._tails):
-            self.close_text_file(selected_file)
+        selected_tail = self.selected_tail
+        if menu_item("Close file", enabled=selected_tail is not None):
+            assert selected_tail is not None
+            self.close_text_file(selected_tail.path)
 
     @staticmethod
     def do_disabled_settings_menu() -> None:
         menu_item("Autoscroll", enabled=False)
 
     @staticmethod
-    def do_enabled_settings_menu(terminal: TerminalCanvas) -> None:
-        autoscroll = terminal.autoscroll
-
+    def do_enabled_settings_menu(tail: TailCanvas) -> None:
+        autoscroll = tail.autoscroll
         if menu_item("Autoscroll", selected=autoscroll):
-            terminal.autoscroll = not autoscroll
+            tail.autoscroll = not autoscroll
 
     def on_settings_menu(self) -> None:
-        if terminal := self.selected_terminal:
-            self.do_enabled_settings_menu(terminal)
+        if tail := self.selected_tail:
+            self.do_enabled_settings_menu(tail)
         else:
             self.do_disabled_settings_menu()
 
@@ -142,17 +146,21 @@ class TailMode(BaseMode):
     @override
     def on_process(self) -> None:
         with self.begin_mode_context():
-            with begin_child_context("Main"):
-                self.preprocess_read_runner()
-                self.do_child_process()
-
+            self.do_main_process()
         self._popups.do_process()
 
-    def preprocess_read_runner(self) -> None:
-        pass
+    def do_main_process(self) -> None:
+        with begin_child_context("Main"):
+            if not self._tails:
+                text_centered("Please open the text file")
+            elif 1 == len(self._tails):
+                next(iter(self._tails.values())).do_process()
+            else:
+                assert 2 <= len(self._tails)
+                self.do_tabs_process()
 
-    def do_child_process(self) -> None:
-        if imgui.begin_tab_bar("TerminalTab", self.TAB_FLAGS):
+    def do_tabs_process(self) -> None:
+        if imgui.begin_tab_bar("Tabs", self.TAB_FLAGS):
             remove_keys = list()
             try:
                 for file, terminal in self._tails.items():
@@ -174,9 +182,6 @@ class TailMode(BaseMode):
                             terminal.do_process()
                         finally:
                             end_tab_item()
-
-                if imgui.tab_item_button("+", TRAILING):
-                    self._open_file_popup.show()
             finally:
                 imgui.end_tab_bar()
 
