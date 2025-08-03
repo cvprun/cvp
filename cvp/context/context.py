@@ -29,6 +29,7 @@ from cvp.logging.logging import (
 )
 from cvp.media.manager import MediaManager
 from cvp.mediamtx.manager import MediamtxManager
+from cvp.modules.warnings import hide_pkg_resources_deprecated_warning
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.msgs.msg_type import MsgType
@@ -114,6 +115,8 @@ class Context(ContextMixins):
         if self._config.onvif.preload:
             logger.info("Launching ONVIF service declaration preload on a new thread")
             self.preload_onvif_declarations()
+
+        hide_pkg_resources_deprecated_warning(logger, details=self._config.debug)
 
         self._keyring = RootKeyring()
         if self._home.is_dir():
