@@ -46,6 +46,16 @@ from cvp.watchdog.manager import WatchdogManager
 from cvp.wsdiscovery.manager import WsDiscoveryManager
 
 
+def _fetch_best_opengl_config():
+    try:
+        # [IMPORTANT] Avoid 'circular import' issues
+        from cvp.apps.tester.fetch import fetch_best_opengl_config_from_subprocess
+
+        return fetch_best_opengl_config_from_subprocess()
+    except:  # noqa
+        return None
+
+
 class Context(ContextMixins):
     def __init__(self, home: Union[str, PathLike[str]]):
         self._home = HomeDir(home)
@@ -101,6 +111,14 @@ class Context(ContextMixins):
         process_workers = self._config.concurrency.process_workers
         self._process_pool = ProcessPoolExecutor(max_workers=process_workers)
         logger.info(f"Create ProcessPoolExecutor(max_workers={process_workers}) of PM")
+
+        if self._home.cvp_yml.is_file():
+            logger.warning("Detect OpenGL config via subprocess ...")
+            if opengl_config := _fetch_best_opengl_config():
+                logger.info(f"Force EGL: {opengl_config.force_egl}")
+                logger.info(f"PyOpenGL Accelerate: {opengl_config.use_accelerate}")
+                self._config.graphic.force_egl = opengl_config.force_egl
+                self._config.graphic.use_accelerate = opengl_config.use_accelerate
 
         if self._config.graphic.force_egl is not None:
             force_egl = self._config.graphic.force_egl_environ
