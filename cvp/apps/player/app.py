@@ -28,7 +28,6 @@ from cvp.chrono.filename import short_datetime_name
 from cvp.chrono.tznow import tznow
 from cvp.context.autofixer import AutoFixer
 from cvp.context.context import Context
-from cvp.imgui.flags.key import KeyFlags
 from cvp.imgui.flags.window import VIEWPORT_SIDE_BAR_FLAGS
 from cvp.imgui.fonts.globals import GlobalFontMapper
 from cvp.imgui.menu_item import menu_item
@@ -37,7 +36,7 @@ from cvp.imgui.push_style_var import style_frame_border_size_context
 from cvp.imgui.text_colored import text_colored
 from cvp.imgui.theme import DEFAULT_THEME_NAME, apply_theme_with_name
 from cvp.imgui.tooltip import hovered_tooltip_text
-from cvp.imgui.widgets.shortcut import Shortcut
+from cvp.imgui.widgets.shortcut_registry import ShortcutRegistry
 from cvp.logging.loggers import event_logger, logger, msg_logger, profile_logger
 from cvp.logging.profile import ProfileLogging
 from cvp.msgs.msg import Msg
@@ -76,40 +75,19 @@ class PlayerApplication:
         self._suffix_menus = OrderedDict({"Help": self.on_help_menu})
         self._modes = ModeManager(context)
 
-        self._shortcut_program_quit = Shortcut(
-            KeyFlags.q,
-            ctrl=True,
-            callback=lambda: self._confirm_quit.show(),
-        )
-        self._shortcut_save_layout = Shortcut(
-            KeyFlags.l,
-            ctrl=True,
-            alt=True,
-            callback=lambda: self._modes.save_new_layout(reload=True),
-        )
-        self._shortcut_screenshot = Shortcut(
-            KeyFlags.p,
-            ctrl=True,
-            alt=True,
-            callback=lambda: self.save_screenshot(),
-        )
+        self._shortcuts = ShortcutRegistry()
+        self._shortcuts.build("Quit", self.on_shortcut_program_quit).ctrl.q()
+        self._shortcuts.build("SaveLayout", self.on_shortcut_save_layout).ctrl.alt.l()
+        self._shortcuts.build("Screenshot", self.on_shortcut_screenshot).ctrl.alt.p()
 
-        # noinspection PyProtectedMember
-        self._shortcuts = [
-            self._shortcut_program_quit,
-            self._shortcut_save_layout,
-            self._shortcut_screenshot,
-            # Shortcut(KeyFlags._0, alt=True, callback=lambda: self._modes.set_mode(0)),
-            # Shortcut(KeyFlags._1, alt=True, callback=lambda: self._modes.set_mode(1)),
-            # Shortcut(KeyFlags._2, alt=True, callback=lambda: self._modes.set_mode(2)),
-            # Shortcut(KeyFlags._3, alt=True, callback=lambda: self._modes.set_mode(3)),
-            # Shortcut(KeyFlags._4, alt=True, callback=lambda: self._modes.set_mode(4)),
-            # Shortcut(KeyFlags._5, alt=True, callback=lambda: self._modes.set_mode(5)),
-            # Shortcut(KeyFlags._6, alt=True, callback=lambda: self._modes.set_mode(6)),
-            # Shortcut(KeyFlags._7, alt=True, callback=lambda: self._modes.set_mode(7)),
-            # Shortcut(KeyFlags._8, alt=True, callback=lambda: self._modes.set_mode(8)),
-            # Shortcut(KeyFlags._9, alt=True, callback=lambda: self._modes.set_mode(9)),
-        ]
+    def on_shortcut_program_quit(self) -> None:
+        self._confirm_quit.show()
+
+    def on_shortcut_save_layout(self) -> None:
+        self._modes.save_new_layout(reload=True)
+
+    def on_shortcut_screenshot(self) -> None:
+        self.save_screenshot()
 
     @property
     def home(self):
@@ -333,7 +311,11 @@ class PlayerApplication:
         assert NOEVENT < event.type < NUMEVENTS
         event_logger.debug(f"<Event {event_name(event.type)}> {event.dict}")
 
-        consumed_event = self._modes.current_mode.on_event(event)
+        consumed_event = False
+        for mode in self._modes:
+            if mode.on_event(event):
+                consumed_event = True
+
         if not consumed_event:
             self.on_event_fallback(event)
 
@@ -350,6 +332,7 @@ class PlayerApplication:
             logger.debug(f"Drop TEXT: {event.text}")
         elif event.type == pygame.WINDOWRESIZED:
             self._world.on_window_resized(event.x, event.y)
+
         self.renderer.do_event(event)
 
     def on_msg(self, msg: Msg) -> None:
@@ -358,9 +341,14 @@ class PlayerApplication:
         args = msg.as_args()
         msg_logger.debug(f"<Msg {name} {uuid}> {args}")
 
-        consumed_msg = self._modes.current_mode.on_msg(msg)
+        consumed_msg = False
+        for mode in self._modes:
+            if mode.on_msg(msg):
+                consumed_msg = True
+
         if not consumed_msg:
             consumed_msg = self._context.do_activity_msg(msg)
+
         if not consumed_msg:
             self.on_msg_fallback(msg)
 
@@ -372,9 +360,8 @@ class PlayerApplication:
 
     def on_keyboard(self, keys: ScancodeWrapper) -> None:
         """This is where keyboard shortcuts are processed."""
-        for shortcut in self._shortcuts:
-            if shortcut():
-                return
+        self._shortcuts.do_process()
+
         self._modes.current_mode.on_keyboard(keys)
 
     def on_frame(self) -> None:
@@ -385,6 +372,7 @@ class PlayerApplication:
             self.on_main_menu()
             self.on_status_bar()
             self.on_popups_process()
+
             self._modes.current_mode.on_process()
 
             if self.debug:
@@ -393,6 +381,7 @@ class PlayerApplication:
                 self.on_demo_window()
 
             self._context.do_activity_process()
+
             self._toast.on_process()
             self._overlay.on_process()
             self._world.on_process(imgui.get_io().delta_time)
@@ -407,13 +396,13 @@ class PlayerApplication:
         self._modes.do_menu_process()
 
         imgui.separator()
-        if menu_item("Quit", shortcut=self._shortcut_program_quit.label):
+        if self._shortcuts.menu_item("Quit"):
             self._confirm_quit.show()
 
     def on_help_menu(self) -> None:
         if imgui.begin_menu("Layout"):
             try:
-                if menu_item("Save", shortcut=self._shortcut_save_layout.label):
+                if self._shortcuts.menu_item("Save", key="SaveLayout"):
                     self._modes.save_new_layout(reload=True)
                 imgui.separator()
                 for layout_filename in self._modes.layout_filenames:
@@ -423,7 +412,7 @@ class PlayerApplication:
                 imgui.end_menu()
 
         imgui.separator()
-        if menu_item("Screenshot", shortcut=self._shortcut_screenshot.label):
+        if self._shortcuts.menu_item("Screenshot"):
             self.save_screenshot()
 
         imgui.separator()

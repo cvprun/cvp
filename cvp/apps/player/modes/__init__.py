@@ -143,6 +143,12 @@ class ModeManager:
             }
         )
 
+    def __iter__(self):
+        return self._modes.__iter__()
+
+    def __len__(self):
+        return self._modes.__len__()
+
     @property
     def mode_key(self) -> str:
         return self._context.config.navigation.mode
@@ -167,6 +173,32 @@ class ModeManager:
             return self.find_mode(self.mode_key)
         except:  # noqa
             return self.flow_mode
+
+    @property
+    def min_index(self) -> int:
+        assert 1 <= len(self._modes)
+        return 0
+
+    @property
+    def max_index(self) -> int:
+        assert 1 <= len(self._modes)
+        return len(self._modes) - 1
+
+    def calc_index(self, offset=1) -> int:
+        index = self.find_mode_index(self.mode_key) + offset
+        if index < self.min_index:
+            return self.min_index
+        elif self.max_index < index:
+            return self.max_index
+        else:
+            assert 0 <= index < len(self._modes)
+            return index
+
+    def select_prev_mode(self, offset=1) -> None:
+        self.set_mode_with_index(self.calc_index(offset * -1))
+
+    def select_next_mode(self, offset=1) -> None:
+        self.set_mode_with_index(self.calc_index(offset))
 
     def set_mode_with_index(self, index: int) -> None:
         if not (0 <= index < len(self._modes)):

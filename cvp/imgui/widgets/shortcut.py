@@ -28,7 +28,7 @@ class Shortcut:
         self._alt = alt
         self._meta = meta
         self._repeat = repeat
-        self._label = label if label else self._as_shortcut_text()
+        self._label = label if label else self.as_shortcut_text()
         self._callback = callback
 
     @property
@@ -75,7 +75,7 @@ class Shortcut:
         parts.append(self.key_name)
         return parts
 
-    def _as_shortcut_text(self) -> str:
+    def as_shortcut_text(self) -> str:
         parts = self._as_shortcut_text_parts()
         assert 1 <= len(parts)
         return reduce(lambda x, y: f"{x}+{y}", parts)
