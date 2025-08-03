@@ -175,16 +175,8 @@ class TextMode(BaseMode):
         return self.context.config.text
 
     @property
-    def tabs_order(self):
-        return [TextKey(uuid) for uuid in self.config.tabs_order]
-
-    @property
     def manager(self):
         return self.context.texts
-
-    @property
-    def ordered_texts(self):
-        return self.manager.ordered_values(self.tabs_order)
 
     @property
     def selected_text(self):
@@ -263,12 +255,6 @@ class TextMode(BaseMode):
 
     def close_text(self, key: TextKey) -> None:
         self.manager.remove(key)
-
-        try:
-            self.tabs_order.remove(key)
-        except:  # noqa
-            pass
-
         logger.info(f"Closed text with key: {key}")
 
     def add_new_text(self, path: Optional[str] = None):
@@ -467,12 +453,11 @@ class TextMode(BaseMode):
             self.do_disabled_settings_menu()
 
     def on_view_menu(self) -> None:
-        ordered_texts = self.ordered_texts
-        if not ordered_texts:
+        if not self.manager:
             menu_item("[EMPTY]", enabled=False)
             return
 
-        for item in ordered_texts:
+        for item in self.manager.values():
             text_editor = self._editors.get(item.key, None)
             modified = text_editor.modified if text_editor else False
             label = item.get_label(modified)
@@ -548,7 +533,7 @@ class TextMode(BaseMode):
             remove_keys = list()
 
             try:
-                for item in self.manager.ordered_values(self.tabs_order):
+                for item in self.manager.values():
                     flags = 0
 
                     if self._force_select == item.key:

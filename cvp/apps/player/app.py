@@ -311,11 +311,7 @@ class PlayerApplication:
         assert NOEVENT < event.type < NUMEVENTS
         event_logger.debug(f"<Event {event_name(event.type)}> {event.dict}")
 
-        consumed_event = False
-        for mode in self._modes:
-            if mode.on_event(event):
-                consumed_event = True
-
+        consumed_event = self._modes.current_mode.on_event(event)
         if not consumed_event:
             self.on_event_fallback(event)
 

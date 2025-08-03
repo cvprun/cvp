@@ -43,6 +43,7 @@ class TailMode(BaseMode):
         self._popups = PopupList(self._open_file_popup)
         self._menus = MenuList(
             ("File", self.on_file_menu),
+            ("Settings", self.on_settings_menu),
             ("View", self.on_view_menu),
         )
         self._force_select = None
@@ -111,6 +112,23 @@ class TailMode(BaseMode):
         selected_file = self.selected_submenu
         if menu_item("Close file", enabled=selected_file in self._tails):
             self.close_text_file(selected_file)
+
+    @staticmethod
+    def do_disabled_settings_menu() -> None:
+        menu_item("Autoscroll", enabled=False)
+
+    @staticmethod
+    def do_enabled_settings_menu(terminal: TerminalCanvas) -> None:
+        autoscroll = terminal.autoscroll
+
+        if menu_item("Autoscroll", selected=autoscroll):
+            terminal.autoscroll = not autoscroll
+
+    def on_settings_menu(self) -> None:
+        if terminal := self.selected_terminal:
+            self.do_enabled_settings_menu(terminal)
+        else:
+            self.do_disabled_settings_menu()
 
     def on_view_menu(self) -> None:
         if not self._tails:
