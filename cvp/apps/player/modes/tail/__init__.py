@@ -94,7 +94,27 @@ class TailMode(BaseMode):
 
     @override
     def on_status_menu(self) -> None:
-        pass
+        tail = self.selected_tail
+        if tail is None:
+            imgui.text("No file selected.")
+            return
+
+        assert isinstance(tail, TailCanvas)
+
+        maxlen = tail.lines.maxlen if tail.lines.maxlen is not None else "INF"
+        imgui.text(f"Lines {len(tail.lines)}, Max {maxlen}")
+        imgui.separator()
+
+        newline = repr(tail.newline)
+        imgui.text(f"Newline {newline}")
+        imgui.separator()
+
+        autoscroll = "ON" if tail.autoscroll else "OFF"
+        imgui.text(f"Autoscroll {autoscroll}")
+        imgui.separator()
+
+        imgui.text(tail.pathname)
+        imgui.separator()
 
     @override
     def on_event(self, event: Event) -> bool:

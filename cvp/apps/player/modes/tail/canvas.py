@@ -39,12 +39,29 @@ class TailCanvas:
         return self.buffer.path
 
     @property
+    def pathname(self) -> str:
+        assert isinstance(self.buffer.pathname, str)
+        return self.buffer.pathname
+
+    @property
+    def lines(self):
+        return self.buffer.lines
+
+    @property
     def autoscroll(self) -> bool:
         return self.canvas.autoscroll
 
     @autoscroll.setter
     def autoscroll(self, value: bool) -> None:
         self.canvas.autoscroll = value
+
+    @property
+    def newline(self) -> str:
+        return self.buffer.newline
+
+    @newline.setter
+    def newline(self, value: str) -> None:
+        self.buffer.newline = value
 
     @classmethod
     def from_config(cls, path: str, config: TailConfig):

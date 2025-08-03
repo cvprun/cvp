@@ -35,6 +35,14 @@ class LinesDeque(LinesBase):
     def lines(self):
         return self._lines
 
+    @property
+    def newline(self) -> str:
+        return self._newline
+
+    @newline.setter
+    def newline(self, value: str) -> None:
+        self._newline = value
+
     @override
     def getvalue(self) -> str:
         if len(self._lines) == 0:

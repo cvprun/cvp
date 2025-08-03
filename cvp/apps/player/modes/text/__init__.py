@@ -282,6 +282,7 @@ class TextMode(BaseMode):
 
         editor = self.selected_editor
         if editor is None:
+            imgui.text("No file selected.")
             return
 
         assert isinstance(editor, TextEditor)

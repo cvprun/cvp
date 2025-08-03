@@ -21,9 +21,10 @@ class LinesBase(LinesInterface, ABC):
         encoding=DEFAULT_STRING_ENCODING,
         errors=DEFAULT_STRING_ERRORS,
     ):
+        self.encoding = encoding
+        self.errors = errors
+
         self._path = path
-        self._encoding = encoding
-        self._errors = errors
         self._file = None
         self._finalizer = None
 
@@ -34,14 +35,6 @@ class LinesBase(LinesInterface, ABC):
     @property
     def pathname(self) -> str:
         return str(self._path)
-
-    @property
-    def encoding(self) -> str:
-        return self._encoding
-
-    @property
-    def errors(self) -> str:
-        return self._errors
 
     @property
     def closed(self) -> bool:
@@ -159,7 +152,7 @@ class LinesBase(LinesInterface, ABC):
         assert 0 < size
         assert self._file is not None
         data = self._file.read(size)
-        self.write(str(data, encoding=self._encoding, errors=self._errors))
+        self.write(str(data, encoding=self.encoding, errors=self.errors))
         return len(data)
 
     def seek_set(self, offset: int) -> None:
