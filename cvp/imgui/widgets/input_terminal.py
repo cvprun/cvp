@@ -9,16 +9,18 @@ from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.values.delta import DeltaValue
 
 
-class TerminalCanvas:
+class InputTerminal:
     def __init__(
         self,
         label: str,
         *,
+        readonly=False,
         autoscroll=False,
         show_lineno=False,
         show_whitespace=False,
     ):
         self._label = label
+        self._readonly = readonly
         self._autoscroll = autoscroll
         self._show_lineno = show_lineno
         self._show_whitespace = show_whitespace

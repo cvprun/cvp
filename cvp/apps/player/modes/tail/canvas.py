@@ -4,7 +4,7 @@ from typing import Iterable, Optional
 
 from cvp.buffers.lines.deque import LinesDeque
 from cvp.config.sections.tail import TailConfig
-from cvp.imgui.widgets.terminal_canvas import TerminalCanvas
+from cvp.imgui.widgets.input_terminal import InputTerminal
 from cvp.variables import (
     DEFAULT_STRING_ENCODING,
     DEFAULT_STRING_ERRORS,
@@ -23,7 +23,7 @@ class TailCanvas:
         initial_lines: Optional[Iterable[str]] = None,
         autoscroll=True,
     ):
-        self.canvas = TerminalCanvas(label=path, autoscroll=autoscroll)
+        self.canvas = InputTerminal(label=path, autoscroll=autoscroll)
         self.buffer = LinesDeque(
             path=path,
             encoding=encoding,
