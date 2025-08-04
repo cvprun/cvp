@@ -6,6 +6,7 @@ from typing import NewType, Optional, Union
 from uuid import uuid4
 
 from cvp.download.state import DownloadState
+from cvp.hashfunc.mapping import HashFunction
 from cvp.variables import UNKNOWN_TOTAL_SIZE
 
 DownloadKey = NewType("DownloadKey", str)
@@ -17,7 +18,8 @@ class DownloadItem:
     url: str = field(default_factory=str)
     dest: str = field(default_factory=str)
     timeout: Optional[float] = None
-    checksum: Optional[float] = None
+    checksum_type: str = field(default_factory=lambda: str(HashFunction.md5))
+    checksum_value: str = field(default_factory=str)
     follow_redirects: bool = False
     verify_ssl: bool = True
 
@@ -48,3 +50,14 @@ class DownloadItem:
     @property
     def has_error(self) -> bool:
         return bool(self.error)
+
+    @property
+    def checksum_hash(self) -> HashFunction:
+        try:
+            return HashFunction(self.checksum_type)
+        except ValueError:
+            return HashFunction.md5
+
+    @checksum_hash.setter
+    def checksum_hash(self, value: HashFunction) -> None:
+        self.checksum_type = HashFunction(value)

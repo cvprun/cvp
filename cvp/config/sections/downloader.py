@@ -5,8 +5,6 @@ from datetime import timedelta
 
 import platformdirs
 
-from cvp.hashfunc.mapping import HashFunction
-
 
 @dataclass
 class DownloaderConfig:
@@ -16,8 +14,6 @@ class DownloaderConfig:
     use_timeout = False
     timeout: float = field(default_factory=lambda: timedelta(hours=1).total_seconds())
 
-    checksum: str = field(default_factory=lambda: str(HashFunction.md5))
-
     follow_redirects: bool = True
     verify_ssl: bool = True
 
@@ -26,17 +22,8 @@ class DownloaderConfig:
         self.download_dir = platformdirs.user_downloads_dir()
         self.use_timeout = False
         self.timeout = timedelta(hours=1).total_seconds()
-        self.checksum = str(HashFunction.md5)
         self.follow_redirects = True
         self.verify_ssl = True
 
-    @property
-    def checksum_hash(self) -> HashFunction:
-        try:
-            return HashFunction(self.checksum)
-        except ValueError:
-            return HashFunction.md5
-
-    @checksum_hash.setter
-    def checksum_hash(self, value: HashFunction) -> None:
-        self.checksum = HashFunction(value)
+    def update_user_downloads_dir(self) -> None:
+        self.download_dir = platformdirs.user_downloads_dir()
