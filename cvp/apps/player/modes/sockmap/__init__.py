@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from collections import deque
+from concurrent.futures import as_completed
+from concurrent.futures.process import ProcessPoolExecutor
 from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum, auto, unique
@@ -88,7 +90,9 @@ class SockmapMode(BaseMode):
 
     def __init__(self, context: Context):
         super().__init__(context)
-        self._discovery_runner = context.create_thread_runner(self.on_discovery_main)
+        self._discovery_runner = context.create_thread_runner(
+            self.on_discovery_parallel,
+        )
         self._destination_count = 0
         self._cancel = Event()
 
@@ -174,6 +178,34 @@ class SockmapMode(BaseMode):
         except BaseException as e:
             logger.exception(e)
             self.context.toast(f"Discovery failed: '{e}'")
+
+    @staticmethod
+    def _check_socket(ip: str, port: int, timeout: Optional[float] = None):
+        begin = datetime.now().astimezone()
+
+        try:
+            family = get_ip_address_family(ip)
+            sock = socket(family, SOCK_STREAM)
+            sock.settimeout(timeout)
+            sock.connect((ip, port))
+            sock.close()
+            return SockResult.from_reachable(ip, port, begin)
+        except BaseException as e:
+            return SockResult.from_error(ip, port, begin, e)
+
+    def on_discovery_parallel(self, timeout: Optional[float] = None) -> None:
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            while ip_port := self.pop_buffer():
+                ip, port = ip_port
+                assert isinstance(ip, str)
+                assert isinstance(port, int)
+                if self._cancel.is_set():
+                    break
+                futures.append(executor.submit(self._check_socket, ip, port, timeout))
+
+            for future in as_completed(futures):
+                self.append_result(future.result())
 
     def on_discovery_main(self, timeout: Optional[float] = None) -> None:
         while ip_port := self.pop_buffer():
