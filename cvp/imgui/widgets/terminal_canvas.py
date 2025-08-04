@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Iterable
+from typing import Sequence
 
 from imgui_bundle import imgui
 
@@ -10,9 +10,18 @@ from cvp.values.delta import DeltaValue
 
 
 class TerminalCanvas:
-    def __init__(self, label: str, autoscroll=True):
+    def __init__(
+        self,
+        label: str,
+        *,
+        autoscroll=False,
+        show_lineno=False,
+        show_whitespace=False,
+    ):
         self._label = label
         self._autoscroll = autoscroll
+        self._show_lineno = show_lineno
+        self._show_whitespace = show_whitespace
         self._mouse_wheel = DeltaValue.from_single_value(0.0)
 
     @property
@@ -23,7 +32,7 @@ class TerminalCanvas:
     def autoscroll(self, value: bool) -> None:
         self._autoscroll = value
 
-    def do_process(self, lines: Iterable[str]) -> None:
+    def do_process(self, lines: Sequence[str]) -> None:
         with begin_child_context(self._label):
             if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
                 if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
@@ -38,8 +47,20 @@ class TerminalCanvas:
                     else:
                         assert 0 == self._mouse_wheel.value
 
-            for line in lines:
-                imgui.text(line)
+            clipper = imgui.ListClipper()
+            clipper.begin(len(lines))
+            while clipper.step():
+                for i in range(clipper.display_start, clipper.display_end):
+                    self.do_line_process(lines, i)
 
             if self._autoscroll:
                 imgui.set_scroll_here_y(1.0)
+
+    def do_line_process(self, lines: Sequence[str], index: int) -> None:
+        line_text = lines[index]
+        if self._show_lineno:
+            lineno_width = len(str(len(lines)))
+            imgui.text(f"{index+1:0{lineno_width}}")
+            imgui.same_line()
+
+        imgui.text(line_text)
