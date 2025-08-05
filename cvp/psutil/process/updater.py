@@ -29,5 +29,5 @@ class ProcessStateUpdater(IntervalUpdater[ProcessState]):
                 return self.get()
         except:  # noqa
             result = ProcessState()
-            self.set_result(result)
+            self.set_result_with_latest_time(result)
             return result

@@ -5,11 +5,13 @@ from typing import Iterable, Optional
 from cvp.buffers.lines.deque import LinesDeque
 from cvp.config.sections.tail import TailConfig
 from cvp.imgui.widgets.input_terminal import InputTerminal
+from cvp.values.interval import IntervalTimer
 from cvp.variables import (
     DEFAULT_STRING_ENCODING,
     DEFAULT_STRING_ERRORS,
     DEFAULT_STRING_NEWLINE,
 )
+from cvp.watchdog.item import WatchdogKey
 
 
 class TailTab:
@@ -22,6 +24,9 @@ class TailTab:
         newline=DEFAULT_STRING_NEWLINE,
         initial_lines: Optional[Iterable[str]] = None,
         autoscroll=True,
+        interval: Optional[float] = None,
+        latest_time: Optional[float] = None,
+        watchdog_key: Optional[WatchdogKey] = None,
     ):
         self.canvas = InputTerminal(label=path, autoscroll=autoscroll)
         self.buffer = LinesDeque(
@@ -32,6 +37,8 @@ class TailTab:
             newline=newline,
             initial_lines=initial_lines,
         )
+        self.interval = IntervalTimer(interval=interval, latest_time=latest_time)
+        self.watchdog_key = watchdog_key
 
     @property
     def path(self) -> str:
@@ -64,7 +71,12 @@ class TailTab:
         self.buffer.newline = value
 
     @classmethod
-    def from_config(cls, path: str, config: TailConfig):
+    def from_config(
+        cls,
+        path: str,
+        config: TailConfig,
+        watchdog_key: Optional[WatchdogKey] = None,
+    ):
         return cls(
             path,
             encoding=config.encoding,
@@ -72,10 +84,16 @@ class TailTab:
             maxlen=config.maxlen,
             newline=config.newline,
             autoscroll=config.autoscroll,
+            interval=config.manually_update_interval,
+            watchdog_key=watchdog_key,
         )
 
-    def update_buffer(self) -> None:
-        self.buffer.update_safe()
+    def update_buffer(self, *, force=False) -> bool:
+        if force or self.interval.update():
+            self.buffer.update_safe()
+            return True
+        else:
+            return False
 
     def do_process(self) -> None:
         self.canvas.do_process(self.buffer.lines)

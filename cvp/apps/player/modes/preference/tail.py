@@ -6,6 +6,7 @@ from cvp.imgui.button import button
 from cvp.imgui.checkbox import checkbox
 from cvp.imgui.combo_encoding import combo_text_encoding
 from cvp.imgui.combo_enum import combo_enum
+from cvp.imgui.input_float import input_float
 from cvp.imgui.input_int import input_int
 from cvp.types.override import override
 
@@ -39,11 +40,22 @@ class TailPreference(BasePreference):
             assert isinstance(error_handling.item, str)
             self.config.errors = error_handling.item
 
+        if tabs_always := checkbox("Show tabs always", self.config.show_tabs_always):
+            self.config.show_tabs_always = tabs_always.state
+
         if autoscroll := checkbox("Autoscroll", self.config.autoscroll):
             self.config.autoscroll = autoscroll.state
 
         if lines := input_int("Max buffer lines", self.config.max_buffer_lines):
             self.config.max_buffer_lines = lines.value
-
         if button("Infinite"):
-            self.config.set_infinite_lines()
+            self.config.update_infinite_lines()
+
+        if manually_update_interval := input_float(
+            "Manually update interval (seconds)",
+            self.config.manually_update_interval,
+        ):
+            self.config.manually_update_interval = manually_update_interval.value
+
+        if button("Default"):
+            self.config.update_defaults()

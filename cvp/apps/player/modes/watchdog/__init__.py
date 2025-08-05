@@ -24,12 +24,11 @@ from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.logging_multiline import LoggingMultiline
 from cvp.logging.loggers import watchdog_logger as logger
-from cvp.msgs.callbacks import MsgCallbacks
 from cvp.types.override import override
 from cvp.watchdog.item import WatchdogItem, WatchdogKey
 
 
-class WatchdogMode(BaseMode, MsgCallbacks):
+class WatchdogMode(BaseMode):
     __cvp_mode_name__ = "Watchdog"
     __cvp_mode_icon__ = DOG
 
@@ -163,16 +162,27 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             size=(self._MENU_SPLIT_X, 0),
             child_flags=self._MENU_CHILD_FLAGS,
         ):
+            selected_watchdog = self.selected_watchdog
+            is_selected = self.selected_watchdog is not None
+            is_managed = selected_watchdog.managed if selected_watchdog else False
+            has_watcher = selected_watchdog.has_watcher if selected_watchdog else False
+
             if button("Reload"):
                 self.watchdogs.read_all_config_files()
             imgui.same_line()
             if button("Add"):
                 self.watchdogs.add_watchdog()
             imgui.same_line()
-            if button("Del", disabled=self.selected_submenu not in self.watchdogs):
+
+            if button("Del", disabled=not is_selected or has_watcher or is_managed):
                 self._remove_candidate = self.selected_submenu
                 self._confirm_remove.show()
+            hovered_tooltip_text(
+                "Delete the selected item. "
+                "Managed or watched items cannot be deleted."
+            )
             imgui.same_line()
+
             if button("Clear", disabled=not self.watchdogs):
                 self._confirm_clear.show()
 
@@ -256,10 +266,10 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             imgui.end_disabled()
 
         not_exists = not os.path.exists(item.file)
-        if button("Schedule", disabled=has_watcher or not_exists):
+        if button("Schedule", disabled=has_watcher or item.managed or not_exists):
             self.watchdogs.schedule(item.key)
         imgui.same_line()
-        if button("Unschedule", disabled=not has_watcher):
+        if button("Unschedule", disabled=not has_watcher or item.managed):
             self.watchdogs.unschedule(item.key)
 
     def do_bottom_toolbar_process(self) -> None:

@@ -19,7 +19,7 @@ from cvp.imgui.flags.tab_bar import (
     FITTING_POLICY_SCROLL,
     REORDERABLE,
 )
-from cvp.imgui.flags.tab_item import SET_SELECTED
+from cvp.imgui.flags.tab_item import SET_SELECTED, TRAILING
 from cvp.imgui.menu_container import MenuList
 from cvp.imgui.menu_item import menu_item
 from cvp.imgui.popups.containers import PopupList
@@ -50,9 +50,17 @@ class TailMode(BaseMode):
         self._force_select = None
         self._tails = dict()
 
+    @staticmethod
+    def resolve_filepath(file: str) -> str:
+        return str(Path(file).resolve())
+
     @property
     def config(self):
         return self.context.config.tail
+
+    @property
+    def watchdogs(self):
+        return self.context.watchdogs
 
     @property
     def selected_tail(self) -> Optional[TailTab]:
@@ -71,21 +79,52 @@ class TailMode(BaseMode):
     def on_open_file(self, file: str) -> None:
         self.open_text_file(file)
 
-    def open_text_file(self, file: str) -> None:
-        file = str(Path(file).resolve())
+    def has_scheduled_watcher(self, file: str) -> bool:
+        if not self.watchdogs.is_alive():
+            return False
+
+        file = self.resolve_filepath(file)
+        tail = self._tails.get(file)
+        if tail is None:
+            return False
+
+        if not tail.watchdog_key:
+            return False
+
+        watchdog_key = tail.watchdog_key
+        watchdog = self.watchdogs.get(watchdog_key)
+        if watchdog is None:
+            return False
+
+        return watchdog.has_watcher
+
+    def open_text_file(self, file: str, *, no_select=False) -> None:
+        file = self.resolve_filepath(file)
 
         if file in self._tails:
             raise Exception(f"File already opened: '{file}'")
 
         try:
-            self._tails[file] = TailTab.from_config(file, self.config)
+            watchdog = self.watchdogs.add_file_modified_watchdog(file, no_write=True)
+            watchdog_key = watchdog[0]
+
+            if self.watchdogs.is_alive():
+                self.watchdogs.schedule(watchdog_key)
+
+            tail = TailTab.from_config(file, self.config, watchdog_key)
+            tail.update_buffer(force=True)
+
+            self._tails[file] = tail
+            if not no_select:
+                self._force_select = file
             self.add_recent_item(file)
+
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file open failed: '{e}'", logger)
 
     def close_text_file(self, file: str) -> None:
-        file = str(Path(file).resolve())
+        file = self.resolve_filepath(file)
 
         try:
             self._tails.pop(file)
@@ -118,6 +157,15 @@ class TailMode(BaseMode):
         imgui.text(f"Autoscroll {autoscroll}")
         imgui.separator()
 
+        has_watcher = self.has_scheduled_watcher(tail.path)
+        watcher = "ON" if has_watcher else "OFF"
+        imgui.text(f"Watcher {watcher}")
+        imgui.separator()
+
+        if not has_watcher:
+            imgui.text(f"Interval {tail.interval.interval:.02f}s")
+            imgui.separator()
+
         imgui.text(tail.pathname)
         imgui.separator()
 
@@ -134,13 +182,12 @@ class TailMode(BaseMode):
         if isdir:
             return
 
-        assert src == dest
-        file = str(Path(src).resolve())
-        tail = self._tails.get(file)
-        if tail is None:
-            return
+        if tail := self._tails.get(self.resolve_filepath(src)):
+            updated = tail.update_buffer(force=True)
+            assert updated is True
 
-        tail.update_buffer()
+            if self.context.debug and 2 <= self.context.verbose:
+                logger.debug(f"Tail buffer will be updated for file: '{src}'")
 
     def on_file_menu(self) -> None:
         if menu_item("Open file"):
@@ -162,11 +209,15 @@ class TailMode(BaseMode):
 
     @staticmethod
     def do_enabled_settings_menu(tail: TailTab) -> None:
-        autoscroll = tail.autoscroll
-        if menu_item("Autoscroll", selected=autoscroll):
-            tail.autoscroll = not autoscroll
+        if menu_item("Autoscroll", selected=tail.autoscroll):
+            tail.autoscroll = not tail.autoscroll
 
     def on_settings_menu(self) -> None:
+        if menu_item("Show tabs always", selected=self.config.show_tabs_always):
+            self.config.show_tabs_always = not self.config.show_tabs_always
+
+        imgui.separator()
+
         if tail := self.selected_tail:
             self.do_enabled_settings_menu(tail)
         else:
@@ -189,19 +240,22 @@ class TailMode(BaseMode):
 
     def do_main_process(self) -> None:
         with begin_child_context("Main"):
-            if not self._tails:
-                text_centered("Please open the text file")
-            elif 1 == len(self._tails):
-                next(iter(self._tails.values())).do_process()
-            else:
-                assert 2 <= len(self._tails)
+            if self.config.show_tabs_always:
                 self.do_tabs_process()
+            else:
+                if not self._tails:
+                    text_centered("Please open the text file")
+                elif 1 == len(self._tails):
+                    next(iter(self._tails.values())).do_process()
+                else:
+                    assert 2 <= len(self._tails)
+                    self.do_tabs_process()
 
     def do_tabs_process(self) -> None:
         if imgui.begin_tab_bar("Tabs", self.TAB_FLAGS):
             remove_keys = list()
             try:
-                for file, terminal in self._tails.items():
+                for file, tail in self._tails.items():
                     flags = 0
 
                     if self._force_select == file:
@@ -217,9 +271,21 @@ class TailMode(BaseMode):
                     if tab_result.selected:
                         self.selected_submenu = file
                         try:
-                            terminal.do_process()
+                            if not self.has_scheduled_watcher(file):
+                                # If the watchdog thread is not alive,
+                                # the buffer must be updated manually.
+                                updated = tail.update_buffer()
+                                debug = self.context.debug
+                                verbose = self.context.verbose
+                                if updated and debug and 2 <= verbose:
+                                    logger.debug(f"Tail buffer updated: '{file}'")
+
+                            tail.do_process()
                         finally:
                             end_tab_item()
+
+                if imgui.tab_item_button("+", TRAILING):
+                    self._open_file_popup.show()
             finally:
                 imgui.end_tab_bar()
 

@@ -115,8 +115,9 @@ class ResourceManager(Dict[KeyT, ConfigT]):
     def exists_config_file(self, key: KeyT) -> bool:
         return self.generate_config_filepath(key).is_file()
 
-    def add(self, key: KeyT, config: ConfigT) -> None:
-        self.write_serialized_config_file(key, config)
+    def add(self, key: KeyT, config: ConfigT, *, no_write=False) -> None:
+        if not no_write:
+            self.write_serialized_config_file(key, config)
         self.__setitem__(key, config)
 
     def remove(self, key: KeyT) -> None:

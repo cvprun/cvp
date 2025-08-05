@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
 from typing import List, Optional, Tuple, Type
 from uuid import uuid4
 from weakref import ReferenceType, ref
 
-from watchdog.events import FileSystemEvent
+from watchdog.events import FileModifiedEvent, FileSystemEvent
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
@@ -147,6 +148,7 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
         filters: Optional[List[Type[FileSystemEvent]]] = None,
         enabled=False,
         managed=False,
+        no_write=False,
     ) -> Tuple[WatchdogKey, WatchdogItem]:
         if not uuid:
             uuid = str(uuid4())
@@ -163,8 +165,24 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
         )
         assert uuid == str(item.key)
 
-        self.add(item.key, item)
+        self.add(item.key, item, no_write=no_write)
         return item.key, item
+
+    def add_file_modified_watchdog(
+        self,
+        file: str,
+        no_write=False,
+    ) -> Tuple[WatchdogKey, WatchdogItem]:
+        return self.add_watchdog(
+            name=os.path.basename(file),
+            uuid=None,
+            file=file,
+            recursive=False,
+            filters=[FileModifiedEvent],
+            enabled=True,
+            managed=True,
+            no_write=no_write,
+        )
 
     def schedule(self, key: WatchdogKey) -> None:
         item = self.__getitem__(key)

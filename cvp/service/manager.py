@@ -59,15 +59,18 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
         name=SERVICE_NONAME,
         *,
         uuid: Optional[str] = None,
+        enabled=False,
+        managed=False,
+        no_write=False,
     ) -> Tuple[ServiceKey, ServiceItem]:
         if not uuid:
             uuid = str(uuid4())
         assert isinstance(uuid, str)
 
-        item = ServiceItem(uuid=uuid, name=name)
+        item = ServiceItem(uuid=uuid, name=name, enabled=enabled, managed=managed)
         assert uuid == str(item.key)
 
-        self.add(item.key, item)
+        self.add(item.key, item, no_write=no_write)
         return item.key, item
 
     class _RestartRequest(NamedTuple):

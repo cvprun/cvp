@@ -111,15 +111,18 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
         name=JOB_NONAME,
         *,
         uuid: Optional[str] = None,
+        enabled=False,
+        managed=False,
+        no_write=False,
     ) -> Tuple[JobKey, JobItem]:
         if not uuid:
             uuid = str(uuid4())
         assert isinstance(uuid, str)
 
-        item = JobItem(uuid=uuid, name=name)
+        item = JobItem(uuid=uuid, name=name, enabled=enabled, managed=managed)
         assert uuid == str(item.key)
 
-        self.add(item.key, item)
+        self.add(item.key, item, no_write=no_write)
         return item.key, item
 
     def write_unmanaged_config_files(self, *, raise_errors=False) -> None:

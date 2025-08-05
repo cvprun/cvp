@@ -22,14 +22,13 @@ from cvp.imgui.text_centered import text_centered
 from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.logging_multiline import LoggingMultiline
 from cvp.logging.loggers import scheduler_logger as logger
-from cvp.msgs.callbacks import MsgCallbacks
 from cvp.scheduler.item import JobItem, JobKey
 from cvp.scheduler.validate import validate_cronexpr
 from cvp.types.override import override
 from cvp.variables import INFINITE
 
 
-class SchedulerMode(BaseMode, MsgCallbacks):
+class SchedulerMode(BaseMode):
     __cvp_mode_name__ = "Scheduler"
     __cvp_mode_icon__ = CALENDAR_CLOCK
 
@@ -201,10 +200,13 @@ class SchedulerMode(BaseMode, MsgCallbacks):
             imgui.end_disabled()
 
         has_error = self._cronexpr_error is not None
-        if button("Schedule", disabled=is_scheduled or not item.cron or has_error):
+        schedule_disabled = is_scheduled or item.managed or not item.cron or has_error
+        unschedule_disabled = not is_scheduled or item.managed
+
+        if button("Schedule", disabled=schedule_disabled):
             self.scheduler.schedule(item.key)
         imgui.same_line()
-        if button("Unschedule", disabled=not is_scheduled):
+        if button("Unschedule", disabled=unschedule_disabled):
             self.scheduler.unschedule(item.key)
 
     def do_bottom_toolbar_process(self) -> None:

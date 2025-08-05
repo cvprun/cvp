@@ -12,6 +12,7 @@ from cvp.context.context import Context
 from cvp.imgui.begin_mode import begin_mode_context
 from cvp.imgui.menu_recent_items import menu_recent_items
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
+from cvp.msgs.callbacks import MsgCallbacks
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_map import MsgWrapper, create_msg_map
 from cvp.types.override import override
@@ -24,7 +25,7 @@ class BaseModeProtocol(Protocol):
     __cvp_mode_show__: bool
 
 
-class BaseMode(ModeInterface, BaseModeProtocol):
+class BaseMode(ModeInterface, MsgCallbacks, BaseModeProtocol):
     __cvp_mode_show__ = True
 
     _msg_mapping: Optional[Dict[int, MsgWrapper]]
