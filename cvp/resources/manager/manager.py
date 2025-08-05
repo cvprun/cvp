@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Type, TypeVar
+from typing import Callable, Dict, Iterable, List, Optional, Type, TypeVar
 
 from type_serialize import deserialize, serialize
 
@@ -65,18 +65,35 @@ class ResourceManager(Dict[KeyT, ConfigT]):
             result.append(self._key_type(name))  # type: ignore[call-arg]
         return result
 
-    def read_all_config_files(self, *, raise_errors=False) -> None:
+    def read_all_config_files(
+        self,
+        *,
+        raise_errors=False,
+        filtering: Optional[Callable[[KeyT, ConfigT], bool]] = None,
+    ) -> None:
         for key in self.list_config_filekeys():
             try:
-                self.__setitem__(key, self.read_serialized_config_file(key))
+                config = self.read_serialized_config_file(key)
+                if filtering and not filtering(key, config):
+                    continue
+
+                self.__setitem__(key, config)
             except BaseException as e:
                 if raise_errors:
                     raise
                 cls = self.class_name
                 logger.exception(f"Failed to read {cls} file '{key}' - reason: '{e}'")
 
-    def write_all_config_files(self, *, raise_errors=False) -> None:
+    def write_all_config_files(
+        self,
+        *,
+        raise_errors=False,
+        filtering: Optional[Callable[[KeyT, ConfigT], bool]] = None,
+    ) -> None:
         for key, config in self.items():
+            if filtering and not filtering(key, config):
+                continue
+
             try:
                 self.write_serialized_config_file(key, config)
             except BaseException as e:
@@ -85,10 +102,15 @@ class ResourceManager(Dict[KeyT, ConfigT]):
                 cls = self.class_name
                 logger.error(f"Failed to write {cls} file '{key}' - reason: '{e}'")
 
-    def sync(self, *, raise_errors=False) -> None:
-        self.write_all_config_files(raise_errors=raise_errors)
+    def sync(
+        self,
+        *,
+        raise_errors=False,
+        filtering: Optional[Callable[[KeyT, ConfigT], bool]] = None,
+    ) -> None:
+        self.write_all_config_files(raise_errors=raise_errors, filtering=filtering)
         self.clear()
-        self.read_all_config_files(raise_errors=raise_errors)
+        self.read_all_config_files(raise_errors=raise_errors, filtering=filtering)
 
     def exists_config_file(self, key: KeyT) -> bool:
         return self.generate_config_filepath(key).is_file()

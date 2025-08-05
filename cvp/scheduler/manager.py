@@ -121,3 +121,9 @@ class Scheduler(ResourceManager[JobKey, JobItem], SchedulerThreadInterface):
 
         self.add(item.key, item)
         return item.key, item
+
+    def write_unmanaged_config_files(self, *, raise_errors=False) -> None:
+        def _filter(__key: JobKey, __config: JobItem) -> bool:
+            return not __config.managed
+
+        self.write_all_config_files(raise_errors=raise_errors, filtering=_filter)

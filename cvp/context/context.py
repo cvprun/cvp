@@ -243,13 +243,13 @@ class Context(ContextMixins):
         self._config.write_yaml(self._home.cvp_yml)
         logger.info(f"Save the Config file: '{str(self._home.cvp_yml)}'")
 
-    def save_all_scheduler(self) -> None:
-        self._scheduler.write_all_config_files()
-        logger.info("Save all Schedule files")
+    def save_unmanaged_scheduler(self) -> None:
+        self._scheduler.write_unmanaged_config_files()
+        logger.info("Save unmanaged Schedule files")
 
-    def save_all_watchdogs(self) -> None:
-        self._watchdogs.write_all_config_files()
-        logger.info("Save all Watchdog files")
+    def save_unmanaged_watchdogs(self) -> None:
+        self._watchdogs.write_unmanaged_config_files()
+        logger.info("Save unmanaged Watchdog files")
 
     def save_all_ollamas(self) -> None:
         self._ollamas.write_all_config_files()
@@ -259,9 +259,9 @@ class Context(ContextMixins):
         self._canvases.write_all_config_files()
         logger.info("Save all Canvas files")
 
-    def save_all_services(self) -> None:
-        self._services.write_all_config_files()
-        logger.info("Save all Service files")
+    def save_unmanaged_services(self) -> None:
+        self._services.write_unmanaged_config_files()
+        logger.info("Save unmanaged Service files")
 
     def save_flow_graph(self, graph: FlowGraph) -> None:
         self._flows.write_graph_file(graph)
@@ -301,11 +301,11 @@ class Context(ContextMixins):
 
     def save_all(self) -> None:
         self.save_config()
-        self.save_all_scheduler()
-        self.save_all_watchdogs()
+        self.save_unmanaged_scheduler()
+        self.save_unmanaged_watchdogs()
         self.save_all_ollamas()
         self.save_all_canvases()
-        self.save_all_services()
+        self.save_unmanaged_services()
         self.save_all_flow_graphs()
         self.save_all_wsdiscovery()
         self.save_all_downloader()

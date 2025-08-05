@@ -238,3 +238,9 @@ class ServiceManager(ResourceManager[ServiceKey, ServiceItem]):
 
     def get_pid_file_path(self, key: ServiceKey):
         return self._processes_path.get_pid_path(str(key))
+
+    def write_unmanaged_config_files(self, *, raise_errors=False) -> None:
+        def _filter(__key: ServiceKey, __config: ServiceItem) -> bool:
+            return not __config.managed
+
+        self.write_all_config_files(raise_errors=raise_errors, filtering=_filter)

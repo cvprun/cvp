@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from pathlib import Path
 from typing import Dict, Final, Optional
 
 from imgui_bundle import imgui
@@ -71,6 +72,8 @@ class TailMode(BaseMode):
         self.open_text_file(file)
 
     def open_text_file(self, file: str) -> None:
+        file = str(Path(file).resolve())
+
         if file in self._tails:
             raise Exception(f"File already opened: '{file}'")
 
@@ -82,6 +85,8 @@ class TailMode(BaseMode):
             self.context.toast_error(f"Text file open failed: '{e}'", logger)
 
     def close_text_file(self, file: str) -> None:
+        file = str(Path(file).resolve())
+
         try:
             self._tails.pop(file)
             logger.info(f"File closed successfully: '{file}'")
@@ -123,6 +128,19 @@ class TailMode(BaseMode):
             return True
 
         return False
+
+    @override
+    def on_file_modified(self, src: str, dest: str, isdir: bool):
+        if isdir:
+            return
+
+        assert src == dest
+        file = str(Path(src).resolve())
+        tail = self._tails.get(file)
+        if tail is None:
+            return
+
+        tail.update_buffer()
 
     def on_file_menu(self) -> None:
         if menu_item("Open file"):

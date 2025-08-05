@@ -74,6 +74,8 @@ class TailTab:
             autoscroll=config.autoscroll,
         )
 
-    def do_process(self) -> None:
+    def update_buffer(self) -> None:
         self.buffer.update_safe()
+
+    def do_process(self) -> None:
         self.canvas.do_process(self.buffer.lines)

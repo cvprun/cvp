@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple, Type
 from uuid import uuid4
 from weakref import ReferenceType, ref
 
+from watchdog.events import FileSystemEvent
 from watchdog.observers import Observer
 from watchdog.observers.api import BaseObserver
 
@@ -141,12 +142,25 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
         name=WATCHDOG_NONAME,
         *,
         uuid: Optional[str] = None,
+        file: Optional[str] = None,
+        recursive=False,
+        filters: Optional[List[Type[FileSystemEvent]]] = None,
+        enabled=False,
+        managed=False,
     ) -> Tuple[WatchdogKey, WatchdogItem]:
         if not uuid:
             uuid = str(uuid4())
         assert isinstance(uuid, str)
 
-        item = WatchdogItem(uuid=uuid, name=name)
+        item = WatchdogItem(
+            uuid=uuid,
+            name=name,
+            file=file,
+            recursive=recursive,
+            filters=filters,
+            enabled=enabled,
+            managed=managed,
+        )
         assert uuid == str(item.key)
 
         self.add(item.key, item)
@@ -215,3 +229,9 @@ class WatchdogManager(ResourceManager[WatchdogKey, WatchdogItem]):
                 if raise_errors:
                     raise
                 logger.error(f"Failed to unschedule '{key}' - reason: '{e}'")
+
+    def write_unmanaged_config_files(self, *, raise_errors=False) -> None:
+        def _filter(__key: WatchdogKey, __config: WatchdogItem) -> bool:
+            return not __config.managed
+
+        self.write_all_config_files(raise_errors=raise_errors, filtering=_filter)
