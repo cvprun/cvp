@@ -25,8 +25,6 @@ from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.logging_multiline import LoggingMultiline
 from cvp.logging.loggers import watchdog_logger as logger
 from cvp.msgs.callbacks import MsgCallbacks
-from cvp.msgs.msg import Msg
-from cvp.msgs.msg_map import create_msg_map
 from cvp.types.override import override
 from cvp.watchdog.item import WatchdogItem, WatchdogKey
 
@@ -72,7 +70,7 @@ class WatchdogMode(BaseMode, MsgCallbacks):
             self._confirm_clear,
             self._file_browser,
         )
-        self._msg_mapping = create_msg_map(self)
+        # self._msg_mapping = create_msg_map(self)
         self._logging_widget = LoggingMultiline(logger)
 
     @property
@@ -105,13 +103,6 @@ class WatchdogMode(BaseMode, MsgCallbacks):
         selected_watchdog = self.selected_watchdog
         assert selected_watchdog is not None
         selected_watchdog.file = file
-
-    @override
-    def on_msg(self, msg: Msg) -> bool:
-        if wrapper := self._msg_mapping.get(msg.mtype):
-            return wrapper(msg)
-        else:
-            return False
 
     @override
     def on_file_moved(self, src: str, dest: str, isdir: bool):

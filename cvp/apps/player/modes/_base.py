@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from typing import Optional, Protocol, Union, runtime_checkable
+from typing import Dict, Optional, Protocol, Union, runtime_checkable
 
 from imgui_bundle import imgui
 from pygame.event import Event
@@ -13,6 +13,7 @@ from cvp.imgui.begin_mode import begin_mode_context
 from cvp.imgui.menu_recent_items import menu_recent_items
 from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.msgs.msg import Msg
+from cvp.msgs.msg_map import MsgWrapper, create_msg_map
 from cvp.types.override import override
 
 
@@ -26,9 +27,12 @@ class BaseModeProtocol(Protocol):
 class BaseMode(ModeInterface, BaseModeProtocol):
     __cvp_mode_show__ = True
 
+    _msg_mapping: Optional[Dict[int, MsgWrapper]]
+
     def __init__(self, context: Context):
         assert isinstance(self, BaseModeProtocol)
         self._context = context
+        self._msg_mapping = None
 
     @property
     def context(self) -> Context:
@@ -63,7 +67,15 @@ class BaseMode(ModeInterface, BaseModeProtocol):
 
     @override
     def on_msg(self, msg: Msg) -> bool:
-        return False
+        if self._msg_mapping is None:
+            self._msg_mapping = create_msg_map(self)
+        assert self._msg_mapping is not None
+
+        if wrapper := self._msg_mapping.get(msg.mtype):
+            assert isinstance(wrapper, MsgWrapper)
+            return wrapper(msg)
+        else:
+            return False
 
     @override
     def on_keyboard(self, keys: ScancodeWrapper) -> None:

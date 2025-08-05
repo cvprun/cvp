@@ -23,8 +23,6 @@ from cvp.imgui.tooltip import hovered_tooltip_text
 from cvp.imgui.widgets.logging_multiline import LoggingMultiline
 from cvp.logging.loggers import scheduler_logger as logger
 from cvp.msgs.callbacks import MsgCallbacks
-from cvp.msgs.msg import Msg
-from cvp.msgs.msg_map import create_msg_map
 from cvp.scheduler.item import JobItem, JobKey
 from cvp.scheduler.validate import validate_cronexpr
 from cvp.types.override import override
@@ -64,7 +62,6 @@ class SchedulerMode(BaseMode, MsgCallbacks):
         )
 
         self._popups = PopupList(self._confirm_remove, self._confirm_clear)
-        self._msg_mapping = create_msg_map(self)
         self._logging_widget = LoggingMultiline(logger)
 
         self._cronexpr_error = None
@@ -93,13 +90,6 @@ class SchedulerMode(BaseMode, MsgCallbacks):
         if not value:
             return
         self.scheduler.remove_all()
-
-    @override
-    def on_msg(self, msg: Msg) -> bool:
-        if wrapper := self._msg_mapping.get(msg.mtype):
-            return wrapper(msg)
-        else:
-            return False
 
     @override
     def on_job_scheduled(self, key: str, timestamp: datetime):
