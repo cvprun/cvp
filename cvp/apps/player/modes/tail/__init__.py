@@ -8,7 +8,7 @@ from pygame import DROPFILE
 from pygame.event import Event
 
 from cvp.apps.player.modes._base import BaseMode
-from cvp.apps.player.modes.tail.canvas import TailCanvas
+from cvp.apps.player.modes.tail.tab import TailTab
 from cvp.assets.fonts.mdi import FILE_EYE
 from cvp.context.context import Context
 from cvp.imgui.begin_child import begin_child_context
@@ -35,7 +35,7 @@ class TailMode(BaseMode):
     TAB_FLAGS: Final[int] = REORDERABLE | AUTO_SELECT_NEW_TABS | FITTING_POLICY_SCROLL
 
     _force_select: Optional[str]
-    _tails: Dict[str, TailCanvas]
+    _tails: Dict[str, TailTab]
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -54,7 +54,7 @@ class TailMode(BaseMode):
         return self.context.config.tail
 
     @property
-    def selected_tail(self) -> Optional[TailCanvas]:
+    def selected_tail(self) -> Optional[TailTab]:
         if not self._tails:
             return None
         elif 1 == len(self._tails):
@@ -75,7 +75,7 @@ class TailMode(BaseMode):
             raise Exception(f"File already opened: '{file}'")
 
         try:
-            self._tails[file] = TailCanvas.from_config(file, self.config)
+            self._tails[file] = TailTab.from_config(file, self.config)
             self.add_recent_item(file)
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
@@ -99,7 +99,7 @@ class TailMode(BaseMode):
             imgui.text("No file selected.")
             return
 
-        assert isinstance(tail, TailCanvas)
+        assert isinstance(tail, TailTab)
 
         maxlen = tail.lines.maxlen if tail.lines.maxlen is not None else "INF"
         imgui.text(f"Lines {len(tail.lines)}, Max {maxlen}")
@@ -143,7 +143,7 @@ class TailMode(BaseMode):
         menu_item("Autoscroll", enabled=False)
 
     @staticmethod
-    def do_enabled_settings_menu(tail: TailCanvas) -> None:
+    def do_enabled_settings_menu(tail: TailTab) -> None:
         autoscroll = tail.autoscroll
         if menu_item("Autoscroll", selected=autoscroll):
             tail.autoscroll = not autoscroll

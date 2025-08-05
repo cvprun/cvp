@@ -12,7 +12,7 @@ from cvp.variables import (
 )
 
 
-class TailCanvas:
+class TailTab:
     def __init__(
         self,
         path: str,
