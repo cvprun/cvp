@@ -90,6 +90,6 @@ def launch_mode(cls: Type[ModeInterface], context: Optional[Context] = None) -> 
         minimize=args.minimize,
         font_name=args.default_font_name,
         font_size=args.default_font_size,
-        font_init=args.no_default_font,
+        font_init=not args.no_default_font,
     )
     launcher.run()

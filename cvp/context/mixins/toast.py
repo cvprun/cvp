@@ -19,7 +19,12 @@ class ToastMixin(BaseContextMixin):
         self,
         message: Union[BaseException, str],
         logger: Optional[Logger] = None,
+        *,
+        error: Optional[BaseException] = None,
     ):
+        if logger and error and self._config.debug and 2 <= self._config.verbose:
+            logger.exception(error)
+            logger = None
         return self._msgs.toast_error(message, logger)
 
     def toast_warning(

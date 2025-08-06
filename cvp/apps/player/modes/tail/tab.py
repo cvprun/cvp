@@ -24,11 +24,19 @@ class TailTab:
         newline=DEFAULT_STRING_NEWLINE,
         initial_lines: Optional[Iterable[str]] = None,
         autoscroll=True,
+        show_lineno=False,
+        show_whitespace=False,
         interval: Optional[float] = None,
         latest_time: Optional[float] = None,
         watchdog_key: Optional[WatchdogKey] = None,
     ):
-        self.canvas = InputTerminal(label=path, autoscroll=autoscroll)
+        self.canvas = InputTerminal(
+            label=path,
+            readonly=True,
+            autoscroll=autoscroll,
+            show_lineno=show_lineno,
+            show_whitespace=show_whitespace,
+        )
         self.buffer = LinesDeque(
             path=path,
             encoding=encoding,
@@ -63,6 +71,22 @@ class TailTab:
         self.canvas.autoscroll = value
 
     @property
+    def show_lineno(self) -> bool:
+        return self.canvas.show_lineno
+
+    @show_lineno.setter
+    def show_lineno(self, value: bool) -> None:
+        self.canvas.show_lineno = value
+
+    @property
+    def show_whitespace(self) -> bool:
+        return self.canvas.show_whitespace
+
+    @show_whitespace.setter
+    def show_whitespace(self, value: bool) -> None:
+        self.canvas.show_whitespace = value
+
+    @property
     def newline(self) -> str:
         return self.buffer.newline
 
@@ -75,6 +99,7 @@ class TailTab:
         cls,
         path: str,
         config: TailConfig,
+        *,
         watchdog_key: Optional[WatchdogKey] = None,
     ):
         return cls(
@@ -84,6 +109,8 @@ class TailTab:
             maxlen=config.maxlen,
             newline=config.newline,
             autoscroll=config.autoscroll,
+            show_lineno=config.show_lineno,
+            show_whitespace=config.show_whitespace,
             interval=config.manually_update_interval,
             watchdog_key=watchdog_key,
         )
@@ -95,5 +122,5 @@ class TailTab:
         else:
             return False
 
-    def do_process(self) -> None:
-        self.canvas.do_process(self.buffer.lines)
+    def do_process(self, *, debug=False) -> None:
+        self.canvas.do_process(self.buffer.lines, debug=debug)

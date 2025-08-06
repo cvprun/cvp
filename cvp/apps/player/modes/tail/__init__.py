@@ -111,7 +111,7 @@ class TailMode(BaseMode):
             if self.watchdogs.is_alive():
                 self.watchdogs.schedule(watchdog_key)
 
-            tail = TailTab.from_config(file, self.config, watchdog_key)
+            tail = TailTab.from_config(file, self.config, watchdog_key=watchdog_key)
             tail.update_buffer(force=True)
 
             self._tails[file] = tail
@@ -121,7 +121,7 @@ class TailMode(BaseMode):
 
             logger.info(f"File opened successfully: '{file}'")
         except BaseException as e:
-            self.context.toast_error(f"Text file open failed: '{e}'", logger)
+            self.context.toast_error(f"Text file open failed: '{e}'", logger, error=e)
 
     def close_text_file(self, file: str) -> None:
         file = self.resolve_filepath(file)
@@ -130,7 +130,7 @@ class TailMode(BaseMode):
             self._tails.pop(file)
             logger.info(f"File closed successfully: '{file}'")
         except BaseException as e:
-            self.context.toast_error(f"Text file close failed: '{e}'", logger)
+            self.context.toast_error(f"Text file close failed: '{e}'", logger, error=e)
 
     @override
     def on_main_menu(self) -> None:
@@ -206,11 +206,17 @@ class TailMode(BaseMode):
     @staticmethod
     def do_disabled_settings_menu() -> None:
         menu_item("Autoscroll", enabled=False)
+        menu_item("Show lineno", enabled=False)
+        menu_item("Show whitespace", enabled=False)
 
     @staticmethod
     def do_enabled_settings_menu(tail: TailTab) -> None:
         if menu_item("Autoscroll", selected=tail.autoscroll):
             tail.autoscroll = not tail.autoscroll
+        if menu_item("Show lineno", selected=tail.show_lineno):
+            tail.show_lineno = not tail.show_lineno
+        if menu_item("Show whitespace", selected=tail.show_whitespace):
+            tail.show_whitespace = not tail.show_whitespace
 
     def on_settings_menu(self) -> None:
         if menu_item("Show tabs always", selected=self.config.show_tabs_always):
@@ -280,7 +286,7 @@ class TailMode(BaseMode):
                                 if updated and debug and 2 <= verbose:
                                     logger.debug(f"Tail buffer updated: '{file}'")
 
-                            tail.do_process()
+                            tail.do_process(debug=self.context.debug)
                         finally:
                             end_tab_item()
 

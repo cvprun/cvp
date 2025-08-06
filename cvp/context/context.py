@@ -112,7 +112,7 @@ class Context(ContextMixins):
         self._process_pool = ProcessPoolExecutor(max_workers=process_workers)
         logger.info(f"Create ProcessPoolExecutor(max_workers={process_workers}) of PM")
 
-        if self._home.cvp_yml.is_file():
+        if not self._home.cvp_yml.is_file():
             logger.warning("Detect OpenGL config via subprocess ...")
             if opengl_config := _fetch_best_opengl_config():
                 logger.info(f"Force EGL: {opengl_config.force_egl}")

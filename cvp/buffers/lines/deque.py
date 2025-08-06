@@ -63,12 +63,27 @@ class LinesDeque(LinesBase):
 
     @override
     def write(self, text: str) -> None:
+        """
+        Do not implement this by recursively calling `self.write()` method.
+        Writing very large text may cause a `RecursionError`.
+        """
+
         if not text:
             return
 
-        index = text.find(self._newline)
-        if 0 <= index:
-            prefix_text = text[:index]
+        remain_text = text
+
+        while remain_text:
+            index = remain_text.find(self._newline)
+            if -1 == index:
+                if self._lines:
+                    self._lines[-1] += remain_text
+                else:
+                    self._lines.append(remain_text)
+                return
+
+            assert 0 <= index
+            prefix_text = remain_text[:index]
             if self._lines:
                 self._lines[-1] += prefix_text
             else:
@@ -77,11 +92,4 @@ class LinesDeque(LinesBase):
             self._lines.append(str())  # Add empty text at the newline position
 
             remain_begin = index + len(self._newline)
-            remain_text = text[remain_begin:]
-            self.write(remain_text)
-        else:
-            assert index == -1
-            if self._lines:
-                self._lines[-1] += text
-            else:
-                self._lines.append(text)
+            remain_text = remain_text[remain_begin:]
