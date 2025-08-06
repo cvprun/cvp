@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import Optional, Sequence, Union
+from math import floor
+from typing import Optional, Sequence, Tuple, Union
 
 from imgui_bundle import imgui
 
@@ -56,6 +57,17 @@ class InputTerminal:
         self._control_flags = int(ALL_BUTTON_FLAGS)
         self._mouse_dragging_threshold = -1.0
         self._use_only_alt_and_left_dragging = False
+
+        self._terminal_cursor = 0, 0
+        self._terminal_size = 0, 0
+
+    @property
+    def terminal_cursor(self) -> Tuple[int, int]:
+        return self._terminal_cursor
+
+    @property
+    def terminal_size(self) -> Tuple[int, int]:
+        return self._terminal_size
 
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
@@ -142,8 +154,11 @@ class InputTerminal:
         lineno_text_size = imgui.calc_text_size(lineno_width_dummy_text)
 
         line_begin_x = lineno_text_size.x + item_spacing.x if self.show_lineno else 0
-        line_height = imgui.get_text_line_height()
-        full_text_height = (line_height + item_spacing_y_half) * len(lines)
+        line_height = imgui.get_text_line_height() + item_spacing_y_half
+        full_text_height = line_height * len(lines)
+        screen_width = floor(self._canvas_size[0] / imgui.calc_text_size("0").x)
+        screen_height = floor(self._canvas_size[1] / line_height)
+        self._terminal_size = screen_width, screen_height
 
         if self.show_lineno:
             # Draw a vertical line matching the width of the line number area.

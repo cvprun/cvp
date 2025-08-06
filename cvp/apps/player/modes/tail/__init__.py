@@ -166,6 +166,15 @@ class TailMode(BaseMode):
             imgui.text(f"Interval {tail.interval.interval:.02f}s")
             imgui.separator()
 
+        if self.context.debug:
+            tw, th = tail.canvas.terminal_size
+            imgui.text(f"Term {tw}x{th}")
+            imgui.separator()
+
+            tx, ty = tail.canvas.terminal_cursor
+            imgui.text(f"Cur {tx}:{ty}")
+            imgui.separator()
+
         imgui.text(tail.pathname)
         imgui.separator()
 
