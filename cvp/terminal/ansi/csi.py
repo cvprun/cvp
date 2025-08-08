@@ -3,7 +3,7 @@
 
 from typing import Final, List, NamedTuple
 
-from cvp.terminal.codes import CSI, ESC
+from cvp.terminal.ansi.codes import CSI, ESC
 
 
 class CsiCommand(NamedTuple):

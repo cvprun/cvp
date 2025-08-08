@@ -14,11 +14,11 @@ from cvp.imgui.flags.child import BORDERS, ChildFlags
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.window import WindowFlags
 from cvp.logging.loggers import imgui_logger as logger
-from cvp.terminal.codes import CSI, ESC
-from cvp.terminal.csi import parse_csi_command
-from cvp.terminal.fe import is_fe_escape_sequence
-from cvp.terminal.palette import TerminalPalette
-from cvp.terminal.style import TerminalStyle
+from cvp.terminal.ansi.codes import CSI, ESC
+from cvp.terminal.ansi.csi import parse_csi_command
+from cvp.terminal.ansi.fe import is_fe_escape_sequence
+from cvp.terminal.ansi.palette import TerminalPalette
+from cvp.terminal.ansi.style import TerminalStyle
 from cvp.types.colors import RED_RGB
 from cvp.values.delta import DeltaValue
 from cvp.variables import NOT_FOUND_INDEX
