@@ -11,13 +11,14 @@ from cvp.palette import (
     registered_color_count,
     registered_palette_keys,
     tableau_palette,
+    vga_palette,
     xkcd_palette,
 )
 
 
 class ModulesTestCase(TestCase):
     def test_default(self):
-        expect_names = {"basic", "css4", "extended", "flat", "tableau", "xkcd"}
+        expect_names = {"basic", "css4", "extended", "flat", "tableau", "vga", "xkcd"}
         actual_names = set(registered_palette_keys())
         self.assertSetEqual(expect_names, actual_names)
 
@@ -36,6 +37,9 @@ class ModulesTestCase(TestCase):
     def test_tableau(self):
         self.assertEqual(10, len(tableau_palette()))
 
+    def test_vga(self):
+        self.assertEqual(16, len(vga_palette()))
+
     def test_xkcd(self):
         self.assertEqual(938, len(xkcd_palette()))
 
@@ -47,6 +51,7 @@ class ModulesTestCase(TestCase):
                 len(extended_palette()),
                 len(flat_palette()),
                 len(tableau_palette()),
+                len(vga_palette()),
                 len(xkcd_palette()),
             )
         )

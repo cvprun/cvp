@@ -12,6 +12,7 @@ from cvp.variables import (
     DEFAULT_STRING_ENCODING,
     DEFAULT_STRING_ERRORS,
     DEFAULT_STRING_NEWLINE,
+    NOT_FOUND_INDEX,
 )
 
 
@@ -75,7 +76,7 @@ class LinesDeque(LinesBase):
 
         while remain_text:
             index = remain_text.find(self._newline)
-            if -1 == index:
+            if index == NOT_FOUND_INDEX:
                 if self._lines:
                     self._lines[-1] += remain_text
                 else:

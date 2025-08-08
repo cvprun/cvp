@@ -52,6 +52,7 @@ _css4: Final[str] = "css4"
 _extended: Final[str] = "extended"
 _flat: Final[str] = "flat"
 _tableau: Final[str] = "tableau"
+_vga: Final[str] = "vga"
 _xkcd: Final[str] = "xkcd"
 
 
@@ -81,6 +82,11 @@ def tableau_palette():
 
 
 @lru_cache
+def vga_palette():
+    return _load_palette_from_module_name(_vga)
+
+
+@lru_cache
 def xkcd_palette():
     return _load_palette_from_module_name(_xkcd)
 
@@ -93,6 +99,7 @@ def global_palette_map() -> Dict[str, Dict[str, RGB]]:
     result[_extended] = extended_palette()
     result[_flat] = flat_palette()
     result[_tableau] = tableau_palette()
+    result[_vga] = vga_palette()
     result[_xkcd] = xkcd_palette()
     return result
 

@@ -13,11 +13,22 @@ from cvp.imgui.flags.button import ALL_BUTTON_FLAGS
 from cvp.imgui.flags.child import BORDERS, ChildFlags
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.window import WindowFlags
+from cvp.logging.loggers import imgui_logger as logger
+from cvp.terminal.codes import CSI, ESC
+from cvp.terminal.csi import parse_csi_command
+from cvp.terminal.fe import is_fe_escape_sequence
+from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.style import TerminalStyle
 from cvp.types.colors import RED_RGB
 from cvp.values.delta import DeltaValue
+from cvp.variables import NOT_FOUND_INDEX
 
 
-class InputTerminal:
+class InputAnsiEscapeText:
+    """
+    https://en.wikipedia.org/wiki/ANSI_escape_code
+    """
+
     def __init__(
         self,
         label: str,
@@ -61,6 +72,9 @@ class InputTerminal:
         self._terminal_cursor = 0, 0
         self._terminal_size = 0, 0
 
+        self._palette = TerminalPalette()
+        self._style = TerminalStyle()
+
     @property
     def terminal_cursor(self) -> Tuple[int, int]:
         return self._terminal_cursor
@@ -68,6 +82,46 @@ class InputTerminal:
     @property
     def terminal_size(self) -> Tuple[int, int]:
         return self._terminal_size
+
+    @property
+    def border_color(self) -> int:
+        color = imgui.get_style_color_vec4(color_var.BORDER)
+        return imgui.get_color_u32(color)
+
+    @property
+    def text_color(self) -> int:
+        color = imgui.get_style_color_vec4(color_var.TEXT)
+        return imgui.get_color_u32(color)
+
+    @property
+    def text_disabled_color(self) -> int:
+        color = imgui.get_style_color_vec4(color_var.TEXT_DISABLED)
+        return imgui.get_color_u32(color)
+
+    @property
+    def error_color(self) -> int:
+        r, g, b = RED_RGB
+        return imgui.get_color_u32((r, g, b, 0.8))
+
+    @property
+    def border_width(self) -> float:
+        return imgui.get_style().child_border_size
+
+    @property
+    def item_spacing(self):
+        return imgui.get_style().item_spacing
+
+    @property
+    def item_spacing_x_half(self) -> float:
+        return self.item_spacing.x / 2.0
+
+    @property
+    def item_spacing_y_half(self) -> float:
+        return self.item_spacing.y / 2.0
+
+    @property
+    def text_line_height(self) -> float:
+        return imgui.get_text_line_height()
 
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
@@ -134,37 +188,24 @@ class InputTerminal:
         self._hovering.update(imgui.is_item_hovered())
         self._focusing.update(imgui.is_item_focused())
 
-        border_color = imgui.get_style_color_vec4(color_var.BORDER)
-        text_color = imgui.get_style_color_vec4(color_var.TEXT)
-        text_disabled_color = imgui.get_style_color_vec4(color_var.TEXT_DISABLED)
-
-        border_color_u32 = imgui.get_color_u32(border_color)
-        text_color_u32 = imgui.get_color_u32(text_color)
-        text_disabled_color_u32 = imgui.get_color_u32(text_disabled_color)
-        error_color_u32 = imgui.get_color_u32((*RED_RGB, 0.8))
-
-        border_width = imgui.get_style().child_border_size
-
-        item_spacing = imgui.get_style().item_spacing
-        item_spacing_x_half = item_spacing.x / 2
-        item_spacing_y_half = item_spacing.y / 2
-
         lineno_width = max(1, len(str(len(lines))))
         lineno_width_dummy_text = "0" * lineno_width
         lineno_text_size = imgui.calc_text_size(lineno_width_dummy_text)
 
-        line_begin_x = lineno_text_size.x + item_spacing.x if self.show_lineno else 0
-        line_height = imgui.get_text_line_height() + item_spacing_y_half
+        item_spacing_x = self.item_spacing.x
+        line_begin_x = lineno_text_size.x + item_spacing_x if self.show_lineno else 0.0
+        line_height = self.text_line_height + self.item_spacing_y_half
         full_text_height = line_height * len(lines)
+
         screen_width = floor(self._canvas_size[0] / imgui.calc_text_size("0").x)
         screen_height = floor(self._canvas_size[1] / line_height)
         self._terminal_size = screen_width, screen_height
 
         if self.show_lineno:
             # Draw a vertical line matching the width of the line number area.
-            p1 = sx + lineno_text_size.x + item_spacing_x_half, 0.0
+            p1 = sx + lineno_text_size.x + self.item_spacing_x_half, 0.0
             p2 = p1[0], max(sy + rh, full_text_height)
-            self._draw_list.add_line(p1, p2, border_color_u32, border_width)
+            self._draw_list.add_line(p1, p2, self.border_color, self.border_width)
 
         imgui.set_cursor_pos(cursor_pos)
 
@@ -184,26 +225,120 @@ class InputTerminal:
                     lineno_pos = line_sx, line_sy
                     self._draw_list.add_text(
                         lineno_pos,
-                        text_disabled_color_u32,
+                        self.text_disabled_color,
                         lineno_text,
                     )
 
                 line_text = lines[i]
-                line_text_size = imgui.calc_text_size(line_text)
                 line_text_pos = line_sx + line_begin_x, line_sy
-                self._draw_list.add_text(line_text_pos, text_color_u32, line_text)
+
+                # line_text_size = imgui.calc_text_size(line_text)
+                # line_text_size_x = line_text_size.x
+                # line_text_size_y = line_text_size.y
+                # self._draw_list.add_text(line_text_pos, self.text_color, line_text)
+
+                line_text_pos2 = self.do_line_process(line_text, line_text_pos)
+                line_text_size_x = line_text_pos2[0] - line_text_pos[0]
+                line_text_size_y = line_text_pos2[1] - line_text_pos[1]
 
                 if debug:
                     x1 = line_screen_pos.x + line_begin_x
                     y1 = line_screen_pos.y
-                    x2 = x1 + line_text_size.x
-                    y2 = y1 + line_text_size.y
+                    x2 = x1 + line_text_size_x
+                    y2 = y1 + line_text_size_y
                     p1 = x1, y1
                     p2 = x2, y2
-                    self._draw_list.add_rect(p1, p2, error_color_u32)
+                    self._draw_list.add_rect(p1, p2, self.error_color)
 
                 # Advance the cursor position manually for the next line.
                 next_pos_x = line_cx
-                next_pos_y = line_cy + line_text_size.y + item_spacing_y_half
+                next_pos_y = line_cy + line_height
                 next_pos = next_pos_x, next_pos_y
                 imgui.set_cursor_pos(next_pos)
+
+    def do_line_process(
+        self,
+        text: str,
+        pos: Tuple[float, float],
+        *,
+        debug=False,
+    ) -> Tuple[float, float]:
+        remain_text = text
+        cx, cy = pos
+
+        while remain_text:
+            esc_index = remain_text.find(ESC)
+            if esc_index == NOT_FOUND_INDEX:
+                cx, cy = self.do_text_process(remain_text, (cx, cy))
+                return cx, cy
+
+            assert 0 <= esc_index
+            prefix_text = remain_text[:esc_index]
+            cx, cy = self.do_text_process(prefix_text, (cx, cy))
+
+            assert remain_text[esc_index] == ESC
+            control_code_index = esc_index + 1
+            if len(remain_text) <= control_code_index:
+                # Ignore if there is no character after ESC.
+                return cx, cy
+
+            control_code = remain_text[control_code_index]
+
+            if not is_fe_escape_sequence(control_code):
+                # Treat as an invalid sequence.
+                remain_text = remain_text[control_code_index:]
+                continue
+
+            # If the ESC is followed by a byte in the range 0x40 to 0x5F,
+            # the escape sequence is of type Fe. Its interpretation is delegated to the
+            # applicable C1 control code standard
+
+            if control_code != CSI:
+                cx, cy = self.do_error_text_process(control_code, (cx, cy))
+                remain_index = control_code_index + 1
+                remain_text = remain_text[remain_index:]
+                continue
+
+            assert control_code == CSI  # Control Sequence Introducer
+            try:
+                command = parse_csi_command(remain_text[esc_index:])
+                command_text = command.full
+                remain_text = remain_text[len(command_text) :]
+            except ValueError as e:
+                if debug:
+                    logger.warning(e)
+                cx, cy = self.do_text_process(control_code, (cx, cy))
+                remain_index = control_code_index + 1
+                remain_text = remain_text[remain_index:]
+
+        return cx, cy
+
+    def do_error_text_process(
+        self,
+        text: str,
+        pos: Tuple[float, float],
+    ) -> Tuple[float, float]:
+        if not text:
+            return pos
+
+        cx, cy = pos
+        text_size = imgui.calc_text_size(text)
+        self._draw_list.add_text(pos, self.error_color, text)
+
+        p2 = cx + text_size.x, cy + text_size.y
+        self._draw_list.add_rect(pos, p2, self.error_color)
+
+        return cx + text_size.x, cy
+
+    def do_text_process(
+        self,
+        text: str,
+        pos: Tuple[float, float],
+    ) -> Tuple[float, float]:
+        if not text:
+            return pos
+
+        cx, cy = pos
+        text_size = imgui.calc_text_size(text)
+        self._draw_list.add_text(pos, self.text_color, text)
+        return cx + text_size.x, cy

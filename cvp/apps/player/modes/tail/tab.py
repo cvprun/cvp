@@ -4,7 +4,7 @@ from typing import Iterable, Optional
 
 from cvp.buffers.lines.deque import LinesDeque
 from cvp.config.sections.tail import TailConfig
-from cvp.imgui.widgets.input_terminal import InputTerminal
+from cvp.imgui.widgets.input_ansi_escape_text import InputAnsiEscapeText
 from cvp.values.interval import IntervalTimer
 from cvp.variables import (
     DEFAULT_STRING_ENCODING,
@@ -30,7 +30,7 @@ class TailTab:
         latest_time: Optional[float] = None,
         watchdog_key: Optional[WatchdogKey] = None,
     ):
-        self.canvas = InputTerminal(
+        self.canvas = InputAnsiEscapeText(
             label=path,
             readonly=True,
             autoscroll=autoscroll,
