@@ -26,6 +26,13 @@ from cvp.types.colors import RGB, RGBA
 """
 
 
+def argb8888_to_uint32(a: int, r: int, g: int, b: int) -> int:
+    if not (0 <= a <= 255 and 0 <= r <= 255 and 0 <= g <= 255 and 0 <= b <= 255):
+        raise ValueError("8-bit RGBA values must be in [0, 255]")
+
+    return (a << 24) | (r << 16) | (g << 8) | b
+
+
 def rgba_to_uint32(rgba: RGBA) -> int:
     """
     Convert an RGBA tuple (float, float, float, float) in [0.0, 1.0] to a 32-bit integer
@@ -40,7 +47,7 @@ def rgba_to_uint32(rgba: RGBA) -> int:
     gi = int(round(g * 255))
     bi = int(round(b * 255))
 
-    return (ai << 24) | (ri << 16) | (gi << 8) | bi
+    return argb8888_to_uint32(ai, ri, gi, bi)
 
 
 def rgb_to_uint32(rgb: RGB, a=1.0) -> int:
@@ -61,7 +68,7 @@ def rgb_to_uint32(rgb: RGB, a=1.0) -> int:
     gi = int(round(g * 255))
     bi = int(round(b * 255))
 
-    return (ai << 24) | (ri << 16) | (gi << 8) | bi
+    return argb8888_to_uint32(ai, ri, gi, bi)
 
 
 def uint32_to_rgba(value: int) -> RGBA:

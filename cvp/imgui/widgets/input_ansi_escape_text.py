@@ -307,8 +307,7 @@ class InputAnsiEscapeText:
         Select Graphic Rendition
         """
         assert 1 <= len(args)
-        n0 = args[0]
-        match n0:
+        match args[0]:
             # --------------------------------------------------------------------------
             case sgr.RESET:
                 self._style.reset()
@@ -329,7 +328,7 @@ class InputAnsiEscapeText:
             case sgr.FG_COLOR_WHITE:
                 self._style.foreground = self._palette.white
             case sgr.FG_COLOR_EXTENDED:
-                pass
+                self._style.foreground = sgr.get_extended_color_with_parameters(*args)
             case sgr.FG_COLOR_DEFAULT:
                 self._style.foreground = None
             # --------------------------------------------------------------------------
@@ -350,7 +349,7 @@ class InputAnsiEscapeText:
             case sgr.BG_COLOR_WHITE:
                 self._style.background = self._palette.white
             case sgr.BG_COLOR_EXTENDED:
-                pass
+                self._style.background = sgr.get_extended_color_with_parameters(*args)
             case sgr.BG_COLOR_DEFAULT:
                 self._style.background = None
             # --------------------------------------------------------------------------
