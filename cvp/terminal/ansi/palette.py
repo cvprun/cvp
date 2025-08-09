@@ -8,6 +8,7 @@ from cvp.colors.convert.imgui import (
     uint32_to_rgb,
     uint32_to_rgba,
 )
+from cvp.palette import basic
 from cvp.palette.vga import (
     BLACK,
     BLUE,
@@ -48,6 +49,11 @@ class TerminalPalette:
     bright_magenta: int = field(default_factory=lambda: rgb_to_uint32(BRIGHT_MAGENTA))
     bright_cyan: int = field(default_factory=lambda: rgb_to_uint32(BRIGHT_CYAN))
     bright_white: int = field(default_factory=lambda: rgb_to_uint32(BRIGHT_WHITE))
+
+    error: int = field(default_factory=lambda: rgb_to_uint32(basic.RED, 0.8))
+    warning: int = field(default_factory=lambda: rgb_to_uint32(basic.YELLOW, 0.8))
+    success: int = field(default_factory=lambda: rgb_to_uint32(basic.GREEN, 0.8))
+    debug: int = field(default_factory=lambda: rgb_to_uint32(basic.BLUE, 0.8))
 
     # ----------------------------------------------------------------------------------
 
@@ -336,5 +342,77 @@ class TerminalPalette:
     @bright_white_rgba.setter
     def bright_white_rgba(self, value: RGBA) -> None:
         self.bright_white = rgba_to_uint32(value)
+
+    # ----------------------------------------------------------------------------------
+
+    @property
+    def error_rgb(self) -> RGB:
+        return uint32_to_rgb(self.error)
+
+    @error_rgb.setter
+    def error_rgb(self, value: RGB) -> None:
+        self.error = rgb_to_uint32(value)
+
+    @property
+    def error_rgba(self) -> RGBA:
+        return uint32_to_rgba(self.error)
+
+    @error_rgba.setter
+    def error_rgba(self, value: RGBA) -> None:
+        self.error = rgba_to_uint32(value)
+
+    # ----------------------------------------------------------------------------------
+
+    @property
+    def warning_rgb(self) -> RGB:
+        return uint32_to_rgb(self.warning)
+
+    @warning_rgb.setter
+    def warning_rgb(self, value: RGB) -> None:
+        self.warning = rgb_to_uint32(value)
+
+    @property
+    def warning_rgba(self) -> RGBA:
+        return uint32_to_rgba(self.warning)
+
+    @warning_rgba.setter
+    def warning_rgba(self, value: RGBA) -> None:
+        self.warning = rgba_to_uint32(value)
+
+    # ----------------------------------------------------------------------------------
+
+    @property
+    def success_rgb(self) -> RGB:
+        return uint32_to_rgb(self.success)
+
+    @success_rgb.setter
+    def success_rgb(self, value: RGB) -> None:
+        self.success = rgb_to_uint32(value)
+
+    @property
+    def success_rgba(self) -> RGBA:
+        return uint32_to_rgba(self.success)
+
+    @success_rgba.setter
+    def success_rgba(self, value: RGBA) -> None:
+        self.success = rgba_to_uint32(value)
+
+    # ----------------------------------------------------------------------------------
+
+    @property
+    def debug_rgb(self) -> RGB:
+        return uint32_to_rgb(self.debug)
+
+    @debug_rgb.setter
+    def debug_rgb(self, value: RGB) -> None:
+        self.debug = rgb_to_uint32(value)
+
+    @property
+    def debug_rgba(self) -> RGBA:
+        return uint32_to_rgba(self.debug)
+
+    @debug_rgba.setter
+    def debug_rgba(self, value: RGBA) -> None:
+        self.debug = rgba_to_uint32(value)
 
     # ----------------------------------------------------------------------------------

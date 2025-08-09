@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 from math import floor
 from typing import Optional, Sequence, Tuple, Union
 
@@ -24,15 +25,20 @@ from cvp.terminal.ansi.parser import (
     parse_ansi_escape_text,
 )
 from cvp.terminal.ansi.style import TerminalStyle
-from cvp.types.colors import RED_RGB
 from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
+from cvp.variables import NOT_FOUND_INDEX
 
 
 class InputAnsiEscapeText:
     """
     https://en.wikipedia.org/wiki/ANSI_escape_code
     """
+
+    @dataclass
+    class Cursor:
+        line: int = NOT_FOUND_INDEX
+        column: int = NOT_FOUND_INDEX
 
     def __init__(
         self,
@@ -80,6 +86,9 @@ class InputAnsiEscapeText:
         self._palette = TerminalPalette()
         self._style = TerminalStyle()
 
+        self._select_begin = self.Cursor()
+        self._select_end = self.Cursor()
+
     @property
     def terminal_cursor(self) -> Tuple[int, int]:
         return self._terminal_cursor
@@ -104,9 +113,30 @@ class InputAnsiEscapeText:
         return imgui.get_color_u32(color)
 
     @property
+    def text_link_color(self) -> int:
+        color = imgui.get_style_color_vec4(color_var.TEXT_LINK)
+        return imgui.get_color_u32(color)
+
+    @property
+    def text_selected_bg_color(self) -> int:
+        color = imgui.get_style_color_vec4(color_var.TEXT_SELECTED_BG)
+        return imgui.get_color_u32(color)
+
+    @property
     def error_color(self) -> int:
-        r, g, b = RED_RGB
-        return imgui.get_color_u32((r, g, b, 0.8))
+        return self._palette.error
+
+    @property
+    def warning_color(self) -> int:
+        return self._palette.warning
+
+    @property
+    def success_color(self) -> int:
+        return self._palette.success
+
+    @property
+    def debug_color(self) -> int:
+        return self._palette.debug
 
     @property
     def border_width(self) -> float:
@@ -286,7 +316,7 @@ class InputAnsiEscapeText:
         if debug:
             rect_x2 = pos[0] + size_x
             rect_y2 = pos[1] + size_y
-            self._draw_list.add_rect(pos, (rect_x2, rect_y2), self.error_color)
+            self._draw_list.add_rect(pos, (rect_x2, rect_y2), self.debug_color)
 
         return size_x, size_y
 
