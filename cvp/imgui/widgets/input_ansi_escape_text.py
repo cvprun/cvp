@@ -256,7 +256,7 @@ class InputAnsiEscapeText:
         line_cx, line_cy = pos
         max_width = 0.0
 
-        for line in text.split(LF):
+        for line in text.split(chr(LF)):
             cx = line_cx
             cy = line_cy
             max_height_by_line = self.text_line_height
