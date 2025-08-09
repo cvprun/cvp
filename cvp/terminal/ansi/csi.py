@@ -3,7 +3,7 @@
 
 from typing import Final, List, NamedTuple
 
-from cvp.terminal.ansi.codes import CSI, ESC
+from cvp.terminal.ansi.codes import CSI, ESC, SGR
 
 
 class CsiCommand(NamedTuple):
@@ -15,11 +15,19 @@ class CsiCommand(NamedTuple):
     def full(self) -> str:
         return ESC + CSI + self.parameter + self.intermediate + self.final
 
+    @property
+    def length(self) -> int:
+        return len(self.full)
+
     def __str__(self) -> str:
         return self.full
 
     def __len__(self) -> int:
-        return len(self.__str__())
+        return self.length
+
+    @property
+    def is_sgr(self) -> bool:
+        return self.final == SGR
 
     def as_integer_parameters(self) -> List[int]:
         result = list()

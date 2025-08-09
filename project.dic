@@ -28,6 +28,7 @@ avoptions
 backuped
 baseplatform
 bitsize
+blackletter
 blendmode
 blits
 blocksize
@@ -119,6 +120,7 @@ hwaccels
 hwsurface
 ieung
 imageable
+imconfig
 imes
 indentless
 infiles
@@ -202,6 +204,7 @@ orangeish
 orangey
 orangish
 outfiles
+overlined
 paletted
 paletted
 passthru

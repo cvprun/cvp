@@ -16,5 +16,18 @@ class TerminalStyle:
     hide: bool = False
     strike: bool = False
 
-    foreground: Union[int, Tuple[int, int, int]] = 0
-    background: Union[int, Tuple[int, int, int]] = 0
+    foreground: Union[None, int, Tuple[int, int, int]] = None
+    background: Union[None, int, Tuple[int, int, int]] = None
+
+    def reset(self):
+        self.bold = False
+        self.faint = False
+        self.italic = False
+        self.underline = False
+        self.slow_blink = False
+        self.rapid_blink = False
+        self.inverse = False
+        self.hide = False
+        self.strike = False
+        self.foreground = None
+        self.background = None

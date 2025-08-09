@@ -5,6 +5,7 @@ from typing import Optional, Sequence, Tuple, Union
 
 from imgui_bundle import imgui
 
+from cvp.encoding.ascii import LF
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.create import create_draw_list_with_shared_data
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
@@ -13,15 +14,19 @@ from cvp.imgui.flags.button import ALL_BUTTON_FLAGS
 from cvp.imgui.flags.child import BORDERS, ChildFlags
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.window import WindowFlags
-from cvp.logging.loggers import imgui_logger as logger
-from cvp.terminal.ansi.codes import CSI, ESC
-from cvp.terminal.ansi.csi import parse_csi_command
-from cvp.terminal.ansi.fe import is_fe_escape_sequence
+from cvp.terminal.ansi import sgr
+from cvp.terminal.ansi.csi import CsiCommand
 from cvp.terminal.ansi.palette import TerminalPalette
+from cvp.terminal.ansi.parser import (
+    AnsiCsiEscape,
+    AnsiError,
+    AnsiToken,
+    parse_ansi_escape_text,
+)
 from cvp.terminal.ansi.style import TerminalStyle
 from cvp.types.colors import RED_RGB
+from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
-from cvp.variables import NOT_FOUND_INDEX
 
 
 class InputAnsiEscapeText:
@@ -123,6 +128,10 @@ class InputAnsiEscapeText:
     def text_line_height(self) -> float:
         return imgui.get_text_line_height()
 
+    @property
+    def line_height(self) -> float:
+        return self.text_line_height + self.item_spacing_y_half
+
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
             self._label,
@@ -194,8 +203,8 @@ class InputAnsiEscapeText:
 
         item_spacing_x = self.item_spacing.x
         line_begin_x = lineno_text_size.x + item_spacing_x if self.show_lineno else 0.0
-        line_height = self.text_line_height + self.item_spacing_y_half
-        full_text_height = line_height * len(lines)
+        line_height = self.line_height
+        full_line_height = line_height * len(lines)
 
         screen_width = floor(self._canvas_size[0] / imgui.calc_text_size("0").x)
         screen_height = floor(self._canvas_size[1] / line_height)
@@ -204,7 +213,7 @@ class InputAnsiEscapeText:
         if self.show_lineno:
             # Draw a vertical line matching the width of the line number area.
             p1 = sx + lineno_text_size.x + self.item_spacing_x_half, 0.0
-            p2 = p1[0], max(sy + rh, full_text_height)
+            p2 = p1[0], max(sy + rh, full_line_height)
             self._draw_list.add_line(p1, p2, self.border_color, self.border_width)
 
         imgui.set_cursor_pos(cursor_pos)
@@ -232,113 +241,201 @@ class InputAnsiEscapeText:
                 line_text = lines[i]
                 line_text_pos = line_sx + line_begin_x, line_sy
 
-                # line_text_size = imgui.calc_text_size(line_text)
-                # line_text_size_x = line_text_size.x
-                # line_text_size_y = line_text_size.y
-                # self._draw_list.add_text(line_text_pos, self.text_color, line_text)
-
-                line_text_pos2 = self.do_line_process(line_text, line_text_pos)
-                line_text_size_x = line_text_pos2[0] - line_text_pos[0]
-                line_text_size_y = line_text_pos2[1] - line_text_pos[1]
-
-                if debug:
-                    x1 = line_screen_pos.x + line_begin_x
-                    y1 = line_screen_pos.y
-                    x2 = x1 + line_text_size_x
-                    y2 = y1 + line_text_size_y
-                    p1 = x1, y1
-                    p2 = x2, y2
-                    self._draw_list.add_rect(p1, p2, self.error_color)
+                line_text_size = self.do_line_process(
+                    line_text,
+                    line_text_pos,
+                    debug=debug,
+                )
 
                 # Advance the cursor position manually for the next line.
                 next_pos_x = line_cx
-                next_pos_y = line_cy + line_height
-                next_pos = next_pos_x, next_pos_y
-                imgui.set_cursor_pos(next_pos)
+                next_pos_y = line_cy + line_text_size[1]
+                imgui.set_cursor_pos((next_pos_x, next_pos_y))
 
-    def do_line_process(
-        self,
-        text: str,
-        pos: Tuple[float, float],
-        *,
-        debug=False,
-    ) -> Tuple[float, float]:
-        remain_text = text
-        cx, cy = pos
+    def do_line_process(self, text: str, pos: Point, *, debug=False) -> Size:
+        line_cx, line_cy = pos
+        max_width = 0.0
 
-        while remain_text:
-            esc_index = remain_text.find(ESC)
-            if esc_index == NOT_FOUND_INDEX:
-                cx, cy = self.do_text_process(remain_text, (cx, cy))
-                return cx, cy
-
-            assert 0 <= esc_index
-            prefix_text = remain_text[:esc_index]
-            cx, cy = self.do_text_process(prefix_text, (cx, cy))
-
-            assert remain_text[esc_index] == ESC
-            control_code_index = esc_index + 1
-            if len(remain_text) <= control_code_index:
-                # Ignore if there is no character after ESC.
-                return cx, cy
-
-            control_code = remain_text[control_code_index]
-
-            if not is_fe_escape_sequence(control_code):
-                # Treat as an invalid sequence.
-                remain_text = remain_text[control_code_index:]
-                continue
-
-            # If the ESC is followed by a byte in the range 0x40 to 0x5F,
-            # the escape sequence is of type Fe. Its interpretation is delegated to the
-            # applicable C1 control code standard
-
-            if control_code != CSI:
-                cx, cy = self.do_error_text_process(control_code, (cx, cy))
-                remain_index = control_code_index + 1
-                remain_text = remain_text[remain_index:]
-                continue
-
-            assert control_code == CSI  # Control Sequence Introducer
+        for line in text.split(LF):
+            cx = line_cx
+            cy = line_cy
+            max_height_by_line = self.text_line_height
             try:
-                command = parse_csi_command(remain_text[esc_index:])
-                command_text = command.full
-                remain_text = remain_text[len(command_text) :]
-            except ValueError as e:
-                if debug:
-                    logger.warning(e)
-                cx, cy = self.do_text_process(control_code, (cx, cy))
-                remain_index = control_code_index + 1
-                remain_text = remain_text[remain_index:]
+                for token in parse_ansi_escape_text(line):
+                    assert isinstance(token, AnsiToken)
+                    if isinstance(token, AnsiCsiEscape):
+                        self.do_csi_process(token.command)
+                        continue
 
-        return cx, cy
+                    if isinstance(token, AnsiError):
+                        tw, th = self.do_error_text_process(token.token, (cx, cy))
+                        if debug:
+                            pass
+                    else:
+                        tw, th = self.do_text_process(token.token, (cx, cy))
 
-    def do_error_text_process(
-        self,
-        text: str,
-        pos: Tuple[float, float],
-    ) -> Tuple[float, float]:
+                    cx += tw
+                    max_height_by_line = max(max_height_by_line, th)
+            finally:
+                max_width = max(max_width, cx - line_cx)
+                line_cy += max_height_by_line + self.item_spacing_y_half
+
+        size_x = max_width
+        size_y = max(self.text_line_height, pos[1] - line_cy - self.item_spacing_y_half)
+
+        if debug:
+            rect_x2 = pos[0] + size_x
+            rect_y2 = pos[1] + size_y
+            self._draw_list.add_rect(pos, (rect_x2, rect_y2), self.error_color)
+
+        return size_x, size_y
+
+    def do_csi_process(self, command: CsiCommand) -> None:
+        if not command.is_sgr:
+            # Other Control Sequence Introducers are not supported.
+            pass
+
+        params = command.as_integer_parameters()
+        if not params:
+            # `CSI m` is treated as `CSI 0 m` (reset / normal).
+            params.append(0)
+
+        self.do_sgr_process(*params)
+
+    def do_sgr_process(self, *args: int) -> None:
+        """
+        Select Graphic Rendition
+        """
+        assert 1 <= len(args)
+        n0 = args[0]
+        match n0:
+            # --------------------------------------------------------------------------
+            case sgr.RESET:
+                self._style.reset()
+            case sgr.FG_COLOR_BLACK:
+                self._style.foreground = self._palette.black
+            case sgr.FG_COLOR_RED:
+                self._style.foreground = self._palette.red
+            case sgr.FG_COLOR_GREEN:
+                self._style.foreground = self._palette.green
+            case sgr.FG_COLOR_YELLOW:
+                self._style.foreground = self._palette.yellow
+            case sgr.FG_COLOR_BLUE:
+                self._style.foreground = self._palette.blue
+            case sgr.FG_COLOR_MAGENTA:
+                self._style.foreground = self._palette.magenta
+            case sgr.FG_COLOR_CYAN:
+                self._style.foreground = self._palette.cyan
+            case sgr.FG_COLOR_WHITE:
+                self._style.foreground = self._palette.white
+            case sgr.FG_COLOR_EXTENDED:
+                pass
+            case sgr.FG_COLOR_DEFAULT:
+                self._style.foreground = None
+            # --------------------------------------------------------------------------
+            case sgr.BG_COLOR_BLACK:
+                self._style.background = self._palette.black
+            case sgr.BG_COLOR_RED:
+                self._style.background = self._palette.red
+            case sgr.BG_COLOR_GREEN:
+                self._style.background = self._palette.green
+            case sgr.BG_COLOR_YELLOW:
+                self._style.background = self._palette.yellow
+            case sgr.BG_COLOR_BLUE:
+                self._style.background = self._palette.blue
+            case sgr.BG_COLOR_MAGENTA:
+                self._style.background = self._palette.magenta
+            case sgr.BG_COLOR_CYAN:
+                self._style.background = self._palette.cyan
+            case sgr.BG_COLOR_WHITE:
+                self._style.background = self._palette.white
+            case sgr.BG_COLOR_EXTENDED:
+                pass
+            case sgr.BG_COLOR_DEFAULT:
+                self._style.background = None
+            # --------------------------------------------------------------------------
+            case sgr.BRIGHT_FG_COLOR_BLACK:
+                self._style.foreground = self._palette.bright_black
+            case sgr.BRIGHT_FG_COLOR_RED:
+                self._style.foreground = self._palette.bright_red
+            case sgr.BRIGHT_FG_COLOR_GREEN:
+                self._style.foreground = self._palette.bright_green
+            case sgr.BRIGHT_FG_COLOR_YELLOW:
+                self._style.foreground = self._palette.bright_yellow
+            case sgr.BRIGHT_FG_COLOR_BLUE:
+                self._style.foreground = self._palette.bright_blue
+            case sgr.BRIGHT_FG_COLOR_MAGENTA:
+                self._style.foreground = self._palette.bright_magenta
+            case sgr.BRIGHT_FG_COLOR_CYAN:
+                self._style.foreground = self._palette.bright_cyan
+            case sgr.BRIGHT_FG_COLOR_WHITE:
+                self._style.foreground = self._palette.bright_white
+            # --------------------------------------------------------------------------
+            case sgr.BRIGHT_BG_COLOR_BLACK:
+                self._style.background = self._palette.bright_black
+            case sgr.BRIGHT_BG_COLOR_RED:
+                self._style.background = self._palette.bright_red
+            case sgr.BRIGHT_BG_COLOR_GREEN:
+                self._style.background = self._palette.bright_green
+            case sgr.BRIGHT_BG_COLOR_YELLOW:
+                self._style.background = self._palette.bright_yellow
+            case sgr.BRIGHT_BG_COLOR_BLUE:
+                self._style.background = self._palette.bright_blue
+            case sgr.BRIGHT_BG_COLOR_MAGENTA:
+                self._style.background = self._palette.bright_magenta
+            case sgr.BRIGHT_BG_COLOR_CYAN:
+                self._style.background = self._palette.bright_cyan
+            case sgr.BRIGHT_BG_COLOR_WHITE:
+                self._style.background = self._palette.bright_white
+            # --------------------------------------------------------------------------
+
+    def do_error_text_process(self, text: str, pos: Point) -> Size:
         if not text:
-            return pos
+            return 0.0, 0.0
 
         cx, cy = pos
         text_size = imgui.calc_text_size(text)
+        pos2 = cx + text_size.x, cy + text_size.y
+
         self._draw_list.add_text(pos, self.error_color, text)
+        self._draw_list.add_rect(pos, pos2, self.error_color)
 
-        p2 = cx + text_size.x, cy + text_size.y
-        self._draw_list.add_rect(pos, p2, self.error_color)
+        return text_size.x, text_size.y
 
-        return cx + text_size.x, cy
+    @property
+    def background_color(self) -> Optional[int]:
+        if self._style.background is not None:
+            if isinstance(self._style.background, int):
+                return self._style.background
+            if isinstance(self._style.background, tuple):
+                assert 3 == len(self._style.background)
+                r, g, b = self._style.background
+                return imgui.get_color_u32((r, g, b, 1.0))
+        return None
 
-    def do_text_process(
-        self,
-        text: str,
-        pos: Tuple[float, float],
-    ) -> Tuple[float, float]:
+    @property
+    def foreground_color(self) -> int:
+        if self._style.foreground is not None:
+            if isinstance(self._style.foreground, int):
+                return self._style.foreground
+            if isinstance(self._style.foreground, tuple):
+                assert 3 == len(self._style.foreground)
+                r, g, b = self._style.foreground
+                return imgui.get_color_u32((r, g, b, 1.0))
+        return self.text_color
+
+    def do_text_process(self, text: str, pos: Point) -> Size:
         if not text:
-            return pos
+            return 0.0, 0.0
 
         cx, cy = pos
         text_size = imgui.calc_text_size(text)
-        self._draw_list.add_text(pos, self.text_color, text)
-        return cx + text_size.x, cy
+        pos2 = cx + text_size.x, cy + text_size.y
+
+        background_color = self.background_color
+        if background_color is not None:
+            self._draw_list.add_rect_filled(pos, pos2, background_color)
+
+        self._draw_list.add_text(pos, self.foreground_color, text)
+
+        return text_size.x, text_size.y

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 
-from cvp.colors.convert.uint32 import (
+from cvp.colors.convert.imgui import (
     rgb_to_uint32,
     rgba_to_uint32,
     uint32_to_rgb,
