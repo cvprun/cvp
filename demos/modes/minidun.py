@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from cvp.apps.player.modes.games.tetrix import TetrixMode
+from cvp.apps.player.modes.games.minidun import MinidunMode
 from cvp.apps.player.modes.launcher import launch_mode
 
 if __name__ == "__main__":
-    launch_mode(TetrixMode)
+    launch_mode(MinidunMode)

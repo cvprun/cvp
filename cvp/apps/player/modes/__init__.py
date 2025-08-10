@@ -27,6 +27,7 @@ class ModeManager:
         from cvp.apps.player.modes.files import FilesMode
         from cvp.apps.player.modes.flow import FlowMode
         from cvp.apps.player.modes.font import FontMode
+        from cvp.apps.player.modes.games.minidun import MinidunMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.hash import HashMode
         from cvp.apps.player.modes.image import ImageMode
@@ -76,6 +77,7 @@ class ModeManager:
         self.map_mode = MapMode(context)
         self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
+        self.minidun_mode = MinidunMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
@@ -139,7 +141,7 @@ class ModeManager:
         )
         self._submenu_modes = OrderedDict(
             {
-                f"{mdi.NINTENDO_GAME_BOY} Games": (self.tetrix_mode,),
+                f"{mdi.NINTENDO_GAME_BOY} Games": (self.tetrix_mode, self.minidun_mode),
             }
         )
 
