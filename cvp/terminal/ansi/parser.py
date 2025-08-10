@@ -2,6 +2,7 @@
 
 from typing import Final, List, Optional
 
+from cvp.encoding.ascii import LF
 from cvp.terminal.ansi.codes import CSI, ESC
 from cvp.terminal.ansi.csi import CsiCommand, parse_csi_command
 from cvp.terminal.ansi.fe import is_fe_escape_sequence
@@ -28,10 +29,19 @@ class AnsiToken:
         self.token = token
 
 
+class AnsiLineFeed(AnsiToken):
+    def __init__(self):
+        super().__init__(chr(LF))
+
+
 class AnsiError(AnsiToken, ValueError):
     def __init__(self, token: str, *args):
         AnsiToken.__init__(self, token)
         ValueError.__init__(self, *args)
+
+    @property
+    def error_message(self) -> str:
+        return ValueError.__str__(self)
 
 
 class AnsiNoCharError(AnsiError):
@@ -87,7 +97,9 @@ class AnsiCsiEscape(AnsiFeEscape):
         self.command = command
 
 
-def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
+def _parse_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> None:
+    assert remain_text.find(chr(LF)) == NOT_FOUND_INDEX
+
     while remain_text:
         esc_index = remain_text.find(ESC)
         if esc_index == NOT_FOUND_INDEX:
@@ -98,24 +110,22 @@ def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
             result.append(AnsiToken(remain_text[:esc_index]))
 
         assert remain_text[esc_index] == ESC
-        if 1 == len(remain_text):  # EOL
+        remain_index = esc_index + 1
+        remain_text = remain_text[remain_index:]
+
+        if not remain_text:  # EOL
             result.append(AnsiNoCharError())
             break
 
-        control_code_index = esc_index + 1
-        control_code = remain_text[control_code_index]
-
-        after_control_code_index = control_code_index + 1
-        after_control_code_text = remain_text[after_control_code_index:]
+        control_code = remain_text[0]
+        remain_text = remain_text[1:]
 
         if not valid_escape_sequence(ord(control_code)):
             result.append(AnsiInvalidControlCodeError(control_code))
-            remain_text = after_control_code_text
             continue
 
         if not is_fe_escape_sequence(control_code):
             result.append(AnsiEscape(control_code))
-            remain_text = after_control_code_text
             continue
 
         # If the ESC is followed by a byte in the range 0x40 to 0x5F, the escape
@@ -124,19 +134,36 @@ def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
 
         if control_code != CSI:
             result.append(AnsiFeEscape(control_code))
-            remain_text = after_control_code_text
             continue
 
         assert control_code == CSI  # Control Sequence Introducer
 
         try:
-            command = parse_csi_command(remain_text[esc_index:])
+            command = parse_csi_command(ESC + CSI + remain_text)
             result.append(AnsiCsiEscape(command))
-            next_index = esc_index + command.length
-            remain_text = remain_text[next_index:]
+
+            remain_index = command.length - 2  # 'ESC + CSI' is 2 length
+            assert 1 <= remain_index
+            remain_text = remain_text[remain_index:]
         except ValueError as e:
             result.append(AnsiCsiParseError(str(e)))
-            remain_text = after_control_code_text
+
+
+def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
+    while remain_text:
+        lf_index = remain_text.find(chr(LF))
+        if lf_index == NOT_FOUND_INDEX:
+            _parse_ansi_escape_line(remain_text, result)
+            break
+
+        if 1 <= lf_index:
+            _parse_ansi_escape_line(remain_text[:lf_index], result)
+
+        assert remain_text[lf_index] == LF
+        result.append(AnsiLineFeed())
+
+        remain_index = lf_index + 1
+        remain_text = remain_text[remain_index:]
 
 
 def parse_ansi_escape_text(text: str) -> List[AnsiToken]:

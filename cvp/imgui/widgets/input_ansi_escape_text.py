@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
 from math import floor
-from typing import Optional, Sequence, Tuple, Union
+from typing import NamedTuple, Optional, Sequence, Tuple, Union
 
 from imgui_bundle import imgui
 
@@ -14,20 +13,24 @@ from cvp.imgui.flags import color_var
 from cvp.imgui.flags.button import ALL_BUTTON_FLAGS
 from cvp.imgui.flags.child import BORDERS, ChildFlags
 from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
+from cvp.imgui.flags.mouse_button import MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 from cvp.imgui.flags.window import WindowFlags
+from cvp.imgui.tooltip import tooltip_text_wrapped
 from cvp.terminal.ansi import sgr
 from cvp.terminal.ansi.csi import CsiCommand
 from cvp.terminal.ansi.palette import TerminalPalette
 from cvp.terminal.ansi.parser import (
     AnsiCsiEscape,
     AnsiError,
-    AnsiToken,
+    AnsiEscape,
+    AnsiFeEscape,
+    AnsiLineFeed,
     parse_ansi_escape_text,
 )
 from cvp.terminal.ansi.style import TerminalStyle
 from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
-from cvp.variables import NOT_FOUND_INDEX
+from cvp.values.drag_button import DragButton
 
 
 class InputAnsiEscapeText:
@@ -35,10 +38,9 @@ class InputAnsiEscapeText:
     https://en.wikipedia.org/wiki/ANSI_escape_code
     """
 
-    @dataclass
-    class Cursor:
-        line: int = NOT_FOUND_INDEX
-        column: int = NOT_FOUND_INDEX
+    class Coord(NamedTuple):
+        lineno: int
+        column: int
 
     def __init__(
         self,
@@ -47,11 +49,15 @@ class InputAnsiEscapeText:
         child_flags: Union[ChildFlags, int] = BORDERS,
         window_flags: Union[WindowFlags, int] = 0,
         *,
-        lineno_begin=0,
+        lineno_begin=1,
         readonly=False,
         autoscroll=False,
         show_lineno=False,
         show_whitespace=False,
+        palette: Optional[TerminalPalette] = None,
+        style: Optional[TerminalStyle] = None,
+        selected_begin: Optional[Coord] = None,
+        selected_end: Optional[Coord] = None,
     ):
         self._label = label
         self._size = size
@@ -63,35 +69,61 @@ class InputAnsiEscapeText:
         self.autoscroll = autoscroll
         self.show_lineno = show_lineno
         self.show_whitespace = show_whitespace
+        self.palette = palette if palette else TerminalPalette()
+        self.style = style if style else TerminalStyle()
 
-        self._mouse_wheel = DeltaValue.from_single_value(0.0)
-        self._activating = DeltaValue.from_single_value(False)
-        self._hovering = DeltaValue.from_single_value(False)
-        self._focusing = DeltaValue.from_single_value(False)
+        self._left_button = DragButton()
+        self._middle_button = DragButton()
+        self._right_button = DragButton()
+
+        self._shift_down = DeltaValue.from_single_value(False)
+        self._ctrl_down = DeltaValue.from_single_value(False)
+        self._alt_down = DeltaValue.from_single_value(False)
 
         self._draw_list = create_draw_list_with_shared_data()
-        self._cursor_pos = 0.0, 0.0
+        self._mouse_wheel = DeltaValue.from_single_value(0.0)
         self._mouse_pos = 0.0, 0.0
-        self._canvas_pos = 0.0, 0.0
-        self._canvas_size = 0.0, 0.0
+        self._cursor_pos = 0.0, 0.0
+        self._cursor_screen_pos = 0.0, 0.0
+        self._content_region_size = 0.0, 0.0
 
         self._control_identifier = type(self).__name__
         self._control_flags = int(ALL_BUTTON_FLAGS)
-        self._mouse_dragging_threshold = -1.0
-        self._use_only_alt_and_left_dragging = False
 
-        self._terminal_cursor = 0, 0
+        self._terminal_coord_lineno = 0
+        self._terminal_coord_column = 0
         self._terminal_size = 0, 0
 
-        self._palette = TerminalPalette()
-        self._style = TerminalStyle()
-
-        self._select_begin = self.Cursor()
-        self._select_end = self.Cursor()
+        self._selected_begin = selected_begin
+        self._selected_end = selected_end
 
     @property
-    def terminal_cursor(self) -> Tuple[int, int]:
-        return self._terminal_cursor
+    def mouse_pos(self):
+        return self._mouse_pos
+
+    @property
+    def cursor_pos(self):
+        return self._cursor_pos
+
+    @property
+    def cursor_screen_pos(self):
+        return self._cursor_screen_pos
+
+    @property
+    def content_region_size(self):
+        return self._content_region_size
+
+    @property
+    def selected_begin(self) -> Optional[Coord]:
+        return self._selected_begin
+
+    @property
+    def selected_end(self) -> Optional[Coord]:
+        return self._selected_end
+
+    @property
+    def terminal_coord(self) -> Coord:
+        return self.Coord(self._terminal_coord_lineno, self._terminal_coord_column)
 
     @property
     def terminal_size(self) -> Tuple[int, int]:
@@ -124,19 +156,19 @@ class InputAnsiEscapeText:
 
     @property
     def error_color(self) -> int:
-        return self._palette.error
+        return self.palette.error
 
     @property
     def warning_color(self) -> int:
-        return self._palette.warning
+        return self.palette.warning
 
     @property
     def success_color(self) -> int:
-        return self._palette.success
+        return self.palette.success
 
     @property
     def debug_color(self) -> int:
-        return self._palette.debug
+        return self.palette.debug
 
     @property
     def border_width(self) -> float:
@@ -161,6 +193,28 @@ class InputAnsiEscapeText:
     @property
     def line_height(self) -> float:
         return self.text_line_height + self.item_spacing_y_half
+
+    @property
+    def background_color(self) -> Optional[int]:
+        if self.style.background is not None:
+            if isinstance(self.style.background, int):
+                return self.style.background
+            if isinstance(self.style.background, tuple):
+                assert 3 == len(self.style.background)
+                r, g, b = self.style.background
+                return imgui.get_color_u32((r, g, b, 1.0))
+        return None
+
+    @property
+    def foreground_color(self) -> int:
+        if self.style.foreground is not None:
+            if isinstance(self.style.foreground, int):
+                return self.style.foreground
+            if isinstance(self.style.foreground, tuple):
+                assert 3 == len(self.style.foreground)
+                r, g, b = self.style.foreground
+                return imgui.get_color_u32((r, g, b, 1.0))
+        return self.text_color
 
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
@@ -188,44 +242,48 @@ class InputAnsiEscapeText:
                 imgui.set_scroll_here_y(1.0)
 
     def do_child_process(self, lines: Sequence[str], *, debug=False) -> None:
-        cursor_pos = imgui.get_cursor_pos()
         mouse_pos = imgui.get_mouse_pos()
-        screen_pos = imgui.get_cursor_screen_pos()
-        region_size = imgui.get_content_region_avail()
+        cursor_pos = imgui.get_cursor_pos()
+        cursor_screen_pos = imgui.get_cursor_screen_pos()
+        content_region_size = imgui.get_content_region_avail()
 
-        cx, cy = cursor_pos.x, cursor_pos.y
         mx, my = mouse_pos.x, mouse_pos.y
-        sx, sy = screen_pos.x, screen_pos.y
-        rw, rh = region_size.x, region_size.y
+        cx, cy = cursor_pos.x, cursor_pos.y
+        csx, csy = cursor_screen_pos.x, cursor_screen_pos.y
+        crw, crh = content_region_size.x, content_region_size.y
 
-        if rw == 0 or rh == 0:
+        if crw == 0 or crh == 0:
             raise ValueError("Invalid region size")
 
-        assert isinstance(cx, float)
-        assert isinstance(cy, float)
+        assert imgui.get_style().window_padding.x == cx
+        assert imgui.get_style().window_padding.y == cy
         assert isinstance(mx, float)
         assert isinstance(my, float)
-        assert isinstance(sx, float)
-        assert isinstance(sy, float)
-        assert isinstance(rw, float)
-        assert isinstance(rh, float)
+        assert isinstance(cx, float)
+        assert isinstance(cy, float)
+        assert isinstance(csx, float)
+        assert isinstance(csy, float)
+        assert isinstance(crw, float)
+        assert isinstance(crh, float)
         self._draw_list = get_window_draw_list()
-        self._cursor_pos = cx, cy
         self._mouse_pos = mx, my
-        self._canvas_pos = sx, sy
-        self._canvas_size = rw, rh
+        self._cursor_pos = cx, cy
+        self._cursor_screen_pos = csx, csy
+        self._content_region_size = crw, crh
 
-        window_padding = imgui.get_style().window_padding
-        assert window_padding.x == cx
-        assert window_padding.y == cy
+        io = imgui.get_io()
 
-        # Using `imgui.invisible_button()` as a convenience
-        # 1) it will advance the layout cursor and
-        # 2) allows us to use `is_item_hovered()`/`is_item_active()`
-        imgui.invisible_button(self._control_identifier, (rw, rh), self._control_flags)
-        self._activating.update(imgui.is_item_active())
-        self._hovering.update(imgui.is_item_hovered())
-        self._focusing.update(imgui.is_item_focused())
+        left_down = bool(io.mouse_down[MOUSE_LEFT])
+        right_down = bool(io.mouse_down[MOUSE_RIGHT])
+        middle_down = bool(io.mouse_down[MOUSE_MIDDLE])
+
+        self._left_button.update(left_down, self._mouse_pos)
+        self._middle_button.update(middle_down, self._mouse_pos)
+        self._right_button.update(right_down, self._mouse_pos)
+
+        self._shift_down.update(io.key_shift)
+        self._ctrl_down.update(io.key_ctrl)
+        self._alt_down.update(io.key_alt)
 
         lineno_width = max(1, len(str(len(lines))))
         lineno_width_dummy_text = "0" * lineno_width
@@ -234,19 +292,35 @@ class InputAnsiEscapeText:
         item_spacing_x = self.item_spacing.x
         line_begin_x = lineno_text_size.x + item_spacing_x if self.show_lineno else 0.0
         line_height = self.line_height
+        char_width = imgui.calc_text_size("0").x
         full_line_height = line_height * len(lines)
-
-        screen_width = floor(self._canvas_size[0] / imgui.calc_text_size("0").x)
-        screen_height = floor(self._canvas_size[1] / line_height)
-        self._terminal_size = screen_width, screen_height
 
         if self.show_lineno:
             # Draw a vertical line matching the width of the line number area.
-            p1 = sx + lineno_text_size.x + self.item_spacing_x_half, 0.0
-            p2 = p1[0], max(sy + rh, full_line_height)
+            p1 = csx + lineno_text_size.x + self.item_spacing_x_half, 0.0
+            p2 = p1[0], max(csy + crh, full_line_height)
             self._draw_list.add_line(p1, p2, self.border_color, self.border_width)
 
-        imgui.set_cursor_pos(cursor_pos)
+        screen_width = floor(crw / char_width)
+        screen_height = floor(crh / line_height)
+        self._terminal_size = screen_width, screen_height
+
+        mouse_x = mx - csx - line_begin_x
+        mouse_y = my - csy
+        self._terminal_coord_column = floor(mouse_x / char_width)
+        self._terminal_coord_lineno = self.lineno_begin + floor(mouse_y / line_height)
+
+        if self._left_button.changed_down:
+            self._selected_begin = self.terminal_coord
+        if self._left_button.is_down:
+            self._selected_end = self.terminal_coord
+        if self._left_button.changed_up:
+            self._selected_end = self.terminal_coord
+            if self._selected_begin == self._selected_end:
+                self._selected_begin = None
+                self._selected_end = None
+
+        # imgui.set_cursor_pos(cursor_pos)
 
         clipper = imgui.ListClipper()
         clipper.begin(len(lines))
@@ -257,23 +331,19 @@ class InputAnsiEscapeText:
 
                 line_cx, line_cy = line_cursor_pos.x, line_cursor_pos.y
                 line_sx, line_sy = line_screen_pos.x, line_screen_pos.y
+                lineno = self.lineno_begin + i
 
                 if self.show_lineno:
-                    lineno = self.lineno_begin + i + 1
-                    lineno_text = str(lineno).zfill(lineno_width)
-                    lineno_pos = line_sx, line_sy
                     self._draw_list.add_text(
-                        lineno_pos,
+                        (line_sx, line_sy),
                         self.text_disabled_color,
-                        lineno_text,
+                        str(lineno).zfill(lineno_width),
                     )
 
-                line_text = lines[i]
-                line_text_pos = line_sx + line_begin_x, line_sy
-
                 line_text_size = self.do_line_process(
-                    line_text,
-                    line_text_pos,
+                    lines[i],
+                    (line_sx + line_begin_x, line_sy),
+                    lineno=lineno,
                     debug=debug,
                 )
 
@@ -282,36 +352,104 @@ class InputAnsiEscapeText:
                 next_pos_y = line_cy + line_text_size[1]
                 imgui.set_cursor_pos((next_pos_x, next_pos_y))
 
-    def do_line_process(self, text: str, pos: Point, *, debug=False) -> Size:
+        # self._draw_list.add_ellipse(self._mouse_pos, (1.0, 1.0), self.success_color)
+        # self._draw_list.add_rect(screen_pos, (sx + rw, sy + rh), self.debug_color)
+
+    def is_selected(self, coord: Coord) -> bool:
+        if self._selected_begin is None or self._selected_end is None:
+            return False
+
+        if self._selected_begin <= self._selected_end:
+            return self._selected_begin <= coord < self._selected_end
+        else:
+            return self._selected_end <= coord < self._selected_begin
+
+    def is_selected_linefeed(self, lineno: int) -> bool:
+        if self._selected_begin is None or self._selected_end is None:
+            return False
+
+        if self._selected_begin <= self._selected_end:
+            return self._selected_begin.lineno <= lineno < self._selected_end.lineno
+        else:
+            return self._selected_end.lineno <= lineno < self._selected_begin.lineno
+
+    def do_line_process(
+        self,
+        text: str,
+        pos: Point,
+        *,
+        lineno: int,
+        debug=False,
+    ) -> Size:
         line_cx, line_cy = pos
         max_width = 0.0
+        column = 0
 
         for line in text.split(chr(LF)):
             cx = line_cx
             cy = line_cy
             max_height_by_line = self.text_line_height
+
             try:
                 for token in parse_ansi_escape_text(line):
-                    assert isinstance(token, AnsiToken)
+                    assert not isinstance(token, AnsiLineFeed)
+
                     if isinstance(token, AnsiCsiEscape):
                         self.do_csi_process(token.command)
                         continue
+                    elif isinstance(token, AnsiFeEscape):
+                        continue
+                    elif isinstance(token, AnsiEscape):
+                        continue
+
+                    line_text = token.token
+                    assert line_text.find(chr(LF)) == -1
+                    line_text_size = imgui.calc_text_size(line_text)
+                    max_height_by_line = max(max_height_by_line, line_text_size.y)
+
+                    sel_color = self.text_selected_bg_color
+                    bg_color = self.background_color
+                    fg_color = self.foreground_color
+
+                    line_text_rect_p1 = cx, cy
+                    line_text_rect_p2 = cx + line_text_size.x, cy + line_text_size.y
+
+                    for i, c in enumerate(line_text):
+                        c_size = imgui.calc_text_size(c)
+                        column_offset = len(c.encode())
+
+                        try:
+                            p1 = cx, cy
+                            p2 = cx + c_size.x, cy + c_size.y
+
+                            if self.is_selected(self.Coord(lineno, column)):
+                                self._draw_list.add_rect_filled(p1, p2, sel_color)
+                            elif bg_color is not None:
+                                self._draw_list.add_rect_filled(p1, p2, bg_color)
+
+                            self._draw_list.add_text(p1, fg_color, c)
+                        finally:
+                            cx += c_size.x
+                            column += column_offset
 
                     if isinstance(token, AnsiError):
-                        tw, th = self.do_error_text_process(token.token, (cx, cy))
-                        if debug:
-                            pass
-                    else:
-                        tw, th = self.do_text_process(token.token, (cx, cy))
-
-                    cx += tw
-                    max_height_by_line = max(max_height_by_line, th)
+                        self._draw_list.add_rect(
+                            line_text_rect_p1,
+                            line_text_rect_p2,
+                            self.error_color,
+                        )
+                        if imgui.is_mouse_hovering_rect(
+                            line_text_rect_p1,
+                            line_text_rect_p2,
+                        ):
+                            tooltip_text_wrapped(token.error_message)
             finally:
                 max_width = max(max_width, cx - line_cx)
                 line_cy += max_height_by_line + self.item_spacing_y_half
 
+        height = line_cy - pos[1]
         size_x = max_width
-        size_y = max(self.text_line_height, pos[1] - line_cy - self.item_spacing_y_half)
+        size_y = max(self.line_height, height)
 
         if debug:
             rect_x2 = pos[0] + size_x
@@ -340,131 +478,80 @@ class InputAnsiEscapeText:
         match args[0]:
             # --------------------------------------------------------------------------
             case sgr.RESET:
-                self._style.reset()
+                self.style.reset()
             case sgr.FG_COLOR_BLACK:
-                self._style.foreground = self._palette.black
+                self.style.foreground = self.palette.black
             case sgr.FG_COLOR_RED:
-                self._style.foreground = self._palette.red
+                self.style.foreground = self.palette.red
             case sgr.FG_COLOR_GREEN:
-                self._style.foreground = self._palette.green
+                self.style.foreground = self.palette.green
             case sgr.FG_COLOR_YELLOW:
-                self._style.foreground = self._palette.yellow
+                self.style.foreground = self.palette.yellow
             case sgr.FG_COLOR_BLUE:
-                self._style.foreground = self._palette.blue
+                self.style.foreground = self.palette.blue
             case sgr.FG_COLOR_MAGENTA:
-                self._style.foreground = self._palette.magenta
+                self.style.foreground = self.palette.magenta
             case sgr.FG_COLOR_CYAN:
-                self._style.foreground = self._palette.cyan
+                self.style.foreground = self.palette.cyan
             case sgr.FG_COLOR_WHITE:
-                self._style.foreground = self._palette.white
+                self.style.foreground = self.palette.white
             case sgr.FG_COLOR_EXTENDED:
-                self._style.foreground = sgr.get_extended_color_with_parameters(*args)
+                self.style.foreground = sgr.get_extended_color_with_parameters(*args)
             case sgr.FG_COLOR_DEFAULT:
-                self._style.foreground = None
+                self.style.foreground = None
             # --------------------------------------------------------------------------
             case sgr.BG_COLOR_BLACK:
-                self._style.background = self._palette.black
+                self.style.background = self.palette.black
             case sgr.BG_COLOR_RED:
-                self._style.background = self._palette.red
+                self.style.background = self.palette.red
             case sgr.BG_COLOR_GREEN:
-                self._style.background = self._palette.green
+                self.style.background = self.palette.green
             case sgr.BG_COLOR_YELLOW:
-                self._style.background = self._palette.yellow
+                self.style.background = self.palette.yellow
             case sgr.BG_COLOR_BLUE:
-                self._style.background = self._palette.blue
+                self.style.background = self.palette.blue
             case sgr.BG_COLOR_MAGENTA:
-                self._style.background = self._palette.magenta
+                self.style.background = self.palette.magenta
             case sgr.BG_COLOR_CYAN:
-                self._style.background = self._palette.cyan
+                self.style.background = self.palette.cyan
             case sgr.BG_COLOR_WHITE:
-                self._style.background = self._palette.white
+                self.style.background = self.palette.white
             case sgr.BG_COLOR_EXTENDED:
-                self._style.background = sgr.get_extended_color_with_parameters(*args)
+                self.style.background = sgr.get_extended_color_with_parameters(*args)
             case sgr.BG_COLOR_DEFAULT:
-                self._style.background = None
+                self.style.background = None
             # --------------------------------------------------------------------------
             case sgr.BRIGHT_FG_COLOR_BLACK:
-                self._style.foreground = self._palette.bright_black
+                self.style.foreground = self.palette.bright_black
             case sgr.BRIGHT_FG_COLOR_RED:
-                self._style.foreground = self._palette.bright_red
+                self.style.foreground = self.palette.bright_red
             case sgr.BRIGHT_FG_COLOR_GREEN:
-                self._style.foreground = self._palette.bright_green
+                self.style.foreground = self.palette.bright_green
             case sgr.BRIGHT_FG_COLOR_YELLOW:
-                self._style.foreground = self._palette.bright_yellow
+                self.style.foreground = self.palette.bright_yellow
             case sgr.BRIGHT_FG_COLOR_BLUE:
-                self._style.foreground = self._palette.bright_blue
+                self.style.foreground = self.palette.bright_blue
             case sgr.BRIGHT_FG_COLOR_MAGENTA:
-                self._style.foreground = self._palette.bright_magenta
+                self.style.foreground = self.palette.bright_magenta
             case sgr.BRIGHT_FG_COLOR_CYAN:
-                self._style.foreground = self._palette.bright_cyan
+                self.style.foreground = self.palette.bright_cyan
             case sgr.BRIGHT_FG_COLOR_WHITE:
-                self._style.foreground = self._palette.bright_white
+                self.style.foreground = self.palette.bright_white
             # --------------------------------------------------------------------------
             case sgr.BRIGHT_BG_COLOR_BLACK:
-                self._style.background = self._palette.bright_black
+                self.style.background = self.palette.bright_black
             case sgr.BRIGHT_BG_COLOR_RED:
-                self._style.background = self._palette.bright_red
+                self.style.background = self.palette.bright_red
             case sgr.BRIGHT_BG_COLOR_GREEN:
-                self._style.background = self._palette.bright_green
+                self.style.background = self.palette.bright_green
             case sgr.BRIGHT_BG_COLOR_YELLOW:
-                self._style.background = self._palette.bright_yellow
+                self.style.background = self.palette.bright_yellow
             case sgr.BRIGHT_BG_COLOR_BLUE:
-                self._style.background = self._palette.bright_blue
+                self.style.background = self.palette.bright_blue
             case sgr.BRIGHT_BG_COLOR_MAGENTA:
-                self._style.background = self._palette.bright_magenta
+                self.style.background = self.palette.bright_magenta
             case sgr.BRIGHT_BG_COLOR_CYAN:
-                self._style.background = self._palette.bright_cyan
+                self.style.background = self.palette.bright_cyan
             case sgr.BRIGHT_BG_COLOR_WHITE:
-                self._style.background = self._palette.bright_white
+                self.style.background = self.palette.bright_white
             # --------------------------------------------------------------------------
-
-    def do_error_text_process(self, text: str, pos: Point) -> Size:
-        if not text:
-            return 0.0, 0.0
-
-        cx, cy = pos
-        text_size = imgui.calc_text_size(text)
-        pos2 = cx + text_size.x, cy + text_size.y
-
-        self._draw_list.add_text(pos, self.error_color, text)
-        self._draw_list.add_rect(pos, pos2, self.error_color)
-
-        return text_size.x, text_size.y
-
-    @property
-    def background_color(self) -> Optional[int]:
-        if self._style.background is not None:
-            if isinstance(self._style.background, int):
-                return self._style.background
-            if isinstance(self._style.background, tuple):
-                assert 3 == len(self._style.background)
-                r, g, b = self._style.background
-                return imgui.get_color_u32((r, g, b, 1.0))
-        return None
-
-    @property
-    def foreground_color(self) -> int:
-        if self._style.foreground is not None:
-            if isinstance(self._style.foreground, int):
-                return self._style.foreground
-            if isinstance(self._style.foreground, tuple):
-                assert 3 == len(self._style.foreground)
-                r, g, b = self._style.foreground
-                return imgui.get_color_u32((r, g, b, 1.0))
-        return self.text_color
-
-    def do_text_process(self, text: str, pos: Point) -> Size:
-        if not text:
-            return 0.0, 0.0
-
-        cx, cy = pos
-        text_size = imgui.calc_text_size(text)
-        pos2 = cx + text_size.x, cy + text_size.y
-
-        background_color = self.background_color
-        if background_color is not None:
-            self._draw_list.add_rect_filled(pos, pos2, background_color)
-
-        self._draw_list.add_text(pos, self.foreground_color, text)
-
-        return text_size.x, text_size.y

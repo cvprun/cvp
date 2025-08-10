@@ -8,20 +8,18 @@ from cvp.values.delta import DeltaValue
 
 
 @unique
-class ButtonState(Enum):
+class DragState(Enum):
     normal = auto()
     ready = auto()
     dragging = auto()
 
 
-class MouseButton:
-    _pivot: Optional[Point]
-
-    def __init__(self) -> None:
+class DragButton:
+    def __init__(self, state=DragState.normal, pivot: Optional[Point] = None) -> None:
         self._down = DeltaValue.from_single_value(False)
         self._drag = DeltaValue.from_single_value(False)
-        self._state = ButtonState.normal
-        self._pivot = None
+        self._state = state
+        self._pivot = pivot
 
     @property
     def down(self):
@@ -56,7 +54,7 @@ class MouseButton:
         return self._down.changed and not self._down.value
 
     @property
-    def is_drag(self) -> bool:
+    def is_dragging(self) -> bool:
         return self._drag.value
 
     @property
@@ -67,25 +65,25 @@ class MouseButton:
     def end_drag(self) -> bool:
         return self._drag.changed and not self._drag.value
 
-    def update(self, down: bool, mouse_point: Point) -> None:
+    def update(self, down: bool, point: Point) -> None:
         if self._down.update(down):
             if self._down.value:
-                self._state = ButtonState.ready
-                self._pivot = mouse_point
+                self._state = DragState.ready
+                self._pivot = point
             else:
-                self._state = ButtonState.normal
+                self._state = DragState.normal
                 self._pivot = None
 
         if not self._down.value:
-            assert self._state == ButtonState.normal
+            assert self._state == DragState.normal
             assert self._pivot is None
             self._drag.update(False)
             return
 
-        assert self._state != ButtonState.normal
+        assert self._state != DragState.normal
         assert self._pivot is not None
 
-        if self._state == ButtonState.ready and self._pivot != mouse_point:
-            self._state = ButtonState.dragging
+        if self._state == DragState.ready and self._pivot != point:
+            self._state = DragState.dragging
 
-        self._drag.update(self._state == ButtonState.dragging)
+        self._drag.update(self._state == DragState.dragging)

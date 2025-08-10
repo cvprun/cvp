@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from cvp.imgui.mouse_button import MouseButton
 from cvp.types.shapes import Point
 from cvp.values.delta import DeltaValue
+from cvp.values.drag_button import DragButton
 
 
 class ControllableProps:
@@ -19,9 +19,9 @@ class ControllableProps:
         self._ctrl_down = DeltaValue.from_single_value(False)
         self._alt_down = DeltaValue.from_single_value(False)
 
-        self._left_button = MouseButton()
-        self._middle_button = MouseButton()
-        self._right_button = MouseButton()
+        self._left_button = DragButton()
+        self._middle_button = DragButton()
+        self._right_button = DragButton()
 
         self._mouse_pos = 0.0, 0.0
         self._canvas_pos = 0.0, 0.0
@@ -110,15 +110,15 @@ class ControllableProps:
 
     @property
     def left_dragging(self):
-        return self._left_button.is_drag
+        return self._left_button.is_dragging
 
     @property
     def middle_dragging(self):
-        return self._middle_button.is_drag
+        return self._middle_button.is_dragging
 
     @property
     def right_dragging(self):
-        return self._right_button.is_drag
+        return self._right_button.is_dragging
 
     @property
     def left_down(self):

@@ -10,6 +10,17 @@ from cvp.types.colors import RGBA
 from cvp.variables import HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH
 
 
+def tooltip_text(text: str, color: Optional[RGBA] = None) -> None:
+    if imgui.begin_tooltip():
+        try:
+            if color is not None:
+                imgui.text_colored(color, text)
+            else:
+                imgui.text(text)
+        finally:
+            imgui.end_tooltip()
+
+
 def hovered_tooltip_text(
     text: str,
     color: Optional[RGBA] = None,
@@ -20,17 +31,37 @@ def hovered_tooltip_text(
     assert isinstance(flags, int)
 
     if imgui.is_item_hovered(flags):
-        if imgui.begin_tooltip():
-            try:
-                if color is not None:
-                    imgui.text_colored(color, text)
-                else:
-                    imgui.text(text)
-            finally:
-                imgui.end_tooltip()
+        tooltip_text(text, color)
         return True
     else:
         return False
+
+
+def tooltip_text_wrapped(
+    text: str,
+    color: Optional[RGBA] = None,
+    *,
+    width: Optional[int] = HOVERED_TOOLTIP_TEXT_WRAPPED_WIDTH,
+) -> None:
+    if imgui.begin_tooltip():
+        try:
+            use_text_wrap_pos = width is not None and 1 <= width
+            if use_text_wrap_pos:
+                assert isinstance(width, int)
+                imgui.push_text_wrap_pos(imgui.get_cursor_pos_x() + width)
+
+            if color is not None:
+                imgui.push_style_color(TEXT, color)
+
+            imgui.text_wrapped(text)
+
+            if color is not None:
+                imgui.pop_style_color()
+
+            if use_text_wrap_pos:
+                imgui.pop_text_wrap_pos()
+        finally:
+            imgui.end_tooltip()
 
 
 def hovered_tooltip_text_wrapped(
@@ -45,25 +76,7 @@ def hovered_tooltip_text_wrapped(
     assert isinstance(flags, int)
 
     if imgui.is_item_hovered(flags):
-        if imgui.begin_tooltip():
-            try:
-                use_text_wrap_pos = width is not None and 1 <= width
-                if use_text_wrap_pos:
-                    assert isinstance(width, int)
-                    imgui.push_text_wrap_pos(imgui.get_cursor_pos_x() + width)
-
-                if color is not None:
-                    imgui.push_style_color(TEXT, color)
-
-                imgui.text_wrapped(text)
-
-                if color is not None:
-                    imgui.pop_style_color()
-
-                if use_text_wrap_pos:
-                    imgui.pop_text_wrap_pos()
-            finally:
-                imgui.end_tooltip()
+        tooltip_text_wrapped(text, color, width=width)
         return True
     else:
         return False

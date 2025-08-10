@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
+from io import StringIO
 from typing import Iterable, Optional
 
 from cvp.buffers.lines.deque import LinesDeque
 from cvp.config.sections.tail import TailConfig
+from cvp.imgui.tooltip import tooltip_text_wrapped
 from cvp.imgui.widgets.input_ansi_escape_text import InputAnsiEscapeText
 from cvp.values.interval import IntervalTimer
 from cvp.variables import (
@@ -94,6 +96,18 @@ class TailTab:
     def newline(self, value: str) -> None:
         self.buffer.newline = value
 
+    @property
+    def selected_info(self) -> str:
+        buffer = StringIO()
+        buffer.write("Sel ")
+        if sb := self.canvas.selected_begin:
+            buffer.write(f"{sb.lineno}:{sb.column}")
+            if se := self.canvas.selected_end:
+                buffer.write(f"~{se.lineno}:{se.column}")
+        else:
+            buffer.write("None")
+        return buffer.getvalue()
+
     @classmethod
     def from_config(
         cls,
@@ -124,3 +138,22 @@ class TailTab:
 
     def do_process(self, *, debug=False) -> None:
         self.canvas.do_process(self.buffer.lines, debug=debug)
+        if debug:
+            tooltip_text_wrapped(self.as_unformatted_text())
+
+    def as_unformatted_text(self) -> str:
+        mx, my = self.canvas.mouse_pos
+        cx, cy = self.canvas.cursor_pos
+        csx, csy = self.canvas.cursor_screen_pos
+        crw, crh = self.canvas.content_region_size
+        terminal_coord_lineno = self.canvas.terminal_coord.lineno
+        terminal_coord_column = self.canvas.terminal_coord.column
+        tw, th = self.canvas.terminal_size
+        return (
+            f"Mouse pos: {mx:.02f}, {my:.02f}\n"
+            f"Cursor pos: {cx:.02f}, {cy:.02f}\n"
+            f"Cursor screen pos: {csx:.02f}, {csy:.02f}\n"
+            f"Content region size: {crw:.02f}, {crh:.02f}\n"
+            f"Terminal coord: {terminal_coord_column}x{terminal_coord_lineno}\n"
+            f"Terminal size: {tw}x{th}\n"
+        )
