@@ -226,7 +226,10 @@ class TetrixMode(BaseMode):
                 self._current_block = original_piece
 
     def soft_drop(self):
-        if not self._game_over and self.is_valid_move(1, 0):
+        if self._game_over:
+            return
+
+        if self.is_valid_move(1, 0):
             self._current_pos[0] += 1
         else:
             self.lock_piece()
@@ -234,7 +237,15 @@ class TetrixMode(BaseMode):
             self.new_piece()
 
     def hard_drop(self):
-        pass
+        if self._game_over:
+            return
+
+        while self.is_valid_move(1, 0):
+            self._current_pos[0] += 1
+
+        self.lock_piece()
+        self.clear_lines()
+        self.new_piece()
 
     def lock_piece(self):
         for y, row in enumerate(self._current_block):
