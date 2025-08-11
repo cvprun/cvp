@@ -97,7 +97,7 @@ class AnsiCsiEscape(AnsiFeEscape):
         self.command = command
 
 
-def _parse_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> None:
+def _tokenize_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> None:
     assert remain_text.find(chr(LF)) == NOT_FOUND_INDEX
 
     while remain_text:
@@ -149,15 +149,15 @@ def _parse_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> None:
             result.append(AnsiCsiParseError(str(e)))
 
 
-def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
+def _tokenize_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
     while remain_text:
         lf_index = remain_text.find(chr(LF))
         if lf_index == NOT_FOUND_INDEX:
-            _parse_ansi_escape_line(remain_text, result)
+            _tokenize_ansi_escape_line(remain_text, result)
             break
 
         if 1 <= lf_index:
-            _parse_ansi_escape_line(remain_text[:lf_index], result)
+            _tokenize_ansi_escape_line(remain_text[:lf_index], result)
 
         assert remain_text[lf_index] == LF
         result.append(AnsiLineFeed())
@@ -166,9 +166,9 @@ def _parse_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
         remain_text = remain_text[remain_index:]
 
 
-def parse_ansi_escape_text(text: str) -> List[AnsiToken]:
+def tokenize_ansi_escape_text(text: str) -> List[AnsiToken]:
     result: List[AnsiToken] = list()
     try:
-        _parse_ansi_escape_text(text, result)
+        _tokenize_ansi_escape_text(text, result)
     finally:
         return result

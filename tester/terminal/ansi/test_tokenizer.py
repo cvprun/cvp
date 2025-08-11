@@ -3,7 +3,7 @@
 from typing import Final
 from unittest import TestCase, main
 
-from cvp.terminal.ansi.parser import parse_ansi_escape_text
+from cvp.terminal.ansi.tokenizer import tokenize_ansi_escape_text
 
 _TEST_ANSI_ESCAPE_TEXT: Final[str] = (
     "\x1b[32m2000-00-00 11:22:33.444\x1b[0m \x1b[35m12345\x1b[0m/\x1b[36m13870939698928"
@@ -11,9 +11,9 @@ _TEST_ANSI_ESCAPE_TEXT: Final[str] = (
 )
 
 
-class ParserTestCase(TestCase):
+class TokenizerTestCase(TestCase):
     def test_default(self):
-        tokens = parse_ansi_escape_text(_TEST_ANSI_ESCAPE_TEXT)
+        tokens = tokenize_ansi_escape_text(_TEST_ANSI_ESCAPE_TEXT)
         self.assertEqual(20, len(tokens))
 
         self.assertEqual(tokens[0].token, "\x1b[32m")

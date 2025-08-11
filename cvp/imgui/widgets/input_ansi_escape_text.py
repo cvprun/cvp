@@ -20,15 +20,15 @@ from cvp.imgui.tooltip import tooltip_text_wrapped
 from cvp.terminal.ansi import sgr
 from cvp.terminal.ansi.csi import CsiCommand
 from cvp.terminal.ansi.palette import TerminalPalette
-from cvp.terminal.ansi.parser import (
+from cvp.terminal.ansi.style import TerminalStyle
+from cvp.terminal.ansi.tokenizer import (
     AnsiCsiEscape,
     AnsiError,
     AnsiEscape,
     AnsiFeEscape,
     AnsiLineFeed,
-    parse_ansi_escape_text,
+    tokenize_ansi_escape_text,
 )
-from cvp.terminal.ansi.style import TerminalStyle
 from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
 from cvp.values.drag_button import DragButton
@@ -287,7 +287,7 @@ class InputAnsiEscapeText:
         column = 0
         buffer = StringIO()
         try:
-            for token in parse_ansi_escape_text(line):
+            for token in tokenize_ansi_escape_text(line):
                 line_text = token.token
                 assert line_text.find(chr(LF)) == -1
 
@@ -502,7 +502,7 @@ class InputAnsiEscapeText:
             max_height_by_line = self.text_line_height
 
             try:
-                for token in parse_ansi_escape_text(line):
+                for token in tokenize_ansi_escape_text(line):
                     assert not isinstance(token, AnsiLineFeed)
 
                     if isinstance(token, AnsiCsiEscape):
