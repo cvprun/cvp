@@ -25,8 +25,8 @@ def valid_fe_escape_sequence(char: int) -> bool:
 
 
 class AnsiToken:
-    def __init__(self, token: str):
-        self.token = token
+    def __init__(self, text: str):
+        self.text = text
 
 
 class AnsiLineFeed(AnsiToken):
@@ -35,8 +35,8 @@ class AnsiLineFeed(AnsiToken):
 
 
 class AnsiError(AnsiToken, ValueError):
-    def __init__(self, token: str, *args):
-        AnsiToken.__init__(self, token)
+    def __init__(self, text: str, *args):
+        AnsiToken.__init__(self, text)
         ValueError.__init__(self, *args)
 
     @property
@@ -61,7 +61,7 @@ class AnsiInvalidControlCodeError(AnsiError):
 
     @property
     def control_code(self) -> str:
-        return self.token[1]
+        return self.text[1]
 
 
 class AnsiCsiParseError(AnsiError):
@@ -72,14 +72,17 @@ class AnsiCsiParseError(AnsiError):
 class AnsiEscape(AnsiToken):
     def __init__(self, control_code: str, after: Optional[str] = None):
         assert 1 == len(control_code)
+        assert valid_escape_sequence(ord(control_code))
+
         if after is None:
             after = str()
         assert isinstance(after, str)
+
         super().__init__(ESC + control_code + after)
 
     @property
     def control_code(self) -> str:
-        return self.token[1]
+        return self.text[1]
 
 
 class AnsiFeEscape(AnsiEscape):

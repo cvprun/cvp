@@ -288,14 +288,14 @@ class InputAnsiEscapeText:
         buffer = StringIO()
         try:
             for token in tokenize_ansi_escape_text(line):
-                line_text = token.token
+                line_text = token.text
                 assert line_text.find(chr(LF)) == -1
 
                 if isinstance(token, AnsiEscape):
                     assert isinstance(token, (AnsiCsiEscape, AnsiFeEscape, AnsiEscape))
                     assert len(line_text) == len(line_text.encode())
                     if raw and begin_column <= column < end_column:
-                        buffer.write(token.token)
+                        buffer.write(token.text)
                     continue
 
                 for c in line_text:
@@ -515,7 +515,7 @@ class InputAnsiEscapeText:
                         self.do_fe_process(token.control_code)
                         continue
 
-                    line_text = token.token
+                    line_text = token.text
                     assert line_text.find(chr(LF)) == -1
                     line_text_size = imgui.calc_text_size(line_text)
                     max_height_by_line = max(max_height_by_line, line_text_size.y)
