@@ -44,8 +44,6 @@ class MinidunMode(BaseMode):
         if crw == 0 or crh == 0:
             raise ValueError("Invalid region size")
 
-        assert imgui.get_style().window_padding.x == cx
-        assert imgui.get_style().window_padding.y == cy
         assert isinstance(mx, float)
         assert isinstance(my, float)
         assert isinstance(cx, float)

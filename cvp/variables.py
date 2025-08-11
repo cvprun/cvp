@@ -16,6 +16,7 @@ UNKNOWN_THREAD_IDENT: Final[int] = -1
 INFINITY_HEIGHT_IN_ITEMS: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
+DELETE_CODEPOINT: Final[int] = 0x7F
 NODOC: Final[str] = ""
 COMMENT_PREFIX: Final[str] = "#"
 HEXADECIMAL: Final[int] = 16

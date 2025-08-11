@@ -12,7 +12,12 @@ from cvp.logging.loggers import renderer_logger as logger
 from cvp.renderer.opengl.fixed import FixedPipelineRenderer
 from cvp.renderer.pygame.keycode.imgui_bundle import ImguiBundleKeycodeRemapper
 from cvp.unicode.planes import BMP
-from cvp.variables import BACKSPACE_CODEPOINT, MOUSE_WHEEL_OFFSET_SCALE, NULL_CODEPOINT
+from cvp.variables import (
+    BACKSPACE_CODEPOINT,
+    DELETE_CODEPOINT,
+    MOUSE_WHEEL_OFFSET_SCALE,
+    NULL_CODEPOINT,
+)
 
 
 class PygameRenderer(FixedPipelineRenderer):
@@ -143,15 +148,22 @@ class PygameRenderer(FixedPipelineRenderer):
             if not BMP.contain(codepoint):
                 continue
 
+            if codepoint == DELETE_CODEPOINT:
+                for c in self._imes.flush_text():
+                    self.io.add_input_character(ord(c))
+                # Do not add non-printable characters to io.
+                continue
+
             if codepoint == BACKSPACE_CODEPOINT:
                 if self._imes.has_composing():
                     self._imes.pop_text()
                     return True
                 else:
                     self.io.add_input_character(codepoint)
-            else:
-                for c in self._imes.add_text(char):
-                    self.io.add_input_character(ord(c))
+                    continue
+
+            for c in self._imes.add_text(char):
+                self.io.add_input_character(ord(c))
 
         self.update_key_state(event.key, down=True)
         return True

@@ -15,6 +15,7 @@ from cvp.imgui.tooltip import hovered_tooltip_text_wrapped
 from cvp.msgs.callbacks import MsgCallbacks
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_map import MsgWrapper, create_msg_map
+from cvp.pygame.events.event_map import EventWrapper, create_event_map
 from cvp.types.override import override
 
 
@@ -28,11 +29,13 @@ class BaseModeProtocol(Protocol):
 class BaseMode(ModeInterface, MsgCallbacks, BaseModeProtocol):
     __cvp_mode_show__ = True
 
+    _evt_mapping: Optional[Dict[int, EventWrapper]]
     _msg_mapping: Optional[Dict[int, MsgWrapper]]
 
     def __init__(self, context: Context):
         assert isinstance(self, BaseModeProtocol)
         self._context = context
+        self._evt_mapping = None
         self._msg_mapping = None
 
     @property
@@ -64,7 +67,15 @@ class BaseMode(ModeInterface, MsgCallbacks, BaseModeProtocol):
 
     @override
     def on_event(self, event: Event) -> bool:
-        return False
+        if self._evt_mapping is None:
+            self._evt_mapping = create_event_map(self)
+        assert self._evt_mapping is not None
+
+        if wrapper := self._evt_mapping.get(event.type):
+            assert isinstance(wrapper, EventWrapper)
+            return wrapper(event)
+        else:
+            return False
 
     @override
     def on_msg(self, msg: Msg) -> bool:
