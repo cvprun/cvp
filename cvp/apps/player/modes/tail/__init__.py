@@ -44,6 +44,7 @@ class TailMode(BaseMode):
         self._popups = PopupList(self._open_file_popup)
         self._menus = MenuList(
             ("File", self.on_file_menu),
+            ("Edit", self.on_edit_menu),
             ("Settings", self.on_settings_menu),
             ("View", self.on_view_menu),
         )
@@ -206,6 +207,26 @@ class TailMode(BaseMode):
         if menu_item("Close file", enabled=selected_tail is not None):
             assert selected_tail is not None
             self.close_text_file(selected_tail.path)
+
+    @staticmethod
+    def do_disabled_edit_menu() -> None:
+        menu_item("Copy", shortcut="Ctrl+C", enabled=False)
+        imgui.separator()
+        menu_item("Select all", shortcut="Ctrl+A", enabled=False)
+
+    @staticmethod
+    def do_enabled_edit_menu(tail: TailTab) -> None:
+        if menu_item("Copy", shortcut="Ctrl+C", enabled=tail.has_selection):
+            tail.copy()
+        imgui.separator()
+        if menu_item("Select all", shortcut="Ctrl+A"):
+            tail.select_all()
+
+    def on_edit_menu(self) -> None:
+        if tail := self.selected_tail:
+            self.do_enabled_edit_menu(tail)
+        else:
+            self.do_disabled_edit_menu()
 
     @staticmethod
     def do_disabled_settings_menu() -> None:

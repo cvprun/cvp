@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from io import StringIO
 from math import floor
 from typing import NamedTuple, Optional, Sequence, Tuple, Union
 
 from imgui_bundle import imgui
 
-from cvp.encoding.ascii import LF
+from cvp.encoding.ascii import HT, LF, PILCROW_SIGN, SPACE
 from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.create import create_draw_list_with_shared_data
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
@@ -42,6 +43,12 @@ class InputAnsiEscapeText:
         lineno: int
         column: int
 
+    class GlyphInfo(NamedTuple):
+        char: str
+        display_char: str
+        display_size: Tuple[float, float]
+        column_size: int
+
     def __init__(
         self,
         label: str,
@@ -52,8 +59,10 @@ class InputAnsiEscapeText:
         lineno_begin=1,
         readonly=False,
         autoscroll=False,
+        tab_size=4,
         show_lineno=False,
         show_whitespace=False,
+        show_eol=False,
         palette: Optional[TerminalPalette] = None,
         style: Optional[TerminalStyle] = None,
         selected_begin: Optional[Coord] = None,
@@ -67,8 +76,10 @@ class InputAnsiEscapeText:
         self.lineno_begin = lineno_begin
         self.readonly = readonly
         self.autoscroll = autoscroll
+        self.tab_size = tab_size
         self.show_lineno = show_lineno
         self.show_whitespace = show_whitespace
+        self.show_eol = show_eol
         self.palette = palette if palette else TerminalPalette()
         self.style = style if style else TerminalStyle()
 
@@ -96,6 +107,8 @@ class InputAnsiEscapeText:
 
         self._selected_begin = selected_begin
         self._selected_end = selected_end
+        self._selected_buffer = StringIO()
+        self._selected_text = str()
 
     @property
     def mouse_pos(self):
@@ -195,6 +208,10 @@ class InputAnsiEscapeText:
         return self.text_line_height + self.item_spacing_y_half
 
     @property
+    def char_width(self) -> float:
+        return imgui.calc_text_size("0").x
+
+    @property
     def background_color(self) -> Optional[int]:
         if self.style.background is not None:
             if isinstance(self.style.background, int):
@@ -215,6 +232,124 @@ class InputAnsiEscapeText:
                 r, g, b = self.style.foreground
                 return imgui.get_color_u32((r, g, b, 1.0))
         return self.text_color
+
+    @property
+    def normalized_selected(self) -> Tuple[Coord, Coord]:
+        if self._selected_begin is None or self._selected_end is None:
+            raise ValueError("Selection is not set")
+
+        if self._selected_begin <= self._selected_end:
+            return self._selected_begin, self._selected_end
+        else:
+            return self._selected_end, self._selected_begin
+
+    @property
+    def has_selected_coords(self) -> bool:
+        return self._selected_begin is not None and self._selected_end is not None
+
+    def is_selected_with_coord(self, coord: Coord) -> bool:
+        try:
+            begin, end = self.normalized_selected
+            return begin <= coord < end
+        except ValueError:
+            return False
+
+    def is_selected_with_lineno(self, lineno: int) -> bool:
+        try:
+            begin, end = self.normalized_selected
+            return begin.lineno <= lineno < end.lineno
+        except ValueError:
+            return False
+
+    def get_glyph(self, c: str) -> GlyphInfo:
+        if c == chr(HT):
+            display_char = chr(SPACE) * self.tab_size
+        else:
+            display_char = c
+
+        text_size = imgui.calc_text_size(display_char)
+        display_size = text_size.x, text_size.y
+        column_size = floor(text_size.x / self.char_width)
+        return self.GlyphInfo(c, display_char, display_size, column_size)
+
+    def get_selected_column(
+        self,
+        line: str,
+        begin_column=0,
+        end_column: Optional[int] = None,
+        *,
+        raw=False,
+    ) -> str:
+        if end_column is None:
+            end_column = len(line)
+        assert isinstance(end_column, int)
+
+        column = 0
+        buffer = StringIO()
+        try:
+            for token in parse_ansi_escape_text(line):
+                line_text = token.token
+                assert line_text.find(chr(LF)) == -1
+
+                if isinstance(token, AnsiEscape):
+                    assert isinstance(token, (AnsiCsiEscape, AnsiFeEscape, AnsiEscape))
+                    assert len(line_text) == len(line_text.encode())
+                    if raw and begin_column <= column < end_column:
+                        buffer.write(token.token)
+                    continue
+
+                for c in line_text:
+                    glyph = self.get_glyph(c)
+                    if begin_column <= column < end_column:
+                        if raw:
+                            buffer.write(c)
+                        else:
+                            buffer.write(glyph.display_char)
+                    column += glyph.column_size
+        finally:
+            return buffer.getvalue()
+
+    def get_selected_text(self, lines: Sequence[str]) -> str:
+        try:
+            begin, end = self.normalized_selected
+            if begin == end:
+                return str()
+
+            assert begin < end
+            begin_line_index = begin.lineno - self.lineno_begin
+            end_line_index = end.lineno - self.lineno_begin
+            begin_column = begin.column
+            end_column = end.column
+
+            if begin_line_index == end_line_index:
+                assert begin_column < end_column
+                return self.get_selected_column(
+                    lines[begin_line_index],
+                    begin_column,
+                    end_column,
+                )
+
+            assert begin_line_index < end_line_index
+            begin_line = lines[begin_line_index]
+            end_line = lines[end_line_index]
+
+            buffer = StringIO()
+            buffer.write(self.get_selected_column(begin_line, begin_column))
+            buffer.write(chr(LF))
+
+            for lineno in range(begin_line_index + 1, end_line_index):
+                buffer.write(self.get_selected_column(lines[lineno]))
+                buffer.write(chr(LF))
+
+            buffer.write(self.get_selected_column(end_line, 0, end_column))
+
+            return buffer.getvalue()
+        except ValueError:
+            return str()
+
+    def select_all(self, lines: Sequence[str]) -> None:
+        self._selected_begin = self.Coord(self.lineno_begin, 0)
+        self._selected_end = self.Coord(self.lineno_begin + len(lines), 0)
 
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
@@ -292,7 +427,6 @@ class InputAnsiEscapeText:
         item_spacing_x = self.item_spacing.x
         line_begin_x = lineno_text_size.x + item_spacing_x if self.show_lineno else 0.0
         line_height = self.line_height
-        char_width = imgui.calc_text_size("0").x
         full_line_height = line_height * len(lines)
 
         if self.show_lineno:
@@ -301,13 +435,13 @@ class InputAnsiEscapeText:
             p2 = p1[0], max(csy + crh, full_line_height)
             self._draw_list.add_line(p1, p2, self.border_color, self.border_width)
 
-        screen_width = floor(crw / char_width)
+        screen_width = floor(crw / self.char_width)
         screen_height = floor(crh / line_height)
         self._terminal_size = screen_width, screen_height
 
         mouse_x = mx - csx - line_begin_x
         mouse_y = my - csy
-        self._terminal_coord_column = floor(mouse_x / char_width)
+        self._terminal_coord_column = floor(mouse_x / self.char_width)
         self._terminal_coord_lineno = self.lineno_begin + floor(mouse_y / line_height)
 
         if self._left_button.changed_down:
@@ -319,8 +453,6 @@ class InputAnsiEscapeText:
             if self._selected_begin == self._selected_end:
                 self._selected_begin = None
                 self._selected_end = None
-
-        # imgui.set_cursor_pos(cursor_pos)
 
         clipper = imgui.ListClipper()
         clipper.begin(len(lines))
@@ -343,7 +475,7 @@ class InputAnsiEscapeText:
                 line_text_size = self.do_line_process(
                     lines[i],
                     (line_sx + line_begin_x, line_sy),
-                    lineno=lineno,
+                    lineno,
                     debug=debug,
                 )
 
@@ -352,33 +484,12 @@ class InputAnsiEscapeText:
                 next_pos_y = line_cy + line_text_size[1]
                 imgui.set_cursor_pos((next_pos_x, next_pos_y))
 
-        # self._draw_list.add_ellipse(self._mouse_pos, (1.0, 1.0), self.success_color)
-        # self._draw_list.add_rect(screen_pos, (sx + rw, sy + rh), self.debug_color)
-
-    def is_selected(self, coord: Coord) -> bool:
-        if self._selected_begin is None or self._selected_end is None:
-            return False
-
-        if self._selected_begin <= self._selected_end:
-            return self._selected_begin <= coord < self._selected_end
-        else:
-            return self._selected_end <= coord < self._selected_begin
-
-    def is_selected_linefeed(self, lineno: int) -> bool:
-        if self._selected_begin is None or self._selected_end is None:
-            return False
-
-        if self._selected_begin <= self._selected_end:
-            return self._selected_begin.lineno <= lineno < self._selected_end.lineno
-        else:
-            return self._selected_end.lineno <= lineno < self._selected_begin.lineno
-
     def do_line_process(
         self,
         text: str,
         pos: Point,
-        *,
         lineno: int,
+        *,
         debug=False,
     ) -> Size:
         line_cx, line_cy = pos
@@ -398,8 +509,10 @@ class InputAnsiEscapeText:
                         self.do_csi_process(token.command)
                         continue
                     elif isinstance(token, AnsiFeEscape):
+                        self.do_fe_process(token.control_code)
                         continue
                     elif isinstance(token, AnsiEscape):
+                        self.do_fe_process(token.control_code)
                         continue
 
                     line_text = token.token
@@ -415,21 +528,23 @@ class InputAnsiEscapeText:
                     line_text_rect_p2 = cx + line_text_size.x, cy + line_text_size.y
 
                     for i, c in enumerate(line_text):
-                        c_size = imgui.calc_text_size(c)
-                        column_offset = len(c.encode())
+                        glyph = self.get_glyph(c)
+                        display_char = glyph.display_char
+                        display_width, display_height = glyph.display_size
+                        column_offset = glyph.column_size
 
                         try:
                             p1 = cx, cy
-                            p2 = cx + c_size.x, cy + c_size.y
+                            p2 = cx + display_width, cy + display_height
 
-                            if self.is_selected(self.Coord(lineno, column)):
+                            if self.is_selected_with_coord(self.Coord(lineno, column)):
                                 self._draw_list.add_rect_filled(p1, p2, sel_color)
                             elif bg_color is not None:
                                 self._draw_list.add_rect_filled(p1, p2, bg_color)
 
-                            self._draw_list.add_text(p1, fg_color, c)
+                            self._draw_list.add_text(p1, fg_color, display_char)
                         finally:
-                            cx += c_size.x
+                            cx += display_width
                             column += column_offset
 
                     if isinstance(token, AnsiError):
@@ -443,6 +558,13 @@ class InputAnsiEscapeText:
                             line_text_rect_p2,
                         ):
                             tooltip_text_wrapped(token.error_message)
+
+                if self.show_eol:
+                    self._draw_list.add_text(
+                        (cx, cy),
+                        self.text_disabled_color,
+                        chr(PILCROW_SIGN),
+                    )
             finally:
                 max_width = max(max_width, cx - line_cx)
                 line_cy += max_height_by_line + self.item_spacing_y_half
@@ -469,6 +591,9 @@ class InputAnsiEscapeText:
             params.append(0)
 
         self.do_sgr_process(*params)
+
+    def do_fe_process(self, control_code: str) -> None:
+        pass
 
     def do_sgr_process(self, *args: int) -> None:
         """
