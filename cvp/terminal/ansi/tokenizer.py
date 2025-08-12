@@ -29,14 +29,19 @@ class AnsiToken:
         self.text = text
 
 
-class AnsiLineFeed(AnsiToken):
+class AnsiRegularText(AnsiToken):
+    def __init__(self, text: str):
+        super().__init__(text)
+
+
+class AnsiLineFeed(AnsiRegularText):
     def __init__(self):
         super().__init__(chr(LF))
 
 
-class AnsiError(AnsiToken, ValueError):
+class AnsiError(AnsiRegularText, ValueError):
     def __init__(self, text: str, *args):
-        AnsiToken.__init__(self, text)
+        AnsiRegularText.__init__(self, text)
         ValueError.__init__(self, *args)
 
     @property
@@ -64,7 +69,7 @@ class AnsiInvalidControlCodeError(AnsiError):
         return self.text[1]
 
 
-class AnsiCsiParseError(AnsiError):
+class AnsiCsiEscapeError(AnsiError):
     def __init__(self, *args):
         super().__init__(ESC + CSI, *args)
 
@@ -95,8 +100,8 @@ class AnsiCsiEscape(AnsiFeEscape):
         token = command.full
         assert token[0] == ESC
         assert token[1] == CSI
-        after_text = command.full[2:]
-        super().__init__(CSI, after_text)
+
+        super().__init__(CSI, command.full[2:])
         self.command = command
 
 
@@ -106,11 +111,11 @@ def _tokenize_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> Non
     while remain_text:
         esc_index = remain_text.find(ESC)
         if esc_index == NOT_FOUND_INDEX:
-            result.append(AnsiToken(remain_text))
+            result.append(AnsiRegularText(remain_text))
             break
 
         if 1 <= esc_index:
-            result.append(AnsiToken(remain_text[:esc_index]))
+            result.append(AnsiRegularText(remain_text[:esc_index]))
 
         assert remain_text[esc_index] == ESC
         remain_index = esc_index + 1
@@ -149,7 +154,7 @@ def _tokenize_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> Non
             assert 1 <= remain_index
             remain_text = remain_text[remain_index:]
         except ValueError as e:
-            result.append(AnsiCsiParseError(str(e)))
+            result.append(AnsiCsiEscapeError(str(e)))
 
 
 def _tokenize_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
@@ -162,7 +167,7 @@ def _tokenize_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> Non
         if 1 <= lf_index:
             _tokenize_ansi_escape_line(remain_text[:lf_index], result)
 
-        assert remain_text[lf_index] == LF
+        assert ord(remain_text[lf_index]) == LF
         result.append(AnsiLineFeed())
 
         remain_index = lf_index + 1

@@ -41,11 +41,11 @@ class CsiCommand(NamedTuple):
         return result
 
 
-PARAMETER_BYTES_BEGIN: Final[int] = 0x30
-PARAMETER_BYTES_END: Final[int] = 0x3F
-
 INTERMEDIATE_BYTES_BEGIN: Final[int] = 0x20
 INTERMEDIATE_BYTES_END: Final[int] = 0x2F
+
+PARAMETER_BYTES_BEGIN: Final[int] = 0x30
+PARAMETER_BYTES_END: Final[int] = 0x3F
 
 FINAL_BYTE_BEGIN: Final[int] = 0x40
 FINAL_BYTE_END: Final[int] = 0x7E
