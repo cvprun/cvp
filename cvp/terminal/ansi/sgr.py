@@ -51,10 +51,10 @@ ALTERNATIVE_FONT_7: Final[int] = 17
 ALTERNATIVE_FONT_8: Final[int] = 18
 ALTERNATIVE_FONT_9: Final[int] = 19
 
-FRAKTUR: Final[int] = 20
+FRAKTUR: Final[int] = 20  # Rarely supported
 GOTHIC: Final[int] = FRAKTUR
 
-DOUBLY_UNDERLINED: Final[int] = 21
+DOUBLY_UNDERLINED: Final[int] = 21  # Replaced by NOT_BOLD.
 NOT_BOLD: Final[int] = DOUBLY_UNDERLINED
 
 NORMAL_INTENSITY: Final[int] = 22

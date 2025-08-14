@@ -31,13 +31,20 @@ class CsiCommand(NamedTuple):
 
     def as_integer_parameters(self) -> List[int]:
         result = list()
+
         for part in self.parameter.split(";"):
-            if not part:
-                result.append(0)
-            elif part.isdigit():
-                result.append(int(part))
+            if part:
+                if part.isdigit():
+                    result.append(int(part))
+                else:
+                    raise ValueError("Invalid CSI parameter: not a digit")
             else:
-                raise ValueError("Invalid CSI parameter: not a digit or empty")
+                result.append(0)
+
+        if not result:
+            # `CSI m` is treated as `CSI 0 m` (reset / normal).
+            result.append(0)
+
         return result
 
 

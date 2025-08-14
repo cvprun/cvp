@@ -39,13 +39,13 @@ class AnsiLineFeed(AnsiRegularText):
         super().__init__(chr(LF))
 
 
-class AnsiError(AnsiRegularText, ValueError):
+class AnsiError(AnsiToken, ValueError):
     def __init__(self, text: str, *args):
-        AnsiRegularText.__init__(self, text)
+        AnsiToken.__init__(self, text)
         ValueError.__init__(self, *args)
 
     @property
-    def error_message(self) -> str:
+    def error(self) -> str:
         return ValueError.__str__(self)
 
 

@@ -557,7 +557,7 @@ class InputAnsiEscapeText:
                             line_text_rect_p1,
                             line_text_rect_p2,
                         ):
-                            tooltip_text_wrapped(token.error_message)
+                            tooltip_text_wrapped(token.error)
 
                 if self.show_eol:
                     self._draw_list.add_text(
