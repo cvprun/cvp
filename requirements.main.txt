@@ -32,5 +32,6 @@ type-serialize==2.1.0
 tzdata==2025.2
 uvloop==0.21.0
 watchdog==6.0.0
+wcwidth==0.2.13
 yaml-translator==1.0.1
 zeep==4.3.1

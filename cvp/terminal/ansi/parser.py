@@ -2,7 +2,9 @@
 
 from typing import List, Sequence, Tuple, Union
 
-from cvp.encoding.ascii import HT, SPACE
+from wcwidth import wcwidth
+
+from cvp.encoding.ascii import HT
 from cvp.terminal.ansi.glyph import TerminalGlyph
 from cvp.terminal.ansi.lexer import SgrLine
 
@@ -27,17 +29,30 @@ def parse_terminal_glyphs_with_line(
         else:
             fg_color = sgr_text.style.foreground
 
-        for raw_char in sgr_text.text:
-            if raw_char == chr(HT):
-                display_char = chr(SPACE) * tab_size
-            else:
-                display_char = raw_char
+        for c in sgr_text.text:
+            column_size = tab_size if ord(c) == HT else wcwidth(c)
+            if column_size <= 0:
+                continue
 
-            for c in display_char:
+            glyph = TerminalGlyph(
+                row=sgr_line.lineno,
+                col=column,
+                char=c,
+                foreground=fg_color,
+                background=bg_color,
+                error=sgr_text.error,
+            )
+            result.append(glyph)
+            column += 1
+
+            if column_size <= 1:
+                continue
+
+            for _ in range(column_size - 1):
                 glyph = TerminalGlyph(
-                    char=c,
                     row=sgr_line.lineno,
                     col=column,
+                    char=None,
                     foreground=fg_color,
                     background=bg_color,
                     error=sgr_text.error,
