@@ -5,8 +5,8 @@ from typing import List, Sequence, Tuple, Union
 from wcwidth import wcwidth
 
 from cvp.encoding.ascii import HT
-from cvp.terminal.ansi.glyph import TerminalGlyph
-from cvp.terminal.ansi.lexer import SgrLine
+from cvp.terminal.ansi.sgr.lexer import SgrLine
+from cvp.terminal.glyph import TerminalGlyph
 
 
 def parse_terminal_glyphs_with_line(

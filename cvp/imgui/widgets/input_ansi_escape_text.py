@@ -17,10 +17,7 @@ from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.tooltip import tooltip_text_wrapped
-from cvp.terminal.ansi import sgr
 from cvp.terminal.ansi.csi import CsiCommand
-from cvp.terminal.ansi.palette import TerminalPalette
-from cvp.terminal.ansi.style import TerminalStyle
 from cvp.terminal.ansi.tokenizer import (
     AnsiCsiEscape,
     AnsiError,
@@ -29,6 +26,8 @@ from cvp.terminal.ansi.tokenizer import (
     AnsiLineFeed,
     tokenize_ansi_escape_text,
 )
+from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.style import TerminalStyle
 from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
 from cvp.values.drag_button import DragButton
@@ -599,84 +598,87 @@ class InputAnsiEscapeText:
         """
         Select Graphic Rendition
         """
+        from cvp.terminal.ansi.sgr import codes as sgr_codes
+        from cvp.terminal.ansi.sgr.colors import get_extended_color_with_parameters
+
         assert 1 <= len(args)
         match args[0]:
             # --------------------------------------------------------------------------
-            case sgr.RESET:
+            case sgr_codes.RESET:
                 self.style.reset()
-            case sgr.FG_COLOR_BLACK:
+            case sgr_codes.FG_COLOR_BLACK:
                 self.style.foreground = self.palette.black
-            case sgr.FG_COLOR_RED:
+            case sgr_codes.FG_COLOR_RED:
                 self.style.foreground = self.palette.red
-            case sgr.FG_COLOR_GREEN:
+            case sgr_codes.FG_COLOR_GREEN:
                 self.style.foreground = self.palette.green
-            case sgr.FG_COLOR_YELLOW:
+            case sgr_codes.FG_COLOR_YELLOW:
                 self.style.foreground = self.palette.yellow
-            case sgr.FG_COLOR_BLUE:
+            case sgr_codes.FG_COLOR_BLUE:
                 self.style.foreground = self.palette.blue
-            case sgr.FG_COLOR_MAGENTA:
+            case sgr_codes.FG_COLOR_MAGENTA:
                 self.style.foreground = self.palette.magenta
-            case sgr.FG_COLOR_CYAN:
+            case sgr_codes.FG_COLOR_CYAN:
                 self.style.foreground = self.palette.cyan
-            case sgr.FG_COLOR_WHITE:
+            case sgr_codes.FG_COLOR_WHITE:
                 self.style.foreground = self.palette.white
-            case sgr.FG_COLOR_EXTENDED:
-                self.style.foreground = sgr.get_extended_color_with_parameters(*args)
-            case sgr.FG_COLOR_DEFAULT:
+            case sgr_codes.FG_COLOR_EXTENDED:
+                self.style.foreground = get_extended_color_with_parameters(*args)
+            case sgr_codes.FG_COLOR_DEFAULT:
                 self.style.foreground = None
             # --------------------------------------------------------------------------
-            case sgr.BG_COLOR_BLACK:
+            case sgr_codes.BG_COLOR_BLACK:
                 self.style.background = self.palette.black
-            case sgr.BG_COLOR_RED:
+            case sgr_codes.BG_COLOR_RED:
                 self.style.background = self.palette.red
-            case sgr.BG_COLOR_GREEN:
+            case sgr_codes.BG_COLOR_GREEN:
                 self.style.background = self.palette.green
-            case sgr.BG_COLOR_YELLOW:
+            case sgr_codes.BG_COLOR_YELLOW:
                 self.style.background = self.palette.yellow
-            case sgr.BG_COLOR_BLUE:
+            case sgr_codes.BG_COLOR_BLUE:
                 self.style.background = self.palette.blue
-            case sgr.BG_COLOR_MAGENTA:
+            case sgr_codes.BG_COLOR_MAGENTA:
                 self.style.background = self.palette.magenta
-            case sgr.BG_COLOR_CYAN:
+            case sgr_codes.BG_COLOR_CYAN:
                 self.style.background = self.palette.cyan
-            case sgr.BG_COLOR_WHITE:
+            case sgr_codes.BG_COLOR_WHITE:
                 self.style.background = self.palette.white
-            case sgr.BG_COLOR_EXTENDED:
-                self.style.background = sgr.get_extended_color_with_parameters(*args)
-            case sgr.BG_COLOR_DEFAULT:
+            case sgr_codes.BG_COLOR_EXTENDED:
+                self.style.background = get_extended_color_with_parameters(*args)
+            case sgr_codes.BG_COLOR_DEFAULT:
                 self.style.background = None
             # --------------------------------------------------------------------------
-            case sgr.BRIGHT_FG_COLOR_BLACK:
+            case sgr_codes.BRIGHT_FG_COLOR_BLACK:
                 self.style.foreground = self.palette.bright_black
-            case sgr.BRIGHT_FG_COLOR_RED:
+            case sgr_codes.BRIGHT_FG_COLOR_RED:
                 self.style.foreground = self.palette.bright_red
-            case sgr.BRIGHT_FG_COLOR_GREEN:
+            case sgr_codes.BRIGHT_FG_COLOR_GREEN:
                 self.style.foreground = self.palette.bright_green
-            case sgr.BRIGHT_FG_COLOR_YELLOW:
+            case sgr_codes.BRIGHT_FG_COLOR_YELLOW:
                 self.style.foreground = self.palette.bright_yellow
-            case sgr.BRIGHT_FG_COLOR_BLUE:
+            case sgr_codes.BRIGHT_FG_COLOR_BLUE:
                 self.style.foreground = self.palette.bright_blue
-            case sgr.BRIGHT_FG_COLOR_MAGENTA:
+            case sgr_codes.BRIGHT_FG_COLOR_MAGENTA:
                 self.style.foreground = self.palette.bright_magenta
-            case sgr.BRIGHT_FG_COLOR_CYAN:
+            case sgr_codes.BRIGHT_FG_COLOR_CYAN:
                 self.style.foreground = self.palette.bright_cyan
-            case sgr.BRIGHT_FG_COLOR_WHITE:
+            case sgr_codes.BRIGHT_FG_COLOR_WHITE:
                 self.style.foreground = self.palette.bright_white
             # --------------------------------------------------------------------------
-            case sgr.BRIGHT_BG_COLOR_BLACK:
+            case sgr_codes.BRIGHT_BG_COLOR_BLACK:
                 self.style.background = self.palette.bright_black
-            case sgr.BRIGHT_BG_COLOR_RED:
+            case sgr_codes.BRIGHT_BG_COLOR_RED:
                 self.style.background = self.palette.bright_red
-            case sgr.BRIGHT_BG_COLOR_GREEN:
+            case sgr_codes.BRIGHT_BG_COLOR_GREEN:
                 self.style.background = self.palette.bright_green
-            case sgr.BRIGHT_BG_COLOR_YELLOW:
+            case sgr_codes.BRIGHT_BG_COLOR_YELLOW:
                 self.style.background = self.palette.bright_yellow
-            case sgr.BRIGHT_BG_COLOR_BLUE:
+            case sgr_codes.BRIGHT_BG_COLOR_BLUE:
                 self.style.background = self.palette.bright_blue
-            case sgr.BRIGHT_BG_COLOR_MAGENTA:
+            case sgr_codes.BRIGHT_BG_COLOR_MAGENTA:
                 self.style.background = self.palette.bright_magenta
-            case sgr.BRIGHT_BG_COLOR_CYAN:
+            case sgr_codes.BRIGHT_BG_COLOR_CYAN:
                 self.style.background = self.palette.bright_cyan
-            case sgr.BRIGHT_BG_COLOR_WHITE:
+            case sgr_codes.BRIGHT_BG_COLOR_WHITE:
                 self.style.background = self.palette.bright_white
             # --------------------------------------------------------------------------

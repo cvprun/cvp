@@ -3,10 +3,10 @@
 from typing import Final
 from unittest import TestCase, main
 
-from cvp.terminal.ansi.lexer import lex_sgr_lines
-from cvp.terminal.ansi.palette import TerminalPalette
-from cvp.terminal.ansi.style import TerminalStyle
+from cvp.terminal.ansi.sgr.lexer import lex_sgr_lines
 from cvp.terminal.ansi.tokenizer import tokenize_ansi_escape_text
+from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.style import TerminalStyle
 
 _TEST_ANSI_ESCAPE_TEXT: Final[str] = (
     "\x1b[32m2000-00-00 11:22:33.444\x1b[0m \x1b[35m12345\x1b[0m/\x1b[36m138709396989\n"

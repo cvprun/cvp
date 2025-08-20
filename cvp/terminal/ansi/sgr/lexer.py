@@ -3,9 +3,9 @@
 from copy import deepcopy
 from typing import Iterable, List, NamedTuple, Optional, Sequence
 
-from cvp.terminal.ansi import sgr
-from cvp.terminal.ansi.palette import TerminalPalette
-from cvp.terminal.ansi.style import TerminalStyle
+from cvp.memory.copy import copy_flexible
+from cvp.terminal.ansi.sgr import codes as sgr_codes
+from cvp.terminal.ansi.sgr.colors import get_extended_color_with_parameters
 from cvp.terminal.ansi.tokenizer import (
     AnsiCsiEscape,
     AnsiError,
@@ -15,6 +15,8 @@ from cvp.terminal.ansi.tokenizer import (
     AnsiRegularText,
     AnsiToken,
 )
+from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.style import TerminalStyle
 
 
 class SgrText(NamedTuple):
@@ -33,189 +35,190 @@ def apply_sgr_style(
     style: TerminalStyle,
     palette: TerminalPalette,
     *params: int,
+    use_copy=False,
     use_deepcopy=False,
 ) -> TerminalStyle:
     assert 1 <= len(params)
-    result = deepcopy(style) if use_deepcopy else style
+    result = copy_flexible(style, use_copy=use_copy, use_deepcopy=use_deepcopy)
     try:
         match params[0]:
             # --------------------------------------------------------------------------
-            case sgr.RESET:
+            case sgr_codes.RESET:
                 result.reset()
             # --------------------------------------------------------------------------
-            case sgr.BOLD:
+            case sgr_codes.BOLD:
                 result.bold = True
-            case sgr.FAINT:
+            case sgr_codes.FAINT:
                 result.faint = True
-            case sgr.ITALIC:
+            case sgr_codes.ITALIC:
                 result.italic = True
-            case sgr.UNDERLINE:
+            case sgr_codes.UNDERLINE:
                 result.underline = True
-            case sgr.SLOW_BLINK:
+            case sgr_codes.SLOW_BLINK:
                 result.blink_speed = 1
-            case sgr.RAPID_BLINK:
+            case sgr_codes.RAPID_BLINK:
                 result.blink_speed = 2
-            case sgr.REVERSE_VIDEO:
+            case sgr_codes.REVERSE_VIDEO:
                 result.inverse = True
-            case sgr.CONCEAL:
+            case sgr_codes.CONCEAL:
                 result.hide = True
-            case sgr.CROSSED_OUT:
+            case sgr_codes.CROSSED_OUT:
                 result.strike = True
             # --------------------------------------------------------------------------
-            case sgr.PRIMARY_FONT:
+            case sgr_codes.PRIMARY_FONT:
                 result.font = None
-            case sgr.ALTERNATIVE_FONT_1:
+            case sgr_codes.ALTERNATIVE_FONT_1:
                 result.font = 1
-            case sgr.ALTERNATIVE_FONT_2:
+            case sgr_codes.ALTERNATIVE_FONT_2:
                 result.font = 2
-            case sgr.ALTERNATIVE_FONT_3:
+            case sgr_codes.ALTERNATIVE_FONT_3:
                 result.font = 3
-            case sgr.ALTERNATIVE_FONT_4:
+            case sgr_codes.ALTERNATIVE_FONT_4:
                 result.font = 4
-            case sgr.ALTERNATIVE_FONT_5:
+            case sgr_codes.ALTERNATIVE_FONT_5:
                 result.font = 5
-            case sgr.ALTERNATIVE_FONT_6:
+            case sgr_codes.ALTERNATIVE_FONT_6:
                 result.font = 6
-            case sgr.ALTERNATIVE_FONT_7:
+            case sgr_codes.ALTERNATIVE_FONT_7:
                 result.font = 7
-            case sgr.ALTERNATIVE_FONT_8:
+            case sgr_codes.ALTERNATIVE_FONT_8:
                 result.font = 8
-            case sgr.ALTERNATIVE_FONT_9:
+            case sgr_codes.ALTERNATIVE_FONT_9:
                 result.font = 9
-            case sgr.FRAKTUR:
+            case sgr_codes.FRAKTUR:
                 pass  # Rarely supported
             # --------------------------------------------------------------------------
-            case sgr.NOT_BOLD:
+            case sgr_codes.NOT_BOLD:
                 result.bold = False
-            case sgr.NORMAL_INTENSITY:
+            case sgr_codes.NORMAL_INTENSITY:
                 result.faint = False
-            case sgr.NOT_ITALIC:
+            case sgr_codes.NOT_ITALIC:
                 result.italic = False
-            case sgr.NOT_UNDERLINED:
+            case sgr_codes.NOT_UNDERLINED:
                 result.underline = False
-            case sgr.NOT_BLINKING:
+            case sgr_codes.NOT_BLINKING:
                 result.blink_speed = 0
-            case sgr.PROPORTIONAL_SPACING:
+            case sgr_codes.PROPORTIONAL_SPACING:
                 pass  # ITU T.61 and T.416, not known to be used on terminals.
-            case sgr.NOT_REVERSED:
+            case sgr_codes.NOT_REVERSED:
                 result.inverse = False
-            case sgr.NOT_CONCEALED:
+            case sgr_codes.NOT_CONCEALED:
                 result.hide = False
-            case sgr.NOT_CROSSED_OUT:
+            case sgr_codes.NOT_CROSSED_OUT:
                 result.strike = False
             # --------------------------------------------------------------------------
-            case sgr.FG_COLOR_BLACK:
+            case sgr_codes.FG_COLOR_BLACK:
                 result.foreground = palette.black
-            case sgr.FG_COLOR_RED:
+            case sgr_codes.FG_COLOR_RED:
                 result.foreground = palette.red
-            case sgr.FG_COLOR_GREEN:
+            case sgr_codes.FG_COLOR_GREEN:
                 result.foreground = palette.green
-            case sgr.FG_COLOR_YELLOW:
+            case sgr_codes.FG_COLOR_YELLOW:
                 result.foreground = palette.yellow
-            case sgr.FG_COLOR_BLUE:
+            case sgr_codes.FG_COLOR_BLUE:
                 result.foreground = palette.blue
-            case sgr.FG_COLOR_MAGENTA:
+            case sgr_codes.FG_COLOR_MAGENTA:
                 result.foreground = palette.magenta
-            case sgr.FG_COLOR_CYAN:
+            case sgr_codes.FG_COLOR_CYAN:
                 result.foreground = palette.cyan
-            case sgr.FG_COLOR_WHITE:
+            case sgr_codes.FG_COLOR_WHITE:
                 result.foreground = palette.white
-            case sgr.FG_COLOR_EXTENDED:
-                result.foreground = sgr.get_extended_color_with_parameters(*params)
-            case sgr.FG_COLOR_DEFAULT:
+            case sgr_codes.FG_COLOR_EXTENDED:
+                result.foreground = get_extended_color_with_parameters(*params)
+            case sgr_codes.FG_COLOR_DEFAULT:
                 result.foreground = None
             # --------------------------------------------------------------------------
-            case sgr.BG_COLOR_BLACK:
+            case sgr_codes.BG_COLOR_BLACK:
                 result.background = palette.black
-            case sgr.BG_COLOR_RED:
+            case sgr_codes.BG_COLOR_RED:
                 result.background = palette.red
-            case sgr.BG_COLOR_GREEN:
+            case sgr_codes.BG_COLOR_GREEN:
                 result.background = palette.green
-            case sgr.BG_COLOR_YELLOW:
+            case sgr_codes.BG_COLOR_YELLOW:
                 result.background = palette.yellow
-            case sgr.BG_COLOR_BLUE:
+            case sgr_codes.BG_COLOR_BLUE:
                 result.background = palette.blue
-            case sgr.BG_COLOR_MAGENTA:
+            case sgr_codes.BG_COLOR_MAGENTA:
                 result.background = palette.magenta
-            case sgr.BG_COLOR_CYAN:
+            case sgr_codes.BG_COLOR_CYAN:
                 result.background = palette.cyan
-            case sgr.BG_COLOR_WHITE:
+            case sgr_codes.BG_COLOR_WHITE:
                 result.background = palette.white
-            case sgr.BG_COLOR_EXTENDED:
-                result.background = sgr.get_extended_color_with_parameters(*params)
-            case sgr.BG_COLOR_DEFAULT:
+            case sgr_codes.BG_COLOR_EXTENDED:
+                result.background = get_extended_color_with_parameters(*params)
+            case sgr_codes.BG_COLOR_DEFAULT:
                 result.background = None
             # --------------------------------------------------------------------------
-            case sgr.DISABLE_PROPORTIONAL_SPACING:
+            case sgr_codes.DISABLE_PROPORTIONAL_SPACING:
                 pass
-            case sgr.FRAMED:
+            case sgr_codes.FRAMED:
                 pass
-            case sgr.ENCIRCLED:
+            case sgr_codes.ENCIRCLED:
                 pass
-            case sgr.OVERLINED:
+            case sgr_codes.OVERLINED:
                 pass
-            case sgr.NEITHER_FRAMED_NOR_ENCIRCLED:
+            case sgr_codes.NEITHER_FRAMED_NOR_ENCIRCLED:
                 pass
-            case sgr.NOT_OVERLINED:
+            case sgr_codes.NOT_OVERLINED:
                 pass
             # --------------------------------------------------------------------------
-            case sgr.UNDERLINE_COLOR:
-                result.underline_color = sgr.get_extended_color_with_parameters(*params)
-            case sgr.UNDERLINE_COLOR_DEFAULT:
+            case sgr_codes.UNDERLINE_COLOR:
+                result.underline_color = get_extended_color_with_parameters(*params)
+            case sgr_codes.UNDERLINE_COLOR_DEFAULT:
                 result.underline_color = None
             # --------------------------------------------------------------------------
-            case sgr.IDEOGRAM_UNDERLINE:
+            case sgr_codes.IDEOGRAM_UNDERLINE:
                 pass
-            case sgr.IDEOGRAM_DOUBLE_UNDERLINE:
+            case sgr_codes.IDEOGRAM_DOUBLE_UNDERLINE:
                 pass
-            case sgr.IDEOGRAM_OVERLINE:
+            case sgr_codes.IDEOGRAM_OVERLINE:
                 pass
-            case sgr.IDEOGRAM_DOUBLE_OVERLINE:
+            case sgr_codes.IDEOGRAM_DOUBLE_OVERLINE:
                 pass
-            case sgr.IDEOGRAM_STRESS:
+            case sgr_codes.IDEOGRAM_STRESS:
                 pass
-            case sgr.NO_IDEOGRAM_ATTRIBUTES:
-                pass
-            # --------------------------------------------------------------------------
-            case sgr.SUPERSCRIPT:
-                pass
-            case sgr.SUBSCRIPT:
-                pass
-            case sgr.NEITHER_SUPERSCRIPT_NOR_SUBSCRIPT:
+            case sgr_codes.NO_IDEOGRAM_ATTRIBUTES:
                 pass
             # --------------------------------------------------------------------------
-            case sgr.BRIGHT_FG_COLOR_BLACK:
+            case sgr_codes.SUPERSCRIPT:
+                pass
+            case sgr_codes.SUBSCRIPT:
+                pass
+            case sgr_codes.NEITHER_SUPERSCRIPT_NOR_SUBSCRIPT:
+                pass
+            # --------------------------------------------------------------------------
+            case sgr_codes.BRIGHT_FG_COLOR_BLACK:
                 result.foreground = palette.bright_black
-            case sgr.BRIGHT_FG_COLOR_RED:
+            case sgr_codes.BRIGHT_FG_COLOR_RED:
                 result.foreground = palette.bright_red
-            case sgr.BRIGHT_FG_COLOR_GREEN:
+            case sgr_codes.BRIGHT_FG_COLOR_GREEN:
                 result.foreground = palette.bright_green
-            case sgr.BRIGHT_FG_COLOR_YELLOW:
+            case sgr_codes.BRIGHT_FG_COLOR_YELLOW:
                 result.foreground = palette.bright_yellow
-            case sgr.BRIGHT_FG_COLOR_BLUE:
+            case sgr_codes.BRIGHT_FG_COLOR_BLUE:
                 result.foreground = palette.bright_blue
-            case sgr.BRIGHT_FG_COLOR_MAGENTA:
+            case sgr_codes.BRIGHT_FG_COLOR_MAGENTA:
                 result.foreground = palette.bright_magenta
-            case sgr.BRIGHT_FG_COLOR_CYAN:
+            case sgr_codes.BRIGHT_FG_COLOR_CYAN:
                 result.foreground = palette.bright_cyan
-            case sgr.BRIGHT_FG_COLOR_WHITE:
+            case sgr_codes.BRIGHT_FG_COLOR_WHITE:
                 result.foreground = palette.bright_white
             # --------------------------------------------------------------------------
-            case sgr.BRIGHT_BG_COLOR_BLACK:
+            case sgr_codes.BRIGHT_BG_COLOR_BLACK:
                 result.background = palette.bright_black
-            case sgr.BRIGHT_BG_COLOR_RED:
+            case sgr_codes.BRIGHT_BG_COLOR_RED:
                 result.background = palette.bright_red
-            case sgr.BRIGHT_BG_COLOR_GREEN:
+            case sgr_codes.BRIGHT_BG_COLOR_GREEN:
                 result.background = palette.bright_green
-            case sgr.BRIGHT_BG_COLOR_YELLOW:
+            case sgr_codes.BRIGHT_BG_COLOR_YELLOW:
                 result.background = palette.bright_yellow
-            case sgr.BRIGHT_BG_COLOR_BLUE:
+            case sgr_codes.BRIGHT_BG_COLOR_BLUE:
                 result.background = palette.bright_blue
-            case sgr.BRIGHT_BG_COLOR_MAGENTA:
+            case sgr_codes.BRIGHT_BG_COLOR_MAGENTA:
                 result.background = palette.bright_magenta
-            case sgr.BRIGHT_BG_COLOR_CYAN:
+            case sgr_codes.BRIGHT_BG_COLOR_CYAN:
                 result.background = palette.bright_cyan
-            case sgr.BRIGHT_BG_COLOR_WHITE:
+            case sgr_codes.BRIGHT_BG_COLOR_WHITE:
                 result.background = palette.bright_white
             # --------------------------------------------------------------------------
     finally:
