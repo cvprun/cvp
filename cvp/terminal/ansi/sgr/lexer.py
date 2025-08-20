@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from copy import deepcopy
-from typing import Iterable, List, NamedTuple, Optional, Sequence
+from typing import List, Optional, Sequence
 
 from cvp.memory.copy import copy_flexible
 from cvp.terminal.ansi.sgr import codes as sgr_codes
 from cvp.terminal.ansi.sgr.colors import get_extended_color_with_parameters
+from cvp.terminal.ansi.sgr.line import SgrLine
+from cvp.terminal.ansi.sgr.text import SgrText
 from cvp.terminal.ansi.tokenizer import (
     AnsiCsiEscape,
     AnsiError,
@@ -17,18 +19,6 @@ from cvp.terminal.ansi.tokenizer import (
 )
 from cvp.terminal.palette import TerminalPalette
 from cvp.terminal.style import TerminalStyle
-
-
-class SgrText(NamedTuple):
-    text: str
-    style: TerminalStyle
-    error: Optional[str] = None
-
-
-class SgrLine(List[SgrText]):
-    def __init__(self, lineno: int, __iterable: Optional[Iterable[SgrText]] = None):
-        super().__init__(__iterable or ())
-        self.lineno = lineno
 
 
 def apply_sgr_style(

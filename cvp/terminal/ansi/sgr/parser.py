@@ -5,8 +5,8 @@ from typing import List, Sequence, Tuple, Union
 from wcwidth import wcwidth
 
 from cvp.encoding.ascii import HT
-from cvp.terminal.ansi.sgr.lexer import SgrLine
-from cvp.terminal.glyph import TerminalGlyph
+from cvp.terminal.ansi.sgr.glyph import SgrGlyph
+from cvp.terminal.ansi.sgr.line import SgrLine
 
 
 def parse_terminal_glyphs_with_line(
@@ -14,9 +14,9 @@ def parse_terminal_glyphs_with_line(
     default_foreground: Union[None, int, Tuple[int, int, int]] = None,
     default_background: Union[None, int, Tuple[int, int, int]] = None,
     tab_size=4,
-) -> List[TerminalGlyph]:
+) -> List[SgrGlyph]:
     result = list()
-    column = 0
+    column = 1
 
     for sgr_text in sgr_line:
         if sgr_text.style.background is None:
@@ -34,7 +34,7 @@ def parse_terminal_glyphs_with_line(
             if column_size <= 0:
                 continue
 
-            glyph = TerminalGlyph(
+            glyph = SgrGlyph(
                 row=sgr_line.lineno,
                 col=column,
                 char=c,
@@ -49,7 +49,7 @@ def parse_terminal_glyphs_with_line(
                 continue
 
             for _ in range(column_size - 1):
-                glyph = TerminalGlyph(
+                glyph = SgrGlyph(
                     row=sgr_line.lineno,
                     col=column,
                     char=None,
@@ -68,7 +68,7 @@ def parse_terminal_glyphs_with_lines(
     default_foreground: Union[None, int, Tuple[int, int, int]] = None,
     default_background: Union[None, int, Tuple[int, int, int]] = None,
     tab_size=4,
-) -> List[TerminalGlyph]:
+) -> List[SgrGlyph]:
     result = list()
     for sgr_line in sgr_lines:
         items = parse_terminal_glyphs_with_line(

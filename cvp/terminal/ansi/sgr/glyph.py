@@ -5,7 +5,7 @@ from typing import Optional, Tuple, Union
 
 
 @dataclass
-class TerminalGlyph:
+class SgrGlyph:
     row: int
     col: int
 
@@ -15,3 +15,7 @@ class TerminalGlyph:
     background: Union[None, int, Tuple[int, int, int]] = None
 
     error: Optional[str] = None
+
+    @property
+    def pos(self) -> Tuple[int, int]:
+        return self.row, self.col
