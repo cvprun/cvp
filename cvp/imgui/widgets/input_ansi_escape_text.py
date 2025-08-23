@@ -26,7 +26,9 @@ from cvp.terminal.ansi.tokenizer import (
     AnsiLineFeed,
     tokenize_ansi_escape_text,
 )
+from cvp.terminal.coord import TerminalCoord
 from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.selection import TerminalSelection
 from cvp.terminal.style import TerminalStyle
 from cvp.types.shapes import Point, Size
 from cvp.values.delta import DeltaValue
@@ -37,10 +39,6 @@ class InputAnsiEscapeText:
     """
     https://en.wikipedia.org/wiki/ANSI_escape_code
     """
-
-    class Coord(NamedTuple):
-        lineno: int
-        column: int
 
     class GlyphInfo(NamedTuple):
         char: str
@@ -64,8 +62,8 @@ class InputAnsiEscapeText:
         show_eol=False,
         palette: Optional[TerminalPalette] = None,
         style: Optional[TerminalStyle] = None,
-        selected_begin: Optional[Coord] = None,
-        selected_end: Optional[Coord] = None,
+        selected_begin: Optional[TerminalCoord] = None,
+        selected_end: Optional[TerminalCoord] = None,
     ):
         self._label = label
         self._size = size
@@ -100,12 +98,11 @@ class InputAnsiEscapeText:
         self._control_identifier = type(self).__name__
         self._control_flags = int(ALL_BUTTON_FLAGS)
 
-        self._terminal_coord_lineno = 0
-        self._terminal_coord_column = 0
+        self._cursor_lineno = 0
+        self._cursor_column = 0
         self._terminal_size = 0, 0
 
-        self._selected_begin = selected_begin
-        self._selected_end = selected_end
+        self._selection = TerminalSelection(selected_begin, selected_end)
         self._selected_buffer = StringIO()
         self._selected_text = str()
 
@@ -126,16 +123,16 @@ class InputAnsiEscapeText:
         return self._content_region_size
 
     @property
-    def selected_begin(self) -> Optional[Coord]:
-        return self._selected_begin
+    def selected_begin(self) -> Optional[TerminalCoord]:
+        return self._selection.begin
 
     @property
-    def selected_end(self) -> Optional[Coord]:
-        return self._selected_end
+    def selected_end(self) -> Optional[TerminalCoord]:
+        return self._selection.end
 
     @property
-    def terminal_coord(self) -> Coord:
-        return self.Coord(self._terminal_coord_lineno, self._terminal_coord_column)
+    def cursor_coord(self) -> TerminalCoord:
+        return TerminalCoord(self._cursor_lineno, self._cursor_column)
 
     @property
     def terminal_size(self) -> Tuple[int, int]:
@@ -211,54 +208,8 @@ class InputAnsiEscapeText:
         return imgui.calc_text_size("0").x
 
     @property
-    def background_color(self) -> Optional[int]:
-        if self.style.background is not None:
-            if isinstance(self.style.background, int):
-                return self.style.background
-            if isinstance(self.style.background, tuple):
-                assert 3 == len(self.style.background)
-                r, g, b = self.style.background
-                return imgui.get_color_u32((r, g, b, 1.0))
-        return None
-
-    @property
-    def foreground_color(self) -> int:
-        if self.style.foreground is not None:
-            if isinstance(self.style.foreground, int):
-                return self.style.foreground
-            if isinstance(self.style.foreground, tuple):
-                assert 3 == len(self.style.foreground)
-                r, g, b = self.style.foreground
-                return imgui.get_color_u32((r, g, b, 1.0))
-        return self.text_color
-
-    @property
-    def normalized_selected(self) -> Tuple[Coord, Coord]:
-        if self._selected_begin is None or self._selected_end is None:
-            raise ValueError("Selection is not set")
-
-        if self._selected_begin <= self._selected_end:
-            return self._selected_begin, self._selected_end
-        else:
-            return self._selected_end, self._selected_begin
-
-    @property
-    def has_selected_coords(self) -> bool:
-        return self._selected_begin is not None and self._selected_end is not None
-
-    def is_selected_with_coord(self, coord: Coord) -> bool:
-        try:
-            begin, end = self.normalized_selected
-            return begin <= coord < end
-        except ValueError:
-            return False
-
-    def is_selected_with_lineno(self, lineno: int) -> bool:
-        try:
-            begin, end = self.normalized_selected
-            return begin.lineno <= lineno < end.lineno
-        except ValueError:
-            return False
+    def has_selection(self) -> bool:
+        return self._selection.exists
 
     def get_glyph(self, c: str) -> GlyphInfo:
         if c == chr(HT):
@@ -310,7 +261,7 @@ class InputAnsiEscapeText:
 
     def get_selected_text(self, lines: Sequence[str]) -> str:
         try:
-            begin, end = self.normalized_selected
+            begin, end = self._selection.normalize
             if begin == end:
                 return str()
 
@@ -347,8 +298,8 @@ class InputAnsiEscapeText:
             return str()
 
     def select_all(self, lines: Sequence[str]) -> None:
-        self._selected_begin = self.Coord(self.lineno_begin, 0)
-        self._selected_end = self.Coord(self.lineno_begin + len(lines), 0)
+        self._selection.begin = TerminalCoord(self.lineno_begin, 0)
+        self._selection.end = TerminalCoord(self.lineno_begin + len(lines), 0)
 
     def do_process(self, lines: Sequence[str], *, debug=False) -> None:
         with begin_child_context(
@@ -389,8 +340,6 @@ class InputAnsiEscapeText:
         if crw == 0 or crh == 0:
             raise ValueError("Invalid region size")
 
-        assert imgui.get_style().window_padding.x == cx
-        assert imgui.get_style().window_padding.y == cy
         assert isinstance(mx, float)
         assert isinstance(my, float)
         assert isinstance(cx, float)
@@ -440,18 +389,18 @@ class InputAnsiEscapeText:
 
         mouse_x = mx - csx - line_begin_x
         mouse_y = my - csy
-        self._terminal_coord_column = floor(mouse_x / self.char_width)
-        self._terminal_coord_lineno = self.lineno_begin + floor(mouse_y / line_height)
+        self._cursor_column = floor(mouse_x / self.char_width)
+        self._cursor_lineno = self.lineno_begin + floor(mouse_y / line_height)
 
         if self._left_button.changed_down:
-            self._selected_begin = self.terminal_coord
+            self._selection.set_begin(self._cursor_lineno, self._cursor_column)
         if self._left_button.is_down:
-            self._selected_end = self.terminal_coord
+            self._selection.set_end(self._cursor_lineno, self._cursor_column)
         if self._left_button.changed_up:
-            self._selected_end = self.terminal_coord
-            if self._selected_begin == self._selected_end:
-                self._selected_begin = None
-                self._selected_end = None
+            self._selection.set_end(self._cursor_lineno, self._cursor_column)
+            if self._selection.begin == self._selection.end:
+                self._selection.begin = None
+                self._selection.end = None
 
         clipper = imgui.ListClipper()
         clipper.begin(len(lines))
@@ -520,8 +469,10 @@ class InputAnsiEscapeText:
                     max_height_by_line = max(max_height_by_line, line_text_size.y)
 
                     sel_color = self.text_selected_bg_color
-                    bg_color = self.background_color
-                    fg_color = self.foreground_color
+                    bg_color = self.style.background_u32
+                    fg_color = self.style.foreground_u32
+                    if fg_color is None:
+                        fg_color = self.text_color
 
                     line_text_rect_p1 = cx, cy
                     line_text_rect_p2 = cx + line_text_size.x, cy + line_text_size.y
@@ -536,7 +487,7 @@ class InputAnsiEscapeText:
                             p1 = cx, cy
                             p2 = cx + display_width, cy + display_height
 
-                            if self.is_selected_with_coord(self.Coord(lineno, column)):
+                            if self._selection.contain_with(lineno, column):
                                 self._draw_list.add_rect_filled(p1, p2, sel_color)
                             elif bg_color is not None:
                                 self._draw_list.add_rect_filled(p1, p2, bg_color)

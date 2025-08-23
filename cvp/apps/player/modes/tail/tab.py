@@ -145,7 +145,7 @@ class TailTab:
 
     @property
     def has_selection(self) -> bool:
-        return self.canvas.has_selected_coords
+        return self.canvas.has_selection
 
     def get_selected_text(self) -> str:
         return self.canvas.get_selected_text(self.buffer.lines)
@@ -161,8 +161,8 @@ class TailTab:
         cx, cy = self.canvas.cursor_pos
         csx, csy = self.canvas.cursor_screen_pos
         crw, crh = self.canvas.content_region_size
-        terminal_coord_lineno = self.canvas.terminal_coord.lineno
-        terminal_coord_column = self.canvas.terminal_coord.column
+        terminal_coord_lineno = self.canvas.cursor_coord.lineno
+        terminal_coord_column = self.canvas.cursor_coord.column
         tw, th = self.canvas.terminal_size
         selected_text = self.get_selected_text()
         selected_prefix = selected_text[:10]
