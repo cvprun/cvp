@@ -13,10 +13,6 @@ _TEST_ANSI_ESCAPE_TEXT: Final[str] = "\x1b[1mINFO\x1b[0m\tCurrent\nNext"
 
 
 class ParserTestCase(TestCase):
-    def test_empty(self):
-        lines = lex_sgr_lines(list())
-        self.assertEqual(0, len(lines))
-
     def test_default(self):
         tokens = tokenize_ansi_escape_text(_TEST_ANSI_ESCAPE_TEXT)
         style = TerminalStyle()

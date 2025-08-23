@@ -35,8 +35,8 @@ class AnsiRegularText(AnsiToken):
 
 
 class AnsiLineFeed(AnsiRegularText):
-    def __init__(self):
-        super().__init__(chr(LF))
+    def __init__(self, linefeed=LF):
+        super().__init__(chr(linefeed))
 
 
 class AnsiError(AnsiToken, ValueError):
@@ -106,8 +106,6 @@ class AnsiCsiEscape(AnsiFeEscape):
 
 
 def _tokenize_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> None:
-    assert remain_text.find(chr(LF)) == NOT_FOUND_INDEX
-
     while remain_text:
         esc_index = remain_text.find(ESC)
         if esc_index == NOT_FOUND_INDEX:
@@ -157,9 +155,14 @@ def _tokenize_ansi_escape_line(remain_text: str, result: List[AnsiToken]) -> Non
             result.append(AnsiCsiEscapeError(str(e)))
 
 
-def _tokenize_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> None:
+def _tokenize_ansi_escape_text(
+    remain_text: str,
+    result: List[AnsiToken],
+    *,
+    linefeed=LF,
+) -> None:
     while remain_text:
-        lf_index = remain_text.find(chr(LF))
+        lf_index = remain_text.find(chr(linefeed))
         if lf_index == NOT_FOUND_INDEX:
             _tokenize_ansi_escape_line(remain_text, result)
             break
@@ -167,16 +170,16 @@ def _tokenize_ansi_escape_text(remain_text: str, result: List[AnsiToken]) -> Non
         if 1 <= lf_index:
             _tokenize_ansi_escape_line(remain_text[:lf_index], result)
 
-        assert ord(remain_text[lf_index]) == LF
-        result.append(AnsiLineFeed())
+        assert ord(remain_text[lf_index]) == linefeed
+        result.append(AnsiLineFeed(linefeed))
 
         remain_index = lf_index + 1
         remain_text = remain_text[remain_index:]
 
 
-def tokenize_ansi_escape_text(text: str) -> List[AnsiToken]:
+def tokenize_ansi_escape_text(text: str, *, linefeed=LF) -> List[AnsiToken]:
     result: List[AnsiToken] = list()
     try:
-        _tokenize_ansi_escape_text(text, result)
+        _tokenize_ansi_escape_text(text, result, linefeed=linefeed)
     finally:
         return result

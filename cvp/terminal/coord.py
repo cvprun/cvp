@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 from typing import NamedTuple, Optional
 
 
@@ -8,9 +9,10 @@ class TerminalCoord(NamedTuple):
     column: int
 
 
-class TerminalSelectedArea(NamedTuple):
-    begin: Optional[TerminalCoord]
-    end: Optional[TerminalCoord]
+@dataclass
+class TerminalSelectedArea:
+    begin: Optional[TerminalCoord] = None
+    end: Optional[TerminalCoord] = None
 
     @property
     def normalize(self):

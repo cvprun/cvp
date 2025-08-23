@@ -13,7 +13,7 @@ def parse_terminal_glyphs_with_line(
     sgr_line: SgrLine,
     default_foreground: Union[None, int, Tuple[int, int, int]] = None,
     default_background: Union[None, int, Tuple[int, int, int]] = None,
-    tab_size=4,
+    tabsize=4,
 ) -> List[SgrGlyph]:
     result = list()
     column = 1
@@ -30,7 +30,7 @@ def parse_terminal_glyphs_with_line(
             fg_color = sgr_text.style.foreground
 
         for c in sgr_text.text:
-            column_size = tab_size if ord(c) == HT else wcwidth(c)
+            column_size = tabsize if ord(c) == HT else wcwidth(c)
             if column_size <= 0:
                 continue
 
@@ -67,7 +67,7 @@ def parse_terminal_glyphs_with_lines(
     sgr_lines: Sequence[SgrLine],
     default_foreground: Union[None, int, Tuple[int, int, int]] = None,
     default_background: Union[None, int, Tuple[int, int, int]] = None,
-    tab_size=4,
+    tabsize=4,
 ) -> List[SgrGlyph]:
     result = list()
     for sgr_line in sgr_lines:
@@ -75,7 +75,7 @@ def parse_terminal_glyphs_with_lines(
             sgr_line=sgr_line,
             default_foreground=default_foreground,
             default_background=default_background,
-            tab_size=tab_size,
+            tabsize=tabsize,
         )
         result.extend(items)
     return result
