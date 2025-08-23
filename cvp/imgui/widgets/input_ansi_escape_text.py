@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from dataclasses import dataclass
 from io import StringIO
 from math import floor
 from typing import NamedTuple, Optional, Sequence, Tuple, Union
@@ -18,6 +19,7 @@ from cvp.imgui.flags.mouse_button import MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.tooltip import tooltip_text_wrapped
 from cvp.terminal.ansi.csi import CsiCommand
+from cvp.terminal.ansi.sgr.block import LineBlock
 from cvp.terminal.ansi.tokenizer import (
     AnsiCsiEscape,
     AnsiError,
@@ -45,6 +47,11 @@ class InputAnsiEscapeText:
         display_char: str
         display_size: Tuple[float, float]
         column_size: int
+
+    @dataclass
+    class CachedLineBlock:
+        text: str
+        block: LineBlock
 
     def __init__(
         self,
@@ -103,8 +110,6 @@ class InputAnsiEscapeText:
         self._terminal_size = 0, 0
 
         self._selection = TerminalSelection(selected_begin, selected_end)
-        self._selected_buffer = StringIO()
-        self._selected_text = str()
 
     @property
     def mouse_pos(self):
@@ -368,8 +373,8 @@ class InputAnsiEscapeText:
         self._ctrl_down.update(io.key_ctrl)
         self._alt_down.update(io.key_alt)
 
-        lineno_width = max(1, len(str(len(lines))))
-        lineno_width_dummy_text = "0" * lineno_width
+        lineno_max_length = max(1, len(str(self.lineno_begin + len(lines))))
+        lineno_width_dummy_text = "0" * lineno_max_length
         lineno_text_size = imgui.calc_text_size(lineno_width_dummy_text)
 
         item_spacing_x = self.item_spacing.x
@@ -417,7 +422,7 @@ class InputAnsiEscapeText:
                     self._draw_list.add_text(
                         (line_sx, line_sy),
                         self.text_disabled_color,
-                        str(lineno).zfill(lineno_width),
+                        str(lineno).zfill(lineno_max_length),
                     )
 
                 line_text_size = self.do_line_process(
