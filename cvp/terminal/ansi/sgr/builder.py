@@ -15,8 +15,9 @@ from cvp.terminal.ansi.sgr.glyph import SgrGlyph
 from cvp.terminal.ansi.sgr.lexer import lex_sgr_lines
 from cvp.terminal.ansi.sgr.parser import parse_terminal_glyphs_with_line
 from cvp.terminal.ansi.tokenizer import tokenize_ansi_escape_text
-from cvp.terminal.coord import TerminalCoord, TerminalSelectedArea
+from cvp.terminal.coord import TerminalCoord
 from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.selection import TerminalSelection
 from cvp.terminal.style import TerminalStyle
 
 
@@ -116,7 +117,7 @@ class SgrBuilder:
     def convert_glyph_to_block(
         self,
         glyph: SgrGlyph,
-        selected: TerminalSelectedArea,
+        selection: TerminalSelection,
     ) -> TextBlock:
         row = glyph.row
         col = glyph.col
@@ -140,7 +141,7 @@ class SgrBuilder:
             fg = glyph.foreground_u32
 
         coord = TerminalCoord(row, col)
-        if selected.contain_with_coord(coord):
+        if selection.contain_with_coord(coord):
             bg = self.text_selected_bg_color
         else:
             bg = glyph.background_u32
@@ -165,7 +166,7 @@ class SgrBuilder:
         lineno=1,
         style: Optional[TerminalStyle] = None,
         palette: Optional[TerminalPalette] = None,
-        selected: Optional[TerminalSelectedArea] = None,
+        selection: Optional[TerminalSelection] = None,
     ) -> List[LineBlock]:
         if not text:
             return list()
@@ -178,9 +179,9 @@ class SgrBuilder:
             palette = TerminalPalette()
         assert isinstance(palette, TerminalPalette)
 
-        if selected is None:
-            selected = TerminalSelectedArea()
-        assert isinstance(selected, TerminalSelectedArea)
+        if selection is None:
+            selection = TerminalSelection()
+        assert isinstance(selection, TerminalSelection)
 
         tokens = tokenize_ansi_escape_text(text, linefeed=self.linefeed)
         assert 1 <= len(tokens)
@@ -193,13 +194,13 @@ class SgrBuilder:
             glyphs = parse_terminal_glyphs_with_line(sgr_line, tabsize=self.tabsize)
             assert 1 <= len(glyphs)
 
-            last_block = self.convert_glyph_to_block(glyphs[0], selected)
+            last_block = self.convert_glyph_to_block(glyphs[0], selection)
             assert last_block.lineno == sgr_line.lineno
 
             text_blocks = [last_block]
 
             for glyph in glyphs[1:]:
-                block = self.convert_glyph_to_block(glyph, selected)
+                block = self.convert_glyph_to_block(glyph, selection)
                 assert block.lineno == sgr_line.lineno
 
                 if last_block.mergeable_with(block):
