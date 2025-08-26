@@ -15,6 +15,17 @@ class SelectionTestCase(TestCase):
         self.assertEqual(begin1, begin2)
         self.assertEqual(end1, end2)
 
+    def test_equal(self):
+        begin1 = TerminalCoord(1, 10)
+        end1 = TerminalCoord(3, 4)
+        selection1 = TerminalSelection(begin1, end1)
+
+        begin2 = TerminalCoord(1, 10)
+        end2 = TerminalCoord(3, 4)
+        selection2 = TerminalSelection(begin2, end2)
+
+        self.assertEqual(selection1, selection2)
+
     def test_contain(self):
         begin = TerminalCoord(1, 10)
         end = TerminalCoord(3, 4)

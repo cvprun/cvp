@@ -8,7 +8,8 @@ from imgui_bundle import imgui
 from cvp.buffers.lines.deque import LinesDeque
 from cvp.config.sections.tail import TailConfig
 from cvp.imgui.tooltip import tooltip_text_wrapped
-from cvp.imgui.widgets.input_ansi_escape_text import InputAnsiEscapeText
+from cvp.imgui.widgets.ansi_escape_editor import AnsiEscapeEditor
+from cvp.terminal.selection import TerminalSelection
 from cvp.values.interval import IntervalTimer
 from cvp.variables import (
     DEFAULT_STRING_ENCODING,
@@ -34,9 +35,8 @@ class TailTab:
         latest_time: Optional[float] = None,
         watchdog_key: Optional[WatchdogKey] = None,
     ):
-        self.canvas = InputAnsiEscapeText(
+        self.canvas = AnsiEscapeEditor(
             label=path,
-            readonly=True,
             autoscroll=autoscroll,
             show_lineno=show_lineno,
             show_whitespace=show_whitespace,
@@ -49,6 +49,7 @@ class TailTab:
             newline=newline,
             initial_lines=initial_lines,
         )
+        self.selection = TerminalSelection()
         self.interval = IntervalTimer(interval=interval, latest_time=latest_time)
         self.watchdog_key = watchdog_key
 
@@ -102,9 +103,9 @@ class TailTab:
     def selected_info(self) -> str:
         buffer = StringIO()
         buffer.write("Sel ")
-        if sb := self.canvas.selected_begin:
+        if sb := self.selection.begin:
             buffer.write(f"{sb.lineno}:{sb.column}")
-            if se := self.canvas.selected_end:
+            if se := self.selection.end:
                 buffer.write(f"~{se.lineno}:{se.column}")
         else:
             buffer.write("None")
@@ -139,19 +140,21 @@ class TailTab:
             return False
 
     def do_process(self, *, debug=False) -> None:
-        self.canvas.do_process(self.buffer.lines, debug=debug)
+        self.canvas.render(self.buffer.lines, debug=debug)  # TODO
         if debug:
             tooltip_text_wrapped(self.as_unformatted_text())
 
     @property
     def has_selection(self) -> bool:
-        return self.canvas.has_selection
+        return self.selection.exists
 
     def get_selected_text(self) -> str:
-        return self.canvas.get_selected_text(self.buffer.lines)
+        # return self.canvas.get_selected_text(self.buffer.lines)
+        return str()  # TODO
 
     def select_all(self) -> None:
-        self.canvas.select_all(self.buffer.lines)
+        # self.selection.select_all()  # TODO
+        pass
 
     def copy(self) -> None:
         imgui.set_clipboard_text(self.get_selected_text())
@@ -161,8 +164,8 @@ class TailTab:
         cx, cy = self.canvas.cursor_pos
         csx, csy = self.canvas.cursor_screen_pos
         crw, crh = self.canvas.content_region_size
-        terminal_coord_lineno = self.canvas.cursor_coord.lineno
-        terminal_coord_column = self.canvas.cursor_coord.column
+        cursor_lineno = self.canvas.cursor_lineno
+        cursor_column = self.canvas.cursor_column
         tw, th = self.canvas.terminal_size
         selected_text = self.get_selected_text()
         selected_prefix = selected_text[:10]
@@ -173,7 +176,8 @@ class TailTab:
             f"Cursor pos: {cx:.02f}, {cy:.02f}\n"
             f"Cursor screen pos: {csx:.02f}, {csy:.02f}\n"
             f"Content region size: {crw:.02f}, {crh:.02f}\n"
-            f"Terminal coord: {terminal_coord_column}x{terminal_coord_lineno}\n"
+            f"Cursor lineno: {cursor_lineno}\n"
+            f"Cursor column: {cursor_column}\n"
             f"Terminal size: {tw}x{th}\n"
             f"Selected text: {selected_prefix}..{selected_suffix} ({selected_length})\n"
         )

@@ -14,7 +14,7 @@ _TEST_ANSI_ESCAPE_TEXT: Final[str] = (
 
 class BuilderTestCase(TestCase):
     def test_default(self):
-        builder = SgrBuilder(show_whitespace=True, tab_size=2)
+        builder = SgrBuilder(show_whitespace=True, tabsize=2)
         blocks = builder.build(_TEST_ANSI_ESCAPE_TEXT)
         self.assertEqual(3, len(blocks))
 

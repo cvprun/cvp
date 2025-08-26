@@ -1,0 +1,481 @@
+# -*- coding: utf-8 -*-
+
+from copy import deepcopy
+from dataclasses import dataclass
+from math import floor
+from typing import Dict, List, Optional, Sequence, Union
+
+from imgui_bundle import imgui
+
+from cvp.encoding.ascii import (
+    DIGIT_ZERO,
+    HT,
+    LF,
+    MIDDLE_DOT,
+    PILCROW_SIGN,
+    RIGHT_POINTING_DOUBLE_ANGLE_QUOTATION_MARK,
+    SPACE,
+)
+from cvp.imgui.begin_child import begin_child_context
+from cvp.imgui.draw_list.create import create_draw_list_with_shared_data
+from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
+from cvp.imgui.flags.child import BORDERS, ChildFlags
+from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
+from cvp.imgui.flags.mouse_button import MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
+from cvp.imgui.flags.window import WindowFlags
+from cvp.imgui.get_style import (
+    get_border_u32,
+    get_border_width,
+    get_char_width,
+    get_item_spacing_x,
+    get_item_spacing_x_half,
+    get_line_height,
+    get_text_disabled_u32,
+    get_text_line_height,
+    get_text_selected_bg_u32,
+    get_text_u32,
+)
+from cvp.imgui.tooltip import tooltip_text_wrapped
+from cvp.terminal.ansi.sgr.block import LineBlock
+from cvp.terminal.ansi.sgr.builder import SgrBuilder
+from cvp.terminal.palette import TerminalPalette
+from cvp.terminal.selection import TerminalSelection
+from cvp.terminal.style import TerminalStyle
+from cvp.types.shapes import Point, Size
+from cvp.types.shapes_i import SizeI
+from cvp.values.delta import DeltaValue
+from cvp.values.drag_button import DragButton
+
+
+class AnsiEscapeEditor:
+    """
+    https://en.wikipedia.org/wiki/ANSI_escape_code
+    """
+
+    @dataclass
+    class CachedLineBlock:
+        lineno: int
+        text: str
+        lines: List[LineBlock]
+        style: TerminalStyle
+
+        @property
+        def rows(self) -> int:
+            return len(self.lines)
+
+        @property
+        def cols(self) -> int:
+            return max(line.cols for line in self.lines) if self.lines else 0
+
+        def validate(
+            self,
+            text: str,
+            style: TerminalStyle,
+            selection: TerminalSelection,
+        ) -> bool:
+            if self.text != text:
+                return False
+            if self.style != style:
+                return False
+
+            # if self.selected != selection:
+            #     if selection.exists:
+            #         begin, end = selection.normalize
+            #         assert isinstance(begin, TerminalCoord)
+            #         assert isinstance(end, TerminalCoord)
+            #         begin.lineno < self.lineno < end.lineno
+            #     begin, end = self.selection.contain_with_lineno(self.lineno)
+            #     return False
+
+            # begin_lineno = selection.begin.lineno
+            # begin_column = selection.begin.column
+            # end_lineno = selection.end.lineno
+            # end_column = selection.end.column
+            # for line in self.lines:
+            #     current_lineno = line.lineno
+            #     for text in line:
+            #         text_col_begin = text.col_begin
+            #         text_col_end = text.col_end
+
+            return True
+
+    def __init__(
+        self,
+        label: str,
+        size: Optional[imgui.ImVec2Like] = None,
+        child_flags: Union[ChildFlags, int] = BORDERS,
+        window_flags: Union[WindowFlags, int] = 0,
+        *,
+        autoscroll=False,
+        tabsize=4,
+        show_lineno=False,
+        show_whitespace=False,
+        show_eol=False,
+        palette: Optional[TerminalPalette] = None,
+        cache_lines: Optional[Dict[int, CachedLineBlock]] = None,
+    ):
+        self._builder = SgrBuilder(
+            show_whitespace=show_whitespace,
+            text_disabled_color=get_text_disabled_u32(),
+            tabsize=tabsize,
+            linefeed=LF,
+            space=SPACE,
+            tab=HT,
+            empty_char=chr(SPACE),
+            tab_char=chr(RIGHT_POINTING_DOUBLE_ANGLE_QUOTATION_MARK),
+            whitespace_char=chr(MIDDLE_DOT),
+        )
+        self._border_color = get_border_u32()
+        self._text_color = get_text_u32()
+        self._text_selected_bg_color = get_text_selected_bg_u32()
+        self._eol_char = chr(PILCROW_SIGN)
+
+        self._autoscroll = autoscroll
+        self._show_lineno = show_lineno
+        self._show_eol = show_eol
+
+        self._label = label
+        self._size = size
+        self._child_flags = child_flags
+        self._window_flags = window_flags
+
+        self._left_button = DragButton()
+        self._middle_button = DragButton()
+        self._right_button = DragButton()
+
+        self._shift_down = DeltaValue.from_single_value(False)
+        self._ctrl_down = DeltaValue.from_single_value(False)
+        self._alt_down = DeltaValue.from_single_value(False)
+
+        self._draw_list = create_draw_list_with_shared_data()
+        self._mouse_wheel = DeltaValue.from_single_value(0.0)
+        self._mouse_pos = 0.0, 0.0
+        self._cursor_pos = 0.0, 0.0
+        self._cursor_screen_pos = 0.0, 0.0
+        self._content_region_size = 0.0, 0.0
+
+        self._cursor_lineno = 0
+        self._cursor_column = 0
+        self._terminal_size = 0, 0
+
+        self._cache_lines = dict(cache_lines or {})
+        self._palette = palette if palette is not None else TerminalPalette()
+
+    @property
+    def autoscroll(self) -> bool:
+        return self._autoscroll
+
+    @autoscroll.setter
+    def autoscroll(self, value: bool) -> None:
+        self._autoscroll = value
+
+    @property
+    def show_lineno(self) -> bool:
+        return self._show_lineno
+
+    @show_lineno.setter
+    def show_lineno(self, value: bool) -> None:
+        self._show_lineno = value
+
+    @property
+    def show_eol(self) -> bool:
+        return self._show_eol
+
+    @show_eol.setter
+    def show_eol(self, value: bool) -> None:
+        self._show_eol = value
+
+    @property
+    def show_whitespace(self) -> bool:
+        return self._builder.show_whitespace
+
+    @show_whitespace.setter
+    def show_whitespace(self, value: bool) -> None:
+        self._builder.show_whitespace = value
+
+    @property
+    def text_disabled_color(self) -> int:
+        return self._builder.text_disabled_color
+
+    @property
+    def text_selected_bg_color(self) -> int:
+        return self._text_selected_bg_color
+
+    @property
+    def border_color(self) -> int:
+        return self._border_color
+
+    @property
+    def text_color(self) -> int:
+        return self._text_color
+
+    @property
+    def mouse_pos(self) -> Size:
+        return self._mouse_pos
+
+    @property
+    def cursor_pos(self) -> Size:
+        return self._cursor_pos
+
+    @property
+    def cursor_screen_pos(self) -> Size:
+        return self._cursor_screen_pos
+
+    @property
+    def content_region_size(self) -> Size:
+        return self._content_region_size
+
+    @property
+    def cursor_lineno(self) -> int:
+        return self._cursor_lineno
+
+    @property
+    def cursor_column(self) -> int:
+        return self._cursor_column
+
+    @property
+    def terminal_size(self) -> SizeI:
+        return self._terminal_size
+
+    def render(
+        self,
+        lines: Sequence[str],
+        style: Optional[TerminalStyle] = None,
+        selection: Optional[TerminalSelection] = None,
+        *,
+        lineno=1,
+        debug=False,
+    ) -> None:
+        with begin_child_context(
+            self._label,
+            self._size,
+            self._child_flags,
+            self._window_flags,
+        ):
+            if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
+                if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
+                    if 0 < self._mouse_wheel.value:
+                        # Drag Up
+                        if imgui.get_scroll_y() < imgui.get_scroll_max_y():
+                            self._autoscroll = False
+                    elif self._mouse_wheel.value < 0:
+                        # Drag Down
+                        if imgui.get_scroll_max_y() <= imgui.get_scroll_y():
+                            self._autoscroll = True
+                    else:
+                        assert 0 == self._mouse_wheel.value
+
+            self.render_multiline(
+                lines=lines,
+                style=style,
+                selection=selection,
+                lineno=lineno,
+                debug=debug,
+            )
+
+            if self._autoscroll:
+                imgui.set_scroll_here_y(1.0)
+
+    def render_multiline(
+        self,
+        lines: Sequence[str],
+        style: Optional[TerminalStyle] = None,
+        selection: Optional[TerminalSelection] = None,
+        *,
+        lineno=1,
+        debug=False,
+    ) -> None:
+        if style is None:
+            style = TerminalStyle()
+        assert isinstance(style, TerminalStyle)
+
+        if selection is None:
+            selection = TerminalSelection()
+        assert isinstance(selection, TerminalSelection)
+
+        mouse_pos = imgui.get_mouse_pos()
+        cursor_pos = imgui.get_cursor_pos()
+        cursor_screen_pos = imgui.get_cursor_screen_pos()
+        content_region_size = imgui.get_content_region_avail()
+
+        mx, my = mouse_pos.x, mouse_pos.y
+        cx, cy = cursor_pos.x, cursor_pos.y
+        csx, csy = cursor_screen_pos.x, cursor_screen_pos.y
+        crw, crh = content_region_size.x, content_region_size.y
+
+        if crw == 0 or crh == 0:
+            raise ValueError("Invalid region size")
+
+        assert isinstance(mx, float)
+        assert isinstance(my, float)
+        assert isinstance(cx, float)
+        assert isinstance(cy, float)
+        assert isinstance(csx, float)
+        assert isinstance(csy, float)
+        assert isinstance(crw, float)
+        assert isinstance(crh, float)
+        self._draw_list = get_window_draw_list()
+        self._mouse_pos = mx, my
+        self._cursor_pos = cx, cy
+        self._cursor_screen_pos = csx, csy
+        self._content_region_size = crw, crh
+
+        io = imgui.get_io()
+
+        left_down = bool(io.mouse_down[MOUSE_LEFT])
+        right_down = bool(io.mouse_down[MOUSE_RIGHT])
+        middle_down = bool(io.mouse_down[MOUSE_MIDDLE])
+
+        self._left_button.update(left_down, self._mouse_pos)
+        self._middle_button.update(middle_down, self._mouse_pos)
+        self._right_button.update(right_down, self._mouse_pos)
+
+        self._shift_down.update(io.key_shift)
+        self._ctrl_down.update(io.key_ctrl)
+        self._alt_down.update(io.key_alt)
+
+        lineno_max_length = max(1, len(str(lineno + len(lines))))
+        lineno_max_width_dummy_text = chr(DIGIT_ZERO) * lineno_max_length
+        lineno_max_width = imgui.calc_text_size(lineno_max_width_dummy_text).x
+
+        item_spacing_x = get_item_spacing_x()
+        line_begin_x = lineno_max_width + item_spacing_x if self._show_lineno else 0.0
+        line_height = get_line_height()
+        full_line_height = line_height * len(lines)
+
+        if self._show_lineno:
+            # Draw a vertical line matching the width of the line number area.
+            p1 = csx + lineno_max_width + get_item_spacing_x_half(), 0.0
+            p2 = p1[0], max(csy + crh, full_line_height)
+            self._draw_list.add_line(p1, p2, self.border_color, get_border_width())
+
+        single_char_width = get_char_width()
+        screen_width = floor(crw / single_char_width)
+        screen_height = floor(crh / line_height)
+        self._terminal_size = screen_width, screen_height
+
+        mouse_x = mx - csx - line_begin_x
+        mouse_y = my - csy
+        self._cursor_column = floor(mouse_x / single_char_width)
+        self._cursor_lineno = lineno + floor(mouse_y / line_height)
+
+        if self._left_button.changed_down:
+            selection.set_begin(self._cursor_lineno, self._cursor_column)
+        if self._left_button.is_down:
+            selection.set_end(self._cursor_lineno, self._cursor_column)
+        if self._left_button.changed_up:
+            selection.set_end(self._cursor_lineno, self._cursor_column)
+            if selection.begin == selection.end:
+                selection.begin = None
+                selection.end = None
+
+        clipper = imgui.ListClipper()
+        clipper.begin(len(lines))
+        while clipper.step():
+            for i in range(clipper.display_start, clipper.display_end):
+                line_cursor_pos = imgui.get_cursor_pos()
+                line_screen_pos = imgui.get_cursor_screen_pos()
+
+                line_cx, line_cy = line_cursor_pos.x, line_cursor_pos.y
+                line_sx, line_sy = line_screen_pos.x, line_screen_pos.y
+                line_lineno = lineno + i
+
+                if self._show_lineno:
+                    lineno_pos = line_sx, line_sy
+                    lineno_color = self.text_disabled_color
+                    lineno_text = str(line_lineno).zfill(lineno_max_length)
+                    self._draw_list.add_text(lineno_pos, lineno_color, lineno_text)
+
+                line_pos = line_sx + line_begin_x, line_sy
+                line_size = self.render_line(
+                    lineno=line_lineno,
+                    text=lines[i],
+                    pos=line_pos,
+                    style=style,
+                    selection=selection,
+                    debug=debug,
+                )
+
+                # Advance the cursor position manually for the next line.
+                next_pos_x = line_cx
+                next_pos_y = line_cy + line_size[1]
+                next_pos = next_pos_x, next_pos_y
+                imgui.set_cursor_pos(next_pos)
+
+    def render_line(
+        self,
+        lineno: int,
+        text: str,
+        pos: Point,
+        style: TerminalStyle,
+        selection: TerminalSelection,
+        *,
+        debug=False,
+    ) -> Size:
+        cache_line = self._cache_lines.get(lineno)
+        if not cache_line or not cache_line.validate(text, style, selection):
+            initial_style = deepcopy(style)
+            line_blocks = self._builder.build(text, lineno, style, self._palette)
+            cache_line = self.CachedLineBlock(lineno, text, line_blocks, initial_style)
+            self._cache_lines[lineno] = cache_line
+
+        assert cache_line is not None
+        return self.render_block(cache_line, pos, debug=debug)
+
+    def render_block(
+        self,
+        block: CachedLineBlock,
+        pos: Point,
+        *,
+        debug=False,
+    ) -> Size:
+        line_pivot_x, line_pivot_y = pos
+        char_width = get_char_width()
+        char_height = get_text_line_height()
+        line_height = get_line_height()
+
+        for line in block.lines:
+            cx = line_pivot_x
+            cy = line_pivot_y
+
+            try:
+                for text in line:
+                    x1 = cx + char_width * (text.col_begin - 1)
+                    x2 = cx + char_width * (text.col_end - 1)
+                    y1 = cy
+                    y2 = cy + char_height
+                    p1 = x1, y1
+                    p2 = x2, y2
+
+                    if text.background is not None:
+                        self._draw_list.add_rect_filled(p1, p2, text.background)
+
+                    if text.foreground is not None:
+                        text_color = text.foreground
+                    else:
+                        text_color = self.text_color
+
+                    self._draw_list.add_text(p1, text_color, text.display_text)
+
+                    if text.error:
+                        self._draw_list.add_rect(p1, p2, self._palette.error)
+                        if imgui.is_mouse_hovering_rect(p1, p2):
+                            tooltip_text_wrapped(text.error)
+
+                if self._show_eol:
+                    eol_pos = cx + char_width * (line.col_end - 1), cy
+                    eol_color = self.text_disabled_color
+                    eol_char = self._eol_char
+                    self._draw_list.add_text(eol_pos, eol_color, eol_char)
+            finally:
+                line_pivot_y += line_height
+
+        size_x = char_width * block.cols
+        size_y = line_height * max(1, block.rows)
+
+        if debug:
+            rect_x2 = pos[0] + size_x
+            rect_y2 = pos[1] + size_y
+            self._draw_list.add_rect(pos, (rect_x2, rect_y2), self._palette.debug)
+
+        return size_x, size_y

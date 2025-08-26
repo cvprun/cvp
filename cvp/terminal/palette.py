@@ -50,6 +50,7 @@ class TerminalPalette:
     bright_cyan: int = field(default_factory=lambda: rgb_to_uint32(BRIGHT_CYAN))
     bright_white: int = field(default_factory=lambda: rgb_to_uint32(BRIGHT_WHITE))
 
+    disabled: int = field(default_factory=lambda: rgb_to_uint32(basic.GRAY, 0.8))
     error: int = field(default_factory=lambda: rgb_to_uint32(basic.RED, 0.8))
     warning: int = field(default_factory=lambda: rgb_to_uint32(basic.YELLOW, 0.8))
     success: int = field(default_factory=lambda: rgb_to_uint32(basic.GREEN, 0.8))

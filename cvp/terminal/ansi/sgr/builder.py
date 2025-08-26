@@ -14,7 +14,6 @@ from cvp.terminal.ansi.sgr.glyph import SgrGlyph
 from cvp.terminal.ansi.sgr.lexer import lex_sgr_lines
 from cvp.terminal.ansi.sgr.parser import parse_terminal_glyphs_with_line
 from cvp.terminal.ansi.tokenizer import tokenize_ansi_escape_text
-from cvp.terminal.coord import TerminalCoord
 from cvp.terminal.palette import TerminalPalette
 from cvp.terminal.selection import TerminalSelection
 from cvp.terminal.style import TerminalStyle
@@ -26,7 +25,7 @@ class SgrBuilder:
         show_whitespace=False,
         text_disabled_color=0xFF7E7E7E,
         text_selected_bg_color=0x594296FA,
-        tab_size=4,
+        tabsize=4,
         linefeed=LF,
         space=SPACE,
         tab=HT,
@@ -37,7 +36,7 @@ class SgrBuilder:
         self.show_whitespace = show_whitespace
         self.text_disabled_color = text_disabled_color
         self.text_selected_bg_color = text_selected_bg_color
-        self.tabsize = tab_size
+        self.tabsize = tabsize
         self.linefeed = linefeed
         self.space = space
         self.tab = tab
@@ -71,13 +70,10 @@ class SgrBuilder:
             display_text = raw_text
             fg = glyph.foreground_u32
 
-        coord = TerminalCoord(row, col)
-        if selection.contain_with_coord(coord):
+        if selected := selection.contain_with(row, col):
             bg = self.text_selected_bg_color
         else:
             bg = glyph.background_u32
-
-        e = glyph.error
 
         return TextBlock(
             raw_text=raw_text,
@@ -87,13 +83,13 @@ class SgrBuilder:
             col_end=col + 1,
             foreground=fg,
             background=bg,
-            error=e,
+            error=glyph.error,
+            selected=selected,
         )
 
     def build(
         self,
         text: str,
-        *,
         lineno=1,
         style: Optional[TerminalStyle] = None,
         palette: Optional[TerminalPalette] = None,

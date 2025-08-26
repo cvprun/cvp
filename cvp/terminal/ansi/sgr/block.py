@@ -15,6 +15,7 @@ class TextBlock:
     foreground: Optional[int] = None
     background: Optional[int] = None
     error: Optional[str] = None
+    selected: bool = False
 
     @property
     def cols(self) -> int:
@@ -26,6 +27,7 @@ class TextBlock:
         assert self.foreground == item.foreground
         assert self.background == item.background
         assert self.error == item.error
+        assert self.selected == item.selected
 
         self.raw_text += item.raw_text
         self.display_text += item.display_text
@@ -41,6 +43,8 @@ class TextBlock:
         if self.background != item.background:
             return False
         if self.error != item.error:
+            return False
+        if self.selected != item.selected:
             return False
         return True
 

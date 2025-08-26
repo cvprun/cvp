@@ -11,10 +11,6 @@ class TerminalSelection:
     begin: Optional[TerminalCoord] = None
     end: Optional[TerminalCoord] = None
 
-    def __iter__(self):
-        yield self.begin
-        yield self.end
-
     @property
     def normalize(self):
         if self.begin is None or self.end is None:
@@ -26,8 +22,22 @@ class TerminalSelection:
             return TerminalSelection(self.end, self.begin)
 
     @property
+    def normalize_tuple(self):
+        begin, end = self.normalize
+        assert isinstance(begin, TerminalCoord)
+        assert isinstance(end, TerminalCoord)
+        return begin, end
+
+    @property
     def exists(self) -> bool:
         return self.begin is not None and self.end is not None
+
+    def __bool__(self) -> bool:
+        return self.exists
+
+    def __iter__(self):
+        yield self.begin
+        yield self.end
 
     def clear_begin(self) -> None:
         self.begin = None
@@ -61,3 +71,7 @@ class TerminalSelection:
             return begin.lineno <= lineno < end.lineno
         except ValueError:
             return False
+
+    def select_all(self, lineno_begin: int, line_count: int) -> None:
+        self.begin = TerminalCoord(lineno_begin, 0)
+        self.end = TerminalCoord(lineno_begin + line_count, 0)
