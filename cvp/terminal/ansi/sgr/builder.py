@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Optional
+from copy import deepcopy
+from typing import Dict, List, Optional
 
 from cvp.encoding.ascii import (
     HT,
@@ -9,7 +10,7 @@ from cvp.encoding.ascii import (
     RIGHT_POINTING_DOUBLE_ANGLE_QUOTATION_MARK,
     SPACE,
 )
-from cvp.terminal.ansi.sgr.block import LineBlock, TextBlock
+from cvp.terminal.ansi.sgr.block import CachedLineBlock, LineBlock, TextBlock
 from cvp.terminal.ansi.sgr.glyph import SgrGlyph
 from cvp.terminal.ansi.sgr.lexer import lex_sgr_lines
 from cvp.terminal.ansi.sgr.parser import parse_terminal_glyphs_with_line
@@ -32,6 +33,8 @@ class SgrBuilder:
         empty_char=chr(SPACE),
         tab_char=chr(RIGHT_POINTING_DOUBLE_ANGLE_QUOTATION_MARK),
         whitespace_char=chr(MIDDLE_DOT),
+        *,
+        cache_lines: Optional[Dict[int, CachedLineBlock]] = None,
     ):
         self.show_whitespace = show_whitespace
         self.text_disabled_color = text_disabled_color
@@ -43,6 +46,7 @@ class SgrBuilder:
         self.empty_char = empty_char
         self.tab_char = tab_char
         self.whitespace_char = whitespace_char
+        self._cache_lines = dict(cache_lines or {})
 
     def convert_glyph_to_block(
         self,
@@ -94,6 +98,8 @@ class SgrBuilder:
         style: Optional[TerminalStyle] = None,
         palette: Optional[TerminalPalette] = None,
         selection: Optional[TerminalSelection] = None,
+        *,
+        same_line=False,
     ) -> List[LineBlock]:
         if not text:
             return list()
@@ -137,4 +143,57 @@ class SgrBuilder:
                     last_block = block
 
             result.append(LineBlock(sgr_line.lineno, text_blocks))
+
+        if same_line and 2 <= len(result):
+            result[0].lineno = lineno
+            column = result[0].col_end
+
+            for line_block in result[1:]:
+                line_block.lineno = lineno
+                for text_block in line_block:
+                    next_column = text_block.col_end
+                    current_cols = text_block.cols
+
+                    text_block.col_begin = column
+                    text_block.col_end = column + current_cols
+                    column = next_column
+
         return result
+
+    def get_cached_line(
+        self,
+        lineno: int,
+        text: str,
+        style: Optional[TerminalStyle] = None,
+        palette: Optional[TerminalPalette] = None,
+        selection: Optional[TerminalSelection] = None,
+        *,
+        same_line=False,
+    ) -> CachedLineBlock:
+        if style is None:
+            style = TerminalStyle()
+        assert isinstance(style, TerminalStyle)
+
+        if palette is None:
+            palette = TerminalPalette()
+        assert isinstance(palette, TerminalPalette)
+
+        if selection is None:
+            selection = TerminalSelection()
+        assert isinstance(selection, TerminalSelection)
+
+        cache_line = self._cache_lines.get(lineno)
+        if not cache_line or not cache_line.equal(text, style, selection):
+            initial_style = deepcopy(style)
+            line_blocks = self.build(
+                text=text,
+                lineno=lineno,
+                style=style,
+                palette=palette,
+                selection=selection,
+                same_line=same_line,
+            )
+            cache_line = CachedLineBlock(lineno, text, line_blocks, initial_style)
+            self._cache_lines[lineno] = cache_line
+
+        return cache_line

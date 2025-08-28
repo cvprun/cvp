@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from copy import deepcopy
-from dataclasses import dataclass
 from math import floor
-from typing import Dict, List, Optional, Sequence, Union
+from typing import Optional, Sequence, Union
 
 from imgui_bundle import imgui
 
@@ -36,7 +34,6 @@ from cvp.imgui.get_style import (
     get_text_u32,
 )
 from cvp.imgui.tooltip import tooltip_text_wrapped
-from cvp.terminal.ansi.sgr.block import LineBlock
 from cvp.terminal.ansi.sgr.builder import SgrBuilder
 from cvp.terminal.palette import TerminalPalette
 from cvp.terminal.selection import TerminalSelection
@@ -52,53 +49,6 @@ class AnsiEscapeEditor:
     https://en.wikipedia.org/wiki/ANSI_escape_code
     """
 
-    @dataclass
-    class CachedLineBlock:
-        lineno: int
-        text: str
-        lines: List[LineBlock]
-        style: TerminalStyle
-
-        @property
-        def rows(self) -> int:
-            return len(self.lines)
-
-        @property
-        def cols(self) -> int:
-            return max(line.cols for line in self.lines) if self.lines else 0
-
-        def validate(
-            self,
-            text: str,
-            style: TerminalStyle,
-            selection: TerminalSelection,
-        ) -> bool:
-            if self.text != text:
-                return False
-            if self.style != style:
-                return False
-
-            # if self.selected != selection:
-            #     if selection.exists:
-            #         begin, end = selection.normalize
-            #         assert isinstance(begin, TerminalCoord)
-            #         assert isinstance(end, TerminalCoord)
-            #         begin.lineno < self.lineno < end.lineno
-            #     begin, end = self.selection.contain_with_lineno(self.lineno)
-            #     return False
-
-            # begin_lineno = selection.begin.lineno
-            # begin_column = selection.begin.column
-            # end_lineno = selection.end.lineno
-            # end_column = selection.end.column
-            # for line in self.lines:
-            #     current_lineno = line.lineno
-            #     for text in line:
-            #         text_col_begin = text.col_begin
-            #         text_col_end = text.col_end
-
-            return True
-
     def __init__(
         self,
         label: str,
@@ -112,7 +62,6 @@ class AnsiEscapeEditor:
         show_whitespace=False,
         show_eol=False,
         palette: Optional[TerminalPalette] = None,
-        cache_lines: Optional[Dict[int, CachedLineBlock]] = None,
     ):
         self._builder = SgrBuilder(
             show_whitespace=show_whitespace,
@@ -158,7 +107,6 @@ class AnsiEscapeEditor:
         self._cursor_column = 0
         self._terminal_size = 0, 0
 
-        self._cache_lines = dict(cache_lines or {})
         self._palette = palette if palette is not None else TerminalPalette()
 
     @property
@@ -412,58 +360,50 @@ class AnsiEscapeEditor:
         *,
         debug=False,
     ) -> Size:
-        cache_line = self._cache_lines.get(lineno)
-        if not cache_line or not cache_line.validate(text, style, selection):
-            initial_style = deepcopy(style)
-            line_blocks = self._builder.build(text, lineno, style, self._palette)
-            cache_line = self.CachedLineBlock(lineno, text, line_blocks, initial_style)
-            self._cache_lines[lineno] = cache_line
+        block = self._builder.get_cached_line(
+            lineno=lineno,
+            text=text,
+            style=style,
+            palette=self._palette,
+            selection=selection,
+            same_line=True,
+        )
 
-        assert cache_line is not None
-        return self.render_block(cache_line, pos, debug=debug)
-
-    def render_block(
-        self,
-        block: CachedLineBlock,
-        pos: Point,
-        *,
-        debug=False,
-    ) -> Size:
         line_pivot_x, line_pivot_y = pos
         char_width = get_char_width()
         char_height = get_text_line_height()
         line_height = get_line_height()
 
-        for line in block.lines:
+        for line_block in block.lines:
             cx = line_pivot_x
             cy = line_pivot_y
 
             try:
-                for text in line:
-                    x1 = cx + char_width * (text.col_begin - 1)
-                    x2 = cx + char_width * (text.col_end - 1)
+                for text_block in line_block:
+                    x1 = cx + char_width * (text_block.col_begin - 1)
+                    x2 = cx + char_width * (text_block.col_end - 1)
                     y1 = cy
                     y2 = cy + char_height
                     p1 = x1, y1
                     p2 = x2, y2
 
-                    if text.background is not None:
-                        self._draw_list.add_rect_filled(p1, p2, text.background)
+                    if text_block.background is not None:
+                        self._draw_list.add_rect_filled(p1, p2, text_block.background)
 
-                    if text.foreground is not None:
-                        text_color = text.foreground
+                    if text_block.foreground is not None:
+                        text_color = text_block.foreground
                     else:
                         text_color = self.text_color
 
-                    self._draw_list.add_text(p1, text_color, text.display_text)
+                    self._draw_list.add_text(p1, text_color, text_block.display_text)
 
-                    if text.error:
+                    if text_block.error:
                         self._draw_list.add_rect(p1, p2, self._palette.error)
                         if imgui.is_mouse_hovering_rect(p1, p2):
-                            tooltip_text_wrapped(text.error)
+                            tooltip_text_wrapped(text_block.error)
 
                 if self._show_eol:
-                    eol_pos = cx + char_width * (line.col_end - 1), cy
+                    eol_pos = cx + char_width * (line_block.col_end - 1), cy
                     eol_color = self.text_disabled_color
                     eol_char = self._eol_char
                     self._draw_list.add_text(eol_pos, eol_color, eol_char)

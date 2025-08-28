@@ -1,15 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from dataclasses import dataclass
 from typing import Optional
 
 from cvp.terminal.coord import TerminalCoord
 
 
-@dataclass
 class TerminalSelection:
-    begin: Optional[TerminalCoord] = None
-    end: Optional[TerminalCoord] = None
+    def __init__(
+        self,
+        begin: Optional[TerminalCoord] = None,
+        end: Optional[TerminalCoord] = None,
+    ):
+        self.begin = begin
+        self.end = end
+
+    @classmethod
+    def from_raw(
+        cls,
+        begin_lineno: int,
+        begin_column: int,
+        end_lineno: int,
+        end_column: int,
+    ):
+        return cls(
+            begin=TerminalCoord(begin_lineno, begin_column),
+            end=TerminalCoord(end_lineno, end_column),
+        )
 
     @property
     def normalize(self):
@@ -17,9 +33,9 @@ class TerminalSelection:
             raise ValueError("Selection is not set")
 
         if self.begin <= self.end:
-            return TerminalSelection(self.begin, self.end)
+            return self.__class__(self.begin, self.end)
         else:
-            return TerminalSelection(self.end, self.begin)
+            return self.__class__(self.end, self.begin)
 
     @property
     def normalize_tuple(self):
@@ -39,6 +55,11 @@ class TerminalSelection:
         yield self.begin
         yield self.end
 
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, TerminalSelection):
+            return False
+        return self.begin == other.begin and self.end == other.end
+
     def clear_begin(self) -> None:
         self.begin = None
 
@@ -55,6 +76,13 @@ class TerminalSelection:
     def set_end(self, lineno: int, column: int) -> None:
         self.end = TerminalCoord(lineno, column)
 
+    def set_lines(self, lineno_begin: int, lineno_end: int) -> None:
+        if lineno_end <= lineno_begin:
+            raise ValueError("lineno_end must be greater than lineno_begin")
+
+        self.begin = TerminalCoord(lineno_begin, 0)
+        self.end = TerminalCoord(lineno_end, 0)
+
     def contain_with(self, lineno: int, column: int) -> bool:
         return self.contain_with_coord(TerminalCoord(lineno, column))
 
@@ -65,6 +93,20 @@ class TerminalSelection:
         except ValueError:
             return False
 
+    def __contains__(self, item):
+        if isinstance(item, TerminalCoord):
+            return self.contain_with_coord(item)
+        elif isinstance(item, tuple) and len(item) == 2:
+            if not isinstance(item[0], int):
+                raise TypeError("The first element of the tuple must be an integer")
+            if not isinstance(item[1], int):
+                raise TypeError("The second element of the tuple must be an integer")
+            return self.contain_with(item[0], item[1])
+        elif isinstance(item, int):
+            return self.contain_with_lineno(item)
+        else:
+            raise TypeError("The item must be an integer or a tuple")
+
     def contain_with_lineno(self, lineno: int) -> bool:
         try:
             begin, end = self.normalize
@@ -72,6 +114,40 @@ class TerminalSelection:
         except ValueError:
             return False
 
-    def select_all(self, lineno_begin: int, line_count: int) -> None:
-        self.begin = TerminalCoord(lineno_begin, 0)
-        self.end = TerminalCoord(lineno_begin + line_count, 0)
+    def clip(self, lineno: int):
+        if not self.exists:
+            return None
+
+        begin, end = self.normalize_tuple
+        assert begin is not None
+        assert end is not None
+
+        if lineno < begin.lineno:
+            return None
+        if end.lineno < lineno:
+            return None
+
+        assert begin.lineno <= lineno <= end.lineno
+
+        if begin.lineno == lineno:
+            begin_lineno = lineno
+            begin_column = begin.column
+        else:
+            assert begin.lineno < lineno
+            begin_lineno = lineno
+            begin_column = 0
+
+        if end.lineno == lineno:
+            end_lineno = lineno
+            end_column = end.column
+        else:
+            assert lineno < end.lineno
+            end_lineno = lineno + 1
+            end_column = 0
+
+        return self.__class__.from_raw(
+            begin_lineno,
+            begin_column,
+            end_lineno,
+            end_column,
+        )
