@@ -374,7 +374,10 @@ class AnsiEscapeEditor:
         char_height = get_text_line_height()
         line_height = get_line_height()
 
-        for line_block in block.lines:
+        lines = [block.line]
+        assert 1 <= len(lines)
+
+        for line_block in lines:
             cx = line_pivot_x
             cy = line_pivot_y
 
@@ -411,7 +414,7 @@ class AnsiEscapeEditor:
                 line_pivot_y += line_height
 
         size_x = char_width * block.cols
-        size_y = line_height * max(1, block.rows)
+        size_y = line_height * len(lines)
 
         if debug:
             rect_x2 = pos[0] + size_x

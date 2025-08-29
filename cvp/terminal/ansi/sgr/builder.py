@@ -93,8 +93,8 @@ class SgrBuilder:
 
     def build(
         self,
+        lineno: int,
         text: str,
-        lineno=1,
         style: Optional[TerminalStyle] = None,
         palette: Optional[TerminalPalette] = None,
         selection: Optional[TerminalSelection] = None,
@@ -119,7 +119,13 @@ class SgrBuilder:
         tokens = tokenize_ansi_escape_text(text, linefeed=self.linefeed)
         assert 1 <= len(tokens)
 
-        sgr_lines = lex_sgr_lines(tokens, style, palette, lineno=lineno)
+        sgr_lines = lex_sgr_lines(
+            tokens,
+            style,
+            palette,
+            lineno=lineno,
+            same_line=same_line,
+        )
         assert 1 <= len(sgr_lines)
 
         result = list()
@@ -143,20 +149,6 @@ class SgrBuilder:
                     last_block = block
 
             result.append(LineBlock(sgr_line.lineno, text_blocks))
-
-        if same_line and 2 <= len(result):
-            result[0].lineno = lineno
-            column = result[0].col_end
-
-            for line_block in result[1:]:
-                line_block.lineno = lineno
-                for text_block in line_block:
-                    next_column = text_block.col_end
-                    current_cols = text_block.cols
-
-                    text_block.col_begin = column
-                    text_block.col_end = column + current_cols
-                    column = next_column
 
         return result
 
@@ -186,14 +178,21 @@ class SgrBuilder:
         if not cache_line or not cache_line.equal(text, style, selection):
             initial_style = deepcopy(style)
             line_blocks = self.build(
-                text=text,
                 lineno=lineno,
+                text=text,
                 style=style,
                 palette=palette,
                 selection=selection,
                 same_line=same_line,
             )
-            cache_line = CachedLineBlock(lineno, text, line_blocks, initial_style)
+
+            if line_blocks:
+                assert 1 == len(line_blocks)
+                line_block = line_blocks[0]
+            else:
+                line_block = LineBlock(lineno=lineno)
+
+            cache_line = CachedLineBlock(lineno, text, line_block, initial_style)
             self._cache_lines[lineno] = cache_line
 
         return cache_line

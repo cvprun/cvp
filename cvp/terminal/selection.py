@@ -22,10 +22,13 @@ class TerminalSelection:
         end_lineno: int,
         end_column: int,
     ):
-        return cls(
-            begin=TerminalCoord(begin_lineno, begin_column),
-            end=TerminalCoord(end_lineno, end_column),
-        )
+        begin = TerminalCoord(begin_lineno, begin_column)
+        end = TerminalCoord(end_lineno, end_column)
+        return cls(begin, end)
+
+    @classmethod
+    def from_lineno(cls, lineno: int):
+        return cls(TerminalCoord(lineno, 1), TerminalCoord(lineno + 1, 0))
 
     @property
     def normalize(self):
@@ -76,11 +79,11 @@ class TerminalSelection:
     def set_end(self, lineno: int, column: int) -> None:
         self.end = TerminalCoord(lineno, column)
 
-    def set_lines(self, lineno_begin: int, lineno_end: int) -> None:
+    def set_line_range(self, lineno_begin: int, lineno_end: int) -> None:
         if lineno_end <= lineno_begin:
             raise ValueError("lineno_end must be greater than lineno_begin")
 
-        self.begin = TerminalCoord(lineno_begin, 0)
+        self.begin = TerminalCoord(lineno_begin, 1)
         self.end = TerminalCoord(lineno_end, 0)
 
     def contain_with(self, lineno: int, column: int) -> bool:
@@ -114,7 +117,7 @@ class TerminalSelection:
         except ValueError:
             return False
 
-    def clip(self, lineno: int):
+    def clip_lineno(self, lineno: int):
         if not self.exists:
             return None
 

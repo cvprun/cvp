@@ -42,7 +42,7 @@ class SelectionTestCase(TestCase):
 
     def test_lines(self):
         selection = TerminalSelection()
-        selection.set_lines(5, 10)
+        selection.set_line_range(5, 10)
 
         self.assertNotIn(4, selection)
         self.assertIn(5, selection)
@@ -54,33 +54,33 @@ class SelectionTestCase(TestCase):
 
     def test_clip_with_single_line(self):
         selection = TerminalSelection.from_raw(2, 2, 2, 4)
-        line2 = selection.clip(2)
+        line2 = selection.clip_lineno(2)
         self.assertEqual((2, 2), line2.begin)
         self.assertEqual((2, 4), line2.end)
 
-    def test_clip_with_multiple_line(self):
+    def test_clip_lineno_with_multiple_line(self):
         selection = TerminalSelection.from_raw(2, 10, 5, 4)
 
-        line1 = selection.clip(1)
+        line1 = selection.clip_lineno(1)
         self.assertIsNone(line1)
 
-        line2 = selection.clip(2)
+        line2 = selection.clip_lineno(2)
         self.assertEqual((2, 10), line2.begin)
         self.assertEqual((3, 0), line2.end)
 
-        line3 = selection.clip(3)
+        line3 = selection.clip_lineno(3)
         self.assertEqual((3, 0), line3.begin)
         self.assertEqual((4, 0), line3.end)
 
-        line4 = selection.clip(4)
+        line4 = selection.clip_lineno(4)
         self.assertEqual((4, 0), line4.begin)
         self.assertEqual((5, 0), line4.end)
 
-        line5 = selection.clip(5)
+        line5 = selection.clip_lineno(5)
         self.assertEqual((5, 0), line5.begin)
         self.assertEqual((5, 4), line5.end)
 
-        line6 = selection.clip(6)
+        line6 = selection.clip_lineno(6)
         self.assertIsNone(line6)
 
 

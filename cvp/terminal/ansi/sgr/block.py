@@ -63,8 +63,18 @@ class LineBlock(List[TextBlock]):
         return reduce(lambda x, y: f"{x}{y}", items, str())
 
     @property
+    def selected_raw_text(self) -> str:
+        items = [block.raw_text for block in self if block.selected]
+        return reduce(lambda x, y: f"{x}{y}", items, str())
+
+    @property
     def display_text(self) -> str:
         items = [block.display_text for block in self]
+        return reduce(lambda x, y: f"{x}{y}", items, str())
+
+    @property
+    def selected_display_text(self) -> str:
+        items = [block.display_text for block in self if block.selected]
         return reduce(lambda x, y: f"{x}{y}", items, str())
 
     @property
@@ -111,57 +121,48 @@ class CachedLineBlock:
         self,
         lineno: int,
         text: str,
-        lines: List[LineBlock],
+        line: LineBlock,
         style: TerminalStyle,
     ):
         self.lineno = lineno
         self.text = text
-        self.lines = lines
+        self.line = line
         self.style_before = style
-        self.selection_col_begin = self._find_selected_col_begin(lines)
-        self.selection_col_end = self._find_selected_col_end(lines)
-
-    @staticmethod
-    def _find_selected_col_begin(lines: List[LineBlock]) -> Optional[int]:
-        if not lines:
-            return None
-
-        line0 = lines[0]
-        begin = line0.get_selected_col_begin()
-        if begin is not None:
-            return begin
-
-        for line_n in lines[1:]:
-            begin = line_n.get_selected_col_begin()
-            if begin is not None:
-                return begin
-
-        return None
-
-    @staticmethod
-    def _find_selected_col_end(lines: List[LineBlock]) -> Optional[int]:
-        if not lines:
-            return None
-
-        line_last = lines[-1]
-        end = line_last.get_selected_col_end()
-        if end is not None:
-            return end
-
-        for line_n in reversed(lines[:-1]):
-            end = line_n.get_selected_col_end()
-            if end is not None:
-                return end
-
-        return None
 
     @property
-    def rows(self) -> int:
-        return len(self.lines)
+    def col_begin(self) -> int:
+        try:
+            return self.line.col_begin
+        except:  # noqa
+            return 0
+
+    @property
+    def col_end(self) -> int:
+        try:
+            return self.line.col_end
+        except:  # noqa
+            return 0
 
     @property
     def cols(self) -> int:
-        return max(line.cols for line in self.lines) if self.lines else 0
+        try:
+            return self.line.cols
+        except:  # noqa
+            return 0
+
+    def get_selected_col_begin(self) -> Optional[int]:
+        return self.line.get_selected_col_begin()
+
+    def get_selected_col_end(self) -> Optional[int]:
+        return self.line.get_selected_col_end()
+
+    @property
+    def selected_col_begin(self) -> int:
+        return self.line.selected_col_begin
+
+    @property
+    def selected_col_end(self) -> int:
+        return self.line.selected_col_end
 
     def equal(
         self,
@@ -174,6 +175,8 @@ class CachedLineBlock:
 
         if self.style_before != style:
             return False
+
+        line_selection = selection.clip_lineno(self.lineno)
 
         # if self.selected != selection:
         #     if selection.exists:

@@ -221,6 +221,7 @@ def lex_sgr_lines(
     palette: Optional[TerminalPalette] = None,
     *,
     lineno=1,
+    same_line=False,
 ) -> List[SgrLine]:
     """
     Lexical analyzer for SGR (Select Graphic Rendition) sequences.
@@ -243,8 +244,11 @@ def lex_sgr_lines(
         if isinstance(token, AnsiError):
             current_line.append(SgrText(token.text, deepcopy(style), token.error))
         elif isinstance(token, AnsiLineFeed):
-            result.append(current_line)
-            current_line = SgrLine(current_line.lineno + 1)
+            if same_line:
+                current_line.append(SgrText(token.text, deepcopy(style)))
+            else:
+                result.append(current_line)
+                current_line = SgrLine(current_line.lineno + 1)
         elif isinstance(token, AnsiRegularText):
             current_line.append(SgrText(token.text, deepcopy(style)))
         elif isinstance(token, AnsiCsiEscape):
