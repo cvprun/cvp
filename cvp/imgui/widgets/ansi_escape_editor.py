@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from io import StringIO
 from math import floor
 from typing import Optional, Sequence, Union
 
@@ -18,7 +19,6 @@ from cvp.imgui.begin_child import begin_child_context
 from cvp.imgui.draw_list.create import create_draw_list_with_shared_data
 from cvp.imgui.draw_list.get_draw_list import get_window_draw_list
 from cvp.imgui.flags.child import BORDERS, ChildFlags
-from cvp.imgui.flags.hovered import ROOT_AND_CHILD_WINDOWS
 from cvp.imgui.flags.mouse_button import MOUSE_LEFT, MOUSE_MIDDLE, MOUSE_RIGHT
 from cvp.imgui.flags.window import WindowFlags
 from cvp.imgui.get_style import (
@@ -61,6 +61,9 @@ class AnsiEscapeEditor:
         show_lineno=False,
         show_whitespace=False,
         show_eol=False,
+        show_block_roi=False,
+        show_text_roi=False,
+        show_error=False,
         palette: Optional[TerminalPalette] = None,
     ):
         self._builder = SgrBuilder(
@@ -82,6 +85,9 @@ class AnsiEscapeEditor:
         self._autoscroll = autoscroll
         self._show_lineno = show_lineno
         self._show_eol = show_eol
+        self._show_block_roi = show_block_roi
+        self._show_line_roi = show_text_roi
+        self._show_error = show_error
 
         self._label = label
         self._size = size
@@ -142,6 +148,30 @@ class AnsiEscapeEditor:
         self._builder.show_whitespace = value
 
     @property
+    def show_block_roi(self) -> bool:
+        return self._show_block_roi
+
+    @show_block_roi.setter
+    def show_block_roi(self, value: bool) -> None:
+        self._show_block_roi = value
+
+    @property
+    def show_line_roi(self) -> bool:
+        return self._show_line_roi
+
+    @show_line_roi.setter
+    def show_line_roi(self, value: bool) -> None:
+        self._show_line_roi = value
+
+    @property
+    def show_error(self) -> bool:
+        return self._show_error
+
+    @show_error.setter
+    def show_error(self, value: bool) -> None:
+        self._show_error = value
+
+    @property
     def text_disabled_color(self) -> int:
         return self._builder.text_disabled_color
 
@@ -185,6 +215,9 @@ class AnsiEscapeEditor:
     def terminal_size(self) -> SizeI:
         return self._terminal_size
 
+    def get_selected_text(self, selection: Optional[TerminalSelection] = None) -> str:
+        return str()
+
     def render(
         self,
         lines: Sequence[str],
@@ -192,7 +225,6 @@ class AnsiEscapeEditor:
         selection: Optional[TerminalSelection] = None,
         *,
         lineno=1,
-        debug=False,
     ) -> None:
         with begin_child_context(
             self._label,
@@ -200,7 +232,7 @@ class AnsiEscapeEditor:
             self._child_flags,
             self._window_flags,
         ):
-            if imgui.is_window_hovered(ROOT_AND_CHILD_WINDOWS):
+            if imgui.is_window_hovered():
                 if self._mouse_wheel.update(imgui.get_io().mouse_wheel):
                     if 0 < self._mouse_wheel.value:
                         # Drag Up
@@ -213,25 +245,18 @@ class AnsiEscapeEditor:
                     else:
                         assert 0 == self._mouse_wheel.value
 
-            self.render_multiline(
-                lines=lines,
-                style=style,
-                selection=selection,
-                lineno=lineno,
-                debug=debug,
-            )
+            self.render_editor_canvas(lines, style, selection, lineno=lineno)
 
             if self._autoscroll:
                 imgui.set_scroll_here_y(1.0)
 
-    def render_multiline(
+    def render_editor_canvas(
         self,
         lines: Sequence[str],
         style: Optional[TerminalStyle] = None,
         selection: Optional[TerminalSelection] = None,
         *,
         lineno=1,
-        debug=False,
     ) -> None:
         if style is None:
             style = TerminalStyle()
@@ -304,7 +329,7 @@ class AnsiEscapeEditor:
 
         mouse_x = mx - csx - line_begin_x
         mouse_y = my - csy
-        self._cursor_column = floor(mouse_x / single_char_width)
+        self._cursor_column = floor(mouse_x / single_char_width) + 1
         self._cursor_lineno = lineno + floor(mouse_y / line_height)
 
         if self._left_button.changed_down:
@@ -341,7 +366,6 @@ class AnsiEscapeEditor:
                     pos=line_pos,
                     style=style,
                     selection=selection,
-                    debug=debug,
                 )
 
                 # Advance the cursor position manually for the next line.
@@ -357,8 +381,6 @@ class AnsiEscapeEditor:
         pos: Point,
         style: TerminalStyle,
         selection: TerminalSelection,
-        *,
-        debug=False,
     ) -> Size:
         block = self._builder.get_cached_line(
             lineno=lineno,
@@ -400,13 +422,26 @@ class AnsiEscapeEditor:
 
                     self._draw_list.add_text(p1, text_color, text_block.display_text)
 
-                    if text_block.error:
+                    if self._show_block_roi:
+                        self._draw_list.add_rect(p1, p2, self._palette.debug)
+                        if imgui.is_mouse_hovering_rect(p1, p2):
+                            text_info = StringIO()
+                            text_info.write(text_block.as_unformatted_text())
+                            text_info.write(f"Selection: {selection}\n")
+                            text_info.write(f"Block Selection: {block.selection}\n")
+                            clip_selection = block.clip_selection(selection)
+                            text_info.write(f"Clip Selection: {clip_selection}\n")
+                            text_info.write(f"Block Update At: {block.update_at}\n")
+                            tooltip_text_wrapped(text_info.getvalue())
+
+                    elif self._show_error and text_block.error:
                         self._draw_list.add_rect(p1, p2, self._palette.error)
                         if imgui.is_mouse_hovering_rect(p1, p2):
                             tooltip_text_wrapped(text_block.error)
 
                 if self._show_eol:
-                    eol_pos = cx + char_width * (line_block.col_end - 1), cy
+                    col_end = line_block.col_end if line_block else 1
+                    eol_pos = cx + char_width * (col_end - 1), cy
                     eol_color = self.text_disabled_color
                     eol_char = self._eol_char
                     self._draw_list.add_text(eol_pos, eol_color, eol_char)
@@ -416,7 +451,7 @@ class AnsiEscapeEditor:
         size_x = char_width * block.cols
         size_y = line_height * len(lines)
 
-        if debug:
+        if self._show_line_roi:
             rect_x2 = pos[0] + size_x
             rect_y2 = pos[1] + size_y
             self._draw_list.add_rect(pos, (rect_x2, rect_y2), self._palette.debug)

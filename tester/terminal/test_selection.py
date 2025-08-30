@@ -62,26 +62,26 @@ class SelectionTestCase(TestCase):
         selection = TerminalSelection.from_raw(2, 10, 5, 4)
 
         line1 = selection.clip_lineno(1)
-        self.assertIsNone(line1)
+        self.assertFalse(line1.exists)
 
         line2 = selection.clip_lineno(2)
         self.assertEqual((2, 10), line2.begin)
         self.assertEqual((3, 0), line2.end)
 
         line3 = selection.clip_lineno(3)
-        self.assertEqual((3, 0), line3.begin)
+        self.assertEqual((3, 1), line3.begin)
         self.assertEqual((4, 0), line3.end)
 
         line4 = selection.clip_lineno(4)
-        self.assertEqual((4, 0), line4.begin)
+        self.assertEqual((4, 1), line4.begin)
         self.assertEqual((5, 0), line4.end)
 
         line5 = selection.clip_lineno(5)
-        self.assertEqual((5, 0), line5.begin)
+        self.assertEqual((5, 1), line5.begin)
         self.assertEqual((5, 4), line5.end)
 
         line6 = selection.clip_lineno(6)
-        self.assertIsNone(line6)
+        self.assertFalse(line6.exists)
 
 
 if __name__ == "__main__":

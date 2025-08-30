@@ -84,12 +84,44 @@ class TailTab:
         self.canvas.show_lineno = value
 
     @property
+    def show_eol(self) -> bool:
+        return self.canvas.show_eol
+
+    @show_eol.setter
+    def show_eol(self, value: bool) -> None:
+        self.canvas.show_eol = value
+
+    @property
     def show_whitespace(self) -> bool:
         return self.canvas.show_whitespace
 
     @show_whitespace.setter
     def show_whitespace(self, value: bool) -> None:
         self.canvas.show_whitespace = value
+
+    @property
+    def show_block_roi(self) -> bool:
+        return self.canvas.show_block_roi
+
+    @show_block_roi.setter
+    def show_block_roi(self, value: bool) -> None:
+        self.canvas.show_block_roi = value
+
+    @property
+    def show_line_roi(self) -> bool:
+        return self.canvas.show_line_roi
+
+    @show_line_roi.setter
+    def show_line_roi(self, value: bool) -> None:
+        self.canvas.show_line_roi = value
+
+    @property
+    def show_error(self) -> bool:
+        return self.canvas.show_error
+
+    @show_error.setter
+    def show_error(self, value: bool) -> None:
+        self.canvas.show_error = value
 
     @property
     def newline(self) -> str:
@@ -139,9 +171,10 @@ class TailTab:
         else:
             return False
 
-    def do_process(self, *, debug=False) -> None:
-        self.canvas.render(self.buffer.lines, debug=debug)  # TODO
-        if debug:
+    def do_process(self) -> None:
+        self.canvas.render(self.lines, selection=self.selection)
+
+        if imgui.is_window_hovered():
             tooltip_text_wrapped(self.as_unformatted_text())
 
     @property
@@ -149,12 +182,10 @@ class TailTab:
         return self.selection.exists
 
     def get_selected_text(self) -> str:
-        # return self.canvas.get_selected_text(self.buffer.lines)
-        return str()  # TODO
+        return self.canvas.get_selected_text(self.selection)
 
     def select_all(self) -> None:
-        # self.selection.select_all()  # TODO
-        pass
+        self.selection.set_line_range(1, len(self.lines))
 
     def copy(self) -> None:
         imgui.set_clipboard_text(self.get_selected_text())
@@ -179,5 +210,6 @@ class TailTab:
             f"Cursor lineno: {cursor_lineno}\n"
             f"Cursor column: {cursor_column}\n"
             f"Terminal size: {tw}x{th}\n"
+            f"Selection: {self.selection}\n"
             f"Selected text: {selected_prefix}..{selected_suffix} ({selected_length})\n"
         )

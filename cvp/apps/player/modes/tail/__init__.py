@@ -242,6 +242,14 @@ class TailMode(BaseMode):
             tail.show_lineno = not tail.show_lineno
         if menu_item("Show whitespace", selected=tail.show_whitespace):
             tail.show_whitespace = not tail.show_whitespace
+        if menu_item("Show eol", selected=tail.show_eol):
+            tail.show_eol = not tail.show_eol
+        if menu_item("Show block roi", selected=tail.show_block_roi):
+            tail.show_block_roi = not tail.show_block_roi
+        if menu_item("Show line roi", selected=tail.show_line_roi):
+            tail.show_line_roi = not tail.show_line_roi
+        if menu_item("Show error", selected=tail.show_error):
+            tail.show_error = not tail.show_error
 
     def on_settings_menu(self) -> None:
         if menu_item("Show tabs always", selected=self.config.show_tabs_always):
@@ -311,7 +319,7 @@ class TailMode(BaseMode):
                                 if updated and debug and 2 <= verbose:
                                     logger.debug(f"Tail buffer updated: '{file}'")
 
-                            tail.do_process(debug=self.context.debug)
+                            tail.do_process()
                         finally:
                             end_tab_item()
 

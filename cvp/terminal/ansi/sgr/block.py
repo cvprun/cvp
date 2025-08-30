@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass
+from datetime import datetime
 from functools import reduce
 from typing import Iterable, List, Optional
 
@@ -23,6 +24,19 @@ class TextBlock:
     @property
     def cols(self) -> int:
         return self.col_end - self.col_begin
+
+    def as_unformatted_text(self) -> str:
+        return (
+            f"Raw Text: {self.raw_text}\n"
+            f"Display Text: {self.display_text}\n"
+            f"Lineno: {self.lineno}\n"
+            f"Column Begin: {self.col_begin}\n"
+            f"Column End: {self.col_end}\n"
+            f"Foreground: {self.foreground}\n"
+            f"Background: {self.background}\n"
+            f"Error: {self.error}\n"
+            f"Selected: {self.selected}\n"
+        )
 
     def merge(self, item: "TextBlock") -> None:
         assert self.lineno == item.lineno
@@ -102,6 +116,23 @@ class LineBlock(List[TextBlock]):
         return None
 
     @property
+    def selection(self) -> TerminalSelection:
+        begin_column = self.get_selected_col_begin()
+        end_column = self.get_selected_col_end()
+
+        if begin_column is None or end_column is None:
+            return TerminalSelection()
+
+        assert isinstance(begin_column, int)
+        assert isinstance(end_column, int)
+        return TerminalSelection.from_raw(
+            self.lineno,
+            begin_column,
+            self.lineno,
+            end_column,
+        )
+
+    @property
     def selected_col_begin(self) -> int:
         column = self.get_selected_col_begin()
         if column is not None:
@@ -123,11 +154,14 @@ class CachedLineBlock:
         text: str,
         line: LineBlock,
         style: TerminalStyle,
+        update_at: Optional[datetime] = None,
     ):
         self.lineno = lineno
         self.text = text
         self.line = line
         self.style_before = style
+        self.selection = line.selection
+        self.update_at = update_at if update_at else datetime.now().astimezone()
 
     @property
     def col_begin(self) -> int:
@@ -151,18 +185,19 @@ class CachedLineBlock:
             return 0
 
     def get_selected_col_begin(self) -> Optional[int]:
-        return self.line.get_selected_col_begin()
+        if self.selection.begin is not None:
+            return self.selection.begin.column
+        else:
+            return None
 
     def get_selected_col_end(self) -> Optional[int]:
-        return self.line.get_selected_col_end()
+        if self.selection.end is not None:
+            return self.selection.end.column
+        else:
+            return None
 
-    @property
-    def selected_col_begin(self) -> int:
-        return self.line.selected_col_begin
-
-    @property
-    def selected_col_end(self) -> int:
-        return self.line.selected_col_end
+    def clip_selection(self, selection: TerminalSelection):
+        return selection.clip_lineno(self.lineno, column_end=self.col_end)
 
     def equal(
         self,
@@ -176,25 +211,8 @@ class CachedLineBlock:
         if self.style_before != style:
             return False
 
-        line_selection = selection.clip_lineno(self.lineno)
+        clipped_selection = self.clip_selection(selection)
+        if not self.selection.has_area and not clipped_selection.has_area:
+            return True
 
-        # if self.selected != selection:
-        #     if selection.exists:
-        #         begin, end = selection.normalize
-        #         assert isinstance(begin, TerminalCoord)
-        #         assert isinstance(end, TerminalCoord)
-        #         begin.lineno < self.lineno < end.lineno
-        #     begin, end = self.selection.contain_with_lineno(self.lineno)
-        #     return False
-
-        # begin_lineno = selection.begin.lineno
-        # begin_column = selection.begin.column
-        # end_lineno = selection.end.lineno
-        # end_column = selection.end.column
-        # for line in self.lines:
-        #     current_lineno = line.lineno
-        #     for text in line:
-        #         text_col_begin = text.col_begin
-        #         text_col_end = text.col_end
-
-        return True
+        return self.selection == clipped_selection

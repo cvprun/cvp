@@ -51,6 +51,17 @@ class TerminalSelection:
     def exists(self) -> bool:
         return self.begin is not None and self.end is not None
 
+    @property
+    def has_area(self) -> bool:
+        if not self.exists:
+            return False
+
+        begin = self.begin
+        end = self.end
+        assert isinstance(begin, TerminalCoord)
+        assert isinstance(end, TerminalCoord)
+        return begin.lineno != end.lineno or begin.column != end.column
+
     def __bool__(self) -> bool:
         return self.exists
 
@@ -61,7 +72,14 @@ class TerminalSelection:
     def __eq__(self, other) -> bool:
         if not isinstance(other, TerminalSelection):
             return False
+
         return self.begin == other.begin and self.end == other.end
+
+    def __repr__(self):
+        return f"<{type(self).__name__} begin={self.begin}, end={self.end}>"
+
+    def __str__(self):
+        return f"{self.begin}~{self.end}"
 
     def clear_begin(self) -> None:
         self.begin = None
@@ -117,18 +135,18 @@ class TerminalSelection:
         except ValueError:
             return False
 
-    def clip_lineno(self, lineno: int):
+    def clip_lineno(self, lineno: int, *, column_end: Optional[int] = None):
         if not self.exists:
-            return None
+            return self.__class__()
 
         begin, end = self.normalize_tuple
         assert begin is not None
         assert end is not None
 
         if lineno < begin.lineno:
-            return None
+            return self.__class__()
         if end.lineno < lineno:
-            return None
+            return self.__class__()
 
         assert begin.lineno <= lineno <= end.lineno
 
@@ -138,15 +156,19 @@ class TerminalSelection:
         else:
             assert begin.lineno < lineno
             begin_lineno = lineno
-            begin_column = 0
+            begin_column = 1
 
         if end.lineno == lineno:
             end_lineno = lineno
             end_column = end.column
         else:
             assert lineno < end.lineno
-            end_lineno = lineno + 1
-            end_column = 0
+            if column_end is not None:
+                end_lineno = lineno
+                end_column = column_end
+            else:
+                end_lineno = lineno + 1
+                end_column = 0
 
         return self.__class__.from_raw(
             begin_lineno,

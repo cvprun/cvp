@@ -131,8 +131,8 @@ class BuilderTestCase(TestCase):
         self.assertEqual(100, cache.line.lineno)
         self.assertEqual(1, cache.col_begin)
         self.assertEqual(72, cache.col_end)
-        self.assertEqual(10, cache.selected_col_begin)
-        self.assertEqual(40, cache.selected_col_end)
+        self.assertEqual(10, cache.get_selected_col_begin())
+        self.assertEqual(40, cache.get_selected_col_end())
 
         expect_raw_text = (
             "2000-00-00 11:22:33.444 12345/AB"
