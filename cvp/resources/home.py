@@ -21,6 +21,7 @@ from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.resources.subdirs.processes import ProcessesPath
 from cvp.resources.subdirs.services import ServicesPath
+from cvp.resources.subdirs.tails import TailsPath
 from cvp.resources.subdirs.temp import TempPath
 from cvp.resources.subdirs.terminals import TerminalsPath
 from cvp.resources.subdirs.texts import TextsPath
@@ -54,6 +55,7 @@ class HomeDir(PathFlavour):
         self.onvifs = OnvifsPath.classname_subdir(self)
         self.processes = ProcessesPath.classname_subdir(self)
         self.services = ServicesPath.classname_subdir(self)
+        self.tails = TailsPath.classname_subdir(self)
         self.temp = TempPath.classname_subdir(self)
         self.terminals = TerminalsPath.classname_subdir(self)
         self.texts = TextsPath.classname_subdir(self)
@@ -78,6 +80,7 @@ class HomeDir(PathFlavour):
             self.onvifs,
             self.processes,
             self.services,
+            self.tails,
             self.temp,
             self.terminals,
             self.texts,

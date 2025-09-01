@@ -382,7 +382,7 @@ class AnsiEscapeEditor:
         style: TerminalStyle,
         selection: TerminalSelection,
     ) -> Size:
-        block = self._builder.get_cached_line(
+        block = self._builder.build_with_caching(
             lineno=lineno,
             text=text,
             style=style,

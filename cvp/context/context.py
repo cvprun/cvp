@@ -40,6 +40,7 @@ from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
 from cvp.system.environ_keys import PYOPENGL_USE_ACCELERATE, SDL_VIDEO_X11_FORCE_EGL
+from cvp.tail.manager import TailManager
 from cvp.terminal.manager import TerminalManager
 from cvp.text.manager import TextManager
 from cvp.watchdog.manager import WatchdogManager
@@ -182,6 +183,7 @@ class Context(ContextMixins):
             reload=True,
         )
         self._mediamtxs = MediamtxManager(self._home.mediamtx, reload=True)
+        self._tails = TailManager(self._home.tails, reload=True)
         self._terminals = TerminalManager(self._home.terminals, reload=True)
         self._texts = TextManager(self._home.texts, reload=True)
 
@@ -291,6 +293,10 @@ class Context(ContextMixins):
         self._mediamtxs.write_all_config_files()
         logger.info("Save all MediaMTX files")
 
+    def save_all_tails(self) -> None:
+        self._tails.write_all_config_files()
+        logger.info("Save all Tail files")
+
     def save_all_terminals(self) -> None:
         self._terminals.write_all_config_files()
         logger.info("Save all Terminal files")
@@ -312,6 +318,7 @@ class Context(ContextMixins):
         self.save_all_onvifs()
         self.save_all_medias()
         self.save_all_mediamtxs()
+        self.save_all_tails()
         self.save_all_terminals()
         self.save_all_texts()
 
@@ -382,6 +389,10 @@ class Context(ContextMixins):
     @property
     def mediamtxs(self):
         return self._mediamtxs
+
+    @property
+    def tails(self):
+        return self._tails
 
     @property
     def terminals(self):

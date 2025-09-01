@@ -91,7 +91,7 @@ class SgrBuilder:
             selected=selected,
         )
 
-    def build(
+    def build_with_text(
         self,
         lineno: int,
         text: str,
@@ -152,7 +152,7 @@ class SgrBuilder:
 
         return result
 
-    def get_cached_line(
+    def build_with_caching(
         self,
         lineno: int,
         text: str,
@@ -177,7 +177,7 @@ class SgrBuilder:
         cache_line = self._cache_lines.get(lineno)
         if not cache_line or not cache_line.equal(text, style, selection):
             initial_style = deepcopy(style)
-            line_blocks = self.build(
+            line_blocks = self.build_with_text(
                 lineno=lineno,
                 text=text,
                 style=style,

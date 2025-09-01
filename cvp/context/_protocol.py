@@ -20,6 +20,7 @@ from cvp.resources.home import HomeDir
 from cvp.scheduler.manager import Scheduler
 from cvp.service.manager import ServiceManager
 from cvp.supabase.supabase import Supabase
+from cvp.tail.manager import TailManager
 from cvp.terminal.manager import TerminalManager
 from cvp.text.manager import TextManager
 from cvp.watchdog.manager import WatchdogManager
@@ -51,6 +52,7 @@ class ContextProtocol(Protocol):
     _onvifs: OnvifManager
     _medias: MediaManager
     _mediamtxs: MediamtxManager
+    _tails: TailManager
     _terminals: TerminalManager
     _texts: TextManager
     _supabase: Supabase

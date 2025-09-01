@@ -18,7 +18,7 @@ _TEST_ANSI_ESCAPE: Final[str] = (
 class BuilderTestCase(TestCase):
     def test_build(self):
         builder = SgrBuilder(show_whitespace=True, tabsize=2)
-        blocks = builder.build(1, _TEST_ANSI_ESCAPE)
+        blocks = builder.build_with_text(1, _TEST_ANSI_ESCAPE)
         self.assertEqual(3, len(blocks))
 
         line1 = blocks[0]
@@ -51,7 +51,7 @@ class BuilderTestCase(TestCase):
     def test_build_with_selection(self):
         builder = SgrBuilder(show_whitespace=True, tabsize=2)
         selection = TerminalSelection.from_raw(2, 8, 3, 6)
-        blocks = builder.build(1, _TEST_ANSI_ESCAPE, selection=selection)
+        blocks = builder.build_with_text(1, _TEST_ANSI_ESCAPE, selection=selection)
         self.assertEqual(3, len(blocks))
 
         line1 = blocks[0]
@@ -81,7 +81,7 @@ class BuilderTestCase(TestCase):
     def test_build_with_line_selection(self):
         builder = SgrBuilder(show_whitespace=True, tabsize=2)
         selection = TerminalSelection.from_lineno(2)
-        blocks = builder.build(1, _TEST_ANSI_ESCAPE, selection=selection)
+        blocks = builder.build_with_text(1, _TEST_ANSI_ESCAPE, selection=selection)
         self.assertEqual(3, len(blocks))
 
         line1 = blocks[0]
@@ -115,7 +115,7 @@ class BuilderTestCase(TestCase):
         self.assertEqual(style, style_before)
 
         builder = SgrBuilder(show_whitespace=True, tabsize=2)
-        cache = builder.get_cached_line(
+        cache = builder.build_with_caching(
             100,
             _TEST_ANSI_ESCAPE,
             style,

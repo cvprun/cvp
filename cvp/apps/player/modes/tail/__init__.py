@@ -26,6 +26,7 @@ from cvp.imgui.popups.containers import PopupList
 from cvp.imgui.popups.open_file import OpenFilePopup
 from cvp.imgui.text_centered import text_centered
 from cvp.logging.loggers import logger
+from cvp.tail.manager import TailKey
 from cvp.types.override import override
 
 
@@ -36,7 +37,7 @@ class TailMode(BaseMode):
     TAB_FLAGS: Final[int] = REORDERABLE | AUTO_SELECT_NEW_TABS | FITTING_POLICY_SCROLL
 
     _force_select: Optional[str]
-    _tails: Dict[str, TailTab]
+    _tabs: Dict[str, TailTab]
 
     def __init__(self, context: Context):
         super().__init__(context)
@@ -49,7 +50,7 @@ class TailMode(BaseMode):
             ("View", self.on_view_menu),
         )
         self._force_select = None
-        self._tails = dict()
+        self._tabs = dict()
 
     @staticmethod
     def resolve_filepath(file: str) -> str:
@@ -60,18 +61,26 @@ class TailMode(BaseMode):
         return self.context.config.tail
 
     @property
+    def manager(self):
+        return self.context.tails
+
+    @property
     def watchdogs(self):
         return self.context.watchdogs
 
     @property
-    def selected_tail(self) -> Optional[TailTab]:
-        if not self._tails:
+    def selected_tail(self):
+        return self.manager.get(TailKey(self.selected_submenu))
+
+    @property
+    def selected_tab(self) -> Optional[TailTab]:
+        if not self._tabs:
             return None
-        elif 1 == len(self._tails):
-            return next(iter(self._tails.values()))
+        elif 1 == len(self._tabs):
+            return next(iter(self._tabs.values()))
         else:
-            assert 2 <= len(self._tails)
-            return self._tails.get(self.selected_submenu, None)
+            assert 2 <= len(self._tabs)
+            return self._tabs.get(self.selected_submenu, None)
 
     @staticmethod
     def file_label(file: str) -> str:
@@ -85,7 +94,7 @@ class TailMode(BaseMode):
             return False
 
         file = self.resolve_filepath(file)
-        tail = self._tails.get(file)
+        tail = self._tabs.get(file)
         if tail is None:
             return False
 
@@ -102,7 +111,7 @@ class TailMode(BaseMode):
     def open_text_file(self, file: str, *, no_select=False) -> None:
         file = self.resolve_filepath(file)
 
-        if file in self._tails:
+        if file in self._tabs:
             self.context.toast_error(f"File already opened: '{file}'")
             return
 
@@ -116,7 +125,7 @@ class TailMode(BaseMode):
             tail = TailTab.from_config(file, self.config, watchdog_key=watchdog_key)
             tail.update_buffer(force=True)
 
-            self._tails[file] = tail
+            self._tabs[file] = tail
             if not no_select:
                 self._force_select = file
             self.add_recent_item(file)
@@ -129,7 +138,7 @@ class TailMode(BaseMode):
         file = self.resolve_filepath(file)
 
         try:
-            self._tails.pop(file)
+            self._tabs.pop(file)
             logger.info(f"File closed successfully: '{file}'")
         except BaseException as e:
             self.context.toast_error(f"Text file close failed: '{e}'", logger, error=e)
@@ -140,7 +149,7 @@ class TailMode(BaseMode):
 
     @override
     def on_status_menu(self) -> None:
-        tail = self.selected_tail
+        tail = self.selected_tab
         if tail is None:
             imgui.text("No file selected.")
             return
@@ -187,7 +196,7 @@ class TailMode(BaseMode):
         if isdir:
             return
 
-        if tail := self._tails.get(self.resolve_filepath(src)):
+        if tail := self._tabs.get(self.resolve_filepath(src)):
             updated = tail.update_buffer(force=True)
             assert updated is True
 
@@ -203,10 +212,10 @@ class TailMode(BaseMode):
 
         imgui.separator()
 
-        selected_tail = self.selected_tail
-        if menu_item("Close file", enabled=selected_tail is not None):
-            assert selected_tail is not None
-            self.close_text_file(selected_tail.path)
+        selected_tab = self.selected_tab
+        if menu_item("Close file", enabled=selected_tab is not None):
+            assert selected_tab is not None
+            self.close_text_file(selected_tab.path)
 
     @staticmethod
     def do_disabled_edit_menu() -> None:
@@ -223,7 +232,7 @@ class TailMode(BaseMode):
             tail.select_all()
 
     def on_edit_menu(self) -> None:
-        if tail := self.selected_tail:
+        if tail := self.selected_tab:
             self.do_enabled_edit_menu(tail)
         else:
             self.do_disabled_edit_menu()
@@ -257,17 +266,17 @@ class TailMode(BaseMode):
 
         imgui.separator()
 
-        if tail := self.selected_tail:
+        if tail := self.selected_tab:
             self.do_enabled_settings_menu(tail)
         else:
             self.do_disabled_settings_menu()
 
     def on_view_menu(self) -> None:
-        if not self._tails:
+        if not self._tabs:
             menu_item("[EMPTY]", enabled=False)
             return
 
-        for file in self._tails.keys():
+        for file in self._tabs.keys():
             if menu_item(self.file_label(file)):
                 self._force_select = file
 
@@ -282,19 +291,19 @@ class TailMode(BaseMode):
             if self.config.show_tabs_always:
                 self.do_tabs_process()
             else:
-                if not self._tails:
+                if not self._tabs:
                     text_centered("Please open the text file")
-                elif 1 == len(self._tails):
-                    next(iter(self._tails.values())).do_process()
+                elif 1 == len(self._tabs):
+                    next(iter(self._tabs.values())).do_process()
                 else:
-                    assert 2 <= len(self._tails)
+                    assert 2 <= len(self._tabs)
                     self.do_tabs_process()
 
     def do_tabs_process(self) -> None:
         if imgui.begin_tab_bar("Tabs", self.TAB_FLAGS):
             remove_keys = list()
             try:
-                for file, tail in self._tails.items():
+                for file, tail in self._tabs.items():
                     flags = 0
 
                     if self._force_select == file:
