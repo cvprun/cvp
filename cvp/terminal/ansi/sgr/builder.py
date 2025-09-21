@@ -48,48 +48,91 @@ class SgrBuilder:
         self.whitespace_char = whitespace_char
         self._cache_lines = dict(cache_lines or {})
 
-    def convert_glyph_to_block(
+    def convert_line_glyphs_to_line_blocks(
         self,
-        glyph: SgrGlyph,
+        glyphs: List[SgrGlyph],
         selection: TerminalSelection,
-    ) -> TextBlock:
-        row = glyph.row
-        col = glyph.col
-        raw_text = glyph.char if glyph.char else str()
+    ) -> List[TextBlock]:
+        if not glyphs:
+            return list()
 
-        if self.show_whitespace:
-            if not raw_text:
-                display_text = self.empty_char
-                fg = self.text_disabled_color
-            elif raw_text == chr(self.tab):
-                display_text = self.tab_char
-                fg = self.text_disabled_color
-            elif raw_text == chr(self.space):
-                display_text = self.whitespace_char
-                fg = self.text_disabled_color
+        result: List[TextBlock] = list()
+        current_line = glyphs[0].row
+
+        assert glyphs[0].ref == 0
+
+        for i, glyph in enumerate(glyphs):
+            row = glyph.row
+            col = glyph.col
+            width = glyph.width
+            raw_text = glyph.char or str()
+
+            if row != current_line:
+                raise ValueError("All glyphs must be on the same row")
+
+            if col != i + 1:
+                raise ValueError("Column index does not match glyph index")
+
+            if glyph.ref < 0:
+                ref_index = i + glyph.ref
+                assert 0 <= ref_index
+
+                if glyphs[ref_index].char == chr(self.tab):
+                    # Converts trailing spaces after a tab character to empty characters
+                    display_text = self.empty_char
+                    fg = self.text_disabled_color
+                    width = 1
+                else:
+                    assert 1 <= len(result)
+                    result[-1].col_end = col + 1
+                    continue
             else:
-                display_text = raw_text
-                fg = glyph.foreground_u32
-        else:
-            display_text = raw_text
-            fg = glyph.foreground_u32
+                assert glyph.ref == 0
 
-        if selected := selection.contain_with(row, col):
-            bg = self.text_selected_bg_color
-        else:
-            bg = glyph.background_u32
+                if self.show_whitespace:
+                    if not glyph.char:
+                        display_text = self.empty_char
+                        fg = self.text_disabled_color
+                    elif glyph.char == chr(self.tab):
+                        display_text = self.tab_char
+                        fg = self.text_disabled_color
+                    elif glyph.char == chr(self.space):
+                        display_text = self.whitespace_char
+                        fg = self.text_disabled_color
+                    else:
+                        display_text = glyph.char
+                        fg = glyph.foreground_u32
+                else:
+                    display_text = glyph.char
+                    fg = glyph.foreground_u32
 
-        return TextBlock(
-            raw_text=raw_text,
-            display_text=display_text,
-            lineno=row,
-            col_begin=col,
-            col_end=col + 1,
-            foreground=fg,
-            background=bg,
-            error=glyph.error,
-            selected=selected,
-        )
+            if selected := selection.contain_with(row, col, width):
+                bg = self.text_selected_bg_color
+            else:
+                bg = glyph.background_u32
+
+            item = TextBlock(
+                raw_text=raw_text,
+                display_text=display_text,
+                lineno=row,
+                col_begin=col,
+                col_end=col + 1,
+                foreground=fg,
+                background=bg,
+                error=glyph.error,
+                selected=selected,
+            )
+
+            if result:
+                last_block = result[-1]
+                if last_block.mergeable_with(item):
+                    last_block.merge(item)
+                else:
+                    result.append(item)
+            else:
+                result.append(item)
+
+        return result
 
     def build_with_text(
         self,
@@ -133,21 +176,7 @@ class SgrBuilder:
             glyphs = parse_terminal_glyphs_with_line(sgr_line, tabsize=self.tabsize)
             assert 1 <= len(glyphs)
 
-            last_block = self.convert_glyph_to_block(glyphs[0], selection)
-            assert last_block.lineno == sgr_line.lineno
-
-            text_blocks = [last_block]
-
-            for glyph in glyphs[1:]:
-                block = self.convert_glyph_to_block(glyph, selection)
-                assert block.lineno == sgr_line.lineno
-
-                if last_block.mergeable_with(block):
-                    last_block.merge(block)
-                else:
-                    text_blocks.append(block)
-                    last_block = block
-
+            text_blocks = self.convert_line_glyphs_to_line_blocks(glyphs, selection)
             result.append(LineBlock(sgr_line.lineno, text_blocks))
 
         return result

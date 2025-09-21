@@ -59,7 +59,7 @@ KEYRING_EXTENSION: Final[str] = ".cfg"
 FONT_SIZE: Final[int] = 14
 FONT_PREVIEW_SIZE: Final[int] = 48
 FONT_SCALE: Final[float] = 1.0
-FONT_NAME: Final[str] = "Default"
+FONT_DEFAULT_NAME: Final[str] = "Default"
 
 THREAD_POOL_PREFIX: Final[str] = "cvp.threadpool"
 MAX_THREAD_WORKERS: Final[int] = 5

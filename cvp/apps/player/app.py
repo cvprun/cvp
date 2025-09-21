@@ -44,7 +44,7 @@ from cvp.msgs.msg_type import MsgType
 from cvp.pygame.screenshot import save_screenshot
 from cvp.renderer.pygame.renderer import PygameRenderer
 from cvp.renderer.world.world import World
-from cvp.variables import CVP_TITLE, FONT_NAME
+from cvp.variables import CVP_TITLE, FONT_DEFAULT_NAME
 
 
 class PlayerApplication:
@@ -249,14 +249,14 @@ class PlayerApplication:
         logger.info("Created a Pygame renderer object.")
 
         io.fonts.clear()
-        default_font_pixels = self.config.font.size_pixels
+        font_pixels = self.config.font.size_pixels
         user_font = self.config.font.user_font
         if os.path.isfile(user_font):
-            self._fonts.add_ttf_file(user_font, default_font_pixels)
-            logger.info(f"Create user font: '{user_font}', {default_font_pixels}pixels")
+            self._fonts.add_ttf_file(user_font, font_pixels)
+            logger.info(f"Create user font: '{user_font}', {font_pixels}pixels")
         else:
-            self._fonts.add_mixed_font(FONT_NAME, default_font_pixels)
-            logger.info(f"Create default font: {default_font_pixels}pixels")
+            self._fonts.add_mixed_font(FONT_DEFAULT_NAME, font_pixels)
+            logger.info(f"Create default font: {font_pixels}pixels")
 
         io.font_global_scale = self.config.font.scale
         logger.info(f"Global font scale: {io.font_global_scale}")

@@ -104,8 +104,20 @@ class TerminalSelection:
         self.begin = TerminalCoord(lineno_begin, 1)
         self.end = TerminalCoord(lineno_end, 0)
 
-    def contain_with(self, lineno: int, column: int) -> bool:
-        return self.contain_with_coord(TerminalCoord(lineno, column))
+    def contain_with(self, lineno: int, column: int, width=1) -> bool:
+        if width == 0:
+            raise ValueError("width must not be 0")
+
+        for i in range(abs(width)):
+            if 0 < width:
+                offset = i  # Right direction
+            else:
+                offset = -1 * (i + 1)  # Left direction
+
+            if not self.contain_with_coord(TerminalCoord(lineno, column + offset)):
+                return False
+
+        return True
 
     def contain_with_coord(self, coord: TerminalCoord) -> bool:
         try:

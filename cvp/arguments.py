@@ -25,7 +25,7 @@ from cvp.system.environ_keys import (
 from cvp.variables import (
     CVP_HOME_DIRNAME,
     DOTENV_LOCAL_FILENAME,
-    FONT_NAME,
+    FONT_DEFAULT_NAME,
     FONT_SIZE,
     LOGGING_STEP,
 )
@@ -178,9 +178,9 @@ def add_font_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--default-font-name",
         type=str,
-        default=FONT_NAME,
+        default=FONT_DEFAULT_NAME,
         metavar="{name}",
-        help=f"Default font name (default: '{FONT_NAME}')",
+        help=f"Default font name (default: '{FONT_DEFAULT_NAME}')",
     )
     parser.add_argument(
         "--default-font-size",

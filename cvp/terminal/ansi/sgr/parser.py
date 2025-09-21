@@ -37,6 +37,8 @@ def parse_terminal_glyphs_with_line(
             glyph = SgrGlyph(
                 row=sgr_line.lineno,
                 col=column,
+                width=column_size,
+                ref=0,
                 char=c,
                 foreground=fg_color,
                 background=bg_color,
@@ -48,10 +50,15 @@ def parse_terminal_glyphs_with_line(
             if column_size <= 1:
                 continue
 
-            for _ in range(column_size - 1):
+            for i in range(column_size - 1):
+                original_offset = -1 * (i + 1)
+                assert original_offset <= -1
+
                 glyph = SgrGlyph(
                     row=sgr_line.lineno,
                     col=column,
+                    width=0,
+                    ref=original_offset,
                     char=None,
                     foreground=fg_color,
                     background=bg_color,

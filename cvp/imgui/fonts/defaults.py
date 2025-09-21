@@ -17,8 +17,8 @@ from cvp.imgui.fonts.font import Font
 def add_mixed_font(
     name: str,
     size: int,
-    ngc_delta=0,
-    mdi_delta=0,
+    ngc_delta=-2,
+    mdi_delta=-2,
     *,
     use_texture=False,
 ) -> Font:

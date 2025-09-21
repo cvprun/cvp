@@ -10,6 +10,15 @@ from cvp.colors.convert.imgui import argb8888_to_uint32
 class SgrGlyph:
     row: int
     col: int
+    width: int
+
+    ref: int
+    """
+    When a single glyph occupies multiple columns,
+    this is the offset of the original column. (e.g. Hangul or Tab)
+
+    Only integer values less than or equal to 0 are allowed.
+    """
 
     char: Optional[str] = None
 

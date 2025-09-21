@@ -16,6 +16,35 @@ _TEST_ANSI_ESCAPE: Final[str] = (
 
 
 class BuilderTestCase(TestCase):
+    def test_build_with_tab(self):
+        builder = SgrBuilder(show_whitespace=True, tabsize=2)
+        blocks = builder.build_with_text(1, "\t")
+        self.assertEqual(1, len(blocks))
+
+        line1 = blocks[0]
+        self.assertEqual(1, line1.lineno)
+        self.assertEqual("\t", line1.raw_text)
+        self.assertEqual("» ", line1.display_text)
+        self.assertEqual(1, line1.col_begin)
+        self.assertEqual(3, line1.col_end)
+        self.assertEqual(2, line1.cols)
+        self.assertEqual(1, len(line1))
+
+    def test_build_with_hangul(self):
+        text = "\ud55c\uae00"  # HAN GUL
+        builder = SgrBuilder(show_whitespace=True, tabsize=2)
+        blocks = builder.build_with_text(1, text)
+        self.assertEqual(1, len(blocks))
+
+        line1 = blocks[0]
+        self.assertEqual(1, line1.lineno)
+        self.assertEqual(text, line1.raw_text)
+        self.assertEqual(text, line1.display_text)
+        self.assertEqual(1, line1.col_begin)
+        self.assertEqual(5, line1.col_end)
+        self.assertEqual(4, line1.cols)
+        self.assertEqual(1, len(line1))
+
     def test_build(self):
         builder = SgrBuilder(show_whitespace=True, tabsize=2)
         blocks = builder.build_with_text(1, _TEST_ANSI_ESCAPE)
