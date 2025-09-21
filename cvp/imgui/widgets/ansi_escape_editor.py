@@ -332,7 +332,16 @@ class AnsiEscapeEditor:
         self._cursor_column = floor(mouse_x / single_char_width) + 1
         self._cursor_lineno = lineno + floor(mouse_y / line_height)
 
-        if self._left_button.changed_down:
+        # scrollbar_size = imgui.get_style().scrollbar_size
+
+        sx = imgui.get_scroll_x()
+        sy = imgui.get_scroll_y()
+        editor_p1 = csx + sx + line_begin_x, csy + sy
+        editor_p2 = editor_p1[0] + crw - line_begin_x, editor_p1[1] + crh
+        editor_hovering = imgui.is_mouse_hovering_rect(editor_p1, editor_p2)
+        # self._draw_list.add_rect(editor_p1, editor_p2, self._palette.debug)
+
+        if editor_hovering and self._left_button.changed_down:
             selection.set_begin(self._cursor_lineno, self._cursor_column)
         if self._left_button.is_down:
             selection.set_end(self._cursor_lineno, self._cursor_column)

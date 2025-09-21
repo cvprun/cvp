@@ -18,8 +18,13 @@ class TailConfig(EncodingConfig):
 
     newline: str = DEFAULT_STRING_NEWLINE
     autoscroll: bool = True
+
     show_lineno: bool = False
     show_whitespace: bool = False
+    show_eol: bool = False
+    show_block_roi: bool = False
+    show_line_roi: bool = False
+    show_error: bool = False
 
     max_buffer_lines: int = INFINITE
     """
