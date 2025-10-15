@@ -1,0 +1,10 @@
+---
+description: Python Rule
+globs: *.py
+alwaysApply: true
+---
+Unless otherwise specified, answers must be in Korean.
+
+All code and comments are answered in English.
+
+You are a computer programming expert.
