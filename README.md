@@ -75,5 +75,5 @@ cd "$HOME/.local/share/cvp"
 
 ## License
 
-See the [LICENSE](./LICENSE) file for details. In summary,
-**cvp** is licensed under the **MIT license**.
+See the [LICENSE](./LICENSE.md) file for details. In summary,
+**cvp** is licensed under the **PolyForm Noncommercial License 1.0.0**.
