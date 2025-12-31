@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Optional
 
 import numpy as np
 
@@ -10,7 +10,6 @@ from cvp.nodes.node import Node
 from cvp.nodes.record import NodeRecord
 from cvp.pins.datas import DataInputPin, DataOutputPin
 from cvp.pins.pin import Pin, PinName
-from cvp.types.override import override
 
 
 class NumpyFunctionNode(Node):
@@ -57,7 +56,12 @@ class SimpleNumpyFunctionNode(NumpyFunctionNode):
 class NumpyUnaryNode(SimpleNumpyFunctionNode):
     """Node for numpy unary functions (single input)."""
 
-    def __init__(self, function_name: str, input_name: str = "x", input_docs: str = None):
+    def __init__(
+        self,
+        function_name: str,
+        input_name: str = "x",
+        input_docs: Optional[str] = None,
+    ):
         input_pin = DataInputPin(
             name=PinName(input_name),
             dtype=Dtype.any(),
@@ -69,9 +73,14 @@ class NumpyUnaryNode(SimpleNumpyFunctionNode):
 class NumpyBinaryNode(SimpleNumpyFunctionNode):
     """Node for numpy binary functions (two inputs)."""
 
-    def __init__(self, function_name: str,
-                 first_name: str = "x1", first_docs: str = None,
-                 second_name: str = "x2", second_docs: str = None):
+    def __init__(
+        self,
+        function_name: str,
+        first_name: str = "x1",
+        first_docs: Optional[str] = None,
+        second_name: str = "x2",
+        second_docs: Optional[str] = None,
+    ):
         first_pin = DataInputPin(
             name=PinName(first_name),
             dtype=Dtype.any(),

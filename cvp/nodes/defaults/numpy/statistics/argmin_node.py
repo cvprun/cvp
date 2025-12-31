@@ -1,0 +1,31 @@
+# -*- coding: utf-8 -*-
+
+from typing import Any
+
+import numpy as np
+
+from cvp.dtypes.dtype import Dtype
+from cvp.nodes.defaults.numpy._base import NumpyFunctionNode
+from cvp.pins.datas import DataInputPin
+from cvp.pins.pin import PinName
+
+
+class ArgminNode(NumpyFunctionNode):
+    """Returns the indices of the minimum values along an axis."""
+
+    def __init__(self):
+        array_pin = DataInputPin(
+            name=PinName("a"),
+            dtype=Dtype.any(),
+            docs="Input array",
+        )
+        axis_pin = DataInputPin(
+            name=PinName("axis"),
+            dtype=Dtype.any(),
+            docs="Axis along which to search",
+            default=None,
+        )
+        super().__init__("argmin", array_pin, axis_pin)
+
+    def apply_function(self, a, axis, **kwargs) -> Any:
+        return np.argmin(a, axis=axis)
