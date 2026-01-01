@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./ci.sh test)",
+      "Bash(./black.sh)",
+      "Bash(./black.sh --fix)",
+      "Bash(./isort.sh)",
+      "Bash(./isort.sh --fix)",
+      "Bash(./flake8.sh)",
+      "Bash(./mypy.sh)",
+      "Bash(./pytest.sh)",
+      "WebFetch(domain:github.com)",
+      "WebSearch"
+    ],
+    "deny": [
+      "Bash(python:*)",
+      "Bash(pip:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)"
+    ],
+    "ask": [
+      "Bash(./python:*)",
+      "Bash(./run:*)"
+    ]
+  }
+}
