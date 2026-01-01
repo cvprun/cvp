@@ -7,6 +7,7 @@ from cvp.nodes.defaults.builtins import get_builtin_nodes
 from cvp.nodes.defaults.casting import get_casting_nodes
 from cvp.nodes.defaults.essential import get_essential_nodes
 from cvp.nodes.defaults.numpy import get_numpy_nodes
+from cvp.nodes.defaults.opencv import get_opencv_nodes
 from cvp.nodes.defaults.operators import get_operators_nodes
 from cvp.nodes.node import Node
 from cvp.nodes.ntype import NodePath
@@ -21,6 +22,7 @@ def get_default_nodes() -> Sequence[Node]:
     result.extend(get_essential_nodes())
     result.extend(get_operators_nodes())
     result.extend(get_numpy_nodes())
+    result.extend(get_opencv_nodes())
     return tuple(result)
 
 
