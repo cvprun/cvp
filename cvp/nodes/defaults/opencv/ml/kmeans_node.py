@@ -69,8 +69,12 @@ class KMeansNode(OpenCVFunctionNode):
         )
 
     def apply_function(self, data, K, attempts, flags, **kwargs) -> Any:
+        import numpy as np
+
+        # bestLabels needs to be an array, not None
+        best_labels = np.zeros((data.shape[0], 1), dtype=np.int32)
         compactness, labels, centers = cv2.kmeans(
-            data, K, None, self._criteria, attempts, flags
+            data, K, best_labels, self._criteria, attempts, flags
         )
         return compactness, labels, centers
 

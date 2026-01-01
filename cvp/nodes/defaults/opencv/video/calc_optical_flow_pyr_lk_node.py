@@ -80,11 +80,13 @@ class CalcOpticalFlowPyrLKNode(OpenCVFunctionNode):
         self, prevImg, nextImg, prevPts, winSize, maxLevel, **kwargs
     ) -> Any:
         criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 30, 0.01)
+        import numpy as np
+
         nextPts, status, error = cv2.calcOpticalFlowPyrLK(
             prevImg,
             nextImg,
             prevPts,
-            None,
+            np.array([]),  # nextPts needs to be an array, not None
             winSize=winSize,
             maxLevel=maxLevel,
             criteria=criteria,

@@ -41,4 +41,8 @@ class DrawKeypointsNode(OpenCVFunctionNode):
         )
 
     def apply_function(self, image, keypoints, color, flags, **kwargs) -> Any:
-        return cv2.drawKeypoints(image, keypoints, None, color=color, flags=flags)
+        import numpy as np
+
+        # outImage needs to be an array, not None
+        out_image = np.zeros_like(image)
+        return cv2.drawKeypoints(image, keypoints, out_image, color=color, flags=flags)

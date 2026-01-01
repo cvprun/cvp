@@ -54,9 +54,10 @@ class BFMatcherNode(OpenCVFunctionNode):
         matcher = cv2.BFMatcher(normType, crossCheck)
         if k == 1:
             matches = matcher.match(queryDescriptors, trainDescriptors)
+            return matches
         else:
-            matches = matcher.knnMatch(queryDescriptors, trainDescriptors, k=k)
-        return matches
+            # knnMatch returns List[List[DMatch]], return directly with proper type
+            return matcher.knnMatch(queryDescriptors, trainDescriptors, k=k)
 
     def run(self, record):
         # Get input values
