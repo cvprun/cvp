@@ -1,25 +1,25 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
 import warnings
+from unittest import TestCase, main
 
 import numpy as np
 
 from cvp.nodes.defaults.numpy import get_numpy_nodes
-from cvp.nodes.defaults.numpy.mathematical.sin_node import SinNode
-from cvp.nodes.defaults.numpy.mathematical.cos_node import CosNode
-from cvp.nodes.defaults.numpy.mathematical.add_node import AddNode
-from cvp.nodes.defaults.numpy.mathematical.subtract_node import SubtractNode
-from cvp.nodes.defaults.numpy.mathematical.multiply_node import MultiplyNode
-from cvp.nodes.defaults.numpy.mathematical.divide_node import DivideNode
-from cvp.nodes.defaults.numpy.mathematical.sqrt_node import SqrtNode
-from cvp.nodes.defaults.numpy.mathematical.exp_node import ExpNode
-from cvp.nodes.defaults.numpy.mathematical.log_node import LogNode
 from cvp.nodes.defaults.numpy.linalg.dot_node import DotNode
 from cvp.nodes.defaults.numpy.linalg.matmul_node import MatmulNode
 from cvp.nodes.defaults.numpy.logic.equal_node import EqualNode
 from cvp.nodes.defaults.numpy.logic.greater_node import GreaterNode
 from cvp.nodes.defaults.numpy.logic.logical_and_node import LogicalAndNode
+from cvp.nodes.defaults.numpy.mathematical.add_node import AddNode
+from cvp.nodes.defaults.numpy.mathematical.cos_node import CosNode
+from cvp.nodes.defaults.numpy.mathematical.divide_node import DivideNode
+from cvp.nodes.defaults.numpy.mathematical.exp_node import ExpNode
+from cvp.nodes.defaults.numpy.mathematical.log_node import LogNode
+from cvp.nodes.defaults.numpy.mathematical.multiply_node import MultiplyNode
+from cvp.nodes.defaults.numpy.mathematical.sin_node import SinNode
+from cvp.nodes.defaults.numpy.mathematical.sqrt_node import SqrtNode
+from cvp.nodes.defaults.numpy.mathematical.subtract_node import SubtractNode
 from cvp.nodes.record import NodeRecord
 
 
@@ -287,18 +287,18 @@ class BasicNumpyNodesTestCase(TestCase):
             self.assertIsInstance(node, NumpyFunctionNode)
 
             # Check structure
-            self.assertTrue(hasattr(node, '_input_pins'))
-            self.assertTrue(hasattr(node, '_output'))
+            self.assertTrue(hasattr(node, "_input_pins"))
+            self.assertTrue(hasattr(node, "_output"))
             self.assertGreater(len(node._input_pins), 0)
 
             # Check pin properties
             for pin in node._input_pins:
-                self.assertTrue(hasattr(pin, 'name'))
-                self.assertTrue(hasattr(pin, 'dtype'))
+                self.assertTrue(hasattr(pin, "name"))
+                self.assertTrue(hasattr(pin, "dtype"))
 
             output_pin = node._output
-            self.assertTrue(hasattr(output_pin, 'name'))
-            self.assertTrue(hasattr(output_pin, 'dtype'))
+            self.assertTrue(hasattr(output_pin, "name"))
+            self.assertTrue(hasattr(output_pin, "dtype"))
 
 
 if __name__ == "__main__":

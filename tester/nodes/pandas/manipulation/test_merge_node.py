@@ -12,14 +12,10 @@ class MergeNodeTestCase(TestCase):
     def setUp(self):
         self.node = MergeNode()
         self.record = NodeRecord.empty()
-        self.left_df = pd.DataFrame({
-            "key": ["A", "B", "C"],
-            "left_value": [1, 2, 3]
-        })
-        self.right_df = pd.DataFrame({
-            "key": ["A", "B", "D"],
-            "right_value": [10, 20, 30]
-        })
+        self.left_df = pd.DataFrame({"key": ["A", "B", "C"], "left_value": [1, 2, 3]})
+        self.right_df = pd.DataFrame(
+            {"key": ["A", "B", "D"], "right_value": [10, 20, 30]}
+        )
 
     def test_merge_inner_default(self):
         """Test inner merge (default behavior)."""
@@ -82,15 +78,10 @@ class MergeNodeTestCase(TestCase):
     def test_merge_without_on(self):
         """Test merge without specifying 'on' parameter."""
         # Create DataFrames with common columns
-        left = pd.DataFrame({
-            "id": [1, 2, 3],
-            "name": ["Alice", "Bob", "Charlie"],
-            "age": [25, 30, 35]
-        })
-        right = pd.DataFrame({
-            "id": [1, 2, 4],
-            "salary": [50000, 60000, 70000]
-        })
+        left = pd.DataFrame(
+            {"id": [1, 2, 3], "name": ["Alice", "Bob", "Charlie"], "age": [25, 30, 35]}
+        )
+        right = pd.DataFrame({"id": [1, 2, 4], "salary": [50000, 60000, 70000]})
 
         self.record.set(self.node._left_pin, left)
         self.record.set(self.node._right_pin, right)
@@ -106,16 +97,20 @@ class MergeNodeTestCase(TestCase):
 
     def test_merge_multiple_keys(self):
         """Test merge on multiple columns."""
-        left = pd.DataFrame({
-            "key1": ["A", "A", "B", "B"],
-            "key2": [1, 2, 1, 2],
-            "left_value": [10, 20, 30, 40]
-        })
-        right = pd.DataFrame({
-            "key1": ["A", "A", "B", "C"],
-            "key2": [1, 3, 1, 1],
-            "right_value": [100, 200, 300, 400]
-        })
+        left = pd.DataFrame(
+            {
+                "key1": ["A", "A", "B", "B"],
+                "key2": [1, 2, 1, 2],
+                "left_value": [10, 20, 30, 40],
+            }
+        )
+        right = pd.DataFrame(
+            {
+                "key1": ["A", "A", "B", "C"],
+                "key2": [1, 3, 1, 1],
+                "right_value": [100, 200, 300, 400],
+            }
+        )
 
         self.record.set(self.node._left_pin, left)
         self.record.set(self.node._right_pin, right)
@@ -133,14 +128,10 @@ class MergeNodeTestCase(TestCase):
 
     def test_merge_different_column_names(self):
         """Test merge with different column names."""
-        left = pd.DataFrame({
-            "left_key": ["A", "B", "C"],
-            "left_value": [1, 2, 3]
-        })
-        right = pd.DataFrame({
-            "right_key": ["A", "B", "D"],
-            "right_value": [10, 20, 30]
-        })
+        left = pd.DataFrame({"left_key": ["A", "B", "C"], "left_value": [1, 2, 3]})
+        right = pd.DataFrame(
+            {"right_key": ["A", "B", "D"], "right_value": [10, 20, 30]}
+        )
 
         # This should work with pandas.merge using left_on/right_on,
         # but our simplified node uses 'on' parameter

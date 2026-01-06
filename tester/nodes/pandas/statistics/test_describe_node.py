@@ -2,8 +2,8 @@
 
 from unittest import TestCase, main
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 from cvp.nodes.defaults.pandas.statistics.describe_node import DescribeNode
 from cvp.nodes.record import NodeRecord
@@ -13,12 +13,14 @@ class DescribeNodeTestCase(TestCase):
     def setUp(self):
         self.node = DescribeNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "numeric_int": [1, 2, 3, 4, 5],
-            "numeric_float": [1.1, 2.2, 3.3, 4.4, 5.5],
-            "string_col": ["a", "b", "c", "d", "e"],
-            "boolean_col": [True, False, True, False, True]
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "numeric_int": [1, 2, 3, 4, 5],
+                "numeric_float": [1.1, 2.2, 3.3, 4.4, 5.5],
+                "string_col": ["a", "b", "c", "d", "e"],
+                "boolean_col": [True, False, True, False, True],
+            }
+        )
 
     def test_describe_default(self):
         """Test describe with default settings."""
@@ -43,10 +45,7 @@ class DescribeNodeTestCase(TestCase):
 
     def test_describe_numeric_columns(self):
         """Test describe statistics for numeric columns."""
-        numeric_df = pd.DataFrame({
-            "A": [1, 2, 3, 4, 5],
-            "B": [10, 20, 30, 40, 50]
-        })
+        numeric_df = pd.DataFrame({"A": [1, 2, 3, 4, 5], "B": [10, 20, 30, 40, 50]})
 
         self.record.set(self.node._dataframe_pin, numeric_df)
         self.node.run(self.record)
@@ -109,11 +108,13 @@ class DescribeNodeTestCase(TestCase):
 
     def test_describe_with_na_values(self):
         """Test describe with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4, 5],
-            "B": [10, None, None, 40, 50],
-            "C": [1.0, 2.0, 3.0, 4.0, 5.0]
-        })
+        df_with_na = pd.DataFrame(
+            {
+                "A": [1, 2, None, 4, 5],
+                "B": [10, None, None, 40, 50],
+                "C": [1.0, 2.0, 3.0, 4.0, 5.0],
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.node.run(self.record)
@@ -157,10 +158,9 @@ class DescribeNodeTestCase(TestCase):
 
     def test_describe_constant_values(self):
         """Test describe with constant values."""
-        constant_df = pd.DataFrame({
-            "constant": [5, 5, 5, 5, 5],
-            "variable": [1, 2, 3, 4, 5]
-        })
+        constant_df = pd.DataFrame(
+            {"constant": [5, 5, 5, 5, 5], "variable": [1, 2, 3, 4, 5]}
+        )
 
         self.record.set(self.node._dataframe_pin, constant_df)
         self.node.run(self.record)
@@ -175,13 +175,15 @@ class DescribeNodeTestCase(TestCase):
 
     def test_describe_mixed_types(self):
         """Test describe with mixed data types."""
-        mixed_df = pd.DataFrame({
-            "integers": [1, 2, 3],
-            "floats": [1.1, 2.2, 3.3],
-            "strings": ["x", "y", "z"],
-            "booleans": [True, False, True],
-            "dates": pd.date_range("2023-01-01", periods=3)
-        })
+        mixed_df = pd.DataFrame(
+            {
+                "integers": [1, 2, 3],
+                "floats": [1.1, 2.2, 3.3],
+                "strings": ["x", "y", "z"],
+                "booleans": [True, False, True],
+                "dates": pd.date_range("2023-01-01", periods=3),
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, mixed_df)
         self.record.set(self.node._include_pin, "all")
@@ -197,11 +199,13 @@ class DescribeNodeTestCase(TestCase):
     def test_describe_large_dataset(self):
         """Test describe with larger dataset."""
         np.random.seed(42)
-        large_df = pd.DataFrame({
-            "normal": np.random.normal(100, 15, 1000),
-            "uniform": np.random.uniform(0, 100, 1000),
-            "exponential": np.random.exponential(2, 1000)
-        })
+        large_df = pd.DataFrame(
+            {
+                "normal": np.random.normal(100, 15, 1000),
+                "uniform": np.random.uniform(0, 100, 1000),
+                "exponential": np.random.exponential(2, 1000),
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, large_df)
         self.node.run(self.record)

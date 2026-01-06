@@ -12,11 +12,13 @@ class StdNodeTestCase(TestCase):
     def setUp(self):
         self.node = StdNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4, 5],
-            "B": [10, 20, 30, 40, 50],
-            "C": [1.0, 1.0, 1.0, 1.0, 1.0]  # Zero variance
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4, 5],
+                "B": [10, 20, 30, 40, 50],
+                "C": [1.0, 1.0, 1.0, 1.0, 1.0],  # Zero variance
+            }
+        )
 
     def test_std_default(self):
         """Test standard deviation calculation with default settings."""
@@ -48,11 +50,7 @@ class StdNodeTestCase(TestCase):
 
     def test_std_axis_1(self):
         """Test std calculation along axis 1 (columns)."""
-        test_df = pd.DataFrame({
-            "A": [1, 4, 7],
-            "B": [2, 5, 8],
-            "C": [3, 6, 9]
-        })
+        test_df = pd.DataFrame({"A": [1, 4, 7], "B": [2, 5, 8], "C": [3, 6, 9]})
 
         self.record.set(self.node._dataframe_pin, test_df)
         self.record.set(self.node._axis_pin, 1)
@@ -81,11 +79,13 @@ class StdNodeTestCase(TestCase):
 
     def test_std_with_na_values(self):
         """Test std calculation with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4, 5],
-            "B": [10, None, 30, None, 50],
-            "C": [1.0, 2.0, 3.0, 4.0, 5.0]
-        })
+        df_with_na = pd.DataFrame(
+            {
+                "A": [1, 2, None, 4, 5],
+                "B": [10, None, 30, None, 50],
+                "C": [1.0, 2.0, 3.0, 4.0, 5.0],
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.node.run(self.record)
@@ -102,10 +102,7 @@ class StdNodeTestCase(TestCase):
 
     def test_std_skipna_false(self):
         """Test std calculation without skipping NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4],
-            "B": [10, 20, 30, 40]
-        })
+        df_with_na = pd.DataFrame({"A": [1, 2, None, 4], "B": [10, 20, 30, 40]})
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.record.set(self.node._skipna_pin, False)
@@ -169,9 +166,7 @@ class StdNodeTestCase(TestCase):
 
     def test_std_large_values(self):
         """Test std calculation with large values."""
-        large_df = pd.DataFrame({
-            "A": [1000000, 2000000, 3000000, 4000000, 5000000]
-        })
+        large_df = pd.DataFrame({"A": [1000000, 2000000, 3000000, 4000000, 5000000]})
 
         self.record.set(self.node._dataframe_pin, large_df)
         self.node.run(self.record)

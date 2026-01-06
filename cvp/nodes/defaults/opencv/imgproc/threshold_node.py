@@ -53,7 +53,7 @@ class ThresholdNode(OpenCVFunctionNode):
         # Initialize with custom pins
         self._function_name = "threshold"
         self._input_pins = (src_pin, thresh_pin, maxval_pin, type_pin)
-        super().__init__.__bases__[0].__init__(
+        super().__init__(
             self, *self._input_pins, self._retval_output, self._thresh_output
         )
 

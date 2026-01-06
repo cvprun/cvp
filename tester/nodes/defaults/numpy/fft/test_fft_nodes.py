@@ -5,21 +5,21 @@ from unittest import TestCase
 import numpy as np
 
 from cvp.nodes.defaults.numpy.fft.fft2_node import Fft2Node
+from cvp.nodes.defaults.numpy.fft.fft_node import FftNode
 from cvp.nodes.defaults.numpy.fft.fftfreq_node import FftfreqNode
 from cvp.nodes.defaults.numpy.fft.fftn_node import FftnNode
-from cvp.nodes.defaults.numpy.fft.fft_node import FftNode
 from cvp.nodes.defaults.numpy.fft.fftshift_node import FftshiftNode
 from cvp.nodes.defaults.numpy.fft.ifft2_node import Ifft2Node
-from cvp.nodes.defaults.numpy.fft.ifftn_node import IfftnNode
 from cvp.nodes.defaults.numpy.fft.ifft_node import IfftNode
+from cvp.nodes.defaults.numpy.fft.ifftn_node import IfftnNode
 from cvp.nodes.defaults.numpy.fft.ifftshift_node import IfftshiftNode
 from cvp.nodes.defaults.numpy.fft.irfft2_node import Irfft2Node
-from cvp.nodes.defaults.numpy.fft.irfftn_node import IrfftnNode
 from cvp.nodes.defaults.numpy.fft.irfft_node import IrfftNode
+from cvp.nodes.defaults.numpy.fft.irfftn_node import IrfftnNode
 from cvp.nodes.defaults.numpy.fft.rfft2_node import Rfft2Node
+from cvp.nodes.defaults.numpy.fft.rfft_node import RfftNode
 from cvp.nodes.defaults.numpy.fft.rfftfreq_node import RfftfreqNode
 from cvp.nodes.defaults.numpy.fft.rfftn_node import RfftnNode
-from cvp.nodes.defaults.numpy.fft.rfft_node import RfftNode
 from cvp.nodes.record import NodeRecord
 
 
@@ -29,12 +29,9 @@ class TestFftNodes(TestCase):
         self.record = NodeRecord.empty()
         # Create test signals
         self.real_signal_1d = np.array([1, 2, 3, 4, 3, 2, 1, 0])
-        self.complex_signal_1d = np.array([1+1j, 2+0j, 3-1j, 4+2j])
-        self.real_signal_2d = np.array([[1, 2, 3, 4],
-                                        [5, 6, 7, 8],
-                                        [9, 10, 11, 12]])
-        self.complex_signal_2d = np.array([[1+1j, 2+0j],
-                                           [3-1j, 4+2j]])
+        self.complex_signal_1d = np.array([1 + 1j, 2 + 0j, 3 - 1j, 4 + 2j])
+        self.real_signal_2d = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]])
+        self.complex_signal_2d = np.array([[1 + 1j, 2 + 0j], [3 - 1j, 4 + 2j]])
 
     def test_basic_fft_operations(self):
         """Test basic 1D FFT operations."""
@@ -233,9 +230,9 @@ class TestFftNodes(TestCase):
         fft_result = self.record.get(fft_node._output)
 
         # Energy in time domain
-        energy_time = np.sum(np.abs(self.real_signal_1d)**2)
+        energy_time = np.sum(np.abs(self.real_signal_1d) ** 2)
         # Energy in frequency domain (scaled by length)
-        energy_freq = np.sum(np.abs(fft_result)**2) / len(self.real_signal_1d)
+        energy_freq = np.sum(np.abs(fft_result) ** 2) / len(self.real_signal_1d)
 
         np.testing.assert_almost_equal(energy_time, energy_freq, decimal=10)
 

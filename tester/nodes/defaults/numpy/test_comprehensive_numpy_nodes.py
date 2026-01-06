@@ -1,26 +1,26 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
 import warnings
+from unittest import TestCase, main
 
 import numpy as np
 
 from cvp.nodes.defaults.numpy import get_numpy_nodes
 from cvp.nodes.defaults.numpy.array_creation.arange_node import ArangeNode
 from cvp.nodes.defaults.numpy.array_creation.array_node import ArrayNode
-from cvp.nodes.defaults.numpy.array_creation.zeros_node import ZerosNode
 from cvp.nodes.defaults.numpy.array_creation.ones_node import OnesNode
-from cvp.nodes.defaults.numpy.mathematical.add_node import AddNode
-from cvp.nodes.defaults.numpy.mathematical.sin_node import SinNode
-from cvp.nodes.defaults.numpy.mathematical.cos_node import CosNode
-from cvp.nodes.defaults.numpy.mathematical.sqrt_node import SqrtNode
+from cvp.nodes.defaults.numpy.array_creation.zeros_node import ZerosNode
 from cvp.nodes.defaults.numpy.array_manipulation.reshape_node import ReshapeNode
-from cvp.nodes.defaults.numpy.statistics.mean_node import MeanNode
-from cvp.nodes.defaults.numpy.statistics.sum_node import SumNode
+from cvp.nodes.defaults.numpy.fft.fft_node import FftNode
 from cvp.nodes.defaults.numpy.linalg.dot_node import DotNode
 from cvp.nodes.defaults.numpy.logic.equal_node import EqualNode
+from cvp.nodes.defaults.numpy.mathematical.add_node import AddNode
+from cvp.nodes.defaults.numpy.mathematical.cos_node import CosNode
+from cvp.nodes.defaults.numpy.mathematical.sin_node import SinNode
+from cvp.nodes.defaults.numpy.mathematical.sqrt_node import SqrtNode
 from cvp.nodes.defaults.numpy.random.random_random_node import RandomRandomNode
-from cvp.nodes.defaults.numpy.fft.fft_node import FftNode
+from cvp.nodes.defaults.numpy.statistics.mean_node import MeanNode
+from cvp.nodes.defaults.numpy.statistics.sum_node import SumNode
 from cvp.nodes.record import NodeRecord
 
 
@@ -42,8 +42,8 @@ class ComprehensiveNumpyNodesTestCase(TestCase):
         for node_class in nodes:
             try:
                 instance = node_class()
-                self.assertTrue(hasattr(instance, '_input_pins'))
-                self.assertTrue(hasattr(instance, '_output'))
+                self.assertTrue(hasattr(instance, "_input_pins"))
+                self.assertTrue(hasattr(instance, "_output"))
             except Exception as e:
                 failed_nodes.append((node_class.__class__.__name__, str(e)))
 
@@ -231,18 +231,18 @@ class ComprehensiveNumpyNodesTestCase(TestCase):
 
         # Check structure
         for node in [sin_node, add_node, array_node]:
-            self.assertTrue(hasattr(node, '_input_pins'))
-            self.assertTrue(hasattr(node, '_output'))
+            self.assertTrue(hasattr(node, "_input_pins"))
+            self.assertTrue(hasattr(node, "_output"))
             self.assertGreater(len(node._input_pins), 0)
 
             # Check pin properties
             for pin in node._input_pins:
-                self.assertTrue(hasattr(pin, 'name'))
-                self.assertTrue(hasattr(pin, 'dtype'))
+                self.assertTrue(hasattr(pin, "name"))
+                self.assertTrue(hasattr(pin, "dtype"))
 
             output_pin = node._output
-            self.assertTrue(hasattr(output_pin, 'name'))
-            self.assertTrue(hasattr(output_pin, 'dtype'))
+            self.assertTrue(hasattr(output_pin, "name"))
+            self.assertTrue(hasattr(output_pin, "dtype"))
 
     def test_error_handling(self):
         """Test error handling in nodes."""
@@ -300,7 +300,7 @@ class ComprehensiveNumpyNodesTestCase(TestCase):
         # Test broadcasting arrays of different shapes
         self.record = NodeRecord.empty()
         arr1 = np.array([[1], [2], [3]])  # (3, 1)
-        arr2 = np.array([1, 2])          # (2,)
+        arr2 = np.array([1, 2])  # (2,)
         self.record.set(add_node._input_pins[0], arr1)
         self.record.set(add_node._input_pins[1], arr2)
         add_node.run(self.record)

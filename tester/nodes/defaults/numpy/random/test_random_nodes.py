@@ -8,15 +8,21 @@ from cvp.nodes.defaults.numpy.random.random_beta_node import RandomBetaNode
 from cvp.nodes.defaults.numpy.random.random_binomial_node import RandomBinomialNode
 from cvp.nodes.defaults.numpy.random.random_chisquare_node import RandomChisquareNode
 from cvp.nodes.defaults.numpy.random.random_choice_node import RandomChoiceNode
-from cvp.nodes.defaults.numpy.random.random_exponential_node import RandomExponentialNode
+from cvp.nodes.defaults.numpy.random.random_exponential_node import (
+    RandomExponentialNode,
+)
 from cvp.nodes.defaults.numpy.random.random_gamma_node import RandomGammaNode
-from cvp.nodes.defaults.numpy.random.random_multivariate_normal_node import RandomMultivariateNormalNode
+from cvp.nodes.defaults.numpy.random.random_multivariate_normal_node import (
+    RandomMultivariateNormalNode,
+)
 from cvp.nodes.defaults.numpy.random.random_normal_node import RandomNormalNode
-from cvp.nodes.defaults.numpy.random.random_permutation_node import RandomPermutationNode
+from cvp.nodes.defaults.numpy.random.random_permutation_node import (
+    RandomPermutationNode,
+)
 from cvp.nodes.defaults.numpy.random.random_poisson_node import RandomPoissonNode
+from cvp.nodes.defaults.numpy.random.random_rand_node import RandomRandNode
 from cvp.nodes.defaults.numpy.random.random_randint_node import RandomRandintNode
 from cvp.nodes.defaults.numpy.random.random_randn_node import RandomRandnNode
-from cvp.nodes.defaults.numpy.random.random_rand_node import RandomRandNode
 from cvp.nodes.defaults.numpy.random.random_random_node import RandomRandomNode
 from cvp.nodes.defaults.numpy.random.random_seed_node import RandomSeedNode
 from cvp.nodes.defaults.numpy.random.random_shuffle_node import RandomShuffleNode

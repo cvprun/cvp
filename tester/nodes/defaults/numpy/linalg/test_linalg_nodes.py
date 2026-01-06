@@ -12,8 +12,8 @@ from cvp.nodes.defaults.numpy.linalg.linalg_cond_node import LinalgCondNode
 from cvp.nodes.defaults.numpy.linalg.linalg_det_node import LinalgDetNode
 from cvp.nodes.defaults.numpy.linalg.linalg_eig_node import LinalgEigNode
 from cvp.nodes.defaults.numpy.linalg.linalg_eigh_node import LinalgEighNode
-from cvp.nodes.defaults.numpy.linalg.linalg_eigvals_node import LinalgEigvalsNode
 from cvp.nodes.defaults.numpy.linalg.linalg_eighvals_node import LinalgEighvalsNode
+from cvp.nodes.defaults.numpy.linalg.linalg_eigvals_node import LinalgEigvalsNode
 from cvp.nodes.defaults.numpy.linalg.linalg_inv_node import LinalgInvNode
 from cvp.nodes.defaults.numpy.linalg.linalg_lstsq_node import LinalgLstsqNode
 from cvp.nodes.defaults.numpy.linalg.linalg_matrix_rank_node import LinalgMatrixRankNode
@@ -182,9 +182,7 @@ class TestLinalgNodes(TestCase):
         sort_idx_expected = np.argsort(expected_vals)
 
         np.testing.assert_array_almost_equal(
-            result_vals[sort_idx_result],
-            expected_vals[sort_idx_expected],
-            decimal=5
+            result_vals[sort_idx_result], expected_vals[sort_idx_expected], decimal=5
         )
 
         # Test eigenvalues only
@@ -230,7 +228,9 @@ class TestLinalgNodes(TestCase):
         result_q, result_r = result
         # Check that Q*R equals original matrix
         reconstructed = np.matmul(result_q, result_r)
-        np.testing.assert_array_almost_equal(reconstructed, self.test_matrix_3x3, decimal=5)
+        np.testing.assert_array_almost_equal(
+            reconstructed, self.test_matrix_3x3, decimal=5
+        )
 
         # Test SVD decomposition
         self.record = NodeRecord.empty()
@@ -270,7 +270,9 @@ class TestLinalgNodes(TestCase):
         # Test least squares
         self.record = NodeRecord.empty()
         lstsq_node = LinalgLstsqNode()
-        A_over = np.array([[1, 1], [1, 2], [1, 3]], dtype=float)  # Overdetermined system
+        A_over = np.array(
+            [[1, 1], [1, 2], [1, 3]], dtype=float
+        )  # Overdetermined system
         b_over = np.array([6, 8, 10], dtype=float)
         self.record.set(lstsq_node._input_pins[0], A_over)
         self.record.set(lstsq_node._input_pins[1], b_over)

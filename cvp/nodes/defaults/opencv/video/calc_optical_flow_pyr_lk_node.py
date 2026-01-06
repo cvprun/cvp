@@ -68,7 +68,7 @@ class CalcOpticalFlowPyrLKNode(OpenCVFunctionNode):
             winsize_pin,
             maxlevel_pin,
         )
-        super().__init__.__bases__[0].__init__(
+        super().__init__(
             self,
             *self._input_pins,
             self._nextpts_output,

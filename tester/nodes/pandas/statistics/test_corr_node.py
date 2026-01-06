@@ -3,7 +3,6 @@
 from unittest import TestCase, main
 
 import pandas as pd
-import numpy as np
 
 from cvp.nodes.defaults.pandas.statistics.corr_node import CorrNode
 from cvp.nodes.record import NodeRecord
@@ -13,12 +12,14 @@ class CorrNodeTestCase(TestCase):
     def setUp(self):
         self.node = CorrNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4, 5],
-            "B": [2, 4, 6, 8, 10],  # Perfect positive correlation with A
-            "C": [5, 4, 3, 2, 1],   # Perfect negative correlation with A
-            "D": [1, 3, 2, 5, 4]    # Some correlation
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4, 5],
+                "B": [2, 4, 6, 8, 10],  # Perfect positive correlation with A
+                "C": [5, 4, 3, 2, 1],  # Perfect negative correlation with A
+                "D": [1, 3, 2, 5, 4],  # Some correlation
+            }
+        )
 
     def test_corr_default_pearson(self):
         """Test correlation calculation with default Pearson method."""
@@ -58,10 +59,12 @@ class CorrNodeTestCase(TestCase):
     def test_corr_spearman(self):
         """Test correlation with Spearman method."""
         # Create data where Spearman and Pearson might differ
-        df_nonlinear = pd.DataFrame({
-            "A": [1, 2, 3, 4, 5],
-            "B": [1, 4, 9, 16, 25],  # Quadratic relationship
-        })
+        df_nonlinear = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4, 5],
+                "B": [1, 4, 9, 16, 25],  # Quadratic relationship
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, df_nonlinear)
         self.record.set(self.node._method_pin, "spearman")
@@ -74,10 +77,7 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_kendall(self):
         """Test correlation with Kendall method."""
-        simple_df = pd.DataFrame({
-            "X": [1, 2, 3, 4, 5],
-            "Y": [1, 2, 3, 4, 5]
-        })
+        simple_df = pd.DataFrame({"X": [1, 2, 3, 4, 5], "Y": [1, 2, 3, 4, 5]})
 
         self.record.set(self.node._dataframe_pin, simple_df)
         self.record.set(self.node._method_pin, "kendall")
@@ -90,11 +90,9 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_with_na_values(self):
         """Test correlation with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4, 5],
-            "B": [2, 4, 6, None, 10],
-            "C": [1, 2, 3, 4, 5]
-        })
+        df_with_na = pd.DataFrame(
+            {"A": [1, 2, None, 4, 5], "B": [2, 4, 6, None, 10], "C": [1, 2, 3, 4, 5]}
+        )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.node.run(self.record)
@@ -107,10 +105,9 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_min_periods(self):
         """Test correlation with min_periods parameter."""
-        df_sparse = pd.DataFrame({
-            "A": [1, None, None, None, 5],
-            "B": [None, None, 3, 4, None]
-        })
+        df_sparse = pd.DataFrame(
+            {"A": [1, None, None, None, 5], "B": [None, None, 3, 4, None]}
+        )
 
         # With min_periods=2, should require at least 2 valid pairs
         self.record.set(self.node._dataframe_pin, df_sparse)
@@ -136,11 +133,13 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_constant_values(self):
         """Test correlation with constant values."""
-        constant_df = pd.DataFrame({
-            "A": [1, 1, 1, 1, 1],  # Constant values
-            "B": [2, 3, 4, 5, 6],
-            "C": [3, 3, 3, 3, 3]   # Another constant
-        })
+        constant_df = pd.DataFrame(
+            {
+                "A": [1, 1, 1, 1, 1],  # Constant values
+                "B": [2, 3, 4, 5, 6],
+                "C": [3, 3, 3, 3, 3],  # Another constant
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, constant_df)
         self.node.run(self.record)
@@ -154,10 +153,7 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_two_columns(self):
         """Test correlation with exactly two columns."""
-        two_col_df = pd.DataFrame({
-            "X": [1, 2, 3, 4, 5],
-            "Y": [6, 7, 8, 9, 10]
-        })
+        two_col_df = pd.DataFrame({"X": [1, 2, 3, 4, 5], "Y": [6, 7, 8, 9, 10]})
 
         self.record.set(self.node._dataframe_pin, two_col_df)
         self.node.run(self.record)
@@ -170,11 +166,13 @@ class CorrNodeTestCase(TestCase):
 
     def test_corr_mixed_data_types(self):
         """Test correlation with mixed numeric data types."""
-        mixed_df = pd.DataFrame({
-            "integers": [1, 2, 3, 4, 5],
-            "floats": [1.5, 2.5, 3.5, 4.5, 5.5],
-            "booleans": [True, False, True, False, True]
-        })
+        mixed_df = pd.DataFrame(
+            {
+                "integers": [1, 2, 3, 4, 5],
+                "floats": [1.5, 2.5, 3.5, 4.5, 5.5],
+                "booleans": [True, False, True, False, True],
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, mixed_df)
         self.node.run(self.record)

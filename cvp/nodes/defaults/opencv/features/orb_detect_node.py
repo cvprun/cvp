@@ -42,7 +42,7 @@ class ORBDetectNode(OpenCVFunctionNode):
         self._function_name = "ORB_detectAndCompute"
         self._input_pins = (image_pin, mask_pin)
         self._orb = cv2.ORB_create()
-        super().__init__.__bases__[0].__init__(
+        super().__init__(
             self, *self._input_pins, self._keypoints_output, self._descriptors_output
         )
 

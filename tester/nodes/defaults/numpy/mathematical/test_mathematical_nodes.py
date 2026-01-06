@@ -25,9 +25,9 @@ from cvp.nodes.defaults.numpy.mathematical.floor_divide_node import FloorDivideN
 from cvp.nodes.defaults.numpy.mathematical.floor_node import FloorNode
 from cvp.nodes.defaults.numpy.mathematical.fmax_node import FmaxNode
 from cvp.nodes.defaults.numpy.mathematical.fmin_node import FminNode
-from cvp.nodes.defaults.numpy.mathematical.log10_node import Log10Node
 from cvp.nodes.defaults.numpy.mathematical.log1p_node import Log1pNode
 from cvp.nodes.defaults.numpy.mathematical.log2_node import Log2Node
+from cvp.nodes.defaults.numpy.mathematical.log10_node import Log10Node
 from cvp.nodes.defaults.numpy.mathematical.log_node import LogNode
 from cvp.nodes.defaults.numpy.mathematical.maximum_node import MaximumNode
 from cvp.nodes.defaults.numpy.mathematical.minimum_node import MinimumNode

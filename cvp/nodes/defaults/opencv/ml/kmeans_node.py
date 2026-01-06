@@ -60,7 +60,7 @@ class KMeansNode(OpenCVFunctionNode):
         self._input_pins = (data_pin, k_pin, attempts_pin, flags_pin)
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 20, 1.0)
         self._criteria = criteria
-        super().__init__.__bases__[0].__init__(
+        super().__init__(
             self,
             *self._input_pins,
             self._compactness_output,

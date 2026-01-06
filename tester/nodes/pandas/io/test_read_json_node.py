@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
-import tempfile
-import os
 import json
+import os
+import tempfile
 from io import StringIO
+from unittest import TestCase, main
 
 import pandas as pd
 
@@ -67,7 +67,7 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_orient_values(self):
         """Test reading JSON with 'values' orientation."""
-        json_data = '[[1, 2], [3, 4], [5, 6]]'
+        json_data = "[[1, 2], [3, 4], [5, 6]]"
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)
@@ -99,7 +99,7 @@ class ReadJsonNodeTestCase(TestCase):
         """Test reading JSON from temporary file."""
         data = {"X": [10, 40], "Y": [20, 50], "Z": [30, 60]}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(data, f)
             temp_path = f.name
 
@@ -117,10 +117,10 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_nested_data(self):
         """Test reading JSON with nested data."""
-        json_data = '''[
+        json_data = """[
             {"name": "Alice", "age": 25, "address": {"city": "NYC", "state": "NY"}},
             {"name": "Bob", "age": 30, "address": {"city": "LA", "state": "CA"}}
-        ]'''
+        ]"""
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)
@@ -151,10 +151,10 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_mixed_types(self):
         """Test reading JSON with mixed data types."""
-        json_data = '''[
+        json_data = """[
             {"str": "hello", "int": 1, "float": 1.5, "bool": true},
             {"str": "world", "int": 2, "float": 2.7, "bool": false}
-        ]'''
+        ]"""
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)
@@ -170,7 +170,7 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_empty_object(self):
         """Test reading empty JSON object."""
-        json_data = '{}'
+        json_data = "{}"
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)
@@ -182,7 +182,7 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_empty_array(self):
         """Test reading empty JSON array."""
-        json_data = '[]'
+        json_data = "[]"
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)
@@ -212,7 +212,9 @@ class ReadJsonNodeTestCase(TestCase):
 
     def test_read_json_large_numbers(self):
         """Test reading JSON with large numbers."""
-        json_data = '{"large_int": [1000000000, 2000000000], "large_float": [1.23e10, 4.56e15]}'
+        json_data = (
+            '{"large_int": [1000000000, 2000000000], "large_float": [1.23e10, 4.56e15]}'
+        )
         buffer = StringIO(json_data)
 
         self.record.set(self.node._path_pin, buffer)

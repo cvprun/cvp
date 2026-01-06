@@ -12,11 +12,9 @@ class SortValuesNodeTestCase(TestCase):
     def setUp(self):
         self.node = SortValuesNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [3, 1, 4, 2],
-            "B": [30, 10, 40, 20],
-            "C": ["c", "a", "d", "b"]
-        })
+        self.test_df = pd.DataFrame(
+            {"A": [3, 1, 4, 2], "B": [30, 10, 40, 20], "C": ["c", "a", "d", "b"]}
+        )
 
     def test_sort_by_single_column(self):
         """Test sorting by single column."""
@@ -32,11 +30,9 @@ class SortValuesNodeTestCase(TestCase):
 
     def test_sort_by_multiple_columns(self):
         """Test sorting by multiple columns."""
-        test_df = pd.DataFrame({
-            "A": [1, 2, 1, 2],
-            "B": [4, 3, 2, 1],
-            "C": ["d", "c", "b", "a"]
-        })
+        test_df = pd.DataFrame(
+            {"A": [1, 2, 1, 2], "B": [4, 3, 2, 1], "C": ["d", "c", "b", "a"]}
+        )
 
         self.record.set(self.node._dataframe_pin, test_df)
         self.record.set(self.node._additional_pins[0], ["A", "B"])  # by pin
@@ -45,14 +41,14 @@ class SortValuesNodeTestCase(TestCase):
 
         self.assertIsInstance(result, pd.DataFrame)
         # Should sort by A first, then B within each A group
-        expected = pd.DataFrame({
-            "A": [1, 1, 2, 2],
-            "B": [2, 4, 1, 3],
-            "C": ["b", "d", "a", "c"]
-        }, index=[2, 0, 3, 1])
+        expected = pd.DataFrame(
+            {"A": [1, 1, 2, 2], "B": [2, 4, 1, 3], "C": ["b", "d", "a", "c"]},
+            index=[2, 0, 3, 1],
+        )
 
-        pd.testing.assert_frame_equal(result.reset_index(drop=True),
-                                    expected.reset_index(drop=True))
+        pd.testing.assert_frame_equal(
+            result.reset_index(drop=True), expected.reset_index(drop=True)
+        )
 
     def test_sort_descending(self):
         """Test sorting in descending order."""
@@ -68,10 +64,12 @@ class SortValuesNodeTestCase(TestCase):
 
     def test_sort_mixed_ascending(self):
         """Test sorting with mixed ascending/descending."""
-        test_df = pd.DataFrame({
-            "A": [1, 2, 1, 2],
-            "B": [4, 3, 2, 1],
-        })
+        test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 1, 2],
+                "B": [4, 3, 2, 1],
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, test_df)
         self.record.set(self.node._additional_pins[0], ["A", "B"])  # by pin
@@ -99,10 +97,7 @@ class SortValuesNodeTestCase(TestCase):
 
     def test_sort_with_na_values(self):
         """Test sorting with NA values."""
-        test_df = pd.DataFrame({
-            "A": [3, None, 1, 2],
-            "B": [30, 50, 10, 20]
-        })
+        test_df = pd.DataFrame({"A": [3, None, 1, 2], "B": [30, 50, 10, 20]})
 
         self.record.set(self.node._dataframe_pin, test_df)
         self.record.set(self.node._additional_pins[0], "A")  # by pin

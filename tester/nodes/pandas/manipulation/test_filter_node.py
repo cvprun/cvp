@@ -12,12 +12,14 @@ class FilterNodeTestCase(TestCase):
     def setUp(self):
         self.node = FilterNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4, 5],
-            "B": [10, 20, 30, 40, 50],
-            "C": ["a", "b", "c", "d", "e"],
-            "D": [True, False, True, False, True]
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4, 5],
+                "B": [10, 20, 30, 40, 50],
+                "C": ["a", "b", "c", "d", "e"],
+                "D": [True, False, True, False, True],
+            }
+        )
 
     def test_filter_simple_condition(self):
         """Test filtering with simple numeric condition."""
@@ -89,10 +91,12 @@ class FilterNodeTestCase(TestCase):
     def test_filter_string_contains(self):
         """Test filtering with string contains."""
         # Add more complex string data
-        df_strings = pd.DataFrame({
-            "names": ["Alice Smith", "Bob Johnson", "Charlie Brown", "David Smith"],
-            "values": [10, 20, 30, 40]
-        })
+        df_strings = pd.DataFrame(
+            {
+                "names": ["Alice Smith", "Bob Johnson", "Charlie Brown", "David Smith"],
+                "values": [10, 20, 30, 40],
+            }
+        )
         condition = df_strings["names"].str.contains("Smith")
 
         self.record.set(self.node._dataframe_pin, df_strings)
@@ -132,10 +136,9 @@ class FilterNodeTestCase(TestCase):
 
     def test_filter_with_na_values(self):
         """Test filtering with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4, 5],
-            "B": [10, None, 30, 40, 50]
-        })
+        df_with_na = pd.DataFrame(
+            {"A": [1, 2, None, 4, 5], "B": [10, None, 30, 40, 50]}
+        )
         condition = df_with_na["A"] > 2
 
         self.record.set(self.node._dataframe_pin, df_with_na)

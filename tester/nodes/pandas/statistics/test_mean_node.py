@@ -12,11 +12,9 @@ class MeanNodeTestCase(TestCase):
     def setUp(self):
         self.node = MeanNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4],
-            "B": [10, 20, 30, 40],
-            "C": [1.5, 2.5, 3.5, 4.5]
-        })
+        self.test_df = pd.DataFrame(
+            {"A": [1, 2, 3, 4], "B": [10, 20, 30, 40], "C": [1.5, 2.5, 3.5, 4.5]}
+        )
 
     def test_mean_default(self):
         """Test mean calculation with default settings."""
@@ -27,7 +25,7 @@ class MeanNodeTestCase(TestCase):
         self.assertIsInstance(result, pd.Series)
         self.assertEqual(result["A"], 2.5)  # (1+2+3+4)/4
         self.assertEqual(result["B"], 25.0)  # (10+20+30+40)/4
-        self.assertEqual(result["C"], 3.0)   # (1.5+2.5+3.5+4.5)/4
+        self.assertEqual(result["C"], 3.0)  # (1.5+2.5+3.5+4.5)/4
 
     def test_mean_axis_0(self):
         """Test mean calculation along axis 0 (rows)."""
@@ -57,11 +55,9 @@ class MeanNodeTestCase(TestCase):
 
     def test_mean_with_na_values(self):
         """Test mean calculation with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4],
-            "B": [10, None, 30, 40],
-            "C": [1.0, 2.0, 3.0, 4.0]
-        })
+        df_with_na = pd.DataFrame(
+            {"A": [1, 2, None, 4], "B": [10, None, 30, 40], "C": [1.0, 2.0, 3.0, 4.0]}
+        )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.node.run(self.record)
@@ -77,10 +73,7 @@ class MeanNodeTestCase(TestCase):
 
     def test_mean_skipna_false(self):
         """Test mean calculation without skipping NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, 2, None, 4],
-            "B": [10, 20, 30, 40]
-        })
+        df_with_na = pd.DataFrame({"A": [1, 2, None, 4], "B": [10, 20, 30, 40]})
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.record.set(self.node._additional_pins[1], False)  # skipna pin
@@ -130,11 +123,18 @@ class MeanNodeTestCase(TestCase):
 
     def test_mean_mixed_types(self):
         """Test mean calculation with mixed numeric types."""
-        mixed_df = pd.DataFrame({
-            "integers": [1, 2, 3, 4],
-            "floats": [1.1, 2.2, 3.3, 4.4],
-            "booleans": [True, False, True, False]  # Should be treated as 1, 0, 1, 0
-        })
+        mixed_df = pd.DataFrame(
+            {
+                "integers": [1, 2, 3, 4],
+                "floats": [1.1, 2.2, 3.3, 4.4],
+                "booleans": [
+                    True,
+                    False,
+                    True,
+                    False,
+                ],  # Should be treated as 1, 0, 1, 0
+            }
+        )
 
         self.record.set(self.node._dataframe_pin, mixed_df)
         self.node.run(self.record)

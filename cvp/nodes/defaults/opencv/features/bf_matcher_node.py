@@ -46,7 +46,7 @@ class BFMatcherNode(OpenCVFunctionNode):
         # Initialize with custom functionality
         self._function_name = "BFMatcher_match"
         self._input_pins = (desc1_pin, desc2_pin, normtype_pin, crosscheck_pin, k_pin)
-        super().__init__.__bases__[0].__init__(self, *self._input_pins)
+        super().__init__(self, *self._input_pins)
 
     def apply_function(
         self, queryDescriptors, trainDescriptors, normType, crossCheck, k, **kwargs

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
-import tempfile
 import os
+import tempfile
 from io import StringIO
+from unittest import TestCase, main
 
 import pandas as pd
 
@@ -15,11 +15,9 @@ class ToCsvNodeTestCase(TestCase):
     def setUp(self):
         self.node = ToCsvNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3],
-            "B": [4, 5, 6],
-            "C": ["x", "y", "z"]
-        })
+        self.test_df = pd.DataFrame(
+            {"A": [1, 2, 3], "B": [4, 5, 6], "C": ["x", "y", "z"]}
+        )
 
     def test_to_csv_stringio(self):
         """Test writing DataFrame to StringIO buffer."""
@@ -52,17 +50,16 @@ class ToCsvNodeTestCase(TestCase):
         output = buffer.getvalue()
 
         # Should not contain index column (0,1,2)
-        lines = output.strip().split('\n')
+        lines = output.strip().split("\n")
         header_line = lines[0]
         # Header should start with column names, not index
         self.assertTrue(header_line.startswith("A,B,C"))
 
     def test_to_csv_with_index(self):
         """Test writing CSV with index (default behavior)."""
-        df_with_index = pd.DataFrame({
-            "X": [10, 20],
-            "Y": [30, 40]
-        }, index=["row1", "row2"])
+        df_with_index = pd.DataFrame(
+            {"X": [10, 20], "Y": [30, 40]}, index=["row1", "row2"]
+        )
 
         buffer = StringIO()
 
@@ -111,7 +108,7 @@ class ToCsvNodeTestCase(TestCase):
 
     def test_to_csv_tempfile(self):
         """Test writing CSV to temporary file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
             temp_path = f.name
 
         try:
@@ -123,7 +120,7 @@ class ToCsvNodeTestCase(TestCase):
             self.assertTrue(os.path.exists(temp_path))
 
             # Read back and verify contents
-            with open(temp_path, 'r') as f:
+            with open(temp_path, "r") as f:
                 content = f.read()
 
             self.assertIn("A,B,C", content)
@@ -135,11 +132,9 @@ class ToCsvNodeTestCase(TestCase):
 
     def test_to_csv_with_missing_values(self):
         """Test writing CSV with NaN values."""
-        df_with_na = pd.DataFrame({
-            "A": [1, None, 3],
-            "B": [None, 5, 6],
-            "C": ["x", "y", None]
-        })
+        df_with_na = pd.DataFrame(
+            {"A": [1, None, 3], "B": [None, 5, 6], "C": ["x", "y", None]}
+        )
 
         buffer = StringIO()
 
@@ -205,10 +200,9 @@ class ToCsvNodeTestCase(TestCase):
 
     def test_to_csv_with_special_characters(self):
         """Test writing CSV with special characters."""
-        special_df = pd.DataFrame({
-            "text": ["hello,world", "line\nbreak", 'quote"test'],
-            "numbers": [1, 2, 3]
-        })
+        special_df = pd.DataFrame(
+            {"text": ["hello,world", "line\nbreak", 'quote"test'], "numbers": [1, 2, 3]}
+        )
 
         buffer = StringIO()
 
@@ -224,11 +218,13 @@ class ToCsvNodeTestCase(TestCase):
 
     def test_to_csv_numeric_types(self):
         """Test writing CSV with various numeric types."""
-        numeric_df = pd.DataFrame({
-            "integers": [1, 2, 3],
-            "floats": [1.1, 2.2, 3.3],
-            "large_numbers": [1000000, 2000000, 3000000]
-        })
+        numeric_df = pd.DataFrame(
+            {
+                "integers": [1, 2, 3],
+                "floats": [1.1, 2.2, 3.3],
+                "large_numbers": [1000000, 2000000, 3000000],
+            }
+        )
 
         buffer = StringIO()
 
@@ -245,10 +241,8 @@ class ToCsvNodeTestCase(TestCase):
 
     def test_to_csv_with_multi_index(self):
         """Test writing CSV with MultiIndex."""
-        arrays = [['A', 'A', 'B', 'B'], [1, 2, 1, 2]]
-        multi_df = pd.DataFrame({
-            'values': [10, 20, 30, 40]
-        }, index=arrays)
+        arrays = [["A", "A", "B", "B"], [1, 2, 1, 2]]
+        multi_df = pd.DataFrame({"values": [10, 20, 30, 40]}, index=arrays)
 
         buffer = StringIO()
 

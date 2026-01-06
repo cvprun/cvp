@@ -12,12 +12,14 @@ class GroupByNodeTestCase(TestCase):
     def setUp(self):
         self.node = GroupByNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "category": ["A", "B", "A", "B", "A", "C"],
-            "value1": [10, 20, 15, 25, 12, 30],
-            "value2": [1, 2, 3, 4, 5, 6],
-            "group_col": ["X", "Y", "X", "Y", "X", "Z"]
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "category": ["A", "B", "A", "B", "A", "C"],
+                "value1": [10, 20, 15, 25, 12, 30],
+                "value2": [1, 2, 3, 4, 5, 6],
+                "group_col": ["X", "Y", "X", "Y", "X", "Z"],
+            }
+        )
 
     def test_groupby_single_column(self):
         """Test groupby with single column."""
@@ -74,6 +76,7 @@ class GroupByNodeTestCase(TestCase):
 
     def test_groupby_with_lambda(self):
         """Test groupby with lambda function."""
+
         # Create simple test for lambda - group by whether value1 is > 15
         def group_func(x):
             return "high" if x > 15 else "low"
@@ -162,10 +165,9 @@ class GroupByNodeTestCase(TestCase):
 
     def test_groupby_single_group(self):
         """Test groupby where all rows belong to same group."""
-        single_group_df = pd.DataFrame({
-            "category": ["A", "A", "A"],
-            "value": [1, 2, 3]
-        })
+        single_group_df = pd.DataFrame(
+            {"category": ["A", "A", "A"], "value": [1, 2, 3]}
+        )
 
         self.record.set(self.node._dataframe_pin, single_group_df)
         self.record.set(self.node._by_pin, "category")
@@ -182,10 +184,9 @@ class GroupByNodeTestCase(TestCase):
 
     def test_groupby_with_na_values(self):
         """Test groupby with NaN values in grouping column."""
-        df_with_na = pd.DataFrame({
-            "category": ["A", None, "A", "B", None],
-            "value": [1, 2, 3, 4, 5]
-        })
+        df_with_na = pd.DataFrame(
+            {"category": ["A", None, "A", "B", None], "value": [1, 2, 3, 4, 5]}
+        )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
         self.record.set(self.node._by_pin, "category")
@@ -214,10 +215,12 @@ class GroupByNodeTestCase(TestCase):
 
     def test_groupby_datetime_grouping(self):
         """Test groupby with datetime data."""
-        datetime_df = pd.DataFrame({
-            "date": pd.date_range("2023-01-01", periods=6, freq="D"),
-            "value": [1, 2, 3, 4, 5, 6]
-        })
+        datetime_df = pd.DataFrame(
+            {
+                "date": pd.date_range("2023-01-01", periods=6, freq="D"),
+                "value": [1, 2, 3, 4, 5, 6],
+            }
+        )
         # Group by day of week
         datetime_df["day_of_week"] = datetime_df["date"].dt.day_name()
 

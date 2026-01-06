@@ -233,7 +233,7 @@ class TestLogicNodes(TestCase):
     def test_type_testing(self):
         """Test type testing nodes."""
         # Test isreal
-        complex_array = np.array([1+0j, 2+3j, 4+0j])
+        complex_array = np.array([1 + 0j, 2 + 3j, 4 + 0j])
         isreal_node = IsrealNode()
         self.record.set(isreal_node._input_pins[0], complex_array)
         isreal_node.run(self.record)
@@ -335,13 +335,9 @@ class TestLogicNodes(TestCase):
         condlist = [
             np.array([True, False, False]),
             np.array([False, True, False]),
-            np.array([False, False, True])
+            np.array([False, False, True]),
         ]
-        choicelist = [
-            np.array([1, 1, 1]),
-            np.array([2, 2, 2]),
-            np.array([3, 3, 3])
-        ]
+        choicelist = [np.array([1, 1, 1]), np.array([2, 2, 2]), np.array([3, 3, 3])]
 
         self.record.set(select_node._input_pins[0], condlist)
         self.record.set(select_node._input_pins[1], choicelist)
@@ -356,7 +352,7 @@ class TestLogicNodes(TestCase):
         isnat_node = IsnatNode()
 
         # Create datetime array with NaT values
-        dt_array = np.array(['2023-01-01', 'NaT', '2023-12-31'], dtype='datetime64')
+        dt_array = np.array(["2023-01-01", "NaT", "2023-12-31"], dtype="datetime64")
         self.record.set(isnat_node._input_pins[0], dt_array)
         isnat_node.run(self.record)
         result = self.record.get(isnat_node._output)

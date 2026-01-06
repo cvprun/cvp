@@ -12,12 +12,14 @@ class SelectNodeTestCase(TestCase):
     def setUp(self):
         self.node = SelectNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4],
-            "B": [5, 6, 7, 8],
-            "C": [9, 10, 11, 12],
-            "D": ["a", "b", "c", "d"]
-        })
+        self.test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4],
+                "B": [5, 6, 7, 8],
+                "C": [9, 10, 11, 12],
+                "D": ["a", "b", "c", "d"],
+            }
+        )
 
     def test_select_single_column(self):
         """Test selecting a single column."""

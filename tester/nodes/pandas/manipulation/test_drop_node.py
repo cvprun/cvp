@@ -12,12 +12,15 @@ class DropNodeTestCase(TestCase):
     def setUp(self):
         self.node = DropNode()
         self.record = NodeRecord.empty()
-        self.test_df = pd.DataFrame({
-            "A": [1, 2, 3, 4],
-            "B": [5, 6, 7, 8],
-            "C": [9, 10, 11, 12],
-            "D": ["a", "b", "c", "d"]
-        }, index=["row1", "row2", "row3", "row4"])
+        self.test_df = pd.DataFrame(
+            {
+                "A": [1, 2, 3, 4],
+                "B": [5, 6, 7, 8],
+                "C": [9, 10, 11, 12],
+                "D": ["a", "b", "c", "d"],
+            },
+            index=["row1", "row2", "row3", "row4"],
+        )
 
     def test_drop_single_column(self):
         """Test dropping a single column."""

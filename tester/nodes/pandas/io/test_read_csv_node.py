@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
-import tempfile
 import os
+import tempfile
 from io import StringIO
+from unittest import TestCase, main
 
 import pandas as pd
 
@@ -91,7 +91,7 @@ class ReadCsvNodeTestCase(TestCase):
 
     def test_read_csv_from_tempfile(self):
         """Test reading CSV from temporary file."""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".csv", delete=False) as f:
             f.write("X,Y,Z\n10,20,30\n40,50,60")
             temp_path = f.name
 
@@ -123,7 +123,11 @@ class ReadCsvNodeTestCase(TestCase):
 
     def test_read_csv_with_quoted_fields(self):
         """Test reading CSV with quoted fields."""
-        csv_data = 'name,description,value\nitem1,"A long, detailed description",100\nitem2,"Another description",200'
+        csv_data = (
+            "name,description,value\n"
+            'item1,"A long, detailed description",100\n'
+            'item2,"Another description",200'
+        )
         buffer = StringIO(csv_data)
 
         self.record.set(self.node._filepath_pin, buffer)
@@ -136,7 +140,9 @@ class ReadCsvNodeTestCase(TestCase):
 
     def test_read_csv_mixed_data_types(self):
         """Test reading CSV with mixed data types."""
-        csv_data = "string_col,int_col,float_col,bool_col\ntest,1,1.5,True\nhello,2,2.7,False"
+        csv_data = (
+            "string_col,int_col,float_col,bool_col\ntest,1,1.5,True\nhello,2,2.7,False"
+        )
         buffer = StringIO(csv_data)
 
         self.record.set(self.node._filepath_pin, buffer)

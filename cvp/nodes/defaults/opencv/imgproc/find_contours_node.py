@@ -47,7 +47,7 @@ class FindContoursNode(OpenCVFunctionNode):
         # Initialize with custom pins
         self._function_name = "findContours"
         self._input_pins = (image_pin, mode_pin, method_pin)
-        super().__init__.__bases__[0].__init__(
+        super().__init__(
             self, *self._input_pins, self._contours_output, self._hierarchy_output
         )
 
