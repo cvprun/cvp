@@ -55,7 +55,7 @@ mdurl==0.1.2
 more-itertools==10.7.0
 multidict==6.4.4
 munch==4.0.0
-mypy==1.15.0
+mypy==1.17.0
 mypy_extensions==1.1.0
 nh3==0.2.21
 numpy==2.0.1
@@ -65,6 +65,7 @@ opencv-python-headless==4.10.0.84
 orjson==3.10.15
 overrides==7.7.0
 packaging==25.0
+pandas==2.3.3
 paramiko==3.5.1
 parso==0.8.4
 pathspec==0.12.1
@@ -80,7 +81,7 @@ pycparser==2.22
 pycryptodome==3.23.0
 pydantic==2.11.5
 pydantic_core==2.33.2
-pydevd-pycharm==251.21418.69
+pydevd-pycharm==252.23309.36
 pyflakes==3.2.0
 pygame-ce==2.5.3
 Pygments==2.19.1
