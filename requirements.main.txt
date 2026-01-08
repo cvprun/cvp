@@ -19,6 +19,7 @@ pandas==2.3.3
 pillow==11.1.0
 platformdirs==4.3.8
 plumbum==1.9.0
+protobuf==6.33.2
 psutil==7.0.0
 pygame-ce==2.5.3
 pystray==0.19.5
@@ -34,5 +35,6 @@ tzdata==2025.2
 uvloop==0.21.0
 watchdog==6.0.0
 wcwidth==0.2.13
+websockets==14.2
 yaml-translator==1.0.1
 zeep==4.3.1

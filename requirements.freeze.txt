@@ -75,6 +75,7 @@ pluggy==1.6.0
 plumbum==1.9.0
 postgrest==1.0.2
 propcache==0.3.2
+protobuf==6.33.2
 psutil==7.0.0
 pycodestyle==2.12.1
 pycparser==2.22
