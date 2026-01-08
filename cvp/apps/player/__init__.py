@@ -14,7 +14,7 @@ def player_main(args: Namespace) -> None:
 
     # You can modify the 'PYOPENGL_USE_ACCELERATE' environment variable
     # when initializing the 'Context' class.
-    context = Context(args.home)
+    context = Context(args.home, detect_opengl=True)
 
     # The value of 'OpenGL.acceleratesupport.ACCELERATE_AVAILABLE' may change
     # due to the 'PYOPENGL_USE_ACCELERATE' environment variable.
