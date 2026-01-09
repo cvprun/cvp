@@ -55,6 +55,13 @@ Simply usage:
   {PROG} {CMD_AGENT}
 """
 
+CMD_CLI: Final[str] = "cli"
+CMD_CLI_HELP: Final[str] = "Command-line interface"
+CMD_CLI_EPILOG = f"""
+Simply usage:
+  {PROG} {CMD_CLI}
+"""
+
 CMD_TESTER: Final[str] = "tester"
 CMD_TESTER_HELP: Final[str] = "Configuration tester"
 CMD_TESTER_EPILOG = f"""
@@ -62,7 +69,7 @@ Simply usage:
   {PROG} {CMD_TESTER}
 """
 
-CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT, CMD_TESTER
+CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT, CMD_CLI, CMD_TESTER
 DEFAULT_CMD: Final[str] = CMD_PLAYER
 
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
@@ -286,6 +293,17 @@ def add_agent_parser(subparsers) -> None:
     assert isinstance(parser, ArgumentParser)
 
 
+def add_cli_parser(subparsers) -> None:
+    # noinspection SpellCheckingInspection
+    parser = subparsers.add_parser(
+        name=CMD_CLI,
+        help=CMD_CLI_HELP,
+        formatter_class=RawDescriptionHelpFormatter,
+        epilog=CMD_CLI_EPILOG,
+    )
+    assert isinstance(parser, ArgumentParser)
+
+
 def add_tester_parser(subparsers) -> None:
     # noinspection SpellCheckingInspection
     parser = subparsers.add_parser(
@@ -326,6 +344,7 @@ def default_argument_parser() -> ArgumentParser:
     add_player_parser(subparsers)
     add_worker_parser(subparsers)
     add_agent_parser(subparsers)
+    add_cli_parser(subparsers)
     add_tester_parser(subparsers)
 
     return parser

@@ -6,10 +6,11 @@ from functools import lru_cache
 from typing import Callable, Dict
 
 from cvp.apps.agent import agent_main
+from cvp.apps.cli import cli_main
 from cvp.apps.player import player_main
 from cvp.apps.tester import tester_main
 from cvp.apps.worker import worker_main
-from cvp.arguments import CMD_AGENT, CMD_PLAYER, CMD_TESTER, CMD_WORKER
+from cvp.arguments import CMD_AGENT, CMD_CLI, CMD_PLAYER, CMD_TESTER, CMD_WORKER
 from cvp.context.autofixer import AutoFixerError
 from cvp.logging.loggers import logger
 
@@ -18,6 +19,7 @@ from cvp.logging.loggers import logger
 def cmd_apps() -> Dict[str, Callable[[Namespace], None]]:
     return {
         CMD_AGENT: agent_main,
+        CMD_CLI: cli_main,
         CMD_PLAYER: player_main,
         CMD_TESTER: tester_main,
         CMD_WORKER: worker_main,
