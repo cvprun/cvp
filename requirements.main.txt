@@ -11,7 +11,7 @@ grpcio-tools==1.76.0
 grpcio==1.76.0
 httpx==0.28.1
 imgui-bundle==1.6.2
-keyring==25.6.0
+keyring==25.7.0
 numpy==2.0.1
 ollama==0.4.7
 openai==1.72.0
