@@ -26,6 +26,8 @@ fonttools==4.54.1
 frozenlist==1.7.0
 glfw==2.9.0
 gotrue==2.12.0
+grpcio==1.76.0
+grpcio-tools==1.76.0
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
@@ -56,6 +58,7 @@ more-itertools==10.7.0
 multidict==6.4.4
 munch==4.0.0
 mypy==1.17.0
+mypy-protobuf==4.0.0
 mypy_extensions==1.1.0
 nh3==0.2.21
 numpy==2.0.1
@@ -126,6 +129,7 @@ twine==6.1.0
 type-serialize==2.1.0
 types-croniter==6.0.0.20250411
 types-paramiko==3.5.0.20250516
+types-protobuf==6.32.1.20251210
 types-PyYAML==6.0.12.20250516
 types-requests==2.32.0.20250602
 typing-inspection==0.4.1

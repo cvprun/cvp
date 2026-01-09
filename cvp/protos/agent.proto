@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package cvp.protos;
+
+service Agent {
+    rpc Heartbeat (Pit) returns (Pat) {}
+}
+
+message Pit {
+    float delay = 1;
+}
+
+message Pat {
+    bool ok = 1;
+}

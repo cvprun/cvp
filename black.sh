@@ -60,7 +60,7 @@ while [[ -n $1 ]]; do
     esac
 done
 
-ARGS=("--exclude=(/\.git|/\.venv)")
+ARGS=("--exclude=(.*_pb2(_grpc)?\.py(i)?$|/\.git|/\.venv)")
 if [[ $FIX_FLAG -eq 0 ]]; then
     ARGS+=("--check" "--diff" "--color")
 fi
