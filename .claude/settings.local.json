@@ -22,5 +22,35 @@
       "Bash(./python:*)",
       "Bash(./run:*)"
     ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'Claude Code CVP' 'Awaiting your input'"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "(Write|Edit)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "./black.sh --fix",
+            "statusMessage": "Formatting code..."
+          },
+          {
+            "type": "command",
+            "command": "./isort.sh --fix",
+            "statusMessage": "Import sorting and fixing code..."
+          }
+        ]
+      }
+    ]
   }
 }
