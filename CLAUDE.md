@@ -107,6 +107,12 @@ Key environment variables (see `cvp/system/environ_keys.py`):
 - Type checking with mypy
 - All scripts use `# -*- coding: utf-8 -*-` headers
 
+#### Coding Guidelines
+- **One class per file**: Prefer organizing code with one class per file for better modularity and maintainability
+- **Explicit imports**: Use `from ... import SpecificName` instead of `import package` to explicitly specify what is being used
+  - Example: `from typing import List, Dict` instead of `import typing`
+  - This improves code clarity and makes dependencies more explicit
+
 ### Testing Structure
 - Tests are in the `tester/` directory (excluded from package)
 - Coverage reporting configured to `build/cov/`
