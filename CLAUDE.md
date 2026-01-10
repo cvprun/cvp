@@ -115,6 +115,11 @@ Key environment variables (see `cvp/system/environ_keys.py`):
 - **Explicit imports**: Use `from ... import SpecificName` instead of `import package` to explicitly specify what is being used
   - Example: `from typing import List, Dict` instead of `import typing`
   - This improves code clarity and makes dependencies more explicit
+- **Type annotations**: Apply type annotations using the `typing` module wherever possible
+  - Add type hints to function parameters, return values, and class attributes
+  - Example: `def process(data: List[str]) -> Dict[str, int]:`
+  - Use modern typing features from Python 3.12+ (e.g., `list[str]` is acceptable, but `List[str]` from typing is preferred for consistency)
+  - This improves code maintainability and enables better static type checking with mypy
 - **Test file creation**: When creating a class in `cvp/`, create a corresponding test file in `tester/` following the pattern `test_{name}.py`
   - Example: If creating `cvp/module/foo.py`, create `tester/module/test_foo.py`
   - Test files should mirror the source structure for easy navigation and maintenance
