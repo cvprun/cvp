@@ -27,6 +27,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Testing
 - `./pytest.sh` - Run all tests in the `tester/` directory
+- `./pytest.sh {path}` - Run specific test file or directory
+  - Example: `./pytest.sh tester/module/test_foo.py` - Run specific test file
+  - Example: `./pytest.sh tester/module/` - Run all tests in a module directory
 - Test configuration in `pytest.ini` with coverage reporting to `build/cov/`
 - Tests organized by modules: `tester/dtypes/`, `tester/context/`, etc.
 
@@ -112,6 +115,9 @@ Key environment variables (see `cvp/system/environ_keys.py`):
 - **Explicit imports**: Use `from ... import SpecificName` instead of `import package` to explicitly specify what is being used
   - Example: `from typing import List, Dict` instead of `import typing`
   - This improves code clarity and makes dependencies more explicit
+- **Test file creation**: When creating a class in `cvp/`, create a corresponding test file in `tester/` following the pattern `test_{name}.py`
+  - Example: If creating `cvp/module/foo.py`, create `tester/module/test_foo.py`
+  - Test files should mirror the source structure for easy navigation and maintenance
 
 ### Testing Structure
 - Tests are in the `tester/` directory (excluded from package)
