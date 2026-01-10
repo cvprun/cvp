@@ -30,8 +30,12 @@ ARGS=(
     "--cov-config=${ROOT_DIR}/pytest.ini"
 )
 
+if [[ ${#*} -eq 0 ]]; then
+    ARGS+=("$ROOT_DIR/tester/")
+else
+    ARGS+=("$@")
+fi
+
 print_message "pytest ${ARGS[*]} $*"
 
-"$ROOT_DIR/python" -m pytest "${ARGS[@]}" \
-     "$ROOT_DIR/tester/" \
-     "$@"
+"$ROOT_DIR/python" -m pytest "${ARGS[@]}"
