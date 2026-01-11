@@ -3,9 +3,9 @@
 import asyncio
 from typing import Optional
 
-from cvp.apps.agent.ws_client import WebSocketClient
 from cvp.context.context import Context
 from cvp.logging.loggers import logger
+from cvp.ws.asyncio.client import WebSocketClient
 
 
 class AgentApplication:
@@ -42,6 +42,10 @@ class AgentApplication:
 
     async def _run(self) -> None:
         """비동기 실행 로직"""
+        if not self._ws_client:
+            logger.error("WebSocket 클라이언트가 초기화되지 않았습니다")
+            return
+
         try:
             # WebSocket 클라이언트 시작
             await self._ws_client.start()

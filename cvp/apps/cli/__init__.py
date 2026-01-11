@@ -12,7 +12,7 @@ def cli_main(args: Namespace) -> None:
 
     # [IMPORTANT]
     # Do not change the import order!
-    from cvp.apps.agent.cli import CliApplication
+    from cvp.apps.cli.app import CliApplication
 
     app = CliApplication(context)
     app.start()

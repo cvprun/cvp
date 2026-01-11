@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
-from typing import Optional
+from typing import Any, Optional
 
 import websockets
-from websockets.client import WebSocketClientProtocol
 
 from cvp.logging.loggers import logger
 
@@ -20,7 +19,7 @@ class WebSocketClient:
         """
         self._uri = uri
         self._reconnect_interval = reconnect_interval
-        self._ws: Optional[WebSocketClientProtocol] = None
+        self._ws: Optional[Any] = None
         self._running = False
         self._reconnect_task: Optional[asyncio.Task] = None
 
@@ -117,4 +116,7 @@ class WebSocketClient:
     @property
     def is_connected(self) -> bool:
         """연결 상태 확인"""
-        return self._ws is not None and not self._ws.closed
+        if self._ws is None:
+            return False
+        # websockets 라이브러리 버전에 따라 closed 속성이 없을 수 있음
+        return not getattr(self._ws, "closed", False)
