@@ -36,6 +36,6 @@ else
     ARGS+=("$@")
 fi
 
-print_message "pytest ${ARGS[*]} $*"
+print_message "pytest ${ARGS[*]}"
 
 "$ROOT_DIR/python" -m pytest "${ARGS[@]}"

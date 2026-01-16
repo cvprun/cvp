@@ -24,11 +24,17 @@ trap on_interrupt_trap INT
 
 ARGS=("--config-file=${ROOT_DIR}/mypy.ini")
 
+if [[ ${#*} -eq 0 ]]; then
+    ARGS+=(
+        "$ROOT_DIR/cvp/"
+        "$ROOT_DIR/demos/"
+        "$ROOT_DIR/tester/"
+        "$ROOT_DIR/setup.py"
+    )
+else
+    ARGS+=("$@")
+fi
+
 print_message "mypy ${ARGS[*]}"
 
-"$ROOT_DIR/python" -m mypy "${ARGS[@]}" \
-    "$ROOT_DIR/cvp/" \
-    "$ROOT_DIR/demos/" \
-    "$ROOT_DIR/tester/" \
-    "$ROOT_DIR/setup.py" \
-    "$@"
+"$ROOT_DIR/python" -m mypy "${ARGS[@]}"

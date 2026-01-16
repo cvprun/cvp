@@ -6,10 +6,11 @@
       "Bash(./black.sh --fix)",
       "Bash(./isort.sh)",
       "Bash(./isort.sh --fix)",
-      "Bash(./flake8.sh)",
-      "Bash(./mypy.sh)",
-      "Bash(./pytest.sh)",
+      "Bash(./flake8.sh:*)",
+      "Bash(./mypy.sh:*)",
+      "Bash(./pytest.sh:*)",
       "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.anthropic.com)",
       "WebSearch"
     ],
     "deny": [

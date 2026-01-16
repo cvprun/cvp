@@ -24,10 +24,17 @@ trap on_interrupt_trap INT
 
 ARGS=("--config=${ROOT_DIR}/flake8.ini")
 
+if [[ ${#*} -eq 0 ]]; then
+    ARGS+=(
+        "$ROOT_DIR/cvp/"
+        "$ROOT_DIR/demos/"
+        "$ROOT_DIR/tester/"
+        "$ROOT_DIR/setup.py"
+    )
+else
+    ARGS+=("$@")
+fi
+
 print_message "flake8 ${ARGS[*]}"
 
-"$ROOT_DIR/python" -m flake8 "${ARGS[@]}" \
-    "$ROOT_DIR/cvp/" \
-    "$ROOT_DIR/demos/" \
-    "$ROOT_DIR/tester/" \
-    "$ROOT_DIR/setup.py"
+"$ROOT_DIR/python" -m flake8 "${ARGS[@]}"
