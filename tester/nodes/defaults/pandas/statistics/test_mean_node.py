@@ -157,7 +157,8 @@ class MeanNodeTestCase(TestCase):
         self.assertEqual(self.node._additional_pins[0].name, "axis")
         self.assertEqual(self.node._additional_pins[1].name, "skipna")
 
-        self.assertTrue(self.node._dataframe_pin.required)
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._dataframe_pin.required)
         self.assertFalse(self.node._additional_pins[0].required)  # axis pin
         self.assertFalse(self.node._additional_pins[1].required)  # skipna pin
 

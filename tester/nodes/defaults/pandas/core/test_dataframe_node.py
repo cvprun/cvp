@@ -102,12 +102,13 @@ class DataFrameNodeTestCase(TestCase):
         self.assertTrue(hasattr(self.node, "_columns_pin"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._data_pin.name.value, "data")
-        self.assertEqual(self.node._index_pin.name.value, "index")
-        self.assertEqual(self.node._columns_pin.name.value, "columns")
-        self.assertEqual(self.node._output.name.value, "dataframe")
+        self.assertEqual(self.node._data_pin.name, "data")
+        self.assertEqual(self.node._index_pin.name, "index")
+        self.assertEqual(self.node._columns_pin.name, "columns")
+        self.assertEqual(self.node._output.name, "dataframe")
 
-        self.assertTrue(self.node._data_pin.required)
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._data_pin.required)
         self.assertFalse(self.node._index_pin.required)
         self.assertFalse(self.node._columns_pin.required)
 

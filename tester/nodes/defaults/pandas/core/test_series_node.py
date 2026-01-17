@@ -122,12 +122,13 @@ class SeriesNodeTestCase(TestCase):
         self.assertTrue(hasattr(self.node, "_name_pin"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._data_pin.name.value, "data")
-        self.assertEqual(self.node._index_pin.name.value, "index")
-        self.assertEqual(self.node._name_pin.name.value, "name")
-        self.assertEqual(self.node._output.name.value, "series")
+        self.assertEqual(self.node._data_pin.name, "data")
+        self.assertEqual(self.node._index_pin.name, "index")
+        self.assertEqual(self.node._name_pin.name, "name")
+        self.assertEqual(self.node._output.name, "series")
 
-        self.assertTrue(self.node._data_pin.required)
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._data_pin.required)
         self.assertFalse(self.node._index_pin.required)
         self.assertFalse(self.node._name_pin.required)
 

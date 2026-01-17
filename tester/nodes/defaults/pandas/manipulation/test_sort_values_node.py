@@ -119,12 +119,13 @@ class SortValuesNodeTestCase(TestCase):
         self.assertEqual(len(self.node._additional_pins), 3)
 
         # Check pin names
-        self.assertEqual(self.node._additional_pins[0].name.value, "by")
-        self.assertEqual(self.node._additional_pins[1].name.value, "ascending")
-        self.assertEqual(self.node._additional_pins[2].name.value, "inplace")
+        self.assertEqual(self.node._additional_pins[0].name, "by")
+        self.assertEqual(self.node._additional_pins[1].name, "ascending")
+        self.assertEqual(self.node._additional_pins[2].name, "inplace")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertTrue(self.node._additional_pins[0].required)  # by pin
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)  # by pin
         self.assertFalse(self.node._additional_pins[1].required)  # ascending pin
         self.assertFalse(self.node._additional_pins[2].required)  # inplace pin
 

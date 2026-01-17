@@ -24,7 +24,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         # Reset buffer position to read from beginning
@@ -42,8 +42,8 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._path_pin, buffer)
-        self.record.set(self.node._index_pin, False)
+        self.record.set(self.node._additional_pins[0], buffer)
+        self.record.set(self.node._additional_pins[2], False)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -64,7 +64,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, df_with_index)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         # Don't set index_pin - should default to True
         self.node.run(self.record)
 
@@ -80,8 +80,8 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._path_pin, buffer)
-        self.record.set(self.node._sep_pin, ";")
+        self.record.set(self.node._additional_pins[0], buffer)
+        self.record.set(self.node._additional_pins[1], ";")
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -96,8 +96,8 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._path_pin, buffer)
-        self.record.set(self.node._sep_pin, "\t")
+        self.record.set(self.node._additional_pins[0], buffer)
+        self.record.set(self.node._additional_pins[1], "\t")
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -113,7 +113,7 @@ class ToCsvNodeTestCase(TestCase):
 
         try:
             self.record.set(self.node._dataframe_pin, self.test_df)
-            self.record.set(self.node._path_pin, temp_path)
+            self.record.set(self.node._additional_pins[0], temp_path)
             self.node.run(self.record)
 
             # Verify file was written
@@ -139,7 +139,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, df_with_na)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -156,7 +156,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, empty_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -172,7 +172,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, single_col_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -189,7 +189,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, single_row_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -207,7 +207,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, special_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -229,7 +229,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, numeric_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -247,7 +247,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, multi_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         self.node.run(self.record)
 
         buffer.seek(0)
@@ -261,7 +261,7 @@ class ToCsvNodeTestCase(TestCase):
         buffer = StringIO()
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._path_pin, buffer)
+        self.record.set(self.node._additional_pins[0], buffer)
         result = self.node.run(self.record)
 
         # The to_csv method typically returns None
@@ -271,19 +271,22 @@ class ToCsvNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_path_pin"))
-        self.assertTrue(hasattr(self.node, "_sep_pin"))
-        self.assertTrue(hasattr(self.node, "_index_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._path_pin.name.value, "path_or_buf")
-        self.assertEqual(self.node._sep_pin.name.value, "sep")
-        self.assertEqual(self.node._index_pin.name.value, "index")
+        # Should have 3 additional pins: path_or_buf, sep, index
+        self.assertEqual(len(self.node._additional_pins), 3)
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertTrue(self.node._path_pin.required)
-        self.assertFalse(self.node._sep_pin.required)
-        self.assertFalse(self.node._index_pin.required)
+        # Check pin names
+        self.assertEqual(self.node._additional_pins[0].name, "path_or_buf")
+        self.assertEqual(self.node._additional_pins[1].name, "sep")
+        self.assertEqual(self.node._additional_pins[2].name, "index")
+
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)  # path_or_buf
+        self.assertFalse(self.node._additional_pins[1].required)  # sep
+        self.assertFalse(self.node._additional_pins[2].required)  # index
 
 
 if __name__ == "__main__":

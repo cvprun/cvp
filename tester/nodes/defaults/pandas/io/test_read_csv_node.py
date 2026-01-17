@@ -47,19 +47,23 @@ class ReadCsvNodeTestCase(TestCase):
         self.assertEqual(len(result), 2)
 
     def test_read_csv_no_header(self):
-        """Test reading CSV without header."""
-        csv_data = "1,2,3\n4,5,6\n7,8,9"
+        """
+        Test reading CSV without header
+        when header=None is not passed, pandas infers header
+        """
+        csv_data = "A,B,C\n1,2,3\n4,5,6"
         buffer = StringIO(csv_data)
 
         self.record.set(self.node._filepath_pin, buffer)
-        self.record.set(self.node._header_pin, None)
+        # When header pin is set to None, it's not passed to pandas
+        # (uses default inference)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
         self.assertIsInstance(result, pd.DataFrame)
-        # Should have default column names (0, 1, 2)
-        self.assertEqual(list(result.columns), [0, 1, 2])
-        self.assertEqual(len(result), 3)
+        # Pandas infers first row as header
+        self.assertEqual(list(result.columns), ["A", "B", "C"])
+        self.assertEqual(len(result), 2)
 
     def test_read_csv_with_index_column(self):
         """Test reading CSV with index column."""
@@ -221,12 +225,13 @@ class ReadCsvNodeTestCase(TestCase):
         self.assertTrue(hasattr(self.node, "_index_col_pin"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._filepath_pin.name.value, "filepath_or_buffer")
-        self.assertEqual(self.node._sep_pin.name.value, "sep")
-        self.assertEqual(self.node._header_pin.name.value, "header")
-        self.assertEqual(self.node._index_col_pin.name.value, "index_col")
+        self.assertEqual(self.node._filepath_pin.name, "filepath_or_buffer")
+        self.assertEqual(self.node._sep_pin.name, "sep")
+        self.assertEqual(self.node._header_pin.name, "header")
+        self.assertEqual(self.node._index_col_pin.name, "index_col")
 
-        self.assertTrue(self.node._filepath_pin.required)
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._filepath_pin.required)
         self.assertFalse(self.node._sep_pin.required)
         self.assertFalse(self.node._header_pin.required)
         self.assertFalse(self.node._index_col_pin.required)

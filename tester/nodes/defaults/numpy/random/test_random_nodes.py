@@ -58,15 +58,14 @@ class TestRandomNodes(TestCase):
         self.assertEqual(result.shape, size)
         self.assertTrue(np.all((result >= 0) & (result < 1)))
 
-        # Test rand
+        # Test rand - node takes a single shape parameter as tuple
         self.record = NodeRecord.empty()
         rand_node = RandomRandNode()
-        d0, d1 = 3, 4
-        self.record.set(rand_node._input_pins[0], d0)
-        self.record.set(rand_node._input_pins[1], d1)
+        shape = (3, 4)
+        self.record.set(rand_node._input_pins[0], shape)
         rand_node.run(self.record)
         result = self.record.get(rand_node._output)
-        self.assertEqual(result.shape, (d0, d1))
+        self.assertEqual(result.shape, shape)
         self.assertTrue(np.all((result >= 0) & (result < 1)))
 
         # Test randn
@@ -303,8 +302,8 @@ class TestRandomNodes(TestCase):
         self.record.set(random_node._input_pins[0], ())
         random_node.run(self.record)
         result = self.record.get(random_node._output)
-        # Should return scalar
-        self.assertTrue(np.isscalar(result))
+        # Should return scalar or 0-d array
+        self.assertTrue(np.isscalar(result) or result.ndim == 0)
 
     def test_parameter_validation(self):
         """Test that nodes handle invalid parameters appropriately."""

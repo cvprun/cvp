@@ -30,13 +30,14 @@ class DescribeNodeTestCase(TestCase):
 
         self.assertIsInstance(result, pd.DataFrame)
 
-        # By default, describe only includes numeric columns
-        expected_cols = ["numeric_int", "numeric_float", "boolean_col"]
+        # By default, describe only includes numeric columns (int/float)
+        expected_cols = ["numeric_int", "numeric_float"]
         for col in expected_cols:
             self.assertIn(col, result.columns)
 
-        # Should not include string column by default
+        # Should not include string or boolean columns by default
         self.assertNotIn("string_col", result.columns)
+        self.assertNotIn("boolean_col", result.columns)
 
         # Should have standard statistical measures
         expected_stats = ["count", "mean", "std", "min", "25%", "50%", "75%", "max"]
@@ -63,7 +64,7 @@ class DescribeNodeTestCase(TestCase):
     def test_describe_include_all(self):
         """Test describe with include='all'."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._include_pin, "all")
+        self.record.set(self.node._additional_pins[0], "all")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -82,7 +83,7 @@ class DescribeNodeTestCase(TestCase):
     def test_describe_include_object(self):
         """Test describe with include='object'."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._include_pin, ["object"])
+        self.record.set(self.node._additional_pins[0], ["object"])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -96,7 +97,7 @@ class DescribeNodeTestCase(TestCase):
     def test_describe_exclude_int(self):
         """Test describe with exclude=['int64']."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._exclude_pin, ["int64"])
+        self.record.set(self.node._additional_pins[1], ["int64"])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -128,15 +129,12 @@ class DescribeNodeTestCase(TestCase):
         self.assertEqual(result.loc["count", "C"], 5.0)  # All non-null
 
     def test_describe_empty_dataframe(self):
-        """Test describe on empty DataFrame."""
+        """Test describe on empty DataFrame raises ValueError."""
         empty_df = pd.DataFrame()
 
         self.record.set(self.node._dataframe_pin, empty_df)
-        self.node.run(self.record)
-        result = self.record.get(self.node._output)
-
-        self.assertIsInstance(result, pd.DataFrame)
-        self.assertTrue(result.empty)
+        with self.assertRaises(ValueError):
+            self.node.run(self.record)
 
     def test_describe_single_column(self):
         """Test describe on single column DataFrame."""
@@ -186,7 +184,7 @@ class DescribeNodeTestCase(TestCase):
         )
 
         self.record.set(self.node._dataframe_pin, mixed_df)
-        self.record.set(self.node._include_pin, "all")
+        self.record.set(self.node._additional_pins[0], "all")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -221,16 +219,16 @@ class DescribeNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_include_pin"))
-        self.assertTrue(hasattr(self.node, "_exclude_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._additional_pins), 2)
 
-        self.assertEqual(self.node._include_pin.name.value, "include")
-        self.assertEqual(self.node._exclude_pin.name.value, "exclude")
+        self.assertEqual(self.node._additional_pins[0].name, "include")
+        self.assertEqual(self.node._additional_pins[1].name, "exclude")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertFalse(self.node._include_pin.required)
-        self.assertFalse(self.node._exclude_pin.required)
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)
+        self.assertFalse(self.node._additional_pins[1].required)
 
 
 if __name__ == "__main__":

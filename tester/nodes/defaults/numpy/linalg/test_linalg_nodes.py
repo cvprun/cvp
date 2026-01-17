@@ -213,7 +213,7 @@ class TestLinalgNodes(TestCase):
         self.record.set(eighvals_node._input_pins[0], symmetric_matrix)
         eighvals_node.run(self.record)
         result = self.record.get(eighvals_node._output)
-        expected = np.linalg.eighvals(symmetric_matrix)
+        expected = np.linalg.eigvalsh(symmetric_matrix)
         np.testing.assert_array_almost_equal(result, expected, decimal=5)
 
     def test_matrix_decompositions(self):

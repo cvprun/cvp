@@ -41,7 +41,7 @@ class StdNodeTestCase(TestCase):
     def test_std_axis_0(self):
         """Test std calculation along axis 0 (rows)."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -53,7 +53,7 @@ class StdNodeTestCase(TestCase):
         test_df = pd.DataFrame({"A": [1, 4, 7], "B": [2, 5, 8], "C": [3, 6, 9]})
 
         self.record.set(self.node._dataframe_pin, test_df)
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._additional_pins[0], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -68,7 +68,7 @@ class StdNodeTestCase(TestCase):
         simple_df = pd.DataFrame({"A": [1, 2, 3, 4, 5]})
 
         self.record.set(self.node._dataframe_pin, simple_df)
-        self.record.set(self.node._ddof_pin, 0)
+        self.record.set(self.node._additional_pins[2], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -105,7 +105,7 @@ class StdNodeTestCase(TestCase):
         df_with_na = pd.DataFrame({"A": [1, 2, None, 4], "B": [10, 20, 30, 40]})
 
         self.record.set(self.node._dataframe_pin, df_with_na)
-        self.record.set(self.node._skipna_pin, False)
+        self.record.set(self.node._additional_pins[1], False)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -133,7 +133,7 @@ class StdNodeTestCase(TestCase):
         single_df = pd.DataFrame({"A": [5]})
 
         self.record.set(self.node._dataframe_pin, single_df)
-        self.record.set(self.node._ddof_pin, 0)
+        self.record.set(self.node._additional_pins[2], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -179,19 +179,18 @@ class StdNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_axis_pin"))
-        self.assertTrue(hasattr(self.node, "_skipna_pin"))
-        self.assertTrue(hasattr(self.node, "_ddof_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._additional_pins), 3)
 
-        self.assertEqual(self.node._axis_pin.name.value, "axis")
-        self.assertEqual(self.node._skipna_pin.name.value, "skipna")
-        self.assertEqual(self.node._ddof_pin.name.value, "ddof")
+        self.assertEqual(self.node._additional_pins[0].name, "axis")
+        self.assertEqual(self.node._additional_pins[1].name, "skipna")
+        self.assertEqual(self.node._additional_pins[2].name, "ddof")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertFalse(self.node._axis_pin.required)
-        self.assertFalse(self.node._skipna_pin.required)
-        self.assertFalse(self.node._ddof_pin.required)
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)
+        self.assertFalse(self.node._additional_pins[1].required)
+        self.assertFalse(self.node._additional_pins[2].required)
 
 
 if __name__ == "__main__":

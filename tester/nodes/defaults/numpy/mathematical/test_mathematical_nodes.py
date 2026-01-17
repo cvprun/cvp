@@ -309,10 +309,10 @@ class TestMathematicalNodes(TestCase):
         result = self.record.get(positive_node._output)
         np.testing.assert_equal(result, -5)
 
-        # Test reciprocal
+        # Test reciprocal (use float to get float result)
         self.record = NodeRecord.empty()
         reciprocal_node = ReciprocalNode()
-        self.record.set(reciprocal_node._input_pins[0], 4)
+        self.record.set(reciprocal_node._input_pins[0], 4.0)
         reciprocal_node.run(self.record)
         result = self.record.get(reciprocal_node._output)
         np.testing.assert_almost_equal(result, 0.25, decimal=5)

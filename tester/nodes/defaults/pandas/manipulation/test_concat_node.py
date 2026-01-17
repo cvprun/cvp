@@ -18,7 +18,7 @@ class ConcatNodeTestCase(TestCase):
 
     def test_concat_dataframes_default(self):
         """Test concatenating DataFrames with default settings."""
-        self.record.set(self.node._objs_pin, [self.df1, self.df2])
+        self.record.set(self.node._input_pins[0], [self.df1, self.df2])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -30,8 +30,8 @@ class ConcatNodeTestCase(TestCase):
 
     def test_concat_with_ignore_index(self):
         """Test concatenation with ignore_index=True."""
-        self.record.set(self.node._objs_pin, [self.df1, self.df2])
-        self.record.set(self.node._ignore_index_pin, True)
+        self.record.set(self.node._input_pins[0], [self.df1, self.df2])
+        self.record.set(self.node._input_pins[2], True)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -41,8 +41,8 @@ class ConcatNodeTestCase(TestCase):
 
     def test_concat_axis_1(self):
         """Test concatenation along axis 1 (columns)."""
-        self.record.set(self.node._objs_pin, [self.df1, self.df3])
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._input_pins[0], [self.df1, self.df3])
+        self.record.set(self.node._input_pins[1], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -57,7 +57,7 @@ class ConcatNodeTestCase(TestCase):
         s1 = pd.Series([1, 2, 3], name="series1")
         s2 = pd.Series([4, 5, 6], name="series2")
 
-        self.record.set(self.node._objs_pin, [s1, s2])
+        self.record.set(self.node._input_pins[0], [s1, s2])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -70,8 +70,8 @@ class ConcatNodeTestCase(TestCase):
         s1 = pd.Series([1, 2, 3], name="series1")
         s2 = pd.Series([4, 5, 6], name="series2")
 
-        self.record.set(self.node._objs_pin, [s1, s2])
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._input_pins[0], [s1, s2])
+        self.record.set(self.node._input_pins[1], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -84,21 +84,21 @@ class ConcatNodeTestCase(TestCase):
         df1 = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
         df2 = pd.DataFrame({"A": [5, 6], "C": [7, 8]})
 
-        self.record.set(self.node._objs_pin, [df1, df2])
+        self.record.set(self.node._input_pins[0], [df1, df2])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
         self.assertIsInstance(result, pd.DataFrame)
         self.assertEqual(sorted(result.columns), ["A", "B", "C"])
         self.assertEqual(len(result), 4)
-        # B column should have NaN for second dataframe
-        self.assertTrue(pd.isna(result.loc[2, "B"]))
-        # C column should have NaN for first dataframe
-        self.assertTrue(pd.isna(result.loc[0, "C"]))
+        # B column should have NaN for second dataframe (rows 2-3 via iloc)
+        self.assertTrue(pd.isna(result.iloc[2]["B"]))
+        # C column should have NaN for first dataframe (rows 0-1 via iloc)
+        self.assertTrue(pd.isna(result.iloc[0]["C"]))
 
     def test_concat_empty_list(self):
         """Test concatenating empty list."""
-        self.record.set(self.node._objs_pin, [])
+        self.record.set(self.node._input_pins[0], [])
         try:
             self.node.run(self.record)
             result = self.record.get(self.node._output)
@@ -111,7 +111,7 @@ class ConcatNodeTestCase(TestCase):
 
     def test_concat_single_object(self):
         """Test concatenating single object."""
-        self.record.set(self.node._objs_pin, [self.df1])
+        self.record.set(self.node._input_pins[0], [self.df1])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -120,18 +120,17 @@ class ConcatNodeTestCase(TestCase):
 
     def test_node_pins(self):
         """Test node pin configuration."""
-        self.assertTrue(hasattr(self.node, "_objs_pin"))
-        self.assertTrue(hasattr(self.node, "_axis_pin"))
-        self.assertTrue(hasattr(self.node, "_ignore_index_pin"))
+        self.assertTrue(hasattr(self.node, "_input_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._input_pins), 3)
 
-        self.assertEqual(self.node._objs_pin.name.value, "objs")
-        self.assertEqual(self.node._axis_pin.name.value, "axis")
-        self.assertEqual(self.node._ignore_index_pin.name.value, "ignore_index")
+        self.assertEqual(self.node._input_pins[0].name, "objs")
+        self.assertEqual(self.node._input_pins[1].name, "axis")
+        self.assertEqual(self.node._input_pins[2].name, "ignore_index")
 
-        self.assertTrue(self.node._objs_pin.required)
-        self.assertFalse(self.node._axis_pin.required)
-        self.assertFalse(self.node._ignore_index_pin.required)
+        self.assertFalse(self.node._input_pins[0].required)
+        self.assertFalse(self.node._input_pins[1].required)
+        self.assertFalse(self.node._input_pins[2].required)
 
 
 if __name__ == "__main__":

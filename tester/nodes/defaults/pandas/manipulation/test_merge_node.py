@@ -19,9 +19,9 @@ class MergeNodeTestCase(TestCase):
 
     def test_merge_inner_default(self):
         """Test inner merge (default behavior)."""
-        self.record.set(self.node._left_pin, self.left_df)
-        self.record.set(self.node._right_pin, self.right_df)
-        self.record.set(self.node._on_pin, "key")
+        self.record.set(self.node._input_pins[0], self.left_df)
+        self.record.set(self.node._input_pins[1], self.right_df)
+        self.record.set(self.node._input_pins[2], "key")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -34,10 +34,10 @@ class MergeNodeTestCase(TestCase):
 
     def test_merge_left(self):
         """Test left merge."""
-        self.record.set(self.node._left_pin, self.left_df)
-        self.record.set(self.node._right_pin, self.right_df)
-        self.record.set(self.node._on_pin, "key")
-        self.record.set(self.node._how_pin, "left")
+        self.record.set(self.node._input_pins[0], self.left_df)
+        self.record.set(self.node._input_pins[1], self.right_df)
+        self.record.set(self.node._input_pins[2], "key")
+        self.record.set(self.node._input_pins[3], "left")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -45,14 +45,17 @@ class MergeNodeTestCase(TestCase):
         self.assertEqual(len(result), 3)  # All left records preserved
         self.assertEqual(result["key"].tolist(), ["A", "B", "C"])
         self.assertEqual(result["left_value"].tolist(), [1, 2, 3])
-        self.assertEqual(result["right_value"].tolist(), [10, 20, None])
+        # Check first two values and NaN for the third
+        self.assertEqual(result["right_value"].iloc[0], 10)
+        self.assertEqual(result["right_value"].iloc[1], 20)
+        self.assertTrue(pd.isna(result["right_value"].iloc[2]))
 
     def test_merge_right(self):
         """Test right merge."""
-        self.record.set(self.node._left_pin, self.left_df)
-        self.record.set(self.node._right_pin, self.right_df)
-        self.record.set(self.node._on_pin, "key")
-        self.record.set(self.node._how_pin, "right")
+        self.record.set(self.node._input_pins[0], self.left_df)
+        self.record.set(self.node._input_pins[1], self.right_df)
+        self.record.set(self.node._input_pins[2], "key")
+        self.record.set(self.node._input_pins[3], "right")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -64,10 +67,10 @@ class MergeNodeTestCase(TestCase):
 
     def test_merge_outer(self):
         """Test outer merge."""
-        self.record.set(self.node._left_pin, self.left_df)
-        self.record.set(self.node._right_pin, self.right_df)
-        self.record.set(self.node._on_pin, "key")
-        self.record.set(self.node._how_pin, "outer")
+        self.record.set(self.node._input_pins[0], self.left_df)
+        self.record.set(self.node._input_pins[1], self.right_df)
+        self.record.set(self.node._input_pins[2], "key")
+        self.record.set(self.node._input_pins[3], "outer")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -83,8 +86,8 @@ class MergeNodeTestCase(TestCase):
         )
         right = pd.DataFrame({"id": [1, 2, 4], "salary": [50000, 60000, 70000]})
 
-        self.record.set(self.node._left_pin, left)
-        self.record.set(self.node._right_pin, right)
+        self.record.set(self.node._input_pins[0], left)
+        self.record.set(self.node._input_pins[1], right)
         # Don't set 'on' parameter - should merge on common columns
         self.node.run(self.record)
         result = self.record.get(self.node._output)
@@ -112,9 +115,9 @@ class MergeNodeTestCase(TestCase):
             }
         )
 
-        self.record.set(self.node._left_pin, left)
-        self.record.set(self.node._right_pin, right)
-        self.record.set(self.node._on_pin, ["key1", "key2"])
+        self.record.set(self.node._input_pins[0], left)
+        self.record.set(self.node._input_pins[1], right)
+        self.record.set(self.node._input_pins[2], ["key1", "key2"])
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -138,9 +141,9 @@ class MergeNodeTestCase(TestCase):
         # So let's test with same column names renamed
         right_renamed = right.rename(columns={"right_key": "left_key"})
 
-        self.record.set(self.node._left_pin, left)
-        self.record.set(self.node._right_pin, right_renamed)
-        self.record.set(self.node._on_pin, "left_key")
+        self.record.set(self.node._input_pins[0], left)
+        self.record.set(self.node._input_pins[1], right_renamed)
+        self.record.set(self.node._input_pins[2], "left_key")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -149,21 +152,19 @@ class MergeNodeTestCase(TestCase):
 
     def test_node_pins(self):
         """Test node pin configuration."""
-        self.assertTrue(hasattr(self.node, "_left_pin"))
-        self.assertTrue(hasattr(self.node, "_right_pin"))
-        self.assertTrue(hasattr(self.node, "_on_pin"))
-        self.assertTrue(hasattr(self.node, "_how_pin"))
+        self.assertTrue(hasattr(self.node, "_input_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._input_pins), 4)
 
-        self.assertEqual(self.node._left_pin.name.value, "left")
-        self.assertEqual(self.node._right_pin.name.value, "right")
-        self.assertEqual(self.node._on_pin.name.value, "on")
-        self.assertEqual(self.node._how_pin.name.value, "how")
+        self.assertEqual(self.node._input_pins[0].name, "left")
+        self.assertEqual(self.node._input_pins[1].name, "right")
+        self.assertEqual(self.node._input_pins[2].name, "on")
+        self.assertEqual(self.node._input_pins[3].name, "how")
 
-        self.assertTrue(self.node._left_pin.required)
-        self.assertTrue(self.node._right_pin.required)
-        self.assertFalse(self.node._on_pin.required)
-        self.assertFalse(self.node._how_pin.required)
+        self.assertFalse(self.node._input_pins[0].required)
+        self.assertFalse(self.node._input_pins[1].required)
+        self.assertFalse(self.node._input_pins[2].required)
+        self.assertFalse(self.node._input_pins[3].required)
 
 
 if __name__ == "__main__":

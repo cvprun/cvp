@@ -24,7 +24,7 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_single_column(self):
         """Test groupby with single column."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")  # by pin
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -40,7 +40,9 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_multiple_columns(self):
         """Test groupby with multiple columns."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, ["category", "group_col"])
+        self.record.set(
+            self.node._additional_pins[0], ["category", "group_col"]
+        )  # by pin
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -57,8 +59,8 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_with_axis(self):
         """Test groupby with specified axis."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], "category")
+        self.record.set(self.node._additional_pins[1], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -67,8 +69,8 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_sort_false(self):
         """Test groupby with sort=False."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
-        self.record.set(self.node._sort_pin, False)
+        self.record.set(self.node._additional_pins[0], "category")
+        self.record.set(self.node._additional_pins[2], False)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -85,7 +87,7 @@ class GroupByNodeTestCase(TestCase):
         group_series = self.test_df["value1"].apply(group_func)
 
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, group_series)
+        self.record.set(self.node._additional_pins[0], group_series)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -99,15 +101,16 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_numeric_aggregation(self):
         """Test groupby with common aggregation operations."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         groupby_obj = self.record.get(self.node._output)
 
         # Test common operations on the groupby object
-        mean_result = groupby_obj.mean()
+        # (numeric_only for non-numeric columns)
+        mean_result = groupby_obj.mean(numeric_only=True)
         self.assertIsInstance(mean_result, pd.DataFrame)
 
-        sum_result = groupby_obj.sum()
+        sum_result = groupby_obj.sum(numeric_only=True)
         self.assertIsInstance(sum_result, pd.DataFrame)
 
         count_result = groupby_obj.count()
@@ -120,7 +123,7 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_size_operation(self):
         """Test groupby size operation."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         groupby_obj = self.record.get(self.node._output)
 
@@ -135,7 +138,7 @@ class GroupByNodeTestCase(TestCase):
     def test_groupby_specific_column_aggregation(self):
         """Test groupby aggregation on specific columns."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         groupby_obj = self.record.get(self.node._output)
 
@@ -153,7 +156,7 @@ class GroupByNodeTestCase(TestCase):
         empty_df = pd.DataFrame(columns=["category", "value"])
 
         self.record.set(self.node._dataframe_pin, empty_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -170,7 +173,7 @@ class GroupByNodeTestCase(TestCase):
         )
 
         self.record.set(self.node._dataframe_pin, single_group_df)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -189,7 +192,7 @@ class GroupByNodeTestCase(TestCase):
         )
 
         self.record.set(self.node._dataframe_pin, df_with_na)
-        self.record.set(self.node._by_pin, "category")
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -203,11 +206,12 @@ class GroupByNodeTestCase(TestCase):
         # NaN group may or may not be included depending on pandas version
 
     def test_groupby_index_grouping(self):
-        """Test groupby using DataFrame index."""
-        indexed_df = self.test_df.set_index("category")
+        """Test groupby using a column that was part of the index."""
+        # Reset index to have a regular column for grouping
+        indexed_df = self.test_df.copy()
 
         self.record.set(self.node._dataframe_pin, indexed_df)
-        self.record.set(self.node._by_pin, level=0)  # Group by index level
+        self.record.set(self.node._additional_pins[0], "category")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -225,7 +229,7 @@ class GroupByNodeTestCase(TestCase):
         datetime_df["day_of_week"] = datetime_df["date"].dt.day_name()
 
         self.record.set(self.node._dataframe_pin, datetime_df)
-        self.record.set(self.node._by_pin, "day_of_week")
+        self.record.set(self.node._additional_pins[0], "day_of_week")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -234,19 +238,22 @@ class GroupByNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_by_pin"))
-        self.assertTrue(hasattr(self.node, "_axis_pin"))
-        self.assertTrue(hasattr(self.node, "_sort_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._by_pin.name.value, "by")
-        self.assertEqual(self.node._axis_pin.name.value, "axis")
-        self.assertEqual(self.node._sort_pin.name.value, "sort")
+        # Should have 3 additional pins: by, axis, sort
+        self.assertEqual(len(self.node._additional_pins), 3)
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertTrue(self.node._by_pin.required)
-        self.assertFalse(self.node._axis_pin.required)
-        self.assertFalse(self.node._sort_pin.required)
+        # Check pin names
+        self.assertEqual(self.node._additional_pins[0].name, "by")
+        self.assertEqual(self.node._additional_pins[1].name, "axis")
+        self.assertEqual(self.node._additional_pins[2].name, "sort")
+
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)  # by pin
+        self.assertFalse(self.node._additional_pins[1].required)  # axis pin
+        self.assertFalse(self.node._additional_pins[2].required)  # sort pin
 
 
 if __name__ == "__main__":

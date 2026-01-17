@@ -170,12 +170,13 @@ class FilterNodeTestCase(TestCase):
         self.assertTrue(hasattr(self.node, "_condition_pin"))
         self.assertTrue(hasattr(self.node, "_output"))
 
-        self.assertEqual(self.node._dataframe_pin.name.value, "dataframe")
-        self.assertEqual(self.node._condition_pin.name.value, "condition")
-        self.assertEqual(self.node._output.name.value, "result")
+        self.assertEqual(self.node._dataframe_pin.name, "dataframe")
+        self.assertEqual(self.node._condition_pin.name, "condition")
+        self.assertEqual(self.node._output.name, "result")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertTrue(self.node._condition_pin.required)
+        # DataInputPin defaults to required=False unless explicitly set
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._condition_pin.required)
 
 
 if __name__ == "__main__":

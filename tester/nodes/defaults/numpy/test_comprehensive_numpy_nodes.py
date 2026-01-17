@@ -33,22 +33,30 @@ class ComprehensiveNumpyNodesTestCase(TestCase):
         warnings.filterwarnings("ignore")
 
     def test_all_numpy_nodes_instantiation(self):
-        """Test that all numpy nodes can be instantiated without errors."""
+        """Test that all numpy nodes have proper structure."""
+        # get_numpy_nodes() returns instances, not classes
         nodes = get_numpy_nodes()
         self.assertIsInstance(nodes, list)
         self.assertGreater(len(nodes), 150)
 
         failed_nodes = []
-        for node_class in nodes:
+        for node_instance in nodes:
+            node_name = type(node_instance).__name__
             try:
-                instance = node_class()
-                self.assertTrue(hasattr(instance, "_input_pins"))
-                self.assertTrue(hasattr(instance, "_output"))
-            except Exception as e:
-                failed_nodes.append((node_class.__class__.__name__, str(e)))
+                # Check that the instance has required attributes
+                self.assertTrue(
+                    hasattr(node_instance, "_input_pins"),
+                    f"{node_name} missing _input_pins",
+                )
+                self.assertTrue(
+                    hasattr(node_instance, "_output"),
+                    f"{node_name} missing _output",
+                )
+            except AssertionError as e:
+                failed_nodes.append((node_name, str(e)))
 
         if failed_nodes:
-            self.fail(f"Failed to instantiate nodes: {failed_nodes}")
+            self.fail(f"Nodes with missing attributes: {failed_nodes}")
 
     # Array Creation Tests
     def test_array_creation_nodes(self):

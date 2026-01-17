@@ -26,8 +26,15 @@ class NumpyFunctionNode(Node):
         super().__init__(*self._input_pins, self._output)
 
     def run(self, record: NodeRecord) -> Pin:
-        # Get input values
-        inputs = [record.get(pin) for pin in self._input_pins]
+        # Get input values, handling optional pins with their defaults
+        inputs = []
+        for pin in self._input_pins:
+            try:
+                value = record.get(pin)
+                inputs.append(value)
+            except KeyError:
+                # Use pin's default value if available, otherwise None
+                inputs.append(pin.default if pin.has_default else None)
 
         # Apply numpy function
         result = self.apply_function(*inputs)

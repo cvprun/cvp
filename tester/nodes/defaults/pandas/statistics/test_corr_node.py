@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase, main
+from unittest import TestCase, main, skipUnless
 
 import pandas as pd
 
 from cvp.nodes.defaults.pandas.statistics.corr_node import CorrNode
 from cvp.nodes.record import NodeRecord
+
+try:
+    import scipy  # noqa: F401
+
+    HAS_SCIPY = True
+except ImportError:
+    HAS_SCIPY = False
 
 
 class CorrNodeTestCase(TestCase):
@@ -47,7 +54,7 @@ class CorrNodeTestCase(TestCase):
     def test_corr_pearson_explicit(self):
         """Test correlation with explicit Pearson method."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._method_pin, "pearson")
+        self.record.set(self.node._additional_pins[0], "pearson")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -67,7 +74,7 @@ class CorrNodeTestCase(TestCase):
         )
 
         self.record.set(self.node._dataframe_pin, df_nonlinear)
-        self.record.set(self.node._method_pin, "spearman")
+        self.record.set(self.node._additional_pins[0], "spearman")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -75,12 +82,13 @@ class CorrNodeTestCase(TestCase):
         # Spearman should show perfect correlation for monotonic relationship
         self.assertAlmostEqual(result.loc["A", "B"], 1.0, places=5)
 
+    @skipUnless(HAS_SCIPY, "scipy is required for kendall correlation")
     def test_corr_kendall(self):
         """Test correlation with Kendall method."""
         simple_df = pd.DataFrame({"X": [1, 2, 3, 4, 5], "Y": [1, 2, 3, 4, 5]})
 
         self.record.set(self.node._dataframe_pin, simple_df)
-        self.record.set(self.node._method_pin, "kendall")
+        self.record.set(self.node._additional_pins[0], "kendall")
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -111,7 +119,7 @@ class CorrNodeTestCase(TestCase):
 
         # With min_periods=2, should require at least 2 valid pairs
         self.record.set(self.node._dataframe_pin, df_sparse)
-        self.record.set(self.node._min_periods_pin, 2)
+        self.record.set(self.node._additional_pins[1], 2)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -186,16 +194,16 @@ class CorrNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_method_pin"))
-        self.assertTrue(hasattr(self.node, "_min_periods_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._additional_pins), 2)
 
-        self.assertEqual(self.node._method_pin.name.value, "method")
-        self.assertEqual(self.node._min_periods_pin.name.value, "min_periods")
+        self.assertEqual(self.node._additional_pins[0].name, "method")
+        self.assertEqual(self.node._additional_pins[1].name, "min_periods")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertFalse(self.node._method_pin.required)
-        self.assertFalse(self.node._min_periods_pin.required)
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)
+        self.assertFalse(self.node._additional_pins[1].required)
 
 
 if __name__ == "__main__":

@@ -25,8 +25,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_single_column(self):
         """Test dropping a single column."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, "A")
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._additional_pins[0], "A")
+        self.record.set(self.node._additional_pins[1], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -38,8 +38,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_multiple_columns(self):
         """Test dropping multiple columns."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, ["A", "C"])
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._additional_pins[0], ["A", "C"])
+        self.record.set(self.node._additional_pins[1], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -51,8 +51,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_single_row(self):
         """Test dropping a single row."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, "row1")
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], "row1")
+        self.record.set(self.node._additional_pins[1], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -64,8 +64,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_multiple_rows(self):
         """Test dropping multiple rows."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, ["row1", "row3"])
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], ["row1", "row3"])
+        self.record.set(self.node._additional_pins[1], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -76,7 +76,7 @@ class DropNodeTestCase(TestCase):
     def test_drop_default_axis(self):
         """Test dropping with default axis (0 - rows)."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, "row2")
+        self.record.set(self.node._additional_pins[0], "row2")
         # Don't set axis - should default to 0
         self.node.run(self.record)
         result = self.record.get(self.node._output)
@@ -90,8 +90,8 @@ class DropNodeTestCase(TestCase):
         df_int_index = self.test_df.reset_index(drop=True)
 
         self.record.set(self.node._dataframe_pin, df_int_index)
-        self.record.set(self.node._labels_pin, [0, 2])
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], [0, 2])
+        self.record.set(self.node._additional_pins[1], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -102,8 +102,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_all_columns(self):
         """Test dropping all columns."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, ["A", "B", "C", "D"])
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._additional_pins[0], ["A", "B", "C", "D"])
+        self.record.set(self.node._additional_pins[1], 1)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -114,8 +114,8 @@ class DropNodeTestCase(TestCase):
     def test_drop_nonexistent_label(self):
         """Test dropping non-existent label."""
         self.record.set(self.node._dataframe_pin, self.test_df)
-        self.record.set(self.node._labels_pin, "nonexistent")
-        self.record.set(self.node._axis_pin, 1)
+        self.record.set(self.node._additional_pins[0], "nonexistent")
+        self.record.set(self.node._additional_pins[1], 1)
 
         with self.assertRaises(KeyError):
             self.node.run(self.record)
@@ -125,8 +125,8 @@ class DropNodeTestCase(TestCase):
         empty_df = pd.DataFrame()
 
         self.record.set(self.node._dataframe_pin, empty_df)
-        self.record.set(self.node._labels_pin, [])
-        self.record.set(self.node._axis_pin, 0)
+        self.record.set(self.node._additional_pins[0], [])
+        self.record.set(self.node._additional_pins[1], 0)
         self.node.run(self.record)
         result = self.record.get(self.node._output)
 
@@ -136,19 +136,18 @@ class DropNodeTestCase(TestCase):
     def test_node_pins(self):
         """Test node pin configuration."""
         self.assertTrue(hasattr(self.node, "_dataframe_pin"))
-        self.assertTrue(hasattr(self.node, "_labels_pin"))
-        self.assertTrue(hasattr(self.node, "_axis_pin"))
-        self.assertTrue(hasattr(self.node, "_inplace_pin"))
+        self.assertTrue(hasattr(self.node, "_additional_pins"))
         self.assertTrue(hasattr(self.node, "_output"))
+        self.assertEqual(len(self.node._additional_pins), 3)
 
-        self.assertEqual(self.node._labels_pin.name.value, "labels")
-        self.assertEqual(self.node._axis_pin.name.value, "axis")
-        self.assertEqual(self.node._inplace_pin.name.value, "inplace")
+        self.assertEqual(self.node._additional_pins[0].name, "labels")
+        self.assertEqual(self.node._additional_pins[1].name, "axis")
+        self.assertEqual(self.node._additional_pins[2].name, "inplace")
 
-        self.assertTrue(self.node._dataframe_pin.required)
-        self.assertTrue(self.node._labels_pin.required)
-        self.assertFalse(self.node._axis_pin.required)
-        self.assertFalse(self.node._inplace_pin.required)
+        self.assertFalse(self.node._dataframe_pin.required)
+        self.assertFalse(self.node._additional_pins[0].required)
+        self.assertFalse(self.node._additional_pins[1].required)
+        self.assertFalse(self.node._additional_pins[2].required)
 
 
 if __name__ == "__main__":
