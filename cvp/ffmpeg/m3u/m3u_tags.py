@@ -51,3 +51,12 @@ ExtXVersionLiteral = Literal[2, 3, 4, 5, 6, 7, 8]
 ExtXKey_MethodLiteral = Literal["NONE", "AES-128", "SAMPLE-AES"]
 ExtXStreamInf_HdcpLevelLiteral = Literal["TYPE-0", "TYPE-1", "NONE"]
 ExtXStreamInf_VideoRangeLiteral = Literal["SDR", "HLG", "PQ"]
+
+# EXT-X-PLAYLIST-TYPE
+ExtXPlaylistTypeLiteral = Literal["EVENT", "VOD"]
+
+# EXT-X-MEDIA TYPE
+ExtXMedia_TypeLiteral = Literal["AUDIO", "VIDEO", "SUBTITLES", "CLOSED-CAPTIONS"]
+
+# EXT-X-PRELOAD-HINT TYPE
+ExtXPreloadHint_TypeLiteral = Literal["PART", "MAP"]

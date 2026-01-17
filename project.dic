@@ -24,6 +24,7 @@ astimezone
 athlon
 athlonxp
 autodect
+autoselect
 avoptions
 backuped
 baseplatform
@@ -57,6 +58,7 @@ cotta
 cpuflags
 datefmt
 datename
+dateranges
 deblocking
 deinterlace
 demuxer
@@ -125,6 +127,7 @@ imconfig
 imes
 indentless
 infiles
+instream
 ioclass
 iomgr
 ionice
@@ -183,6 +186,7 @@ mmsh
 mmst
 mmxext
 mouseable
+movflags
 multiband
 mustlock
 muxing
@@ -244,6 +248,7 @@ rawvideo
 rawvideo
 rbutton
 rctrl
+readrate
 redoable
 remapper
 remux

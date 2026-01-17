@@ -5,12 +5,31 @@ from io import StringIO
 from typing import Any, Iterable, List, Optional, Tuple, Union, get_args
 
 from cvp.ffmpeg.m3u.m3u_tags import (
+    EXT_X_BITRATE,
+    EXT_X_BYTERANGE,
+    EXT_X_DATERANGE,
     EXT_X_DEFINE,
+    EXT_X_DISCONTINUITY,
     EXT_X_DISCONTINUITY_SEQUENCE,
     EXT_X_ENDLIST,
+    EXT_X_GAP,
+    EXT_X_I_FRAME_STREAM_INF,
+    EXT_X_I_FRAMES_ONLY,
     EXT_X_INDEPENDENT_SEGMENTS,
     EXT_X_KEY,
+    EXT_X_MAP,
+    EXT_X_MEDIA,
     EXT_X_MEDIA_SEQUENCE,
+    EXT_X_PART,
+    EXT_X_PART_INF,
+    EXT_X_PLAYLIST_TYPE,
+    EXT_X_PRELOAD_HINT,
+    EXT_X_PROGRAM_DATE_TIME,
+    EXT_X_RENDITION_REPORT,
+    EXT_X_SERVER_CONTROL,
+    EXT_X_SESSION_DATA,
+    EXT_X_SESSION_KEY,
+    EXT_X_SKIP,
     EXT_X_START,
     EXT_X_STREAM_INF,
     EXT_X_TARGETDURATION,
@@ -18,6 +37,9 @@ from cvp.ffmpeg.m3u.m3u_tags import (
     EXTINF,
     EXTM3U,
     ExtXKey_MethodLiteral,
+    ExtXMedia_TypeLiteral,
+    ExtXPlaylistTypeLiteral,
+    ExtXPreloadHint_TypeLiteral,
     ExtXStreamInf_HdcpLevelLiteral,
     ExtXStreamInf_VideoRangeLiteral,
     ExtXVersionLiteral,
@@ -178,17 +200,42 @@ class M3uBuilder:
     def ext_x_endlist(self):
         return self.write(EXT_X_ENDLIST)
 
-    def ext_x_playlist_type(self):
-        raise NotImplementedError
+    def ext_x_playlist_type(
+        self,
+        type_: Union[str, ExtXPlaylistTypeLiteral],
+    ) -> "M3uBuilder":
+        if type_ not in get_args(ExtXPlaylistTypeLiteral):
+            _raise_enum_error("type_", ExtXPlaylistTypeLiteral)
+        return self.write(f"{EXT_X_PLAYLIST_TYPE}:{type_}")
 
-    def ext_x_i_frames_only(self):
-        raise NotImplementedError
+    def ext_x_i_frames_only(self) -> "M3uBuilder":
+        return self.write(EXT_X_I_FRAMES_ONLY)
 
-    def ext_x_part_inf(self):
-        raise NotImplementedError
+    def ext_x_part_inf(
+        self,
+        part_target: float,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_PART_INF,
+            ("PART-TARGET", part_target, _required),
+        )
 
-    def ext_x_server_control(self):
-        raise NotImplementedError
+    def ext_x_server_control(
+        self,
+        can_skip_until: Optional[float] = None,
+        can_skip_dateranges: Optional[bool] = None,
+        hold_back: Optional[float] = None,
+        part_hold_back: Optional[float] = None,
+        can_block_reload: Optional[bool] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_SERVER_CONTROL,
+            ("CAN-SKIP-UNTIL", can_skip_until),
+            ("CAN-SKIP-DATERANGES", can_skip_dateranges),
+            ("HOLD-BACK", hold_back),
+            ("PART-HOLD-BACK", part_hold_back),
+            ("CAN-BLOCK-RELOAD", can_block_reload),
+        )
 
     # ------------------
     # Media Segment Tags
@@ -204,11 +251,18 @@ class M3uBuilder:
     def extinf_uri(self, uri: str, *args, **kwargs):
         return self.extinf(*args, **kwargs).write(uri)
 
-    def ext_x_byterange(self):
-        raise NotImplementedError
+    def ext_x_byterange(
+        self,
+        length: int,
+        offset: Optional[int] = None,
+    ) -> "M3uBuilder":
+        if offset is not None:
+            return self.write(f"{EXT_X_BYTERANGE}:{length}@{offset}")
+        else:
+            return self.write(f"{EXT_X_BYTERANGE}:{length}")
 
-    def ext_x_discontinuity(self):
-        raise NotImplementedError
+    def ext_x_discontinuity(self) -> "M3uBuilder":
+        return self.write(EXT_X_DISCONTINUITY)
 
     def ext_x_key(
         self,
@@ -235,43 +289,159 @@ class M3uBuilder:
             ("KEYFORMATVERSIONS", keyformatversions),
         )
 
-    def ext_x_map(self):
-        raise NotImplementedError
+    def ext_x_map(
+        self,
+        uri: str,
+        byterange: Optional[str] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_MAP,
+            ("URI", uri, _required),
+            ("BYTERANGE", byterange),
+        )
 
-    def ext_x_program_date_time(self):
-        raise NotImplementedError
+    def ext_x_program_date_time(
+        self,
+        date_time: str,
+    ) -> "M3uBuilder":
+        return self.write(f"{EXT_X_PROGRAM_DATE_TIME}:{date_time}")
 
-    def ext_x_gap(self):
-        raise NotImplementedError
+    def ext_x_gap(self) -> "M3uBuilder":
+        return self.write(EXT_X_GAP)
 
-    def ext_x_bitrate(self):
-        raise NotImplementedError
+    def ext_x_bitrate(
+        self,
+        rate: int,
+    ) -> "M3uBuilder":
+        return self.write(f"{EXT_X_BITRATE}:{rate}")
 
-    def ext_x_part(self):
-        raise NotImplementedError
+    def ext_x_part(
+        self,
+        uri: str,
+        duration: float,
+        independent: Optional[bool] = None,
+        byterange: Optional[str] = None,
+        gap: Optional[bool] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_PART,
+            ("URI", uri, _required),
+            ("DURATION", duration, _required),
+            ("INDEPENDENT", independent),
+            ("BYTERANGE", byterange),
+            ("GAP", gap),
+        )
 
     # -------------------
     # Media Metadata Tags
     # -------------------
 
-    def ext_x_daterange(self):
-        raise NotImplementedError
+    def ext_x_daterange(
+        self,
+        id_: str,
+        class_: Optional[str] = None,
+        start_date: Optional[str] = None,
+        cue: Optional[str] = None,
+        end_date: Optional[str] = None,
+        duration: Optional[float] = None,
+        planned_duration: Optional[float] = None,
+        end_on_next: Optional[bool] = None,
+        scte35_cmd: Optional[str] = None,
+        scte35_out: Optional[str] = None,
+        scte35_in: Optional[str] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_DATERANGE,
+            ("ID", id_, _required),
+            ("CLASS", class_),
+            ("START-DATE", start_date),
+            ("CUE", cue),
+            ("END-DATE", end_date),
+            ("DURATION", duration),
+            ("PLANNED-DURATION", planned_duration),
+            ("END-ON-NEXT", end_on_next),
+            ("SCTE35-CMD", scte35_cmd),
+            ("SCTE35-OUT", scte35_out),
+            ("SCTE35-IN", scte35_in),
+        )
 
-    def ext_x_skip(self):
-        raise NotImplementedError
+    def ext_x_skip(
+        self,
+        skipped_segments: int,
+        recently_removed_dateranges: Optional[str] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_SKIP,
+            ("SKIPPED-SEGMENTS", skipped_segments, _required),
+            ("RECENTLY-REMOVED-DATERANGES", recently_removed_dateranges),
+        )
 
-    def ext_x_preload_hint(self):
-        raise NotImplementedError
+    def ext_x_preload_hint(
+        self,
+        type_: Union[str, ExtXPreloadHint_TypeLiteral],
+        uri: str,
+        byterange_start: Optional[int] = None,
+        byterange_length: Optional[int] = None,
+    ) -> "M3uBuilder":
+        if type_ not in get_args(ExtXPreloadHint_TypeLiteral):
+            _raise_enum_error("type_", ExtXPreloadHint_TypeLiteral)
+        return self.write_attribute_list(
+            EXT_X_PRELOAD_HINT,
+            ("TYPE", type_, _required, _no_quoting),
+            ("URI", uri, _required),
+            ("BYTERANGE-START", byterange_start),
+            ("BYTERANGE-LENGTH", byterange_length),
+        )
 
-    def ext_x_rendition_report(self):
-        raise NotImplementedError
+    def ext_x_rendition_report(
+        self,
+        uri: str,
+        last_msn: Optional[int] = None,
+        last_part: Optional[int] = None,
+    ) -> "M3uBuilder":
+        return self.write_attribute_list(
+            EXT_X_RENDITION_REPORT,
+            ("URI", uri, _required),
+            ("LAST-MSN", last_msn),
+            ("LAST-PART", last_part),
+        )
 
     # --------------------
     # Master Playlist Tags
     # --------------------
 
-    def ext_x_media(self):
-        raise NotImplementedError
+    def ext_x_media(
+        self,
+        type_: Union[str, ExtXMedia_TypeLiteral],
+        group_id: str,
+        name: str,
+        language: Optional[str] = None,
+        assoc_language: Optional[str] = None,
+        default: Optional[bool] = None,
+        autoselect: Optional[bool] = None,
+        forced: Optional[bool] = None,
+        instream_id: Optional[str] = None,
+        characteristics: Optional[str] = None,
+        channels: Optional[str] = None,
+        uri: Optional[str] = None,
+    ) -> "M3uBuilder":
+        if type_ not in get_args(ExtXMedia_TypeLiteral):
+            _raise_enum_error("type_", ExtXMedia_TypeLiteral)
+        return self.write_attribute_list(
+            EXT_X_MEDIA,
+            ("TYPE", type_, _required, _no_quoting),
+            ("GROUP-ID", group_id, _required),
+            ("NAME", name, _required),
+            ("LANGUAGE", language),
+            ("ASSOC-LANGUAGE", assoc_language),
+            ("DEFAULT", default),
+            ("AUTOSELECT", autoselect),
+            ("FORCED", forced),
+            ("INSTREAM-ID", instream_id),
+            ("CHARACTERISTICS", characteristics),
+            ("CHANNELS", channels),
+            ("URI", uri),
+        )
 
     def ext_x_stream_inf(
         self,
@@ -327,14 +497,97 @@ class M3uBuilder:
     def ext_x_stream_inf_uri(self, uri: str, *args, **kwargs):
         return self.ext_x_stream_inf(*args, **kwargs).write(uri)
 
-    def ext_x_i_frame_stream_inf(self):
-        raise NotImplementedError
+    def ext_x_i_frame_stream_inf(
+        self,
+        bandwidth: int,
+        uri: str,
+        average_bandwidth: Optional[int] = None,
+        score: Optional[float] = None,
+        codecs: Optional[Iterable[str]] = None,
+        resolution: Optional[Tuple[int, int]] = None,
+        hdcp_level: Optional[Union[str, ExtXStreamInf_HdcpLevelLiteral]] = None,
+        allowed_cpc: Optional[str] = None,
+        video_range: Optional[Union[str, ExtXStreamInf_VideoRangeLiteral]] = None,
+        stable_variant_id: Optional[str] = None,
+        video: Optional[str] = None,
+    ) -> "M3uBuilder":
+        if hdcp_level and hdcp_level not in get_args(ExtXStreamInf_HdcpLevelLiteral):
+            _raise_enum_error("hdcp_level", ExtXStreamInf_HdcpLevelLiteral)
+        if video_range and video_range not in get_args(ExtXStreamInf_VideoRangeLiteral):
+            _raise_enum_error("video_range", ExtXStreamInf_VideoRangeLiteral)
 
-    def ext_x_session_data(self):
-        raise NotImplementedError
+        if codecs:
+            merged_codecs = reduce(lambda x, y: x + "," + y, codecs)
+        else:
+            merged_codecs = None
 
-    def ext_x_session_key(self):
-        raise NotImplementedError
+        if resolution:
+            assert len(resolution) == 2
+            merged_resolution = f"{resolution[0]}x{resolution[1]}"
+        else:
+            merged_resolution = None
+
+        return self.write_attribute_list(
+            EXT_X_I_FRAME_STREAM_INF,
+            ("BANDWIDTH", bandwidth, _required),
+            ("URI", uri, _required),
+            ("AVERAGE-BANDWIDTH", average_bandwidth),
+            ("SCORE", score),
+            ("CODECS", merged_codecs if merged_codecs else None),
+            ("RESOLUTION", merged_resolution, _no_quoting),
+            ("HDCP-LEVEL", hdcp_level, _no_quoting),
+            ("ALLOWED-CPC", allowed_cpc),
+            ("VIDEO-RANGE", video_range, _no_quoting),
+            ("STABLE-VARIANT-ID", stable_variant_id),
+            ("VIDEO", video),
+        )
+
+    def ext_x_session_data(
+        self,
+        data_id: str,
+        value: Optional[str] = None,
+        uri: Optional[str] = None,
+        format_: Optional[str] = None,
+        language: Optional[str] = None,
+    ) -> "M3uBuilder":
+        if value is None and uri is None:
+            raise ValueError("Either `value` or `uri` must be provided")
+        if value is not None and uri is not None:
+            raise ValueError("Cannot provide both `value` and `uri`")
+        return self.write_attribute_list(
+            EXT_X_SESSION_DATA,
+            ("DATA-ID", data_id, _required),
+            ("VALUE", value),
+            ("URI", uri),
+            ("FORMAT", format_),
+            ("LANGUAGE", language),
+        )
+
+    def ext_x_session_key(
+        self,
+        method: Union[str, ExtXKey_MethodLiteral],
+        uri: Optional[str] = None,
+        iv: Optional[str] = None,
+        keyformat: Optional[str] = None,
+        keyformatversions: Optional[str] = None,
+    ) -> "M3uBuilder":
+        if method not in get_args(ExtXKey_MethodLiteral):
+            _raise_enum_error("method", ExtXKey_MethodLiteral)
+
+        if method == "NONE":
+            raise ValueError("METHOD cannot be NONE for EXT-X-SESSION-KEY")
+
+        if not uri:
+            raise ValueError("The `URI` attribute is REQUIRED for EXT-X-SESSION-KEY")
+
+        return self.write_attribute_list(
+            EXT_X_SESSION_KEY,
+            ("METHOD", method, _required, _no_quoting),
+            ("URI", uri, _required),
+            ("IV", iv),
+            ("KEYFORMAT", keyformat),
+            ("KEYFORMATVERSIONS", keyformatversions),
+        )
 
 
 def extm3u(master: Optional[bool] = None) -> M3uBuilder:
