@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-WebSocket 통신 모듈
+WebSocket communication module
 
-asyncio: 순수 asyncio 기반 WebSocket 구현
-threading: 순수 threading 기반 WebSocket 구현
+asyncio: Pure asyncio-based WebSocket implementation
+threading: Pure threading-based WebSocket implementation
 """

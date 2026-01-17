@@ -9,12 +9,10 @@ from os import urandom
 from typing import Callable, Optional
 from urllib.parse import urlparse
 
-from cvp.logging.loggers import logger
+from cvp.logging.loggers import ws_logger as logger
 
 
 class WebSocketClient:
-    """순수 Threading 모델 기반 WebSocket 클라이언트"""
-
     def __init__(
         self,
         uri: str,
@@ -23,9 +21,9 @@ class WebSocketClient:
     ):
         """
         Args:
-            uri: WebSocket 서버 URI (예: ws://localhost:8765)
-            reconnect_interval: 재연결 시도 간격(초)
-            message_handler: 메시지 수신 핸들러 함수
+            uri: WebSocket server URI (e.g., ws://localhost:8765)
+            reconnect_interval: Reconnection interval in seconds
+            message_handler: Message receive handler function
         """
         self._uri = uri
         self._reconnect_interval = reconnect_interval
@@ -36,7 +34,7 @@ class WebSocketClient:
         self._receive_thread: Optional[threading.Thread] = None
         self._reconnect_thread: Optional[threading.Thread] = None
 
-        # URI 파싱
+        # Parse URI
         parsed = urlparse(uri)
         self._host = parsed.hostname or "localhost"
         self._port = parsed.port or 8765
@@ -44,28 +42,28 @@ class WebSocketClient:
 
     def _default_message_handler(self, message: str) -> None:
         """
-        기본 메시지 핸들러
+        Default message handler
 
         Args:
-            message: 수신된 메시지
+            message: Received message
         """
-        logger.info(f"수신된 메시지: {message}")
+        logger.info(f"Received message: {message}")
 
     def _perform_handshake(self) -> bool:
         """
-        WebSocket 핸드셰이크 수행
+        Perform WebSocket handshake
 
         Returns:
-            핸드셰이크 성공 여부
+            Whether handshake succeeded
         """
         if not self._socket:
             return False
 
         try:
-            # Sec-WebSocket-Key 생성
+            # Generate Sec-WebSocket-Key
             key = b64encode(urandom(16)).decode()
 
-            # HTTP 업그레이드 요청
+            # HTTP upgrade request
             request = (
                 f"GET {self._path} HTTP/1.1\r\n"
                 f"Host: {self._host}:{self._port}\r\n"
@@ -77,39 +75,39 @@ class WebSocketClient:
             )
             self._socket.send(request.encode())
 
-            # 응답 읽기
+            # Read response
             response = self._socket.recv(1024).decode("utf-8")
 
-            # 101 Switching Protocols 확인
+            # Verify 101 Switching Protocols
             if "101 Switching Protocols" not in response:
-                logger.error("핸드셰이크 실패: 101 응답이 아님")
+                logger.error("Handshake failed: Not a 101 response")
                 return False
 
             return True
 
         except Exception as e:
-            logger.error(f"핸드셰이크 실패: {e}")
+            logger.error(f"Handshake failed: {e}")
             return False
 
     def _decode_frame(self, data: bytes) -> Optional[str]:
         """
-        WebSocket 프레임 디코딩
+        Decode WebSocket frame
 
         Args:
-            data: 인코딩된 프레임 데이터
+            data: Encoded frame data
 
         Returns:
-            디코딩된 메시지 또는 None
+            Decoded message or None
         """
         if len(data) < 2:
             return None
 
-        # 첫 번째 바이트: FIN, RSV, opcode
-        # 두 번째 바이트: MASK, payload length
+        # First byte: FIN, RSV, opcode
+        # Second byte: MASK, payload length
         second_byte = data[1]
         payload_length = second_byte & 0x7F
 
-        # Payload length 처리
+        # Handle payload length
         if payload_length == 126:
             payload_length = struct.unpack(">H", data[2:4])[0]
             payload_start = 4
@@ -119,27 +117,27 @@ class WebSocketClient:
         else:
             payload_start = 2
 
-        # 서버에서 클라이언트로 전송하는 데이터는 마스킹되지 않음
+        # Data sent from server to client is not masked
         payload = data[payload_start : payload_start + payload_length]
         return payload.decode("utf-8")
 
     def _encode_frame(self, message: str) -> bytes:
         """
-        WebSocket 프레임 인코딩 (마스킹 포함)
+        Encode WebSocket frame (with masking)
 
         Args:
-            message: 전송할 메시지
+            message: Message to send
 
         Returns:
-            인코딩된 프레임 데이터
+            Encoded frame data
         """
         payload = message.encode("utf-8")
         payload_length = len(payload)
 
-        # 첫 번째 바이트: FIN=1, opcode=1 (text)
+        # First byte: FIN=1, opcode=1 (text)
         frame = bytearray([0x81])
 
-        # 두 번째 바이트: MASK=1, payload length
+        # Second byte: MASK=1, payload length
         if payload_length <= 125:
             frame.append(0x80 | payload_length)
         elif payload_length <= 65535:
@@ -149,11 +147,11 @@ class WebSocketClient:
             frame.append(0x80 | 127)
             frame.extend(struct.pack(">Q", payload_length))
 
-        # 마스킹 키 생성
+        # Generate masking key
         masking_key = urandom(4)
         frame.extend(masking_key)
 
-        # 페이로드 마스킹
+        # Mask payload
         masked_payload = bytearray(payload)
         for i in range(len(masked_payload)):
             masked_payload[i] ^= masking_key[i % 4]
@@ -163,35 +161,35 @@ class WebSocketClient:
 
     def connect(self) -> bool:
         """
-        WebSocket 서버에 연결
+        Connect to WebSocket server
 
         Returns:
-            연결 성공 여부
+            Whether connection succeeded
         """
         try:
-            # 소켓 생성
+            # Create socket
             self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._socket.settimeout(5.0)
             self._socket.connect((self._host, self._port))
 
-            # 핸드셰이크
+            # Handshake
             if not self._perform_handshake():
-                logger.error("핸드셰이크 실패")
+                logger.error("Handshake failed")
                 self.disconnect()
                 return False
 
             self._connected = True
-            self._socket.settimeout(1.0)  # 수신 타임아웃 설정
-            logger.info(f"WebSocket 연결 성공: {self._uri}")
+            self._socket.settimeout(1.0)  # Set receive timeout
+            logger.info(f"WebSocket connected: {self._uri}")
             return True
 
         except Exception as e:
-            logger.error(f"WebSocket 연결 실패: {e}")
+            logger.error(f"WebSocket connection failed: {e}")
             self.disconnect()
             return False
 
     def disconnect(self) -> None:
-        """WebSocket 연결 종료"""
+        """Disconnect WebSocket connection"""
         self._connected = False
         if self._socket:
             try:
@@ -199,72 +197,72 @@ class WebSocketClient:
             except Exception:
                 pass
             self._socket = None
-            logger.info("WebSocket 연결 종료")
+            logger.info("WebSocket disconnected")
 
     def send(self, message: str) -> bool:
         """
-        메시지 전송
+        Send message
 
         Args:
-            message: 전송할 메시지
+            message: Message to send
 
         Returns:
-            전송 성공 여부
+            Whether sending succeeded
         """
         if not self._connected or not self._socket:
-            logger.error("WebSocket이 연결되지 않았습니다")
+            logger.error("WebSocket is not connected")
             return False
 
         try:
             frame = self._encode_frame(message)
             self._socket.send(frame)
-            logger.debug(f"메시지 전송: {message}")
+            logger.debug(f"Message sent: {message}")
             return True
         except Exception as e:
-            logger.error(f"메시지 전송 실패: {e}")
+            logger.error(f"Failed to send message: {e}")
             self._connected = False
             return False
 
     def _receive_loop(self) -> None:
-        """메시지 수신 루프 (별도 스레드에서 실행)"""
+        """Message receive loop (runs in separate thread)"""
         while self._running and self._connected:
             if not self._socket:
                 break
             try:
                 data = self._socket.recv(4096)
                 if not data:
-                    logger.warning("WebSocket 연결이 닫혔습니다")
+                    logger.warning("WebSocket connection closed")
                     self._connected = False
                     break
 
                 message = self._decode_frame(data)
                 if message:
-                    # 메시지 핸들러 호출
+                    # Call message handler
                     try:
                         self._message_handler(message)
                     except Exception as e:
-                        logger.error(f"메시지 핸들러 오류: {e}")
+                        logger.error(f"Message handler error: {e}")
 
             except socket.timeout:
                 continue
             except Exception as e:
                 if self._running and self._connected:
-                    logger.error(f"메시지 수신 중 오류: {e}")
+                    logger.error(f"Error receiving message: {e}")
                 self._connected = False
                 break
 
     def _reconnect_loop(self) -> None:
-        """자동 재연결 루프 (별도 스레드에서 실행)"""
+        """Auto reconnect loop (runs in separate thread)"""
         while self._running:
             if not self._connected:
-                logger.info(f"{self._reconnect_interval}초 후 재연결 시도...")
+                logger.info(f"Reconnecting in {self._reconnect_interval} seconds...")
                 time.sleep(self._reconnect_interval)
 
                 if not self._running:
                     break
 
                 if self.connect():
-                    # 재연결 성공 시 수신 스레드 재시작
+                    # Restart receive thread on successful reconnection
                     self._receive_thread = threading.Thread(
                         target=self._receive_loop,
                         name="WebSocketReceiveThread",
@@ -275,16 +273,16 @@ class WebSocketClient:
                 time.sleep(1.0)
 
     def start(self) -> None:
-        """WebSocket 클라이언트 시작 (자동 재연결 포함)"""
+        """Start WebSocket client (with auto reconnection)"""
         if self._running:
-            logger.warning("클라이언트가 이미 실행 중입니다")
+            logger.warning("Client is already running")
             return
 
         self._running = True
 
-        # 초기 연결
+        # Initial connection
         if self.connect():
-            # 수신 스레드 시작
+            # Start receive thread
             self._receive_thread = threading.Thread(
                 target=self._receive_loop,
                 name="WebSocketReceiveThread",
@@ -292,7 +290,7 @@ class WebSocketClient:
             )
             self._receive_thread.start()
 
-        # 재연결 스레드 시작
+        # Start reconnect thread
         self._reconnect_thread = threading.Thread(
             target=self._reconnect_loop,
             name="WebSocketReconnectThread",
@@ -300,31 +298,31 @@ class WebSocketClient:
         )
         self._reconnect_thread.start()
 
-        logger.info("WebSocket 클라이언트 시작")
+        logger.info("WebSocket client started")
 
     def stop(self) -> None:
-        """WebSocket 클라이언트 중지"""
+        """Stop WebSocket client"""
         if not self._running:
-            logger.warning("클라이언트가 실행 중이 아닙니다")
+            logger.warning("Client is not running")
             return
 
         self._running = False
         self.disconnect()
 
-        # 스레드 종료 대기
+        # Wait for threads to finish
         if self._receive_thread:
             self._receive_thread.join(timeout=5.0)
         if self._reconnect_thread:
             self._reconnect_thread.join(timeout=5.0)
 
-        logger.info("WebSocket 클라이언트 중지")
+        logger.info("WebSocket client stopped")
 
     @property
     def is_connected(self) -> bool:
-        """연결 상태 확인"""
+        """Check connection status"""
         return self._connected
 
     @property
     def is_running(self) -> bool:
-        """실행 상태 확인"""
+        """Check running status"""
         return self._running

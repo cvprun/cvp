@@ -11,7 +11,7 @@ from cvp.ws.threading.client import WebSocketClient
 
 
 class SimpleWebSocketServer:
-    """테스트용 간단한 WebSocket 서버"""
+    """Simple WebSocket server for testing"""
 
     MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -23,7 +23,7 @@ class SimpleWebSocketServer:
         self.thread = None
 
     def _perform_handshake(self, client_socket: socket.socket) -> bool:
-        """WebSocket 핸드셰이크 수행"""
+        """Perform WebSocket handshake"""
         try:
             request = client_socket.recv(1024).decode("utf-8")
             headers: dict[str, str] = {}
@@ -54,7 +54,7 @@ class SimpleWebSocketServer:
             return False
 
     def _decode_frame(self, data: bytes) -> str:
-        """WebSocket 프레임 디코딩"""
+        """Decode WebSocket frame"""
         if len(data) < 2:
             return ""
 
@@ -80,7 +80,7 @@ class SimpleWebSocketServer:
         return payload.decode("utf-8")
 
     def _encode_frame(self, message: str) -> bytes:
-        """WebSocket 프레임 인코딩"""
+        """Encode WebSocket frame"""
         payload = message.encode("utf-8")
         payload_length = len(payload)
 
@@ -99,7 +99,7 @@ class SimpleWebSocketServer:
         return bytes(frame)
 
     def _handle_client(self, client_socket: socket.socket):
-        """클라이언트 핸들링"""
+        """Handle client connection"""
         if not self._perform_handshake(client_socket):
             client_socket.close()
             return
@@ -112,7 +112,7 @@ class SimpleWebSocketServer:
 
                 message = self._decode_frame(data)
                 if message:
-                    # 에코 응답
+                    # Echo response
                     response = self._encode_frame(f"Echo: {message}")
                     client_socket.send(response)
         except Exception:
@@ -121,7 +121,7 @@ class SimpleWebSocketServer:
             client_socket.close()
 
     def _accept_loop(self):
-        """클라이언트 연결 수락 루프"""
+        """Client connection accept loop"""
         while self.running:
             try:
                 client_socket, _ = self.server_socket.accept()
@@ -135,7 +135,7 @@ class SimpleWebSocketServer:
                 break
 
     def start(self):
-        """서버 시작"""
+        """Start server"""
         self.running = True
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -147,7 +147,7 @@ class SimpleWebSocketServer:
         self.thread.start()
 
     def stop(self):
-        """서버 중지"""
+        """Stop server"""
         self.running = False
         if self.server_socket:
             self.server_socket.close()
@@ -156,24 +156,24 @@ class SimpleWebSocketServer:
 
 
 class TestWebSocketClient:
-    """threading 기반 WebSocket 클라이언트 테스트"""
+    """Tests for threading-based WebSocket client"""
 
     def test_client_connect_disconnect(self):
-        """클라이언트 연결 및 종료 테스트"""
-        # 테스트용 서버 시작
+        """Test client connection and disconnection"""
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19101)
         server.start()
         time.sleep(0.5)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:19101")
             success = client.connect()
 
             assert success
             assert client.is_connected
 
-            # 연결 종료
+            # Disconnect
             client.disconnect()
 
             assert not client.is_connected
@@ -182,128 +182,128 @@ class TestWebSocketClient:
             server.stop()
 
     def test_client_send_receive(self):
-        """클라이언트 메시지 송수신 테스트"""
-        # 테스트용 서버 시작
+        """Test client message send and receive"""
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19102)
         server.start()
         time.sleep(0.5)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:19102")
             client.connect()
 
-            # 메시지 전송
+            # Send message
             success = client.send("Hello Server")
             assert success
 
             time.sleep(0.1)
 
-            # 연결 종료
+            # Disconnect
             client.disconnect()
 
         finally:
             server.stop()
 
     def test_client_message_handler(self):
-        """클라이언트 메시지 핸들러 테스트"""
+        """Test client message handler"""
         received_messages = []
 
         def message_handler(message: str):
             received_messages.append(message)
 
-        # 테스트용 서버 시작
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19103)
         server.start()
         time.sleep(0.5)
 
         try:
-            # 클라이언트 생성 및 시작
+            # Create and start client
             client = WebSocketClient(
                 "ws://localhost:19103", message_handler=message_handler
             )
             client.start()
 
-            # 연결 대기
+            # Wait for connection
             time.sleep(0.5)
             assert client.is_connected
 
-            # 메시지 전송
+            # Send message
             client.send("Test message")
 
-            # 응답 대기
+            # Wait for response
             time.sleep(0.5)
 
             assert len(received_messages) > 0
             assert "Echo: Test message" in received_messages
 
-            # 클라이언트 중지
+            # Stop client
             client.stop()
 
         finally:
             server.stop()
 
     def test_client_reconnect(self):
-        """클라이언트 재연결 테스트"""
-        # 테스트용 서버 시작
+        """Test client reconnection"""
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19104)
         server.start()
         time.sleep(0.5)
 
         try:
-            # 빠른 재연결을 위해 interval을 짧게 설정
+            # Set short interval for fast reconnection
             client = WebSocketClient("ws://localhost:19104", reconnect_interval=0.5)
             client.start()
 
-            # 연결 대기
+            # Wait for connection
             time.sleep(0.5)
             assert client.is_connected
 
-            # 강제로 연결 종료
+            # Force disconnect
             if client._socket:
                 client._socket.close()
                 client._connected = False
 
-            # 재연결 대기
+            # Wait for reconnection
             time.sleep(1.5)
 
-            # 재연결 확인
+            # Verify reconnection
             assert client.is_connected
 
-            # 클라이언트 중지
+            # Stop client
             client.stop()
 
         finally:
             server.stop()
 
     def test_client_multiple_messages(self):
-        """여러 메시지 송수신 테스트"""
-        # 테스트용 서버 시작
+        """Test multiple message send and receive"""
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19105)
         server.start()
         time.sleep(0.5)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:19105")
             client.connect()
 
-            # 여러 메시지 전송
+            # Send multiple messages
             messages = ["Message 1", "Message 2", "Message 3"]
             for msg in messages:
                 success = client.send(msg)
                 assert success
                 time.sleep(0.1)
 
-            # 연결 종료
+            # Disconnect
             client.disconnect()
 
         finally:
             server.stop()
 
     def test_client_auto_start_with_reconnect(self):
-        """자동 시작 및 재연결 테스트"""
-        # 테스트용 서버 시작
+        """Test auto start and reconnection"""
+        # Start test server
         server = SimpleWebSocketServer("localhost", 19106)
         server.start()
         time.sleep(0.5)
@@ -314,7 +314,7 @@ class TestWebSocketClient:
             def message_handler(message: str):
                 received_messages.append(message)
 
-            # 클라이언트 자동 시작
+            # Auto start client
             client = WebSocketClient(
                 "ws://localhost:19106",
                 reconnect_interval=0.5,
@@ -322,18 +322,18 @@ class TestWebSocketClient:
             )
             client.start()
 
-            # 연결 대기
+            # Wait for connection
             time.sleep(0.5)
             assert client.is_connected
             assert client.is_running
 
-            # 메시지 전송 및 수신
+            # Send and receive message
             client.send("Auto test")
             time.sleep(0.5)
 
             assert len(received_messages) > 0
 
-            # 클라이언트 중지
+            # Stop client
             client.stop()
 
             assert not client.is_running
@@ -342,8 +342,8 @@ class TestWebSocketClient:
             server.stop()
 
     def test_client_connection_failure(self):
-        """연결 실패 테스트"""
-        # 서버 없이 연결 시도
+        """Test connection failure"""
+        # Try to connect without server
         client = WebSocketClient("ws://localhost:19999")
         success = client.connect()
 

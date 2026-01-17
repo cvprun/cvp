@@ -9,13 +9,13 @@ from cvp.ws.asyncio.client import WebSocketClient
 
 
 class TestWebSocketClient:
-    """asyncio 기반 WebSocket 클라이언트 테스트"""
+    """Tests for asyncio-based WebSocket client"""
 
     @pytest.mark.asyncio
     async def test_client_connect_disconnect(self):
-        """클라이언트 연결 및 종료 테스트"""
+        """Test client connection and disconnection"""
 
-        # 테스트용 서버 시작
+        # Start test server
         async def echo_handler(websocket):
             async for message in websocket:
                 await websocket.send(f"Echo: {message}")
@@ -23,13 +23,13 @@ class TestWebSocketClient:
         server = await websockets.serve(echo_handler, "localhost", 18770)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:18770")
             await client.connect()
 
             assert client.is_connected
 
-            # 연결 종료
+            # Disconnect
             await client.disconnect()
 
             assert not client.is_connected
@@ -40,9 +40,9 @@ class TestWebSocketClient:
 
     @pytest.mark.asyncio
     async def test_client_send_receive(self):
-        """클라이언트 메시지 송수신 테스트"""
+        """Test client message send and receive"""
 
-        # 테스트용 서버 시작
+        # Start test server
         async def echo_handler(websocket):
             async for message in websocket:
                 await websocket.send(f"Echo: {message}")
@@ -50,16 +50,16 @@ class TestWebSocketClient:
         server = await websockets.serve(echo_handler, "localhost", 18771)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:18771")
             await client.connect()
 
-            # 메시지 전송 및 수신
+            # Send and receive message
             await client.send("Hello Server")
             response = await client.receive()
             assert response == "Echo: Hello Server"
 
-            # 연결 종료
+            # Disconnect
             await client.disconnect()
 
         finally:
@@ -68,10 +68,10 @@ class TestWebSocketClient:
 
     @pytest.mark.asyncio
     async def test_client_message_handler(self):
-        """클라이언트 메시지 핸들러 테스트"""
+        """Test client message handler"""
         received_messages = []
 
-        # 테스트용 서버 시작
+        # Start test server
         async def echo_handler(websocket):
             async for message in websocket:
                 await websocket.send(f"Echo: {message}")
@@ -79,31 +79,31 @@ class TestWebSocketClient:
         server = await websockets.serve(echo_handler, "localhost", 18772)
 
         try:
-            # 커스텀 메시지 핸들러를 가진 클라이언트 생성
+            # Create client with custom message handler
             class CustomClient(WebSocketClient):
                 async def on_message(self, message: str) -> None:
                     received_messages.append(message)
 
             client = CustomClient("ws://localhost:18772")
 
-            # start() 메서드는 무한 루프이므로 백그라운드 태스크로 실행
+            # Run start() as background task since it's an infinite loop
             client_task = asyncio.create_task(client.start())
 
-            # 클라이언트가 연결될 때까지 대기
+            # Wait for client to connect
             await asyncio.sleep(0.5)
 
             assert client.is_connected
 
-            # 메시지 전송
+            # Send message
             await client.send("Test message")
 
-            # 메시지가 수신될 때까지 대기
+            # Wait for message to be received
             await asyncio.sleep(0.5)
 
             assert len(received_messages) > 0
             assert "Echo: Test message" in received_messages
 
-            # 클라이언트 중지
+            # Stop client
             await client.stop()
             client_task.cancel()
 
@@ -118,9 +118,9 @@ class TestWebSocketClient:
 
     @pytest.mark.asyncio
     async def test_client_reconnect(self):
-        """클라이언트 재연결 테스트"""
+        """Test client reconnection"""
 
-        # 테스트용 서버 시작
+        # Start test server
         async def echo_handler(websocket):
             async for message in websocket:
                 await websocket.send(f"Echo: {message}")
@@ -128,27 +128,27 @@ class TestWebSocketClient:
         server = await websockets.serve(echo_handler, "localhost", 18773)
 
         try:
-            # 빠른 재연결을 위해 interval을 짧게 설정
+            # Set short interval for fast reconnection
             client = WebSocketClient("ws://localhost:18773", reconnect_interval=0.5)
 
-            # 클라이언트 시작 (백그라운드)
+            # Start client (background)
             client_task = asyncio.create_task(client.start())
 
-            # 연결 대기
+            # Wait for connection
             await asyncio.sleep(0.5)
             assert client.is_connected
 
-            # 강제로 연결 종료
+            # Force disconnect
             if client._ws:
                 await client._ws.close()
 
-            # 재연결 대기
+            # Wait for reconnection
             await asyncio.sleep(1.5)
 
-            # 재연결 확인
+            # Verify reconnection
             assert client.is_connected
 
-            # 클라이언트 중지
+            # Stop client
             await client.stop()
             client_task.cancel()
 
@@ -163,9 +163,9 @@ class TestWebSocketClient:
 
     @pytest.mark.asyncio
     async def test_client_multiple_messages(self):
-        """여러 메시지 송수신 테스트"""
+        """Test multiple message send and receive"""
 
-        # 테스트용 서버 시작
+        # Start test server
         async def echo_handler(websocket):
             async for message in websocket:
                 await websocket.send(f"Echo: {message}")
@@ -173,18 +173,18 @@ class TestWebSocketClient:
         server = await websockets.serve(echo_handler, "localhost", 18774)
 
         try:
-            # 클라이언트 생성 및 연결
+            # Create and connect client
             client = WebSocketClient("ws://localhost:18774")
             await client.connect()
 
-            # 여러 메시지 전송 및 수신
+            # Send and receive multiple messages
             messages = ["Message 1", "Message 2", "Message 3"]
             for msg in messages:
                 await client.send(msg)
                 response = await client.receive()
                 assert response == f"Echo: {msg}"
 
-            # 연결 종료
+            # Disconnect
             await client.disconnect()
 
         finally:

@@ -5,24 +5,16 @@ from typing import Any, Awaitable, Callable, Optional, Set
 
 import websockets
 
-from cvp.logging.loggers import logger
+from cvp.logging.loggers import ws_logger as logger
 
 
 class WebSocketServer:
-    """순수 asyncio 기반 WebSocket 서버"""
-
     def __init__(
         self,
         host: str = "localhost",
         port: int = 8765,
         message_handler: Optional[Callable[[Any, str], Awaitable[None]]] = None,
     ):
-        """
-        Args:
-            host: 서버 호스트 주소
-            port: 서버 포트 번호
-            message_handler: 메시지 처리 핸들러 함수
-        """
         self._host = host
         self._port = port
         self._message_handler = message_handler or self._default_message_handler
@@ -32,52 +24,52 @@ class WebSocketServer:
 
     async def _default_message_handler(self, websocket: Any, message: str) -> None:
         """
-        기본 메시지 핸들러 - 에코 서버
+        Default message handler - echo server
 
         Args:
-            websocket: 클라이언트 WebSocket 연결
-            message: 수신된 메시지
+            websocket: Client WebSocket connection
+            message: Received message
         """
-        logger.info(f"수신된 메시지: {message}")
-        # 에코: 받은 메시지를 그대로 돌려보냄
+        logger.info(f"Received message: {message}")
+        # Echo: send back the received message
         await websocket.send(f"Echo: {message}")
 
     async def _handle_client(self, websocket: Any) -> None:
         """
-        클라이언트 연결 처리
+        Handle client connection
 
         Args:
-            websocket: 클라이언트 WebSocket 연결
+            websocket: Client WebSocket connection
         """
-        # 클라이언트 등록
+        # Register client
         self._clients.add(websocket)
         client_info = f"{websocket.remote_address[0]}:{websocket.remote_address[1]}"
-        logger.info(f"클라이언트 연결: {client_info} (총 {len(self._clients)}명)")
+        logger.info(f"Client connected: {client_info} (total {len(self._clients)})")
 
         try:
             async for message in websocket:
                 try:
-                    # 메시지 핸들러 호출
+                    # Call message handler
                     await self._message_handler(websocket, message)
                 except Exception as e:
-                    logger.error(f"메시지 처리 중 오류 ({client_info}): {e}")
+                    logger.error(f"Error processing message ({client_info}): {e}")
                     await websocket.send(f"Error: {str(e)}")
 
         except websockets.exceptions.ConnectionClosed:
-            logger.info(f"클라이언트 연결 종료: {client_info}")
+            logger.info(f"Client disconnected: {client_info}")
         except Exception as e:
-            logger.error(f"클라이언트 처리 중 오류 ({client_info}): {e}")
+            logger.error(f"Error handling client ({client_info}): {e}")
         finally:
-            # 클라이언트 제거
+            # Remove client
             self._clients.discard(websocket)
             logger.info(
-                f"클라이언트 제거: {client_info} (남은 연결: {len(self._clients)}명)"
+                f"Client removed: {client_info} (remaining {len(self._clients)})"
             )
 
     async def start(self) -> None:
-        """WebSocket 서버 시작"""
+        """Start WebSocket server"""
         if self._running:
-            logger.warning("서버가 이미 실행 중입니다")
+            logger.warning("Server is already running")
             return
 
         self._running = True
@@ -86,28 +78,28 @@ class WebSocketServer:
             self._handle_client, self._host, self._port
         ) as server:
             self._server = server
-            logger.info(f"WebSocket 서버 시작: ws://{self._host}:{self._port}")
+            logger.info(f"WebSocket server started: ws://{self._host}:{self._port}")
 
-            # 서버가 중지될 때까지 대기
-            await asyncio.Future()  # 무한 대기
+            # Wait until server stops
+            await asyncio.Future()  # Infinite wait
 
     async def stop(self) -> None:
-        """서버 중지"""
+        """Stop server"""
         if not self._running:
-            logger.warning("서버가 실행 중이 아닙니다")
+            logger.warning("Server is not running")
             return
 
         self._running = False
 
-        # 모든 클라이언트 연결 종료
+        # Close all client connections
         if self._clients:
-            logger.info(f"{len(self._clients)}개의 클라이언트 연결 종료 중...")
+            logger.info(f"Closing {len(self._clients)} client connection(s)...")
             await self._close_all_clients()
 
-        logger.info("WebSocket 서버 중지")
+        logger.info("WebSocket server stopped")
 
     async def _close_all_clients(self) -> None:
-        """모든 클라이언트 연결 종료"""
+        """Close all client connections"""
         if self._clients:
             await asyncio.gather(
                 *[client.close() for client in self._clients],
@@ -116,18 +108,18 @@ class WebSocketServer:
 
     async def broadcast(self, message: str) -> None:
         """
-        모든 연결된 클라이언트에게 메시지 브로드캐스트
+        Broadcast message to all connected clients
 
         Args:
-            message: 전송할 메시지
+            message: Message to send
         """
         if not self._clients:
-            logger.debug("연결된 클라이언트가 없습니다")
+            logger.debug("No connected clients")
             return
 
-        logger.debug(f"{len(self._clients)}명에게 브로드캐스트: {message}")
+        logger.debug(f"Broadcasting to {len(self._clients)} client(s): {message}")
 
-        # 연결이 끊긴 클라이언트 제거를 위한 리스트
+        # List for removing disconnected clients
         disconnected = set()
 
         for client in self._clients:
@@ -136,18 +128,18 @@ class WebSocketServer:
             except websockets.exceptions.ConnectionClosed:
                 disconnected.add(client)
             except Exception as e:
-                logger.error(f"브로드캐스트 중 오류: {e}")
+                logger.error(f"Error during broadcast: {e}")
                 disconnected.add(client)
 
-        # 연결이 끊긴 클라이언트 제거
+        # Remove disconnected clients
         self._clients -= disconnected
 
     @property
     def is_running(self) -> bool:
-        """서버 실행 상태 확인"""
+        """Check server running status"""
         return self._running
 
     @property
     def client_count(self) -> int:
-        """연결된 클라이언트 수"""
+        """Number of connected clients"""
         return len(self._clients)

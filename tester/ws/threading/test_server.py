@@ -9,14 +9,14 @@ from cvp.ws.threading.server import WebSocketServer
 
 
 class TestWebSocketServer:
-    """threading 기반 WebSocket 서버 테스트"""
+    """Tests for threading-based WebSocket server"""
 
     def _create_websocket_client(self, host: str, port: int) -> socket.socket:
-        """WebSocket 클라이언트 소켓 생성 및 핸드셰이크"""
+        """Create WebSocket client socket and perform handshake"""
         client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         client.connect((host, port))
 
-        # WebSocket 핸드셰이크
+        # WebSocket handshake
         key = b64encode(b"test-key-1234567").decode()
         request = (
             "GET / HTTP/1.1\r\n"
@@ -29,14 +29,14 @@ class TestWebSocketServer:
         )
         client.send(request.encode())
 
-        # 핸드셰이크 응답 수신
+        # Receive handshake response
         response = client.recv(1024)
         assert b"101 Switching Protocols" in response
 
         return client
 
     def _encode_message(self, message: str) -> bytes:
-        """WebSocket 프레임 인코딩 (클라이언트 -> 서버)"""
+        """Encode WebSocket frame (client -> server)"""
         import struct
         from os import urandom
 
@@ -54,11 +54,11 @@ class TestWebSocketServer:
             frame.append(0x80 | 127)
             frame.extend(struct.pack(">Q", payload_length))
 
-        # 마스킹 키
+        # Masking key
         masking_key = urandom(4)
         frame.extend(masking_key)
 
-        # 페이로드 마스킹
+        # Mask payload
         masked_payload = bytearray(payload)
         for i in range(len(masked_payload)):
             masked_payload[i] ^= masking_key[i % 4]
@@ -67,7 +67,7 @@ class TestWebSocketServer:
         return bytes(frame)
 
     def _decode_message(self, data: bytes) -> str:
-        """WebSocket 프레임 디코딩 (서버 -> 클라이언트)"""
+        """Decode WebSocket frame (server -> client)"""
         import struct
 
         if len(data) < 2:
@@ -89,37 +89,37 @@ class TestWebSocketServer:
         return payload.decode("utf-8")
 
     def test_server_start_stop(self):
-        """서버 시작 및 중지 테스트"""
+        """Test server start and stop"""
         server = WebSocketServer(host="localhost", port=19001)
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
         assert server.is_running
         assert server.client_count == 0
 
-        # 서버 중지
+        # Stop server
         server.stop()
         time.sleep(0.5)
 
         assert not server.is_running
 
     def test_server_client_connection(self):
-        """클라이언트 연결 테스트"""
+        """Test client connection"""
         server = WebSocketServer(host="localhost", port=19002)
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
-        # 클라이언트 연결
+        # Connect client
         client = self._create_websocket_client("localhost", 19002)
         time.sleep(0.3)
 
         assert server.client_count == 1
 
-        # 메시지 전송 및 수신 (에코 서버)
+        # Send and receive message (echo server)
         message = "Hello"
         client.send(self._encode_message(message))
         time.sleep(0.1)
@@ -128,22 +128,22 @@ class TestWebSocketServer:
         decoded = self._decode_message(response)
         assert decoded == f"Echo: {message}"
 
-        # 클라이언트 종료
+        # Close client
         client.close()
         time.sleep(0.3)
 
         assert server.client_count == 0
 
-        # 서버 중지
+        # Stop server
         server.stop()
 
     def test_server_custom_message_handler(self):
-        """커스텀 메시지 핸들러 테스트"""
+        """Test custom message handler"""
         received_messages = []
 
         def custom_handler(client_socket: socket.socket, message: str):
             received_messages.append(message)
-            # 응답 전송
+            # Send response
             frame = bytearray([0x81])  # FIN=1, opcode=1
             payload = f"Received: {message}".encode("utf-8")
             frame.append(len(payload))
@@ -154,11 +154,11 @@ class TestWebSocketServer:
             host="localhost", port=19003, message_handler=custom_handler
         )
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
-        # 클라이언트 연결 및 메시지 전송
+        # Connect client and send message
         client = self._create_websocket_client("localhost", 19003)
         time.sleep(0.1)
 
@@ -170,21 +170,21 @@ class TestWebSocketServer:
         assert decoded == "Received: Test message"
         assert "Test message" in received_messages
 
-        # 클라이언트 종료
+        # Close client
         client.close()
 
-        # 서버 중지
+        # Stop server
         server.stop()
 
     def test_server_broadcast(self):
-        """브로드캐스트 테스트"""
+        """Test broadcast"""
         server = WebSocketServer(host="localhost", port=19004)
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
-        # 여러 클라이언트 연결
+        # Connect multiple clients
         clients = []
         for _ in range(3):
             client = self._create_websocket_client("localhost", 19004)
@@ -193,38 +193,38 @@ class TestWebSocketServer:
         time.sleep(0.3)
         assert server.client_count == 3
 
-        # 브로드캐스트
+        # Broadcast
         server.broadcast("Broadcast message")
         time.sleep(0.1)
 
-        # 모든 클라이언트가 메시지 수신 확인
+        # Verify all clients received the message
         for client in clients:
             response = client.recv(1024)
             decoded = self._decode_message(response)
             assert decoded == "Broadcast message"
 
-        # 클라이언트 연결 종료
+        # Close clients
         for client in clients:
             client.close()
 
         time.sleep(0.3)
 
-        # 서버 중지
+        # Stop server
         server.stop()
 
     def test_server_multiple_messages(self):
-        """여러 메시지 송수신 테스트"""
+        """Test multiple message send and receive"""
         server = WebSocketServer(host="localhost", port=19005)
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
-        # 클라이언트 연결
+        # Connect client
         client = self._create_websocket_client("localhost", 19005)
         time.sleep(0.1)
 
-        # 여러 메시지 전송
+        # Send multiple messages
         messages = ["Message 1", "Message 2", "Message 3"]
         for msg in messages:
             client.send(self._encode_message(msg))
@@ -233,21 +233,21 @@ class TestWebSocketServer:
             decoded = self._decode_message(response)
             assert decoded == f"Echo: {msg}"
 
-        # 클라이언트 종료
+        # Close client
         client.close()
 
-        # 서버 중지
+        # Stop server
         server.stop()
 
     def test_server_concurrent_clients(self):
-        """동시 다중 클라이언트 테스트"""
+        """Test concurrent multiple clients"""
         server = WebSocketServer(host="localhost", port=19006)
 
-        # 서버 시작
+        # Start server
         server.start()
         time.sleep(0.5)
 
-        # 여러 클라이언트가 동시에 메시지 전송
+        # Multiple clients send messages simultaneously
         def client_worker(client_id: int):
             client = self._create_websocket_client("localhost", 19006)
             time.sleep(0.1)
@@ -262,18 +262,18 @@ class TestWebSocketServer:
 
             client.close()
 
-        # 5개의 클라이언트 스레드 생성
+        # Create 5 client threads
         threads = []
         for i in range(5):
             thread = threading.Thread(target=client_worker, args=(i,))
             threads.append(thread)
             thread.start()
 
-        # 모든 스레드 종료 대기
+        # Wait for all threads to complete
         for thread in threads:
             thread.join(timeout=5.0)
 
         time.sleep(0.5)
 
-        # 서버 중지
+        # Stop server
         server.stop()
