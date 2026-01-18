@@ -1,63 +1,51 @@
 # -*- coding: utf-8 -*-
 
-import asyncio
-from typing import Optional
+from asyncio import get_running_loop
 
+from cvp.aio.run import aio_run
 from cvp.context.context import Context
-from cvp.logging.loggers import logger
+from cvp.logging.loggers import agent_logger as logger
+from cvp.variables import AGENT_WS_URI, LOGGING_STEP, SLOW_CALLBACK_DURATION
 from cvp.ws.asyncio.client import WebSocketClient
 
 
 class AgentApplication:
-    def __init__(self, context: Context):
+    def __init__(
+        self,
+        context: Context,
+        ws_uri: str = AGENT_WS_URI,
+        logging_step=LOGGING_STEP,
+        slow_callback_duration=SLOW_CALLBACK_DURATION,
+        use_uvloop=False,
+        debug=False,
+        verbose=0,
+    ):
         self._context = context
-        self._ws_client: Optional[WebSocketClient] = None
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
-
-    def start(self) -> None:
-        # WebSocket URI 설정 (환경 변수나 설정 파일에서 가져올 수 있음)
-        ws_uri = "ws://localhost:8765"  # 기본값
-
-        # 설정에서 URI 가져오기 (있다면)
-        if hasattr(self._context, "config"):
-            ws_uri = getattr(self._context.config, "agent_ws_uri", ws_uri)
-
-        logger.info(f"Agent 애플리케이션 시작: {ws_uri}")
-
-        # WebSocket 클라이언트 생성
         self._ws_client = WebSocketClient(uri=ws_uri)
+        self._logging_step = logging_step
+        self._slow_callback_duration = slow_callback_duration
+        self._use_uvloop = use_uvloop
+        self._debug = debug
+        self._verbose = verbose
 
-        # 이벤트 루프 생성 및 실행
-        try:
-            self._loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(self._loop)
+    async def on_main(self) -> None:
+        logger.info(f"Starting agent application: {self._ws_client.uri}")
 
-            # WebSocket 클라이언트 시작
-            self._loop.run_until_complete(self._run())
-        except KeyboardInterrupt:
-            logger.info("Agent 애플리케이션 중지 요청")
-        finally:
-            self._cleanup()
-
-    async def _run(self) -> None:
-        if not self._ws_client:
-            logger.error("WebSocket 클라이언트가 초기화되지 않았습니다")
-            return
+        loop = get_running_loop()
+        loop.slow_callback_duration = self._slow_callback_duration
+        loop.set_debug(self._debug)
 
         try:
-            # WebSocket 클라이언트 시작
             await self._ws_client.start()
         except Exception as e:
-            logger.error(f"Agent 실행 중 오류: {e}")
+            logger.error(f"Agent runtime error: {e}")
             raise
+        finally:
+            await self._ws_client.stop()
+            logger.info("Agent application stopped")
 
-    def _cleanup(self) -> None:
-        if self._ws_client:
-            # WebSocket 클라이언트 중지
-            if self._loop and not self._loop.is_closed():
-                self._loop.run_until_complete(self._ws_client.stop())
-
-        if self._loop:
-            self._loop.close()
-
-        logger.info("Agent 애플리케이션 종료")
+    def start(self) -> None:
+        try:
+            aio_run(self.on_main(), self._use_uvloop)
+        except (KeyboardInterrupt, InterruptedError):
+            logger.warning("Interrupt signal detected")

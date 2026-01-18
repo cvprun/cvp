@@ -9,6 +9,7 @@ from typing import Final, List, NamedTuple, Optional, Sequence
 from cvp.logging.logging import SEVERITIES, SEVERITY_NAME_INFO
 from cvp.system.environ import get_typed_environ_value as get_eval
 from cvp.system.environ_keys import (
+    CVP_AGENT_WS_URI,
     CVP_COLORED_LOGGING,
     CVP_DEBUG,
     CVP_DOTENV_PATH,
@@ -23,6 +24,7 @@ from cvp.system.environ_keys import (
     SDL_VIDEO_X11_FORCE_EGL,
 )
 from cvp.variables import (
+    AGENT_WS_URI,
     CVP_HOME_DIRNAME,
     DOTENV_LOCAL_FILENAME,
     FONT_DEFAULT_NAME,
@@ -39,13 +41,6 @@ CMD_PLAYER_HELP: Final[str] = "Desktop GUI"
 CMD_PLAYER_EPILOG = f"""
 Simply usage:
   {PROG} {CMD_PLAYER}
-"""
-
-CMD_WORKER: Final[str] = "worker"
-CMD_WORKER_HELP: Final[str] = "The flow graph for worker"
-CMD_WORKER_EPILOG = f"""
-Simply usage:
-  {PROG} {CMD_WORKER}
 """
 
 CMD_AGENT: Final[str] = "agent"
@@ -69,7 +64,7 @@ Simply usage:
   {PROG} {CMD_TESTER}
 """
 
-CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_WORKER, CMD_AGENT, CMD_CLI, CMD_TESTER
+CMDS: Final[Sequence[str]] = CMD_PLAYER, CMD_AGENT, CMD_CLI, CMD_TESTER
 DEFAULT_CMD: Final[str] = CMD_PLAYER
 
 DEFAULT_SEVERITY: Final[str] = SEVERITY_NAME_INFO
@@ -209,15 +204,23 @@ def add_player_parser(subparsers) -> None:
     assert isinstance(parser, ArgumentParser)
 
 
-def add_worker_parser(subparsers) -> None:
+def add_agent_parser(subparsers) -> None:
     # noinspection SpellCheckingInspection
     parser = subparsers.add_parser(
-        name=CMD_WORKER,
-        help=CMD_WORKER_HELP,
+        name=CMD_AGENT,
+        help=CMD_AGENT_HELP,
         formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD_WORKER_EPILOG,
+        epilog=CMD_AGENT_EPILOG,
     )
     assert isinstance(parser, ArgumentParser)
+
+    parser.add_argument(
+        "--ws-uri",
+        type=str,
+        default=get_eval(CVP_AGENT_WS_URI, AGENT_WS_URI),
+        metavar="uri",
+        help=f"WebSocket server URI (default: '{AGENT_WS_URI}')",
+    )
 
     logging_group = parser.add_mutually_exclusive_group()
     logging_group.add_argument(
@@ -282,17 +285,6 @@ def add_worker_parser(subparsers) -> None:
     )
 
 
-def add_agent_parser(subparsers) -> None:
-    # noinspection SpellCheckingInspection
-    parser = subparsers.add_parser(
-        name=CMD_AGENT,
-        help=CMD_AGENT_HELP,
-        formatter_class=RawDescriptionHelpFormatter,
-        epilog=CMD_AGENT_EPILOG,
-    )
-    assert isinstance(parser, ArgumentParser)
-
-
 def add_cli_parser(subparsers) -> None:
     # noinspection SpellCheckingInspection
     parser = subparsers.add_parser(
@@ -342,7 +334,6 @@ def default_argument_parser() -> ArgumentParser:
 
     subparsers = parser.add_subparsers(dest="cmd")
     add_player_parser(subparsers)
-    add_worker_parser(subparsers)
     add_agent_parser(subparsers)
     add_cli_parser(subparsers)
     add_tester_parser(subparsers)

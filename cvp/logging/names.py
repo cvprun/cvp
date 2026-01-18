@@ -4,6 +4,7 @@ from typing import Final
 
 CVP_LOGGER_NAME: Final[str] = "cvp"  # Project root logger
 
+CVP_AGENT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.agent"
 CVP_CANVAS_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.canvas"
 CVP_CHAT_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.chat"
 CVP_DOWNLOAD_LOGGER_NAME: Final[str] = f"{CVP_LOGGER_NAME}.download"

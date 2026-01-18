@@ -6,6 +6,7 @@ from cvp.logging import names
 
 logger = getLogger(names.CVP_LOGGER_NAME)
 
+agent_logger = getLogger(names.CVP_AGENT_LOGGER_NAME)
 canvas_logger = getLogger(names.CVP_CANVAS_LOGGER_NAME)
 chat_logger = getLogger(names.CVP_CHAT_LOGGER_NAME)
 download_logger = getLogger(names.CVP_DOWNLOAD_LOGGER_NAME)

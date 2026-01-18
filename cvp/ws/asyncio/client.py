@@ -23,6 +23,10 @@ class WebSocketClient:
         self._running = False
         self._reconnect_task: Optional[Task] = None
 
+    @property
+    def uri(self) -> str:
+        return self._uri
+
     async def connect(self) -> None:
         try:
             self._ws = await websockets.connect(self._uri)
