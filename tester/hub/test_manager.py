@@ -7,9 +7,9 @@ from base64 import b64encode
 from os import urandom
 from unittest import TestCase, main
 
-from cvp.context.hub import HubManager
+from cvp.hub.agent_handler import MSG_TYPE_PAT, MSG_TYPE_PIT
+from cvp.hub.manager import HubManager
 from cvp.protos.agent_pb2 import Pat, Pit
-from cvp.ws.handlers.agent_handler import MSG_TYPE_PAT, MSG_TYPE_PIT
 from cvp.ws.handlers.protobuf_handler import ProtobufHandler
 
 

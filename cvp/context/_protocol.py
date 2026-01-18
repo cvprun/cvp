@@ -7,9 +7,9 @@ from typing import Protocol, runtime_checkable
 from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
-from cvp.context.hub import HubManager
 from cvp.download.manager import DownloadManager
 from cvp.flow.manager import FlowManager
+from cvp.hub.manager import HubManager
 from cvp.ime.manager import ImeManager
 from cvp.keyring.root import RootKeyring
 from cvp.media.manager import MediaManager

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from cvp.hub.agent_handler import AgentHandler
 from cvp.logging.loggers import hub_logger as logger
-from cvp.ws.handlers.agent_handler import AgentHandler
 from cvp.ws.threading.server import WebSocketServer
 
 

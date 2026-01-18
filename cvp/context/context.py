@@ -11,7 +11,6 @@ from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context._protocol import ContextProtocol
-from cvp.context.hub import HubManager
 from cvp.context.mixins import ContextMixins
 from cvp.download.manager import DownloadManager
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
@@ -19,6 +18,7 @@ from cvp.flow.graph import FlowGraph
 from cvp.flow.manager import FlowManager
 from cvp.flow.node import FlowNode
 from cvp.flow.runner import FlowRunner
+from cvp.hub.manager import HubManager
 from cvp.ime.manager import ImeManager
 from cvp.keyring.root import RootKeyring
 from cvp.logging.loggers import logger
