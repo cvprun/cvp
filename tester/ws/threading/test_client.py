@@ -6,6 +6,8 @@ import threading
 import time
 from base64 import b64encode
 from hashlib import sha1
+from typing import Dict
+from unittest import TestCase, main
 
 from cvp.ws.threading.client import WebSocketClient
 
@@ -18,15 +20,14 @@ class SimpleWebSocketServer:
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
-        self.server_socket = None
+        self.server_socket: socket.socket | None = None
         self.running = False
-        self.thread = None
+        self.thread: threading.Thread | None = None
 
     def _perform_handshake(self, client_socket: socket.socket) -> bool:
-        """Perform WebSocket handshake"""
         try:
             request = client_socket.recv(1024).decode("utf-8")
-            headers: dict[str, str] = {}
+            headers: Dict[str, str] = {}
             lines = request.split("\r\n")
             for line in lines[1:]:
                 if ": " in line:
@@ -54,7 +55,6 @@ class SimpleWebSocketServer:
             return False
 
     def _decode_frame(self, data: bytes) -> str:
-        """Decode WebSocket frame"""
         if len(data) < 2:
             return ""
 
@@ -80,11 +80,10 @@ class SimpleWebSocketServer:
         return payload.decode("utf-8")
 
     def _encode_frame(self, message: str) -> bytes:
-        """Encode WebSocket frame"""
         payload = message.encode("utf-8")
         payload_length = len(payload)
 
-        frame = bytearray([0x81])  # FIN=1, opcode=1
+        frame = bytearray([0x81])
 
         if payload_length <= 125:
             frame.append(payload_length)
@@ -98,8 +97,7 @@ class SimpleWebSocketServer:
         frame.extend(payload)
         return bytes(frame)
 
-    def _handle_client(self, client_socket: socket.socket):
-        """Handle client connection"""
+    def _handle_client(self, client_socket: socket.socket) -> None:
         if not self._perform_handshake(client_socket):
             client_socket.close()
             return
@@ -112,7 +110,6 @@ class SimpleWebSocketServer:
 
                 message = self._decode_frame(data)
                 if message:
-                    # Echo response
                     response = self._encode_frame(f"Echo: {message}")
                     client_socket.send(response)
         except Exception:
@@ -120,10 +117,11 @@ class SimpleWebSocketServer:
         finally:
             client_socket.close()
 
-    def _accept_loop(self):
-        """Client connection accept loop"""
+    def _accept_loop(self) -> None:
         while self.running:
             try:
+                if self.server_socket is None:
+                    break
                 client_socket, _ = self.server_socket.accept()
                 client_thread = threading.Thread(
                     target=self._handle_client, args=(client_socket,), daemon=True
@@ -134,8 +132,7 @@ class SimpleWebSocketServer:
             except Exception:
                 break
 
-    def start(self):
-        """Start server"""
+    def start(self) -> None:
         self.running = True
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -146,8 +143,7 @@ class SimpleWebSocketServer:
         self.thread = threading.Thread(target=self._accept_loop, daemon=True)
         self.thread.start()
 
-    def stop(self):
-        """Stop server"""
+    def stop(self) -> None:
         self.running = False
         if self.server_socket:
             self.server_socket.close()
@@ -155,155 +151,122 @@ class SimpleWebSocketServer:
             self.thread.join(timeout=2.0)
 
 
-class TestWebSocketClient:
-    """Tests for threading-based WebSocket client"""
-
-    def test_client_connect_disconnect(self):
-        """Test client connection and disconnection"""
-        # Start test server
+class TestWebSocketClient(TestCase):
+    def test_client_connect_disconnect(self) -> None:
         server = SimpleWebSocketServer("localhost", 19101)
         server.start()
         time.sleep(0.5)
 
         try:
-            # Create and connect client
             client = WebSocketClient("ws://localhost:19101")
             success = client.connect()
 
-            assert success
-            assert client.is_connected
+            self.assertTrue(success)
+            self.assertTrue(client.is_connected)
 
-            # Disconnect
             client.disconnect()
 
-            assert not client.is_connected
+            self.assertFalse(client.is_connected)
 
         finally:
             server.stop()
 
-    def test_client_send_receive(self):
-        """Test client message send and receive"""
-        # Start test server
+    def test_client_send_receive(self) -> None:
         server = SimpleWebSocketServer("localhost", 19102)
         server.start()
         time.sleep(0.5)
 
         try:
-            # Create and connect client
             client = WebSocketClient("ws://localhost:19102")
             client.connect()
 
-            # Send message
             success = client.send("Hello Server")
-            assert success
+            self.assertTrue(success)
 
             time.sleep(0.1)
 
-            # Disconnect
             client.disconnect()
 
         finally:
             server.stop()
 
-    def test_client_message_handler(self):
-        """Test client message handler"""
+    def test_client_message_handler(self) -> None:
         received_messages = []
 
-        def message_handler(message: str):
+        def message_handler(message: str) -> None:
             received_messages.append(message)
 
-        # Start test server
         server = SimpleWebSocketServer("localhost", 19103)
         server.start()
         time.sleep(0.5)
 
         try:
-            # Create and start client
             client = WebSocketClient(
                 "ws://localhost:19103", message_handler=message_handler
             )
             client.start()
 
-            # Wait for connection
             time.sleep(0.5)
-            assert client.is_connected
+            self.assertTrue(client.is_connected)
 
-            # Send message
             client.send("Test message")
 
-            # Wait for response
             time.sleep(0.5)
 
-            assert len(received_messages) > 0
-            assert "Echo: Test message" in received_messages
+            self.assertGreater(len(received_messages), 0)
+            self.assertIn("Echo: Test message", received_messages)
 
-            # Stop client
             client.stop()
 
         finally:
             server.stop()
 
-    def test_client_reconnect(self):
-        """Test client reconnection"""
-        # Start test server
+    def test_client_reconnect(self) -> None:
         server = SimpleWebSocketServer("localhost", 19104)
         server.start()
         time.sleep(0.5)
 
         try:
-            # Set short interval for fast reconnection
             client = WebSocketClient("ws://localhost:19104", reconnect_interval=0.5)
             client.start()
 
-            # Wait for connection
             time.sleep(0.5)
-            assert client.is_connected
+            self.assertTrue(client.is_connected)
 
-            # Force disconnect
             if client._socket:
                 client._socket.close()
                 client._connected = False
 
-            # Wait for reconnection
             time.sleep(1.5)
 
-            # Verify reconnection
-            assert client.is_connected
+            self.assertTrue(client.is_connected)
 
-            # Stop client
             client.stop()
 
         finally:
             server.stop()
 
-    def test_client_multiple_messages(self):
-        """Test multiple message send and receive"""
-        # Start test server
+    def test_client_multiple_messages(self) -> None:
         server = SimpleWebSocketServer("localhost", 19105)
         server.start()
         time.sleep(0.5)
 
         try:
-            # Create and connect client
             client = WebSocketClient("ws://localhost:19105")
             client.connect()
 
-            # Send multiple messages
             messages = ["Message 1", "Message 2", "Message 3"]
             for msg in messages:
                 success = client.send(msg)
-                assert success
+                self.assertTrue(success)
                 time.sleep(0.1)
 
-            # Disconnect
             client.disconnect()
 
         finally:
             server.stop()
 
-    def test_client_auto_start_with_reconnect(self):
-        """Test auto start and reconnection"""
-        # Start test server
+    def test_client_auto_start_with_reconnect(self) -> None:
         server = SimpleWebSocketServer("localhost", 19106)
         server.start()
         time.sleep(0.5)
@@ -311,10 +274,9 @@ class TestWebSocketClient:
         try:
             received_messages = []
 
-            def message_handler(message: str):
+            def message_handler(message: str) -> None:
                 received_messages.append(message)
 
-            # Auto start client
             client = WebSocketClient(
                 "ws://localhost:19106",
                 reconnect_interval=0.5,
@@ -322,30 +284,29 @@ class TestWebSocketClient:
             )
             client.start()
 
-            # Wait for connection
             time.sleep(0.5)
-            assert client.is_connected
-            assert client.is_running
+            self.assertTrue(client.is_connected)
+            self.assertTrue(client.is_running)
 
-            # Send and receive message
             client.send("Auto test")
             time.sleep(0.5)
 
-            assert len(received_messages) > 0
+            self.assertGreater(len(received_messages), 0)
 
-            # Stop client
             client.stop()
 
-            assert not client.is_running
+            self.assertFalse(client.is_running)
 
         finally:
             server.stop()
 
-    def test_client_connection_failure(self):
-        """Test connection failure"""
-        # Try to connect without server
+    def test_client_connection_failure(self) -> None:
         client = WebSocketClient("ws://localhost:19999")
         success = client.connect()
 
-        assert not success
-        assert not client.is_connected
+        self.assertFalse(success)
+        self.assertFalse(client.is_connected)
+
+
+if __name__ == "__main__":
+    main()

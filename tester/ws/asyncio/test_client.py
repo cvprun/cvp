@@ -1,192 +1,170 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+from unittest import TestCase, main
 
-import pytest
 import websockets
 
 from cvp.ws.asyncio.client import WebSocketClient
 
 
-class TestWebSocketClient:
-    """Tests for asyncio-based WebSocket client"""
+class TestWebSocketClient(TestCase):
+    def test_client_connect_disconnect(self) -> None:
+        async def run_test() -> None:
+            async def echo_handler(websocket):
+                async for message in websocket:
+                    await websocket.send(f"Echo: {message}")
 
-    @pytest.mark.asyncio
-    async def test_client_connect_disconnect(self):
-        """Test client connection and disconnection"""
+            server = await websockets.serve(echo_handler, "localhost", 18770)
 
-        # Start test server
-        async def echo_handler(websocket):
-            async for message in websocket:
-                await websocket.send(f"Echo: {message}")
+            try:
+                client = WebSocketClient("ws://localhost:18770")
+                await client.connect()
 
-        server = await websockets.serve(echo_handler, "localhost", 18770)
+                self.assertTrue(client.is_connected)
 
-        try:
-            # Create and connect client
-            client = WebSocketClient("ws://localhost:18770")
-            await client.connect()
+                await client.disconnect()
 
-            assert client.is_connected
+                self.assertFalse(client.is_connected)
 
-            # Disconnect
-            await client.disconnect()
+            finally:
+                server.close()
+                await server.wait_closed()
 
-            assert not client.is_connected
+        asyncio.run(run_test())
 
-        finally:
-            server.close()
-            await server.wait_closed()
+    def test_client_send_receive(self) -> None:
+        async def run_test() -> None:
+            async def echo_handler(websocket):
+                async for message in websocket:
+                    await websocket.send(f"Echo: {message}")
 
-    @pytest.mark.asyncio
-    async def test_client_send_receive(self):
-        """Test client message send and receive"""
+            server = await websockets.serve(echo_handler, "localhost", 18771)
 
-        # Start test server
-        async def echo_handler(websocket):
-            async for message in websocket:
-                await websocket.send(f"Echo: {message}")
+            try:
+                client = WebSocketClient("ws://localhost:18771")
+                await client.connect()
 
-        server = await websockets.serve(echo_handler, "localhost", 18771)
+                await client.send("Hello Server")
+                response = await client.receive()
+                self.assertEqual("Echo: Hello Server", response)
 
-        try:
-            # Create and connect client
-            client = WebSocketClient("ws://localhost:18771")
-            await client.connect()
+                await client.disconnect()
 
-            # Send and receive message
-            await client.send("Hello Server")
-            response = await client.receive()
-            assert response == "Echo: Hello Server"
+            finally:
+                server.close()
+                await server.wait_closed()
 
-            # Disconnect
-            await client.disconnect()
+        asyncio.run(run_test())
 
-        finally:
-            server.close()
-            await server.wait_closed()
-
-    @pytest.mark.asyncio
-    async def test_client_message_handler(self):
-        """Test client message handler"""
+    def test_client_message_handler(self) -> None:
         received_messages = []
 
-        # Start test server
-        async def echo_handler(websocket):
-            async for message in websocket:
-                await websocket.send(f"Echo: {message}")
+        async def run_test() -> None:
+            async def echo_handler(websocket):
+                async for message in websocket:
+                    await websocket.send(f"Echo: {message}")
 
-        server = await websockets.serve(echo_handler, "localhost", 18772)
-
-        try:
-            # Create client with custom message handler
-            class CustomClient(WebSocketClient):
-                async def on_message(self, message: str) -> None:
-                    received_messages.append(message)
-
-            client = CustomClient("ws://localhost:18772")
-
-            # Run start() as background task since it's an infinite loop
-            client_task = asyncio.create_task(client.start())
-
-            # Wait for client to connect
-            await asyncio.sleep(0.5)
-
-            assert client.is_connected
-
-            # Send message
-            await client.send("Test message")
-
-            # Wait for message to be received
-            await asyncio.sleep(0.5)
-
-            assert len(received_messages) > 0
-            assert "Echo: Test message" in received_messages
-
-            # Stop client
-            await client.stop()
-            client_task.cancel()
+            server = await websockets.serve(echo_handler, "localhost", 18772)
 
             try:
-                await client_task
-            except asyncio.CancelledError:
-                pass
 
-        finally:
-            server.close()
-            await server.wait_closed()
+                class CustomClient(WebSocketClient):
+                    async def on_message(self, message: str) -> None:
+                        received_messages.append(message)
 
-    @pytest.mark.asyncio
-    async def test_client_reconnect(self):
-        """Test client reconnection"""
+                client = CustomClient("ws://localhost:18772")
 
-        # Start test server
-        async def echo_handler(websocket):
-            async for message in websocket:
-                await websocket.send(f"Echo: {message}")
+                client_task = asyncio.create_task(client.start())
 
-        server = await websockets.serve(echo_handler, "localhost", 18773)
+                await asyncio.sleep(0.5)
 
-        try:
-            # Set short interval for fast reconnection
-            client = WebSocketClient("ws://localhost:18773", reconnect_interval=0.5)
+                self.assertTrue(client.is_connected)
 
-            # Start client (background)
-            client_task = asyncio.create_task(client.start())
+                await client.send("Test message")
 
-            # Wait for connection
-            await asyncio.sleep(0.5)
-            assert client.is_connected
+                await asyncio.sleep(0.5)
 
-            # Force disconnect
-            if client._ws:
-                await client._ws.close()
+                self.assertGreater(len(received_messages), 0)
+                self.assertIn("Echo: Test message", received_messages)
 
-            # Wait for reconnection
-            await asyncio.sleep(1.5)
+                await client.stop()
+                client_task.cancel()
 
-            # Verify reconnection
-            assert client.is_connected
+                try:
+                    await client_task
+                except asyncio.CancelledError:
+                    pass
 
-            # Stop client
-            await client.stop()
-            client_task.cancel()
+            finally:
+                server.close()
+                await server.wait_closed()
+
+        asyncio.run(run_test())
+
+    def test_client_reconnect(self) -> None:
+        async def run_test() -> None:
+            async def echo_handler(websocket):
+                async for message in websocket:
+                    await websocket.send(f"Echo: {message}")
+
+            server = await websockets.serve(echo_handler, "localhost", 18773)
 
             try:
-                await client_task
-            except asyncio.CancelledError:
-                pass
+                client = WebSocketClient("ws://localhost:18773", reconnect_interval=0.5)
 
-        finally:
-            server.close()
-            await server.wait_closed()
+                client_task = asyncio.create_task(client.start())
 
-    @pytest.mark.asyncio
-    async def test_client_multiple_messages(self):
-        """Test multiple message send and receive"""
+                await asyncio.sleep(0.5)
+                self.assertTrue(client.is_connected)
 
-        # Start test server
-        async def echo_handler(websocket):
-            async for message in websocket:
-                await websocket.send(f"Echo: {message}")
+                if client._ws:
+                    await client._ws.close()
 
-        server = await websockets.serve(echo_handler, "localhost", 18774)
+                await asyncio.sleep(1.5)
 
-        try:
-            # Create and connect client
-            client = WebSocketClient("ws://localhost:18774")
-            await client.connect()
+                self.assertTrue(client.is_connected)
 
-            # Send and receive multiple messages
-            messages = ["Message 1", "Message 2", "Message 3"]
-            for msg in messages:
-                await client.send(msg)
-                response = await client.receive()
-                assert response == f"Echo: {msg}"
+                await client.stop()
+                client_task.cancel()
 
-            # Disconnect
-            await client.disconnect()
+                try:
+                    await client_task
+                except asyncio.CancelledError:
+                    pass
 
-        finally:
-            server.close()
-            await server.wait_closed()
+            finally:
+                server.close()
+                await server.wait_closed()
+
+        asyncio.run(run_test())
+
+    def test_client_multiple_messages(self) -> None:
+        async def run_test() -> None:
+            async def echo_handler(websocket):
+                async for message in websocket:
+                    await websocket.send(f"Echo: {message}")
+
+            server = await websockets.serve(echo_handler, "localhost", 18774)
+
+            try:
+                client = WebSocketClient("ws://localhost:18774")
+                await client.connect()
+
+                messages = ["Message 1", "Message 2", "Message 3"]
+                for msg in messages:
+                    await client.send(msg)
+                    response = await client.receive()
+                    self.assertEqual(f"Echo: {msg}", response)
+
+                await client.disconnect()
+
+            finally:
+                server.close()
+                await server.wait_closed()
+
+        asyncio.run(run_test())
+
+
+if __name__ == "__main__":
+    main()

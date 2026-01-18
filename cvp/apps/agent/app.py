@@ -15,7 +15,6 @@ class AgentApplication:
         self._loop: Optional[asyncio.AbstractEventLoop] = None
 
     def start(self) -> None:
-        """Agent 애플리케이션 시작"""
         # WebSocket URI 설정 (환경 변수나 설정 파일에서 가져올 수 있음)
         ws_uri = "ws://localhost:8765"  # 기본값
 
@@ -41,7 +40,6 @@ class AgentApplication:
             self._cleanup()
 
     async def _run(self) -> None:
-        """비동기 실행 로직"""
         if not self._ws_client:
             logger.error("WebSocket 클라이언트가 초기화되지 않았습니다")
             return
@@ -54,7 +52,6 @@ class AgentApplication:
             raise
 
     def _cleanup(self) -> None:
-        """정리 작업"""
         if self._ws_client:
             # WebSocket 클라이언트 중지
             if self._loop and not self._loop.is_closed():

@@ -100,6 +100,7 @@ filtergraph
 findfont
 fluro
 fmpeg
+fmtps
 fprobe
 framebuffers
 frect
@@ -284,6 +285,7 @@ rtmpt
 rtmpts
 rtpmap
 rtpmap
+rtpmaps
 rtsps
 sameq
 savp
