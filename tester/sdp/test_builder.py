@@ -253,6 +253,7 @@ class SdpBuilderTestCase(TestCase):
         parsed = parse_sdp(original)
         self.assertEqual(0, parsed.version)
         self.assertIsNotNone(parsed.origin)
+        assert parsed.origin is not None
         self.assertEqual("-", parsed.origin.username)
         self.assertEqual("123", parsed.origin.sess_id)
         self.assertEqual("Test Session", parsed.session_name)

@@ -12,9 +12,11 @@ class SdpParserTestCase(TestCase):
 
         self.assertEqual(0, session.version)
         self.assertIsNotNone(session.origin)
+        assert session.origin is not None
         self.assertEqual("-", session.origin.username)
         self.assertEqual("-", session.session_name)
         self.assertIsNotNone(session.timing)
+        assert session.timing is not None
         self.assertEqual(0, session.timing.start_time)
 
     def test_parse_with_connection(self) -> None:
@@ -28,6 +30,7 @@ class SdpParserTestCase(TestCase):
         session = parse_sdp(sdp_text)
 
         self.assertIsNotNone(session.connection)
+        assert session.connection is not None
         self.assertEqual("IN", session.connection.nettype)
         self.assertEqual("IP4", session.connection.addrtype)
         self.assertEqual("0.0.0.0", session.connection.connection_address)
@@ -297,6 +300,11 @@ class SdpParserTestCase(TestCase):
         session1 = parse_sdp(original_text)
         encoded = session1.encode()
         session2 = parse_sdp(encoded)
+
+        self.assertIsNotNone(session1.origin)
+        self.assertIsNotNone(session2.origin)
+        assert session1.origin is not None
+        assert session2.origin is not None
 
         self.assertEqual(session1.version, session2.version)
         self.assertEqual(session1.origin.sess_id, session2.origin.sess_id)

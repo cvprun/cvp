@@ -39,7 +39,7 @@ class SessionDescription:
     media: List[MediaDescription] = field(default_factory=list)
 
     def encode(self) -> str:
-        lines = []
+        lines: List[str] = list()
 
         # Version (required)
         lines.append(f"v={self.version}")
