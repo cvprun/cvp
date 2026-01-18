@@ -68,3 +68,4 @@ Coverage output: `build/cov/`
 10. **Line width 88**: Comments and docstrings must not exceed 88 characters
 11. **Override decorator**: Use `@override` from `cvp.types.override` for overridden methods
 12. **Abstract methods**: Always `raise NotImplementedError` in `@abstractmethod` bodies
+13. **Unittest style**: Use `from unittest import TestCase, main` instead of `import pytest`
