@@ -32,6 +32,10 @@ def func(param1: int, param2: str) -> bool:
 - **Optional**: Private functions (`_` prefix) - brief only
 - **Skip**: `__init__.py` re-exports, simple getters/setters
 
+## Line Width
+
+All docstrings and comments must not exceed **88 characters** per line.
+
 ## Validation
 
 Ensure docstrings match type hints.

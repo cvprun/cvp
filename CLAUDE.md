@@ -57,7 +57,14 @@ Coverage output: `build/cov/`
 ## Coding Guidelines
 
 1. **One class per file**
-2. **Explicit imports**: `from typing import List` not `import typing`
+2. **Explicit imports**: `from module import Name` not `import module`
 3. **Type annotations**: All functions with params, returns, attributes
 4. **Test mirroring**: `cvp/mod/foo.py` → `tester/mod/test_foo.py`
 5. **Fix warnings**: No `# type: ignore` or `# noqa` unless unavoidable
+6. **Constants with Final**: Use `Final` for constant values
+7. **Test main block**: Always add `if __name__ == "__main__":\n    main()` at test file end
+8. **Empty `__init__.py`**: Keep `__init__.py` files empty when possible
+9. **Self-documenting code**: Prefer clear naming over comments
+10. **Line width 88**: Comments and docstrings must not exceed 88 characters
+11. **Override decorator**: Use `@override` from `cvp.types.override` for overridden methods
+12. **Abstract methods**: Always `raise NotImplementedError` in `@abstractmethod` bodies
