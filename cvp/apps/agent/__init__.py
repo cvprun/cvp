@@ -2,7 +2,6 @@
 
 from argparse import Namespace
 
-from cvp.context.context import Context
 from cvp.logging.loggers import agent_logger as logger
 from cvp.logging.logging import (
     SEVERITY_NAME_DEBUG,
@@ -16,7 +15,6 @@ from cvp.variables import SLOW_CALLBACK_DURATION
 
 
 def agent_main(args: Namespace) -> None:
-    assert isinstance(args.home, str)
     assert isinstance(args.ws_uri, str)
     assert isinstance(args.colored_logging, bool)
     assert isinstance(args.simple_logging, bool)
@@ -51,14 +49,11 @@ def agent_main(args: Namespace) -> None:
     asyncio_level = convert_level_number(asyncio_severity)
     set_asyncio_level(asyncio_level)
 
-    context = Context(args.home, detect_opengl=False)
-
     # [IMPORTANT]
     # Do not change the import order!
     from cvp.apps.agent.app import AgentApplication
 
     app = AgentApplication(
-        context=context,
         ws_uri=args.ws_uri,
         logging_step=args.logging_step,
         slow_callback_duration=SLOW_CALLBACK_DURATION,

@@ -7,6 +7,7 @@ from typing import Protocol, runtime_checkable
 from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
+from cvp.context.hub import HubManager
 from cvp.download.manager import DownloadManager
 from cvp.flow.manager import FlowManager
 from cvp.ime.manager import ImeManager
@@ -56,3 +57,4 @@ class ContextProtocol(Protocol):
     _terminals: TerminalManager
     _texts: TextManager
     _supabase: Supabase
+    _hub: HubManager

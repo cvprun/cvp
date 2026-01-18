@@ -22,6 +22,7 @@ from cvp.config.sections.flow import FlowConfig
 from cvp.config.sections.font import FontConfig
 from cvp.config.sections.games.tetrix import TetrixConfig
 from cvp.config.sections.graphic import GraphicConfig
+from cvp.config.sections.hub import HubConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.mediamtx import MediamtxConfig
@@ -59,6 +60,7 @@ class Config:
     flow: FlowConfig = field(default_factory=FlowConfig)
     font: FontConfig = field(default_factory=FontConfig)
     graphic: GraphicConfig = field(default_factory=GraphicConfig)
+    hub: HubConfig = field(default_factory=HubConfig)
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     mediamtx: MediamtxConfig = field(default_factory=MediamtxConfig)

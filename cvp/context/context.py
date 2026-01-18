@@ -11,6 +11,7 @@ from cvp.canvas.manager import CanvasManager
 from cvp.chat.manager import ChatManager
 from cvp.config.config import Config
 from cvp.context._protocol import ContextProtocol
+from cvp.context.hub import HubManager
 from cvp.context.mixins import ContextMixins
 from cvp.download.manager import DownloadManager
 from cvp.filesystem.permission import test_directory, test_readable, test_writable
@@ -196,6 +197,12 @@ class Context(ContextMixins):
                 self.server_password,
             )
 
+        hub_host = self._config.hub.host
+        hub_port = self._config.hub.port
+        self._hub = HubManager(hub_host, hub_port)
+        if self._config.hub.autostart:
+            self._hub.start()
+
         assert isinstance(self, ContextProtocol)
 
     def shutdown(self, timeout: Optional[float] = None) -> None:
@@ -234,6 +241,10 @@ class Context(ContextMixins):
 
         logger.info(f"Stop all service processes ... ({timeout:.02f}s)")
         self._services.shutdown(timeout)
+
+        if self._hub.is_running:
+            logger.info("Stopping Hub server ...")
+            self._hub.stop()
 
         logger.info("Shutting down thread pool ...")
         self._thread_pool.shutdown(wait=True)
@@ -405,6 +416,10 @@ class Context(ContextMixins):
     @property
     def supabase(self):
         return self._supabase
+
+    @property
+    def hub(self):
+        return self._hub
 
     @property
     def debug(self) -> bool:
