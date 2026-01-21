@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from typing import ClassVar
 from unittest import TestCase, main
 
 from cvp.modbus.client import ModbusTcpClient
@@ -9,6 +10,9 @@ from cvp.modbus.server import ModbusTcpServer
 
 
 class TestServerClientIntegration(TestCase):
+    datastore: ClassVar[ModbusDataStore]
+    server: ClassVar[ModbusTcpServer]
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.datastore = ModbusDataStore()
