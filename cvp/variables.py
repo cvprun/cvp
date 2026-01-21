@@ -14,6 +14,7 @@ UNKNOWN_PID: Final[int] = -1
 UNKNOWN_VERSION: Final[int] = -1
 UNKNOWN_THREAD_IDENT: Final[int] = -1
 INFINITY_HEIGHT_IN_ITEMS: Final[int] = -1
+EPHEMERAL_PORT: Final[int] = -1
 NULL_CODEPOINT: Final[int] = 0
 BACKSPACE_CODEPOINT: Final[int] = ord("\b")
 DELETE_CODEPOINT: Final[int] = 0x7F
@@ -35,6 +36,9 @@ STDERR_FILE_HANDLE: Final[int] = 2
 STDIN_FILE_NAME: Final[str] = "stdin"
 STDOUT_FILE_NAME: Final[str] = "stdout"
 STDERR_FILE_NAME: Final[str] = "stderr"
+
+LOCALHOST: Final[str] = "localhost"
+ROOT_PATH: Final[str] = "/"
 
 CVP_TITLE: Final[str] = "CVP"
 CVP_HOME_DIRNAME: Final[str] = ".cvp"

@@ -6,13 +6,14 @@ from typing import Any, Awaitable, Callable, Optional, Set
 import websockets
 
 from cvp.logging.loggers import ws_logger as logger
+from cvp.variables import EPHEMERAL_PORT, LOCALHOST
 
 
 class WebSocketServer:
     def __init__(
         self,
-        host: str = "localhost",
-        port: int = 8765,
+        host: str = LOCALHOST,
+        port: int = EPHEMERAL_PORT,
         message_handler: Optional[Callable[[Any, str], Awaitable[None]]] = None,
     ):
         self._host = host

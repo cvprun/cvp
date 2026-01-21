@@ -8,6 +8,7 @@ from hashlib import sha1
 from typing import Callable, Dict, Final, Optional, Set, Tuple, Union
 
 from cvp.logging.loggers import ws_logger as logger
+from cvp.variables import EPHEMERAL_PORT, LOCALHOST
 from cvp.ws.handlers.message_handler import MessageHandler
 
 OPCODE_TEXT: Final[int] = 0x01
@@ -25,14 +26,15 @@ BinaryMessageHandler = Callable[[socket.socket, bytes], Optional[bytes]]
 class WebSocketServer:
     def __init__(
         self,
-        host: str = "localhost",
-        port: int = 8765,
+        host: str = LOCALHOST,
+        port: int = EPHEMERAL_PORT,
         message_handler: Optional[TextMessageHandler] = None,
         binary_handler: Optional[BinaryMessageHandler] = None,
         handler: Optional[MessageHandler] = None,
     ):
         self._host = host
-        self._port = port
+        self._requested_port = port
+        self._bound_port: Optional[int] = None
         self._message_handler = message_handler or self._default_message_handler
         self._binary_handler = binary_handler
         self._handler = handler
@@ -307,10 +309,16 @@ class WebSocketServer:
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._server_socket.settimeout(1.0)  # 1 second timeout to allow shutdown
-        self._server_socket.bind((self._host, self._port))
+
+        # Use port 0 for ephemeral port assignment when requested port is -1
+        bind_port = 0 if self._requested_port == -1 else self._requested_port
+        self._server_socket.bind((self._host, bind_port))
         self._server_socket.listen(5)
 
-        logger.info(f"WebSocket server started: ws://{self._host}:{self._port}")
+        # Store the actual bound port (important for random port assignment)
+        self._bound_port = self._server_socket.getsockname()[1]
+
+        logger.info(f"WebSocket server started: ws://{self._host}:{self._bound_port}")
 
         # Accept connections in separate thread
         self._accept_thread = threading.Thread(
@@ -342,6 +350,8 @@ class WebSocketServer:
                 self._server_socket.close()
             except Exception:
                 pass
+
+        self._bound_port = None
 
         # Wait for thread to finish
         if self._accept_thread:
@@ -399,3 +409,14 @@ class WebSocketServer:
     def client_count(self) -> int:
         with self._clients_lock:
             return len(self._clients)
+
+    @property
+    def host(self) -> str:
+        return self._host
+
+    @property
+    def port(self) -> int:
+        """Return the actual bound port. Returns -1 if not yet bound."""
+        if self._bound_port is not None:
+            return self._bound_port
+        return self._requested_port

@@ -2,19 +2,18 @@
 
 from cvp.hub.agent_handler import AgentHandler
 from cvp.logging.loggers import hub_logger as logger
+from cvp.variables import EPHEMERAL_PORT, LOCALHOST
 from cvp.ws.threading.server import WebSocketServer
 
 
 class HubManager:
-    def __init__(self, host: str = "localhost", port: int = 8765) -> None:
-        self._host = host
-        self._port = port
+    def __init__(self, host: str = LOCALHOST, port: int = EPHEMERAL_PORT) -> None:
         self._handler = AgentHandler()
         self._server = WebSocketServer(host, port, handler=self._handler)
 
     def start(self) -> None:
-        logger.info(f"Starting Hub server on ws://{self._host}:{self._port}")
         self._server.start()
+        logger.info(f"Hub server started on ws://{self.host}:{self.port}")
 
     def stop(self) -> None:
         logger.info("Stopping Hub server")
@@ -30,8 +29,9 @@ class HubManager:
 
     @property
     def host(self) -> str:
-        return self._host
+        return self._server.host
 
     @property
     def port(self) -> int:
-        return self._port
+        """Return the actual bound port. Returns -1 if not yet bound."""
+        return self._server.port

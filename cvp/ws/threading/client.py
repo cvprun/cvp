@@ -10,6 +10,7 @@ from typing import Callable, Optional
 from urllib.parse import urlparse
 
 from cvp.logging.loggers import ws_logger as logger
+from cvp.variables import AGENT_WS_PORT, LOCALHOST, ROOT_PATH
 
 
 class WebSocketClient:
@@ -19,12 +20,6 @@ class WebSocketClient:
         reconnect_interval: float = 5.0,
         message_handler: Optional[Callable[[str], None]] = None,
     ):
-        """
-        Args:
-            uri: WebSocket server URI (e.g., ws://localhost:8765)
-            reconnect_interval: Reconnection interval in seconds
-            message_handler: Message receive handler function
-        """
         self._uri = uri
         self._reconnect_interval = reconnect_interval
         self._message_handler = message_handler or self._default_message_handler
@@ -36,9 +31,9 @@ class WebSocketClient:
 
         # Parse URI
         parsed = urlparse(uri)
-        self._host = parsed.hostname or "localhost"
-        self._port = parsed.port or 8765
-        self._path = parsed.path or "/"
+        self._host = parsed.hostname or LOCALHOST
+        self._port = parsed.port or AGENT_WS_PORT
+        self._path = parsed.path or ROOT_PATH
 
     def _default_message_handler(self, message: str) -> None:
         """
