@@ -24,7 +24,7 @@ from cvp.system.environ_keys import (
     SDL_VIDEO_X11_FORCE_EGL,
 )
 from cvp.variables import (
-    AGENT_WS_URI,
+    AGENT_WS_ADDRESS,
     CVP_HOME_DIRNAME,
     DOTENV_LOCAL_FILENAME,
     FONT_DEFAULT_NAME,
@@ -217,9 +217,9 @@ def add_agent_parser(subparsers) -> None:
     parser.add_argument(
         "--ws-uri",
         type=str,
-        default=get_eval(CVP_AGENT_WS_URI, AGENT_WS_URI),
+        default=get_eval(CVP_AGENT_WS_URI, AGENT_WS_ADDRESS),
         metavar="uri",
-        help=f"WebSocket server URI (default: '{AGENT_WS_URI}')",
+        help=f"WebSocket server URI (default: '{AGENT_WS_ADDRESS}')",
     )
 
     logging_group = parser.add_mutually_exclusive_group()

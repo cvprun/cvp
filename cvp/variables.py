@@ -89,7 +89,8 @@ CHAT_SERVER_NONAME: Final[str] = "[New server]"
 CHAT_LIMIT: Final[int] = 30
 CHAT_INVALID_ID: Final[int] = -1
 
-AGENT_WS_URI: Final[str] = "ws://localhost:8765"
+AGENT_WS_PORT: Final[int] = 9090
+AGENT_WS_ADDRESS: Final[str] = f"ws://localhost:{AGENT_WS_PORT}"
 
 OLLAMA_NONAME: Final[str] = "[New Ollama]"
 OLLAMA_ADDRESS: Final[str] = "http://localhost:11434/"

@@ -26,6 +26,7 @@ from cvp.config.sections.hub import HubConfig
 from cvp.config.sections.keyring import KeyringConfig
 from cvp.config.sections.logging import LoggingConfig
 from cvp.config.sections.mediamtx import MediamtxConfig
+from cvp.config.sections.modbus import ModbusConfig
 from cvp.config.sections.navigation import NavigationConfig
 from cvp.config.sections.onvif import OnvifConfig
 from cvp.config.sections.overlay import OverlayConfig
@@ -64,6 +65,7 @@ class Config:
     keyring: KeyringConfig = field(default_factory=KeyringConfig)
     logging: LoggingConfig = field(default_factory=LoggingConfig)
     mediamtx: MediamtxConfig = field(default_factory=MediamtxConfig)
+    modbus: ModbusConfig = field(default_factory=ModbusConfig)
     navigation: NavigationConfig = field(default_factory=NavigationConfig)
     onvif: OnvifConfig = field(default_factory=OnvifConfig)
     overlay: OverlayConfig = field(default_factory=OverlayConfig)

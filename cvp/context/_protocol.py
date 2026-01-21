@@ -14,6 +14,7 @@ from cvp.ime.manager import ImeManager
 from cvp.keyring.root import RootKeyring
 from cvp.media.manager import MediaManager
 from cvp.mediamtx.manager import MediamtxManager
+from cvp.modbus.manager import ModbusManager
 from cvp.msgs.msg_queue import MsgQueue
 from cvp.ollama.manager import OllamaManager
 from cvp.onvif.manager import OnvifManager
@@ -53,6 +54,7 @@ class ContextProtocol(Protocol):
     _onvifs: OnvifManager
     _medias: MediaManager
     _mediamtxs: MediamtxManager
+    _modbus: ModbusManager
     _tails: TailManager
     _terminals: TerminalManager
     _texts: TextManager

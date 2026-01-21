@@ -17,6 +17,7 @@ from cvp.resources.subdirs.layouts import LayoutsPath
 from cvp.resources.subdirs.logs import LogsPath
 from cvp.resources.subdirs.mediamtx import MediamtxPath
 from cvp.resources.subdirs.medias import MediasPath
+from cvp.resources.subdirs.modbus import ModbusPath
 from cvp.resources.subdirs.ollamas import OllamasPath
 from cvp.resources.subdirs.onvifs import OnvifsPath
 from cvp.resources.subdirs.processes import ProcessesPath
@@ -49,6 +50,7 @@ class HomeDir(PathFlavour):
         self.keyrings = KeyringsPath.classname_subdir(self)
         self.layouts = LayoutsPath.classname_subdir(self)
         self.logs = LogsPath.classname_subdir(self)
+        self.modbus = ModbusPath.classname_subdir(self)
         self.ollamas = OllamasPath.classname_subdir(self)
         self.mediamtx = MediamtxPath.classname_subdir(self)
         self.medias = MediasPath.classname_subdir(self)
@@ -74,6 +76,7 @@ class HomeDir(PathFlavour):
             self.keyrings,
             self.layouts,
             self.logs,
+            self.modbus,
             self.ollamas,
             self.mediamtx,
             self.medias,

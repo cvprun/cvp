@@ -30,6 +30,7 @@ from cvp.logging.logging import (
 )
 from cvp.media.manager import MediaManager
 from cvp.mediamtx.manager import MediamtxManager
+from cvp.modbus.manager import ModbusManager
 from cvp.modules.warnings import hide_pkg_resources_deprecated_warning
 from cvp.msgs.msg import Msg
 from cvp.msgs.msg_queue import MsgQueue
@@ -184,6 +185,9 @@ class Context(ContextMixins):
             reload=True,
         )
         self._mediamtxs = MediamtxManager(self._home.mediamtx, reload=True)
+        self._modbus = ModbusManager(self._home.modbus, reload=True)
+        if self._config.modbus.autostart:
+            self._modbus.start_autostart_devices()
         self._tails = TailManager(self._home.tails, reload=True)
         self._terminals = TerminalManager(self._home.terminals, reload=True)
         self._texts = TextManager(self._home.texts, reload=True)
@@ -246,6 +250,9 @@ class Context(ContextMixins):
             logger.info("Stopping Hub server ...")
             self._hub.stop()
 
+        logger.info("Shutting down Modbus connections ...")
+        self._modbus.shutdown_all()
+
         logger.info("Shutting down thread pool ...")
         self._thread_pool.shutdown(wait=True)
 
@@ -304,6 +311,10 @@ class Context(ContextMixins):
         self._mediamtxs.write_all_config_files()
         logger.info("Save all MediaMTX files")
 
+    def save_all_modbus(self) -> None:
+        self._modbus.write_all_config_files()
+        logger.info("Save all Modbus files")
+
     def save_all_tails(self) -> None:
         self._tails.write_all_config_files()
         logger.info("Save all Tail files")
@@ -329,6 +340,7 @@ class Context(ContextMixins):
         self.save_all_onvifs()
         self.save_all_medias()
         self.save_all_mediamtxs()
+        self.save_all_modbus()
         self.save_all_tails()
         self.save_all_terminals()
         self.save_all_texts()
@@ -400,6 +412,10 @@ class Context(ContextMixins):
     @property
     def mediamtxs(self):
         return self._mediamtxs
+
+    @property
+    def modbus(self):
+        return self._modbus
 
     @property
     def tails(self):

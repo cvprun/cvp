@@ -4,7 +4,7 @@ from asyncio import get_running_loop
 
 from cvp.aio.run import aio_run
 from cvp.logging.loggers import agent_logger as logger
-from cvp.variables import AGENT_WS_URI, LOGGING_STEP, SLOW_CALLBACK_DURATION
+from cvp.variables import AGENT_WS_ADDRESS, LOGGING_STEP, SLOW_CALLBACK_DURATION
 from cvp.ws.asyncio.client import WebSocketClient
 from cvp.ws.handlers.protobuf_handler import ProtobufHandler
 
@@ -12,7 +12,7 @@ from cvp.ws.handlers.protobuf_handler import ProtobufHandler
 class AgentApplication(ProtobufHandler):
     def __init__(
         self,
-        ws_uri: str = AGENT_WS_URI,
+        ws_uri: str = AGENT_WS_ADDRESS,
         logging_step=LOGGING_STEP,
         slow_callback_duration=SLOW_CALLBACK_DURATION,
         use_uvloop=False,
