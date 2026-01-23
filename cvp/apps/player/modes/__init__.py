@@ -30,6 +30,7 @@ class ModeManager:
         from cvp.apps.player.modes.games.minidun import MinidunMode
         from cvp.apps.player.modes.games.tetrix import TetrixMode
         from cvp.apps.player.modes.hash import HashMode
+        from cvp.apps.player.modes.hub import HubMode
         from cvp.apps.player.modes.image import ImageMode
         from cvp.apps.player.modes.logging import LoggingMode
         from cvp.apps.player.modes.main.layout import MainLayout
@@ -72,6 +73,7 @@ class ModeManager:
         self.flow_mode = FlowMode(self._main_layout)
         self.font_mode = FontMode(context)
         self.hash_mode = HashMode(context)
+        self.hub_mode = HubMode(context)
         self.image_mode = ImageMode(context)
         self.logging_mode = LoggingMode(context)
         self.map_mode = MapMode(context)
@@ -117,6 +119,7 @@ class ModeManager:
             self.flow_mode,
             self.font_mode,
             self.hash_mode,
+            self.hub_mode,
             self.image_mode,
             self.logging_mode,
             self.video_mode,

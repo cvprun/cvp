@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from cvp.hub.agent_handler import AgentHandler
+from typing import Dict
+
+from cvp.hub.agent_handler import AgentHandler, AgentSession
 from cvp.logging.loggers import hub_logger as logger
 from cvp.variables import EPHEMERAL_PORT, LOCALHOST
 from cvp.ws.threading.server import WebSocketServer
@@ -35,3 +37,10 @@ class HubManager:
     def port(self) -> int:
         """Return the actual bound port. Returns -1 if not yet bound."""
         return self._server.port
+
+    @property
+    def sessions(self) -> Dict[str, AgentSession]:
+        return self._handler.sessions
+
+    def disconnect_session(self, session_id: str) -> bool:
+        return self._handler.disconnect_session(session_id)

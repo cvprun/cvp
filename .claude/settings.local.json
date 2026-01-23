@@ -14,6 +14,7 @@
       "Bash(git log --oneline -10)",
       "Bash(grep:*)",
       "Bash(tree:*)",
+      "Skill(add-mode)",
       "WebFetch(domain:docs.anthropic.com)",
       "WebFetch(domain:github.com)",
       "WebSearch"
@@ -32,11 +33,29 @@
   "hooks": {
     "Notification": [
       {
-        "matcher": "",
+        "matcher": "permission_prompt",
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Claude Code CVP' 'Awaiting your input'"
+            "command": "notify-send 'CVP - claude-code' 'Permission requests'"
+          }
+        ]
+      },
+      {
+        "matcher": "idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'CVP - claude-code' 'Awaiting your input'"
+          }
+        ]
+      },
+      {
+        "matcher": "elicitation_dialog",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "notify-send 'CVP - claude-code' 'MCP tool input required'"
           }
         ]
       }

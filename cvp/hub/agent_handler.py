@@ -59,3 +59,16 @@ class AgentHandler(ProtobufHandler):
     def session_count(self) -> int:
         with self._sessions_lock:
             return len(self._sessions)
+
+    @property
+    def sessions(self) -> Dict[str, AgentSession]:
+        with self._sessions_lock:
+            return dict(self._sessions)
+
+    def disconnect_session(self, session_id: str) -> bool:
+        with self._sessions_lock:
+            if session_id in self._sessions:
+                del self._sessions[session_id]
+                logger.info(f"Agent forcefully disconnected: {session_id}")
+                return True
+            return False
