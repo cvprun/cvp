@@ -37,6 +37,7 @@ class ModeManager:
         from cvp.apps.player.modes.map import MapMode
         from cvp.apps.player.modes.mediamtx import MediaMTXMode
         from cvp.apps.player.modes.medias import MediasMode
+        from cvp.apps.player.modes.modbus import ModbusMode
         from cvp.apps.player.modes.onvif import OnvifMode
         from cvp.apps.player.modes.preference import PreferenceMode
         from cvp.apps.player.modes.processes import ProcessesMode
@@ -80,6 +81,7 @@ class ModeManager:
         self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
         self.minidun_mode = MinidunMode(context)
+        self.modbus_mode = ModbusMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
         self.preference_mode = PreferenceMode(context)
@@ -126,6 +128,7 @@ class ModeManager:
             self.map_mode,
             self.mediamtx_mode,
             self.medias_mode,
+            self.modbus_mode,
             self.object_tracker_mode,
             self.onvif_mode,
             self.processes_mode,
