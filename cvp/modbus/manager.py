@@ -3,9 +3,16 @@
 from typing import Dict, Optional, Tuple
 from uuid import uuid4
 
+from type_serialize import deserialize, serialize
+
 from cvp.logging.loggers import modbus_logger as logger
 from cvp.modbus.client import ModbusTcpClient
-from cvp.modbus.config import ModbusDeviceConfig, ModbusKey, ModbusRole
+from cvp.modbus.config import (
+    ModbusDataStoreConfig,
+    ModbusDeviceConfig,
+    ModbusKey,
+    ModbusRole,
+)
 from cvp.modbus.datastore import ModbusDataStore
 from cvp.modbus.server import ModbusTcpServer
 from cvp.resources.manager.manager import ResourceManager
@@ -18,6 +25,7 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
     _servers: Dict[ModbusKey, ModbusTcpServer]
     _clients: Dict[ModbusKey, ModbusTcpClient]
     _data_stores: Dict[ModbusKey, ModbusDataStore]
+    _datastore_configs: Dict[ModbusKey, ModbusDataStoreConfig]
 
     def __init__(
         self,
@@ -40,9 +48,15 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
             reload=reload,
             raise_errors=raise_errors,
         )
+        self._path = path
+        self._datastore_path = path.get_datastore_path()
         self._servers = dict()
         self._clients = dict()
         self._data_stores = dict()
+        self._datastore_configs = dict()
+
+        if reload:
+            self._load_all_datastore_configs(raise_errors=raise_errors)
 
     def has_server(self, key: ModbusKey) -> bool:
         """Check if a server exists for the given key."""
@@ -63,6 +77,82 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
     def get_datastore(self, key: ModbusKey) -> Optional[ModbusDataStore]:
         """Get a datastore by key."""
         return self._data_stores.get(key)
+
+    def get_datastore_config(self, key: ModbusKey) -> Optional[ModbusDataStoreConfig]:
+        """Get a datastore config by key."""
+        return self._datastore_configs.get(key)
+
+    def _load_all_datastore_configs(self, *, raise_errors: bool = False) -> None:
+        """Load all datastore configs from disk."""
+        datastore_path = self._datastore_path
+        if not datastore_path.as_path().exists():
+            return
+
+        for filename in datastore_path.list_object_filenames():
+            key_str = filename.removesuffix(datastore_path.extension)
+            key = ModbusKey(key_str)
+            try:
+                data = datastore_path.read_object(key_str)
+                config = deserialize(data, ModbusDataStoreConfig)
+                self._datastore_configs[key] = config
+                logger.info(f"Loaded datastore config: {key}")
+            except Exception as e:
+                if raise_errors:
+                    raise
+                logger.exception(f"Failed to load datastore config '{key}': {e}")
+
+    def save_datastore_config(self, key: ModbusKey) -> None:
+        """Save datastore config to disk.
+
+        Args:
+            key: Device key.
+        """
+        if key not in self._datastore_configs:
+            return
+
+        config = self._datastore_configs[key]
+        self._datastore_path.write_object(serialize(config), str(key))
+        logger.info(f"Saved datastore config: {key}")
+
+    def save_all_datastore_configs(self) -> None:
+        """Save all datastore configs to disk."""
+        for key in self._datastore_configs:
+            self.save_datastore_config(key)
+
+    def _create_datastore_from_config(
+        self,
+        key: ModbusKey,
+    ) -> ModbusDataStore:
+        """Create or get a datastore, initializing from config if available."""
+        if key in self._data_stores:
+            return self._data_stores[key]
+
+        datastore = ModbusDataStore()
+
+        if key in self._datastore_configs:
+            config = self._datastore_configs[key]
+            for addr, coil_value in config.coils.items():
+                datastore.set_coil(addr, coil_value)
+            for addr, di_value in config.discrete_inputs.items():
+                datastore.set_discrete_inputs(addr, [di_value])
+            for addr, hr_value in config.holding_registers.items():
+                datastore.set_holding_register(addr, hr_value)
+            for addr, ir_value in config.input_registers.items():
+                datastore.set_input_registers(addr, [ir_value])
+
+        self._data_stores[key] = datastore
+        return datastore
+
+    def update_datastore_config_from_store(self, key: ModbusKey) -> None:
+        """Update datastore config from the current datastore state.
+
+        Note: With Dict-based config, this is a no-op since the config
+        is directly edited by the user and synced to the datastore.
+
+        Args:
+            key: Device key.
+        """
+        pass
 
     def add_device(
         self,
@@ -145,8 +235,7 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
                 return server
 
         if datastore is None:
-            datastore = self._data_stores.get(key) or ModbusDataStore()
-            self._data_stores[key] = datastore
+            datastore = self._create_datastore_from_config(key)
 
         server = ModbusTcpServer(
             host=config.host,
@@ -162,15 +251,20 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
         )
         return server
 
-    def stop_server(self, key: ModbusKey) -> None:
+    def stop_server(self, key: ModbusKey, *, save_datastore: bool = True) -> None:
         """Stop a Modbus TCP server.
 
         Args:
             key: Device key.
+            save_datastore: Whether to save datastore config before stopping.
         """
         if key not in self._servers:
             logger.warning(f"Server {key} is not running")
             return
+
+        if save_datastore:
+            self.update_datastore_config_from_store(key)
+            self.save_datastore_config(key)
 
         server = self._servers.pop(key)
         server.stop()
@@ -267,13 +361,19 @@ class ModbusManager(ResourceManager[ModbusKey, ModbusDeviceConfig]):
             key: Device key.
         """
         if key in self._servers:
-            self.stop_server(key)
+            self.stop_server(key, save_datastore=False)
 
         if key in self._clients:
             self.disconnect_client(key)
 
         if key in self._data_stores:
             del self._data_stores[key]
+
+        if key in self._datastore_configs:
+            del self._datastore_configs[key]
+            datastore_file = self._datastore_path.make_object_path(str(key)).as_path()
+            if datastore_file.exists():
+                datastore_file.unlink()
 
         self.remove(key)
         logger.info(f"Removed Modbus device: {key}")

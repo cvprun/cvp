@@ -17,3 +17,11 @@ class ModbusPath(YamlFormatPath):
             raise ValueError("The UUID value in Modbus must be valid")
 
         return JsonFormatPath(self.as_path() / uuid)
+
+    def get_datastore_path(self) -> "ModbusDataStorePath":
+        return ModbusDataStorePath(self.as_path() / "datastores")
+
+
+class ModbusDataStorePath(YamlFormatPath):
+    def __init__(self, *path: Union[str, PathLike[str]]):
+        super().__init__(*path)

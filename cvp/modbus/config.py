@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from enum import StrEnum, auto, unique
-from typing import NewType
+from typing import Dict, NewType
 from uuid import uuid4
 
 ModbusKey = NewType("ModbusKey", str)
@@ -41,3 +41,20 @@ class ModbusDeviceConfig:
     @property
     def is_client(self) -> bool:
         return self.role == ModbusRole.client
+
+
+@dataclass
+class ModbusDataStoreConfig:
+    uuid: str = field(default_factory=lambda: str(uuid4()))
+    coils: Dict[int, bool] = field(default_factory=dict)
+    discrete_inputs: Dict[int, bool] = field(default_factory=dict)
+    holding_registers: Dict[int, int] = field(default_factory=dict)
+    input_registers: Dict[int, int] = field(default_factory=dict)
+
+    @property
+    def key(self) -> ModbusKey:
+        return ModbusKey(self.uuid)
+
+    @key.setter
+    def key(self, value: ModbusKey) -> None:
+        self.uuid = str(value)
