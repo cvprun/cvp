@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from concurrent.futures import TimeoutError as FutureTimeoutError
 from concurrent.futures.process import ProcessPoolExecutor
 from typing import Final, List, NamedTuple, Optional, Sequence
+
+_FETCH_TIMEOUT: Final[float] = 30.0
 
 
 class _OpenglConfig(NamedTuple):
@@ -32,13 +35,27 @@ def _fetch_main(config: _OpenglConfig) -> bool:
         return False
 
 
-def fetch_opengl_configs_from_subprocess() -> List[_OpenglConfig]:
+def fetch_opengl_configs_from_subprocess(
+    timeout: float = _FETCH_TIMEOUT,
+) -> List[_OpenglConfig]:
     """Run a subprocess to check OpenGL config flags and return the result."""
 
-    with ProcessPoolExecutor() as executor:
-        fetch_results = executor.map(_fetch_main, _TEST_CONFIGS)
+    results: List[_OpenglConfig] = []
+    executor = ProcessPoolExecutor()
+    try:
+        futures = {
+            executor.submit(_fetch_main, config): config for config in _TEST_CONFIGS
+        }
+        for future, config in futures.items():
+            try:
+                if future.result(timeout=timeout):
+                    results.append(config)
+            except (FutureTimeoutError, Exception):
+                future.cancel()
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
-    return [config for config, flag in zip(_TEST_CONFIGS, fetch_results) if flag]
+    return results
 
 
 def select_best_opengl_config(configs: List[_OpenglConfig]) -> _OpenglConfig:
