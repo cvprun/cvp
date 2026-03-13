@@ -141,3 +141,4 @@ MANIFEST
 .taskmaster/
 imgui.ini
 player.ini
+cvp.spec
