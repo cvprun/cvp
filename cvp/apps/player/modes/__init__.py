@@ -82,7 +82,7 @@ class ModeManager:
         self.mediamtx_mode = MediaMTXMode(context)
         self.medias_mode = MediasMode(context)
         self.minidun_mode = MinidunMode(context)
-        self.modbus_mode = ModbusMode(context)
+        # self.modbus_mode = ModbusMode(context)
         self.modbus_client_mode = ModbusClientMode(context)
         self.object_tracker_mode = ObjectTrackerMode(context)
         self.onvif_mode = OnvifMode(context)
@@ -130,7 +130,7 @@ class ModeManager:
             self.map_mode,
             self.mediamtx_mode,
             self.medias_mode,
-            self.modbus_mode,
+            # self.modbus_mode,
             self.modbus_client_mode,
             self.object_tracker_mode,
             self.onvif_mode,
