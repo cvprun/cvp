@@ -22,4 +22,11 @@ cd "$ROOT_DIR" && pyinstaller \
     --clean \
     --noconsole \
     --add-data "cvp/assets:assets" \
+    --hidden-import "OpenGL.platform.egl" \
+    --hidden-import "OpenGL.platform.glx" \
+    --hidden-import "OpenGL.platform.osmesa" \
+    --hidden-import "OpenGL.platform.darwin" \
+    --hidden-import "OpenGL.platform.win32" \
+    --hidden-import "OpenGL.GL" \
+    --hidden-import "OpenGL.error" \
     "$ROOT_DIR/main.py"
